@@ -187,28 +187,19 @@ let st_substitute_visitor =
 
     method! visit_region_binder visit_value (subst : subst) x =
       (* Note that we don't visit the bound variables. *)
-      let { binder_regions; regions_outlive; types_outlive; binder_value } =
-        x
-      in
+      let { binder_regions; outlives; binder_value } = x in
       (* Crucial: we shift the substitution to be valid under this binder. *)
       let subst = shift_subst subst in
       let binder_regions =
         self#visit_list self#visit_region_param subst binder_regions
       in
-      let regions_outlive =
+      let outlives =
         self#visit_list
-          (self#visit_region_binder
-             (self#visit_outlives_pred self#visit_region self#visit_region))
-          subst regions_outlive
-      in
-      let types_outlive =
-        self#visit_list
-          (self#visit_region_binder
-             (self#visit_outlives_pred self#visit_ty self#visit_region))
-          subst types_outlive
+          (self#visit_region_binder self#visit_outlives_pred)
+          subst outlives
       in
       let binder_value = visit_value subst binder_value in
-      { binder_regions; regions_outlive; types_outlive; binder_value }
+      { binder_regions; outlives; binder_value }
 
     method! visit_RVar (subst : subst) var = subst.r_subst var
     method! visit_TVar (subst : subst) var = subst.ty_subst var
@@ -250,8 +241,7 @@ let predicates_substitute (subst : subst) (p : generic_params) : generic_params
     types;
     const_generics;
     trait_clauses;
-    regions_outlive;
-    types_outlive;
+    outlives;
     trait_type_constraints;
   } =
     p
@@ -262,19 +252,10 @@ let predicates_substitute (subst : subst) (p : generic_params) : generic_params
     types;
     const_generics;
     trait_clauses = List.map (visitor#visit_trait_param subst) trait_clauses;
-    regions_outlive =
+    outlives =
       List.map
-        (visitor#visit_region_binder
-           (visitor#visit_outlives_pred visitor#visit_region
-              visitor#visit_region)
-           subst)
-        regions_outlive;
-    types_outlive =
-      List.map
-        (visitor#visit_region_binder
-           (visitor#visit_outlives_pred visitor#visit_ty visitor#visit_region)
-           subst)
-        types_outlive;
+        (visitor#visit_region_binder visitor#visit_outlives_pred subst)
+        outlives;
     trait_type_constraints =
       List.map
         (visitor#visit_region_binder visitor#visit_trait_type_constraint subst)
@@ -576,8 +557,7 @@ let fuse_binders (substitutor : subst -> 'a -> 'a)
      variables, shifting indices to avoid overlap with the variables bound in
      the outer binder. *)
   let shift_region_varid varid =
-    RegionId.of_int
-      (RegionId.to_int varid + List.length outer_params.regions_outlive)
+    RegionId.of_int (RegionId.to_int varid + List.length outer_params.regions)
   in
   let shift_ty_varid varid =
     TypeVarId.of_int (TypeVarId.to_int varid + List.length outer_params.types)
@@ -633,9 +613,7 @@ let fuse_binders (substitutor : subst -> 'a -> 'a)
       trait_clauses =
         outer_params.trait_clauses
         @ List.map shift_clause_var inner_params.trait_clauses;
-      regions_outlive =
-        outer_params.regions_outlive @ inner_params.regions_outlive;
-      types_outlive = outer_params.types_outlive @ inner_params.types_outlive;
+      outlives = outer_params.outlives @ inner_params.outlives;
       trait_type_constraints =
         outer_params.trait_type_constraints
         @ inner_params.trait_type_constraints;
@@ -729,8 +707,7 @@ let lookup_fndef_sig (crate : crate) (fn_ptr : fn_ptr region_binder) :
       Some
         {
           binder_regions = fn_ptr.binder_regions;
-          regions_outlive = fn_ptr.regions_outlive;
-          types_outlive = fn_ptr.types_outlive;
+          outlives = fn_ptr.outlives;
           binder_value = fn_sig;
         }
   | _ -> None
@@ -786,6 +763,5 @@ let trait_decl_ref_to_poly_trait_decl_ref (pred : trait_decl_ref) :
     binder_value =
       st_substitute_visitor#visit_trait_decl_ref move_under_binder_subst pred;
     binder_regions = [];
-    regions_outlive = [];
-    types_outlive = [];
+    outlives = [];
   }

@@ -65,7 +65,7 @@ where
 pub fn region_outlives<'b, T>(_1: fn<'a where 'b: 'a>(&'a &'b T))
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'b,
+    Outlives0: (T: 'b),
 {
     let _0: (); // return
     let _1: fn<'a>(&'a &'3 T); // arg #1
@@ -93,10 +93,60 @@ pub fn reference_to_function_pointer<'a>(_1: &'a fn<'b>(&'b u32))
 // Full name: test_crate::reference_with_outer_region
 pub fn reference_with_outer_region<'a, 'c>(_1: &'a fn<'b>(&'c u32))
 where
-    RegionOutlives0: 'c: 'a,
+    Outlives0: ('c: 'a),
 {
     let _0: (); // return
     let _1: &'4 fn<'b>(&'5 u32); // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::Holds
+pub struct Holds<'a, T>
+where
+    TraitClause0: (T: Sized),
+    Outlives0: (T: 'a),
+    Outlives1: (T: 'a),
+{
+  _0: &'a T,
+}
+
+// Full name: test_crate::substituted_type
+pub fn substituted_type<'a, 'b>(_1: Holds<'a, &'b u32>[{built_in impl Sized for &'b u32}])
+where
+    Outlives0: (&'b u32: 'a),
+{
+    let _0: (); // return
+    let _1: Holds<'9, &'10 u32>[{built_in impl Sized for &'10 u32}]; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::WithAssoc
+pub trait WithAssoc<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Assoc: Sized)
+    type Assoc
+    vtable: test_crate::WithAssoc::{vtable}<Self::Assoc>
+}
+
+// Full name: test_crate::associated_type
+pub fn associated_type<T>(_1: fn<'a where TraitClause1::Assoc: 'a, T: 'a>(&'a TraitClause1::Assoc))
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: WithAssoc),
+{
+    let _0: (); // return
+    let _1: fn<'a>(&'a TraitClause1::Assoc); // arg #1
 
     storage_live(_0)
     _0 = ()

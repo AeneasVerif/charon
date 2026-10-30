@@ -127,7 +127,7 @@ struct Adt<'a, T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
   _0: &'a T,
 }
@@ -141,8 +141,8 @@ where
     TraitClause3: (A: Trait),
     TraitClause4: (B: Sized),
     TraitClause5: (B: Trait),
-    TypeOutlives0: A: '_0,
-    TypeOutlives1: B: '_0,
+    Outlives0: (A: '_0),
+    Outlives1: (B: '_0),
 {
     let _0: Adt<'_0, B>[TraitClause4, TraitClause5]; // return
     let fn_ptr: fn<'_0_1>(Adt<'_0_1, A>[TraitClause2, TraitClause3]) -> Adt<'_0_1, B>[TraitClause4, TraitClause5]; // arg #1
@@ -167,7 +167,7 @@ where
     TraitClause3: (A: Trait),
     TraitClause4: (B: Sized),
     TraitClause5: (B: Trait),
-    TypeOutlives0: A: '_0,
+    Outlives0: (A: '_0),
 {
     proof ImpliedClause0: (fn<'_0_2>(Adt<'_0_2, A>[TraitClause2, TraitClause3]) -> Adt<'_0_2, B>[TraitClause4, TraitClause5]: MetaSized) = {built_in impl MetaSized for fn<'_0_2>(Adt<'_0_2, A>[TraitClause2, TraitClause3]) -> Adt<'_0_2, B>[TraitClause4, TraitClause5]}
     proof ImpliedClause1: ((Adt<'_0, A>[TraitClause2, TraitClause3],): Sized) = {built_in impl Sized for (Adt<'_0, A>[TraitClause2, TraitClause3],)}
@@ -228,8 +228,8 @@ unsafe fn {impl FnOnce<(A,)> for fn(A) -> B}::{vtable_drop_shim}<'_0, A, B>(dyn_
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
-    TypeOutlives0: A: '_0,
-    TypeOutlives1: B: '_0,
+    Outlives0: (A: '_0),
+    Outlives1: (B: '_0),
 {
     let ret: (); // return
     let dyn_self: &'_0 mut (dyn FnOnce<(A,), Output = B> + '0); // arg #1
@@ -272,8 +272,8 @@ where
     TraitClause0: for<'_0_1> (A: Sized),
     TraitClause1: for<'_0_1> (&'_0_1 B: Sized),
     TraitClause2: for<'_0_1> (&'_0_1 C: Sized),
-    TypeOutlives0: B: '_0,
-    TypeOutlives1: C: '_0,
+    Outlives0: (B: '_0),
+    Outlives1: (C: '_0),
 {
     let _0: &'_0 C; // return
     let fn_ptr: fn<'_0_1>(A, &'_0_1 B) -> &'_0_1 C; // arg #1
@@ -295,7 +295,7 @@ where
     TraitClause0: for<'_0_1> (A: Sized),
     TraitClause1: for<'_0_1> (&'_0_1 B: Sized),
     TraitClause2: for<'_0_1> (&'_0_1 C: Sized),
-    TypeOutlives0: B: '_0,
+    Outlives0: (B: '_0),
 {
     proof ImpliedClause0: (fn<'_0_2>(A, &'_0_2 B) -> &'_0_2 C: MetaSized) = {built_in impl MetaSized for fn<'_0_2>(A, &'_0_2 B) -> &'_0_2 C}
     proof ImpliedClause1: ((A, &'_0 B): Sized) = {built_in impl Sized for (A, &'_0 B)}
@@ -311,8 +311,8 @@ extern "rust-call" fn {impl FnOnce<([&'_0 A; C2],)> for fn<'_0_1 where A: '_0_1,
 where
     TraitClause0: for<'_0_1> ([&'_0_1 A; C2]: Sized),
     TraitClause1: for<'_0_1> ([&'_0_1 B; C3]: Sized),
-    TypeOutlives0: A: '_0,
-    TypeOutlives1: B: '_0,
+    Outlives0: (A: '_0),
+    Outlives1: (B: '_0),
 {
     let _0: [&'_0 B; C3]; // return
     let fn_ptr: fn<'_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3]; // arg #1
@@ -333,7 +333,7 @@ impl<'_0, A, B, const C2 : usize, const C3 : usize> FnOnce<([&'_0 A; C2],)> for 
 where
     TraitClause0: for<'_0_1> ([&'_0_1 A; C2]: Sized),
     TraitClause1: for<'_0_1> ([&'_0_1 B; C3]: Sized),
-    TypeOutlives0: A: '_0,
+    Outlives0: (A: '_0),
 {
     proof ImpliedClause0: (fn<'_0_2>([&'_0_2 A; C2]) -> [&'_0_2 B; C3]: MetaSized) = {built_in impl MetaSized for fn<'_0_2>([&'_0_2 A; C2]) -> [&'_0_2 B; C3]}
     proof ImpliedClause1: (([&'_0 A; C2],): Sized) = {built_in impl Sized for ([&'_0 A; C2],)}
@@ -350,10 +350,10 @@ where
     TraitClause0: for<'_0_1, '_1_1> (&'_0_1 A: Sized),
     TraitClause1: for<'_0_1, '_1_1> (&'_1_1 B: Sized),
     TraitClause2: for<'_0_1, '_1_1> ((&'_1_1 C, &'_0_1 D): Sized),
-    TypeOutlives0: A: '_0,
-    TypeOutlives1: B: '_1,
-    TypeOutlives2: C: '_1,
-    TypeOutlives3: D: '_0,
+    Outlives0: (A: '_0),
+    Outlives1: (B: '_1),
+    Outlives2: (C: '_1),
+    Outlives3: (D: '_0),
 {
     let _0: (&'_1 C, &'_0 D); // return
     let fn_ptr: fn<'_0_1, '_1_1>(&'_0_1 A, &'_1_1 B) -> (&'_1_1 C, &'_0_1 D); // arg #1
@@ -375,8 +375,8 @@ where
     TraitClause0: for<'_0_1, '_1_1> (&'_0_1 A: Sized),
     TraitClause1: for<'_0_1, '_1_1> (&'_1_1 B: Sized),
     TraitClause2: for<'_0_1, '_1_1> ((&'_1_1 C, &'_0_1 D): Sized),
-    TypeOutlives0: A: '_0,
-    TypeOutlives1: B: '_1,
+    Outlives0: (A: '_0),
+    Outlives1: (B: '_1),
 {
     proof ImpliedClause0: (fn<'_0_2, '_1_2>(&'_0_2 A, &'_1_2 B) -> (&'_1_2 C, &'_0_2 D): MetaSized) = {built_in impl MetaSized for fn<'_0_2, '_1_2>(&'_0_2 A, &'_1_2 B) -> (&'_1_2 C, &'_0_2 D)}
     proof ImpliedClause1: ((&'_0 A, &'_1 B): Sized) = {built_in impl Sized for (&'_0 A, &'_1 B)}
@@ -392,8 +392,8 @@ extern "rust-call" fn call_mut<'_0, A, B>(fn_ptr: &'_0 mut fn(A) -> B, args: (A,
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
-    TypeOutlives0: A: '_0,
-    TypeOutlives1: B: '_0,
+    Outlives0: (A: '_0),
+    Outlives1: (B: '_0),
 {
     let _0: B; // return
     let fn_ptr: &'_0 mut fn(A) -> B; // arg #1
@@ -414,8 +414,8 @@ extern "rust-call" fn {impl FnMut<(A,)> for fn(A) -> B}::{vtable_method}<'_0, A,
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
-    TypeOutlives0: A: '_0,
-    TypeOutlives1: B: '_0,
+    Outlives0: (A: '_0),
+    Outlives1: (B: '_0),
 {
     let _0: B; // return
     let _1: &'_0 mut (dyn FnMut<(A,), ImpliedClause1::Output = B> + '0); // arg #1
@@ -441,8 +441,8 @@ unsafe fn {impl FnMut<(A,)> for fn(A) -> B}::{vtable_drop_shim}<'_0, A, B>(dyn_s
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
-    TypeOutlives0: A: '_0,
-    TypeOutlives1: B: '_0,
+    Outlives0: (A: '_0),
+    Outlives1: (B: '_0),
 {
     let ret: (); // return
     let dyn_self: &'_0 mut (dyn FnMut<(A,), ImpliedClause1::Output = B> + '0); // arg #1
@@ -469,8 +469,8 @@ extern "rust-call" fn call<'_0, A, B>(fn_ptr: &'_0 fn(A) -> B, args: (A,)) -> B
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
-    TypeOutlives0: A: '_0,
-    TypeOutlives1: B: '_0,
+    Outlives0: (A: '_0),
+    Outlives1: (B: '_0),
 {
     let _0: B; // return
     let fn_ptr: &'_0 fn(A) -> B; // arg #1
@@ -491,8 +491,8 @@ extern "rust-call" fn {impl Fn<(A,)> for fn(A) -> B}::{vtable_method}<'_0, A, B>
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
-    TypeOutlives0: A: '_0,
-    TypeOutlives1: B: '_0,
+    Outlives0: (A: '_0),
+    Outlives1: (B: '_0),
 {
     let _0: B; // return
     let _1: &'_0 (dyn Fn<(A,), ImpliedClause1::ImpliedClause1::Output = B> + '0); // arg #1
@@ -518,8 +518,8 @@ unsafe fn {impl Fn<(A,)> for fn(A) -> B}::{vtable_drop_shim}<'_0, A, B>(dyn_self
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
-    TypeOutlives0: A: '_0,
-    TypeOutlives1: B: '_0,
+    Outlives0: (A: '_0),
+    Outlives1: (B: '_0),
 {
     let ret: (); // return
     let dyn_self: &'_0 mut (dyn Fn<(A,), ImpliedClause1::ImpliedClause1::Output = B> + '0); // arg #1
@@ -572,7 +572,7 @@ where
 // Full name: (_,)::{impl Destruct for (A,)}::drop_glue
 unsafe fn {impl Destruct for (A,)}::drop_glue<'_0, A>(_1: &'_0 mut (A,))
 where
-    TypeOutlives0: A: '_0,
+    Outlives0: (A: '_0),
 {
     let _0: (); // return
     let _1: &'1 mut (A,); // arg #1
@@ -590,8 +590,8 @@ where
 unsafe fn {impl Destruct for (A, B)}::drop_glue<'_0, A, B>(_1: &'_0 mut (A, B))
 where
     TraitClause0: (A: Sized),
-    TypeOutlives0: A: '_0,
-    TypeOutlives1: B: '_0,
+    Outlives0: (A: '_0),
+    Outlives1: (B: '_0),
 {
     let _0: (); // return
     let _1: &'1 mut (A, B); // arg #1
@@ -620,7 +620,7 @@ impl "impl_Trait_for_u32" Trait for u32 {
 // Full name: test_crate::identity
 fn identity<'a>(x: Adt<'a, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'a, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]
 where
-    TypeOutlives0: u32: 'a,
+    Outlives0: (u32: 'a),
 {
     let _0: Adt<'1, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // return
     let x: Adt<'2, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // arg #1
@@ -635,7 +635,7 @@ fn test_crate::call_once<'a, F>(f: F, x: Adt<'a, u32>[{built_in impl Sized for u
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: FnOnce<(Adt<'a, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32],)>),
-    TypeOutlives0: u32: 'a,
+    Outlives0: (u32: 'a),
     TypeConstraint0: TraitClause1::Output = Adt<'a, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32],
 {
     let _0: Adt<'1, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // return

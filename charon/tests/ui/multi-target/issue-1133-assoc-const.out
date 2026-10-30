@@ -27,9 +27,9 @@ where
     TraitClause0: (T: core::marker::Sized),
     TraitClause1: (I: core::marker::Sized),
     TraitClause2: ([T]: core::ops::index::Index<I>),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: TraitClause2::Output: '_0,
-    TypeOutlives2: I: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (TraitClause2::Output: '_0),
+    Outlives2: (I: '_0),
 = <opaque>
 
 #[lang_item(Option)]
@@ -65,9 +65,9 @@ where
     TraitClause0: (T: core::marker::Sized),
     TraitClause1: (I: core::marker::Sized),
     TraitClause2: (I: core::slice::index::SliceIndex<[T]>),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: TraitClause2::Output: '_0,
-    TypeOutlives2: I: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (TraitClause2::Output: '_0),
+    Outlives2: (I: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl core::ops::index::Index<I> for [T]}
@@ -88,13 +88,13 @@ where
 pub fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
 where
     TraitClause0: (T: core::marker::Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 pub fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_0, T>(_1: usize, _2: &'_0 [T]) -> &'_0 T
 where
     TraitClause0: (T: core::marker::Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 #[track_caller]
@@ -112,13 +112,13 @@ where
 pub fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::get_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> core::option::Option<&'_0 mut T>[{built_in impl core::marker::Sized for &'_0 mut T}]
 where
     TraitClause0: (T: core::marker::Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 pub fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::get<'_0, T>(_1: usize, _2: &'_0 [T]) -> core::option::Option<&'_0 T>[{built_in impl core::marker::Sized for &'_0 T}]
 where
     TraitClause0: (T: core::marker::Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}

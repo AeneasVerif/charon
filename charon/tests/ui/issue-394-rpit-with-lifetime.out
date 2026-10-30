@@ -84,8 +84,8 @@ struct {closure}<'a, '_1> {}
 // Full name: test_crate::sparse_transitions::{impl FnMut<()> for {closure}<'a, '_1>}::call_mut
 extern "rust-call" fn call_mut<'a, '_1, '_2>(_1: &'_2 mut {closure}<'a, '_1>, tupled_args: ()) -> Option<u8>[{built_in impl Sized for u8}]
 where
-    RegionOutlives0: 'a: '_2,
-    RegionOutlives1: '_1: '_2,
+    Outlives0: ('a: '_2),
+    Outlives1: ('_1: '_2),
 {
     let _0: Option<u8>[{built_in impl Sized for u8}]; // return
     let _1: &'4 mut {closure}<'a, '_1>; // arg #1

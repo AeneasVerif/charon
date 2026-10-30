@@ -166,8 +166,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
     TraitClause2: (A: Destruct),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 = <opaque>
 
 // Full name: alloc::vec::Vec
@@ -187,8 +187,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
     TraitClause2: (A: Destruct),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 {
     let _0: &'1 mut T; // return
     let self_1: &'3 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
@@ -277,8 +277,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
     TraitClause2: (A: Destruct),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 {
     let _0: (); // return
     let self: &'1 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1

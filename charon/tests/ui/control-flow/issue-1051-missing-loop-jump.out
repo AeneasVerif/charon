@@ -188,7 +188,7 @@ where
     TraitClause0: (A: Sized),
     TraitClause1: (A: Step),
     TraitClause2: (A: Destruct),
-    TypeOutlives0: A: '_0,
+    Outlives0: (A: '_0),
 = <opaque>
 
 // Full name: core::iter::range::{impl Iterator for Range<A>[TraitClause0]}

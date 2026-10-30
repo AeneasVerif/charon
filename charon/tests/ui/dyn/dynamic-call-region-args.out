@@ -28,7 +28,7 @@ pub trait Processor<'x, Self>
 // Full name: test_crate::call
 pub fn call<'a, 'x, '_2>(processor: &'_2 (dyn Processor<'x> + '_2), input: &'a u32) -> &'a u32
 where
-    RegionOutlives0: 'x: '_2,
+    Outlives0: ('x: '_2),
 {
     let _0: &'1 u32; // return
     let processor: &'7 (dyn Processor<'8> + '9); // arg #1

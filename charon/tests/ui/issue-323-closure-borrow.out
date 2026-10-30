@@ -47,7 +47,7 @@ fn new<'_0>(rng: &'_0 mut Rng)
 // Full name: test_crate::new::{impl FnMut<()> for {closure}<'_0>}::call_mut
 extern "rust-call" fn call_mut<'_0, '_1>(_1: &'_1 mut {closure}<'_0>, tupled_args: ())
 where
-    RegionOutlives0: '_0: '_1,
+    Outlives0: ('_0: '_1),
 {
     let _0: (); // return
     let _1: &'5 mut {closure}<'_0>; // arg #1

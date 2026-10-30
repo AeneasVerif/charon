@@ -19,7 +19,7 @@ trait Trait<'a, Self>
 #[charon::opaque]
 fn method<'a, 'b>(_1: &'b &'a ()) -> &'b ()
 where
-    RegionOutlives0: 'a: 'b,
+    Outlives0: ('a: 'b),
 = <opaque>
 
 // Full name: test_crate::{impl Trait<'a> for &'a ()}
@@ -36,7 +36,7 @@ opaque type Foo<'a>
 #[charon::opaque]
 fn test_crate::{Foo<'_0>}::bar<'_0, '_1>(_1: &'_1 Foo<'_0>) -> &'_1 ()
 where
-    RegionOutlives0: '_0: '_1,
+    Outlives0: ('_0: '_1),
 = <opaque>
 
 // Full name: test_crate::foo

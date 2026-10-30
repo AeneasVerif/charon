@@ -115,7 +115,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (F: FnMut<(&'a T,)>),
     TraitClause3: (F: Destruct),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
     TypeConstraint0: TraitClause2::ImpliedClause1::Output = Ordering,
 {
     let _0: Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]; // return
@@ -681,7 +681,7 @@ struct {closure}<'_0> {}
 // Full name: test_crate::main::{impl FnMut<(&'_0 u32,)> for {closure}<'_0>}::call_mut
 extern "rust-call" fn call_mut<'_0, '_1>(_1: &'_1 mut {closure}<'_0>, tupled_args: (&'_0 u32,)) -> Ordering
 where
-    RegionOutlives0: '_0: '_1,
+    Outlives0: ('_0: '_1),
 {
     let _0: Ordering; // return
     let _1: &'6 mut {closure}<'_0>; // arg #1

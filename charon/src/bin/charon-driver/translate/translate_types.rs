@@ -295,8 +295,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         let region = region.move_under_binder();
                         ctx.innermost_binder_mut()
                             .params
-                            .types_outlive
-                            .push(RegionBinder::empty(OutlivesPred(ty.clone(), region)));
+                            .outlives
+                            .push(RegionBinder::empty(OutlivesPred(
+                                Region::Lub(ty.clone()),
+                                region,
+                            )));
                         Ok(ty)
                     })?;
 
@@ -544,14 +547,17 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
 
             fn visit_region(&mut self, source: &Region, target: &Region) -> ControlFlow<()> {
+                if let (Region::Lub(source), Region::Lub(target)) = (source, target) {
+                    return self.visit(source, target);
+                }
                 if let Region::Var(DeBruijnVar::Free(id)) = *source
                     && !matches!(target, Region::Erased | Region::Body(_))
                 {
-                    let Some(target) = target.move_from_under_binders(self.depth) else {
+                    let Some(target) = target.clone().move_from_under_binders(self.depth) else {
                         return ControlFlow::Break(());
                     };
                     let slot = &mut self.args[id];
-                    if slot.is_none_or(|previous| previous == target) {
+                    if slot.as_ref().is_none_or(|previous| *previous == target) {
                         *slot = Some(target);
                     } else {
                         return ControlFlow::Break(());

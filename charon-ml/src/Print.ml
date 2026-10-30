@@ -180,8 +180,7 @@ let dyn_trait_clause_to_string env constraints clause =
   PrintFmt.pp_to_string (fun fmt ->
       PrintFmt.pp_dyn_trait_clause env constraints clause fmt)
 
-let dyn_types_outlive_to_string env rb =
-  PrintFmt.dyn_types_outlive_to_string env rb
+let dyn_outlives_to_string env rb = PrintFmt.dyn_outlives_to_string env rb
 
 let dyn_predicate_to_string env pred =
   PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_dyn_predicate env fmt pred)

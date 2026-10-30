@@ -166,8 +166,8 @@ where
 fn bar<'b, T>()
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'b,
-    TypeOutlives1: for<'a> &'b T: 'a,
+    Outlives0: (T: 'b),
+    Outlives1: (for<'a> &'b T: 'a),
 {
     let _0: (); // return
 

@@ -74,7 +74,7 @@ struct (_,)<A> {
 // Full name: test_crate::f
 pub fn f<'a, '_1>(_1: &'_1 (dyn Fn<(&'a (),), ImpliedClause1::ImpliedClause1::Output = ()> + '_1))
 where
-    RegionOutlives0: 'a: '_1,
+    Outlives0: ('a: '_1),
 {
     let _0: (); // return
     let _1: &'19 (dyn Fn<(&'20 (),), ImpliedClause1::ImpliedClause1::Output = ()> + '21); // arg #1

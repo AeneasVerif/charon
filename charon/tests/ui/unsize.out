@@ -35,7 +35,7 @@ where
 pub fn as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}::clone
@@ -105,8 +105,8 @@ unsafe fn impl_Destruct_for_Box::drop_glue<'_0, T, A>(_1: &'_0 mut Box<T>[TraitC
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 = <opaque>
 
 #[track_caller]
@@ -128,8 +128,8 @@ unsafe fn impl_Destruct_for_Rc::drop_glue<'_0, T, A>(_1: &'_0 mut Rc<T>[TraitCla
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 = <opaque>
 
 pub fn alloc::rc::{Rc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<T>(_1: T) -> Rc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
@@ -173,8 +173,8 @@ unsafe fn impl_Destruct_for_Arc::drop_glue<'_0, T, A>(_1: &'_0 mut Arc<T>[TraitC
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 = <opaque>
 
 pub fn alloc::sync::{Arc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<T>(_1: T) -> Arc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
@@ -226,7 +226,7 @@ where
 unsafe fn impl_Destruct_for_MyPtr::drop_glue<'_0, T>(_1: &'_0 mut MyPtr<T>[TraitClause0])
 where
     TraitClause0: (T: MetaSized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let _0: (); // return
     let _1: &'1 mut MyPtr<T>[TraitClause0]; // arg #1

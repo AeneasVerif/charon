@@ -39,15 +39,16 @@ pub struct RegionArgs {
 /// A quantified trait predicate, e.g. `for<'a> Type<'a>: Trait<'a, Args>`.
 pub type PolyTraitDeclRef = RegionBinder<TraitDeclRef>;
 
-/// .0 outlives .1
+/// The predicate that the left region outlives the right region, i.e. `'l: 'r`. The left one is
+/// longer, and also contains fewer loans.
+///
+/// This can also represent `T: 'r`, by using `Region::Lub` for the left region. The right region
+/// may not be `Region::Lub`.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
-pub struct OutlivesPred<T, U>(pub T, pub U);
+pub struct OutlivesPred(pub Region, pub Region);
 
-pub type RegionOutlives = OutlivesPred<Region, Region>;
-pub type TypeOutlives = OutlivesPred<Ty, Region>;
-pub type PolyRegionOutlives = RegionBinder<RegionOutlives>;
-pub type PolyTypeOutlives = RegionBinder<TypeOutlives>;
+pub type PolyOutlivesPred = RegionBinder<OutlivesPred>;
 
 /// A constraint over a trait associated type.
 ///
@@ -78,9 +79,7 @@ pub struct GenericParams {
     // TODO: rename to match [GenericArgs]?
     pub trait_clauses: IndexVec<TraitClauseId, TraitParam>,
     /// The first region in the pair outlives the second region
-    pub regions_outlive: Vec<PolyRegionOutlives>,
-    /// The type outlives the region
-    pub types_outlive: Vec<PolyTypeOutlives>,
+    pub outlives: Vec<PolyOutlivesPred>,
     /// Constraints over trait associated types
     pub trait_type_constraints: IndexVec<TraitTypeConstraintId, RegionBinder<TraitTypeConstraint>>,
 }
@@ -129,9 +128,7 @@ pub struct RegionBinder<T> {
     #[serde_state(stateless)]
     pub regions: IndexVec<RegionId, RegionParam>,
     /// Outlives relations involving the bound regions.
-    pub regions_outlive: Vec<PolyRegionOutlives>,
-    /// Outlives relations involving the bound regions.
-    pub types_outlive: Vec<PolyTypeOutlives>,
+    pub outlives: Vec<PolyOutlivesPred>,
     /// Named this way to highlight accesses to the inner value that might be handling parameters
     /// incorrectly. Prefer using helper methods.
     #[cfg_attr(feature = "charon_on_charon", charon::rename("binder_value"))]
@@ -274,8 +271,7 @@ impl GenericParams {
     /// equality constraints).
     pub fn has_predicates(&self) -> bool {
         !self.trait_clauses.is_empty()
-            || !self.types_outlive.is_empty()
-            || !self.regions_outlive.is_empty()
+            || !self.outlives.is_empty()
             || !self.trait_type_constraints.is_empty()
     }
 
@@ -312,16 +308,14 @@ impl GenericParams {
             types,
             const_generics,
             trait_clauses,
-            regions_outlive,
-            types_outlive,
+            outlives,
             trait_type_constraints,
         } = self;
         regions.len()
             + types.len()
             + const_generics.len()
             + trait_clauses.len()
-            + regions_outlive.len()
-            + types_outlive.len()
+            + outlives.len()
             + trait_type_constraints.len()
     }
 
@@ -363,16 +357,14 @@ impl GenericParams {
             types: _,
             const_generics: _,
             trait_clauses,
-            regions_outlive,
-            types_outlive,
+            outlives,
             trait_type_constraints,
         } = other;
         self.trait_clauses
             .extend(trait_clauses.into_iter().update(|clause| {
                 clause.clause_id += num_clauses;
             }));
-        self.regions_outlive.extend(regions_outlive);
-        self.types_outlive.extend(types_outlive);
+        self.outlives.extend(outlives);
         self.trait_type_constraints.extend(trait_type_constraints);
     }
 
@@ -577,8 +569,7 @@ impl<T: AstVisitable> Binder<Binder<T>> {
             types,
             const_generics,
             trait_clauses,
-            regions_outlive,
-            types_outlive,
+            outlives,
             trait_type_constraints,
         } = &inner_params;
         outer_params.regions.clone_extend_from_other(regions);
@@ -589,10 +580,7 @@ impl<T: AstVisitable> Binder<Binder<T>> {
         outer_params
             .trait_clauses
             .clone_extend_from_other(trait_clauses);
-        outer_params
-            .regions_outlive
-            .extend_from_slice(regions_outlive);
-        outer_params.types_outlive.extend_from_slice(types_outlive);
+        outer_params.outlives.extend_from_slice(outlives);
         outer_params
             .trait_type_constraints
             .clone_extend_from_other(trait_type_constraints);
@@ -613,8 +601,7 @@ impl<T> RegionBinder<T> {
     {
         RegionBinder {
             regions: Default::default(),
-            regions_outlive: Default::default(),
-            types_outlive: Default::default(),
+            outlives: Default::default(),
             skip_binder: x.move_under_binder(),
         }
     }
@@ -623,8 +610,7 @@ impl<T> RegionBinder<T> {
     pub fn to_params(&self) -> GenericParams {
         GenericParams {
             regions: self.regions.clone(),
-            regions_outlive: self.regions_outlive.clone(),
-            types_outlive: self.types_outlive.clone(),
+            outlives: self.outlives.clone(),
             ..GenericParams::default()
         }
     }
@@ -632,8 +618,7 @@ impl<T> RegionBinder<T> {
     pub fn map<U>(self, f: impl FnOnce(T) -> U) -> RegionBinder<U> {
         RegionBinder {
             regions: self.regions,
-            regions_outlive: self.regions_outlive,
-            types_outlive: self.types_outlive,
+            outlives: self.outlives,
             skip_binder: f(self.skip_binder),
         }
     }
@@ -641,8 +626,7 @@ impl<T> RegionBinder<T> {
     pub fn map_ref<U>(&self, f: impl FnOnce(&T) -> U) -> RegionBinder<U> {
         RegionBinder {
             regions: self.regions.clone(),
-            regions_outlive: self.regions_outlive.clone(),
-            types_outlive: self.types_outlive.clone(),
+            outlives: self.outlives.clone(),
             skip_binder: f(&self.skip_binder),
         }
     }
@@ -650,8 +634,7 @@ impl<T> RegionBinder<T> {
     pub fn map_ref_opt<U>(&self, f: impl FnOnce(&T) -> Option<U>) -> Option<RegionBinder<U>> {
         Some(RegionBinder {
             regions: self.regions.clone(),
-            regions_outlive: self.regions_outlive.clone(),
-            types_outlive: self.types_outlive.clone(),
+            outlives: self.outlives.clone(),
             skip_binder: f(&self.skip_binder)?,
         })
     }
@@ -668,10 +651,7 @@ impl<T> RegionBinder<T> {
 
     /// Like `apply`, but also keep the predicates: they mention the bound regions and therefore
     /// need to be substituted before use too.
-    pub fn apply_keep_params(
-        self,
-        args: RegionArgs,
-    ) -> (T, Vec<PolyRegionOutlives>, Vec<PolyTypeOutlives>)
+    pub fn apply_keep_params(self, args: RegionArgs) -> (T, Vec<PolyOutlivesPred>)
     where
         T: TyVisitable,
     {
@@ -679,8 +659,7 @@ impl<T> RegionBinder<T> {
         let args = GenericArgs::new_lifetimes(args.regions);
         (
             self.skip_binder.substitute_inner_binder(&args),
-            self.regions_outlive.substitute_inner_binder(&args),
-            self.types_outlive.substitute_inner_binder(&args),
+            self.outlives.substitute_inner_binder(&args),
         )
     }
 

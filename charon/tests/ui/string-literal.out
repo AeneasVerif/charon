@@ -18,7 +18,7 @@ pub trait Sized<Self>
 pub fn as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 // Full name: alloc::string::String
@@ -36,7 +36,7 @@ pub fn to_string<'_0, T>(_1: &'_0 T) -> String
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (T: Display),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 struct str {

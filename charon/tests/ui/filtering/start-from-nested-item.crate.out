@@ -52,7 +52,7 @@ trait Foo<Self>
 fn test_crate::Foo::f<'_0, Self>(self: &'_0 Self)
 where
     TraitClause0: (Self: Foo),
-    TypeOutlives0: Self: '_0,
+    Outlives0: (Self: '_0),
 {
     let _0: (); // return
     let self: &'1 Self; // arg #1

@@ -746,8 +746,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // Convert to a region-only binder.
         Ok(RegionBinder {
             regions: binder.params.regions,
-            regions_outlive: binder.params.regions_outlive,
-            types_outlive: binder.params.types_outlive,
+            outlives: binder.params.outlives,
             skip_binder: binder.skip_binder,
         })
     }

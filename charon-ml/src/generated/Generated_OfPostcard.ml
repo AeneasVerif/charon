@@ -827,16 +827,9 @@ and generic_params_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
        index_vec_of_postcard trait_clause_id_of_postcard trait_param_of_postcard
          ctx st
      in
-     let* regions_outlive =
+     let* outlives =
        list_of_postcard
-         (region_binder_of_postcard
-            (outlives_pred_of_postcard region_of_postcard region_of_postcard))
-         ctx st
-     in
-     let* types_outlive =
-       list_of_postcard
-         (region_binder_of_postcard
-            (outlives_pred_of_postcard ty_of_postcard region_of_postcard))
+         (region_binder_of_postcard outlives_pred_of_postcard)
          ctx st
      in
      let* trait_type_constraints =
@@ -850,8 +843,7 @@ and generic_params_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           types;
           const_generics;
           trait_clauses;
-          regions_outlive;
-          types_outlive;
+          outlives;
           trait_type_constraints;
         }
          : generic_params))
@@ -1046,17 +1038,11 @@ and operand_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (Constant _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
-and outlives_pred_of_postcard :
-    'a0 'a1.
-    (of_postcard_ctx -> postcard_state -> ('a0, string) result) ->
-    (of_postcard_ctx -> postcard_state -> ('a1, string) result) ->
-    of_postcard_ctx ->
-    postcard_state ->
-    (('a0, 'a1) outlives_pred, string) result =
- fun arg0_of_postcard arg1_of_postcard ctx st ->
+and outlives_pred_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (outlives_pred, string) result =
   combine_error_msgs st __FUNCTION__
-    (let* _0 = arg0_of_postcard ctx st in
-     let* _1 = arg1_of_postcard ctx st in
+    (let* _0 = region_of_postcard ctx st in
+     let* _1 = region_of_postcard ctx st in
      Ok (_0, _1))
 
 and overflow_mode_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -1185,11 +1171,14 @@ and region_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 0 ->
          let* _0 = de_bruijn_var_of_postcard region_id_of_postcard ctx st in
          Ok (RVar _0)
-     | 1 -> Ok RStatic
-     | 2 ->
+     | 1 ->
+         let* _0 = ty_of_postcard ctx st in
+         Ok (RLub _0)
+     | 2 -> Ok RStatic
+     | 3 ->
          let* _0 = region_id_of_postcard ctx st in
          Ok (RBody _0)
-     | 3 -> Ok RErased
+     | 4 -> Ok RErased
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and region_args_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -1212,22 +1201,13 @@ and region_binder_of_postcard :
        index_vec_of_postcard region_id_of_postcard region_param_of_postcard ctx
          st
      in
-     let* regions_outlive =
+     let* outlives =
        list_of_postcard
-         (region_binder_of_postcard
-            (outlives_pred_of_postcard region_of_postcard region_of_postcard))
-         ctx st
-     in
-     let* types_outlive =
-       list_of_postcard
-         (region_binder_of_postcard
-            (outlives_pred_of_postcard ty_of_postcard region_of_postcard))
+         (region_binder_of_postcard outlives_pred_of_postcard)
          ctx st
      in
      let* binder_value = arg0_of_postcard ctx st in
-     Ok
-       ({ binder_regions; regions_outlive; types_outlive; binder_value }
-         : _ region_binder))
+     Ok ({ binder_regions; outlives; binder_value } : _ region_binder))
 
 and region_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (region_id, string) result =

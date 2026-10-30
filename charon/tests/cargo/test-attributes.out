@@ -209,8 +209,8 @@ pub enum Cow<'a, B>
 where
     TraitClause0: (B: MetaSized),
     TraitClause1: (B: ToOwned),
-    TypeOutlives0: B: 'a,
-    TypeOutlives1: B: 'a,
+    Outlives0: (B: 'a),
+    Outlives1: (B: 'a),
 {
   Borrowed { _0: &'a B },
   Owned { _0: TraitClause1::Owned },
@@ -324,7 +324,7 @@ pub struct TestDescAndFn {
 // Full name: test::test_main_env_args
 pub fn test_main_env_args<'_0, '_1>(_1: &'_0 [&'_1 TestDescAndFn])
 where
-    RegionOutlives0: '_1: '_0,
+    Outlives0: ('_1: '_0),
 = <opaque>
 
 // Full name: test::assert_test_result

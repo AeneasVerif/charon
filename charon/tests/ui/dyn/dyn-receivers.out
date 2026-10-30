@@ -77,7 +77,7 @@ where
 unsafe fn impl_Destruct_for_Pin::drop_glue<'_0, Ptr>(_1: &'_0 mut Pin<Ptr>[TraitClause0])
 where
     TraitClause0: (Ptr: Sized),
-    TypeOutlives0: Ptr: '_0,
+    Outlives0: (Ptr: '_0),
 {
     let _0: (); // return
     let _1: &'1 mut Pin<Ptr>[TraitClause0]; // arg #1
@@ -136,8 +136,8 @@ where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 = <opaque>
 
 // Full name: alloc::boxed::Box::{impl Destruct for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_glue
@@ -146,8 +146,8 @@ where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 {
     let _0: (); // return
     let _1: &'1 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
@@ -206,8 +206,8 @@ where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 = <opaque>
 
 // Full name: alloc::rc::Rc::{impl Destruct for Rc<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_glue
@@ -216,8 +216,8 @@ where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 {
     let _0: (); // return
     let _1: &'1 mut Rc<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
@@ -262,8 +262,8 @@ where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 = <opaque>
 
 // Full name: alloc::sync::Arc::{impl Destruct for Arc<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_glue
@@ -272,8 +272,8 @@ where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 {
     let _0: (); // return
     let _1: &'1 mut Arc<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1

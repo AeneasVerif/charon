@@ -31,7 +31,7 @@ struct (_,)<A> {
 // Full name: (_,)::{impl Destruct for (A,)}::drop_glue
 unsafe fn drop_glue<'_0, A>(_1: &'_0 mut (A,))
 where
-    TypeOutlives0: A: '_0,
+    Outlives0: (A: '_0),
 {
     let _0: (); // return
     let _1: &'1 mut (A,); // arg #1
@@ -65,7 +65,7 @@ where
 extern "rust-call" fn call<'_0, Self>(_1: &'_0 {closure}<Self>[TraitClause0], tupled_args: (TraitClause0::Item,))
 where
     TraitClause0: (Self: Thing),
-    TypeOutlives0: Self: '_0,
+    Outlives0: (Self: '_0),
 {
     let _0: (); // return
     let _1: &'1 {closure}<Self>[TraitClause0]; // arg #1

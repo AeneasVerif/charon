@@ -86,7 +86,7 @@ fn apply_to<'_0, T0>(f: &'_0 T0) -> u8
 where
     TraitClause0: (T0: Sized),
     TraitClause1: (T0: Fn<(u8, u8)>),
-    TypeOutlives0: T0: '_0,
+    Outlives0: (T0: '_0),
     TypeConstraint0: TraitClause1::ImpliedClause1::ImpliedClause1::Output = u8,
 {
     let _0: u8; // return
@@ -113,7 +113,7 @@ fn apply_to_mut<'_0, T0>(f: &'_0 mut T0) -> u8
 where
     TraitClause0: (T0: Sized),
     TraitClause1: (T0: FnMut<(u8, u8)>),
-    TypeOutlives0: T0: '_0,
+    Outlives0: (T0: '_0),
     TypeConstraint0: TraitClause1::ImpliedClause1::Output = u8,
 {
     let _0: u8; // return
@@ -179,8 +179,8 @@ struct {closure}<'_0, '_1> {
 // Full name: test_crate::main::{impl Fn<(u8, u8)> for {closure}<'_0, '_1>}::call
 extern "rust-call" fn call<'_0, '_1, '_2>(_1: &'_2 {closure}<'_0, '_1>, tupled_args: (u8, u8)) -> u8
 where
-    RegionOutlives0: '_0: '_2,
-    RegionOutlives1: '_1: '_2,
+    Outlives0: ('_0: '_2),
+    Outlives1: ('_1: '_2),
 {
     let _0: u8; // return
     let _1: &'23 {closure}<'_0, '_1>; // arg #1
@@ -240,8 +240,8 @@ where
 // Full name: test_crate::main::{impl FnMut<(u8, u8)> for {closure}<'_0, '_1>}::call_mut
 extern "rust-call" fn call_mut<'_0, '_1, '_2>(state: &'_2 mut {closure}<'_0, '_1>, args: (u8, u8)) -> u8
 where
-    RegionOutlives0: '_0: '_2,
-    RegionOutlives1: '_1: '_2,
+    Outlives0: ('_0: '_2),
+    Outlives1: ('_1: '_2),
 {
     let _0: u8; // return
     let state: &'_2 mut {closure}<'_0, '_1>; // arg #1

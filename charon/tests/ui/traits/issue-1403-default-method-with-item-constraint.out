@@ -36,7 +36,7 @@ pub fn method<'_0, Self, Clause1_Assoc>(self: &'_0 Self)
 where
     TraitClause0: (Self: Trait<B>),
     TraitClause1: (Self: Trait<Clause1_Assoc>),
-    TypeOutlives0: Self: '_0,
+    Outlives0: (Self: '_0),
 {
     let _0: (); // return
     let self: &'1 Self; // arg #1

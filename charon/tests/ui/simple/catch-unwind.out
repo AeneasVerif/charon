@@ -15,7 +15,7 @@ pub opaque type TypeId
 #[diagnostic_item("Any")]
 pub trait Any<Self>
 where
-    TypeOutlives0: Self: 'static,
+    Outlives0: (Self: 'static),
 {
     proof ImpliedClause0: (Self: MetaSized)
     fn type_id<'_0_1>;
@@ -80,8 +80,8 @@ unsafe fn drop_glue<'_0, T, E>(_1: &'_0 mut Result<T, E>[TraitClause0, TraitClau
 where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: E: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (E: '_0),
 = <opaque>
 
 // Full name: alloc::boxed::Box

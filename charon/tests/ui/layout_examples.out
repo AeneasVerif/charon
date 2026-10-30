@@ -155,7 +155,7 @@ pub struct Error {}
 #[diagnostic_item("Formatter")]
 pub opaque type Formatter<mut 'a>
 where
-    RegionOutlives0: 'a: 'a,
+    Outlives0: ('a: 'a),
 // layout:
 //     size: 24usize,
 //     align: 8usize,
@@ -856,7 +856,7 @@ struct Uninhabited {
 enum DiscriminantInNicheOfField<'a, T>
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
   None,
   Some { _0: (usize, &'a T) },
@@ -1036,7 +1036,7 @@ enum WithNicheAndUninhabited {
 enum GenericUnsized<'a, T>
 where
     TraitClause0: (T: MetaSized),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
   First,
   Second { _0: &'a T },
@@ -1063,7 +1063,7 @@ where
 enum GenericButFixedSize<'a, T>
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
   First,
   Second { _0: &'a T },

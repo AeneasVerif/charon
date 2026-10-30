@@ -44,13 +44,13 @@ pub fn core::cell::{Cell<T>[TraitClause0::ImpliedClause0]}::get<'_0, T>(_1: &'_0
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 pub fn core::cell::{Cell<T>[TraitClause0]}::get_mut<'_0, T>(_1: &'_0 mut Cell<T>[TraitClause0]) -> &'_0 mut T
 where
     TraitClause0: (T: MetaSized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u32}::clone
@@ -85,8 +85,8 @@ pub trait Destruct<Self>
 pub fn core::mem::swap<'_0, '_1, T>(_1: &'_0 mut T, _2: &'_1 mut T)
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: T: '_1,
+    Outlives0: (T: '_0),
+    Outlives1: (T: '_1),
 = <opaque>
 
 // Full name: core::num::niche_types::NonZeroU32Inner
@@ -179,8 +179,8 @@ unsafe fn drop_glue<'_0, T, A>(_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 = <opaque>
 
 #[diagnostic_item("vec_new")]
@@ -195,14 +195,14 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
     TraitClause2: (A: Destruct),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 = <opaque>
 
 pub fn test_crate::swap<'a, T>(x: &'a mut T, y: &'a mut T)
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
     let _0: (); // return
     let x: &'1 mut T; // arg #1

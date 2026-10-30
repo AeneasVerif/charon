@@ -60,7 +60,7 @@ struct (_,)<A> {
 pub struct S<'a, K>
 where
     TraitClause0: (K: Sized),
-    TypeOutlives0: K: 'a,
+    Outlives0: (K: 'a),
 {
   x: &'a K,
 }

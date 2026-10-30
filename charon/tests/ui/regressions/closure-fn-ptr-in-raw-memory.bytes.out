@@ -49,8 +49,8 @@ extern "rust-call" fn {impl Fn<(A,)> for fn(A) -> B}::call<'_0, A, B>(fn_ptr: &'
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
-    TypeOutlives0: A: '_0,
-    TypeOutlives1: B: '_0,
+    Outlives0: (A: '_0),
+    Outlives1: (B: '_0),
 {
     let _0: B; // return
     let fn_ptr: &'_0 fn(A) -> B; // arg #1

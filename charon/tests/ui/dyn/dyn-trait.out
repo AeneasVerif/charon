@@ -108,7 +108,7 @@ pub fn to_string<'_0, T>(_1: &'_0 T) -> String
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (T: Display),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 struct () {}
@@ -123,7 +123,7 @@ fn construct<T>(_1: T) -> Box<(dyn Display + 'static)>[{built_in impl MetaSized 
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Display),
-    TypeOutlives0: T: 'static,
+    Outlives0: (T: 'static),
 = <opaque>
 
 // Full name: test_crate::destruct
@@ -153,8 +153,8 @@ fn combine()
 fn foo<'_0, '_1, T>(_1: &'_0 (dyn for<'a where T: 'a> Fn<(&'a T,), ImpliedClause1::ImpliedClause1::Output = T> + 'static), _2: &'_1 (dyn PartialEq<Option<T>[TraitClause0]> + '_1))
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: T: '_1,
+    Outlives0: (T: '_0),
+    Outlives1: (T: '_1),
 {
     let _0: (); // return
     let _1: &'10 (dyn for<'a> Fn<(&'a T,), ImpliedClause1::ImpliedClause1::Output = T> + '11); // arg #1

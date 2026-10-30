@@ -26,7 +26,7 @@ struct A<mut 'a, 'b> {
 fn choose<'a, T>(b: bool, x: &'a mut T, y: &'a mut T) -> &'a mut T
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
     let _0: &'_ mut T; // return
     let b: bool; // arg #1

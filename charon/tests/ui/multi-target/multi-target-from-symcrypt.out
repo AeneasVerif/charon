@@ -103,9 +103,9 @@ where
     TraitClause0: (T: core::marker::Sized),
     TraitClause1: (I: core::marker::Sized),
     TraitClause2: ([T]: core::ops::index::Index<I>),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: TraitClause2::Output: '_0,
-    TypeOutlives2: I: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (TraitClause2::Output: '_0),
+    Outlives2: (I: '_0),
 = <opaque>
 
 #[lang_item(IndexMut)]
@@ -124,21 +124,21 @@ where
     TraitClause0: (T: core::marker::Sized),
     TraitClause1: (I: core::marker::Sized),
     TraitClause2: ([T]: core::ops::index::IndexMut<I>),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: TraitClause2::ImpliedClause1::Output: '_0,
-    TypeOutlives2: I: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (TraitClause2::ImpliedClause1::Output: '_0),
+    Outlives2: (I: '_0),
 = <opaque>
 
 pub fn core::array::{[T; N]}::as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
 where
     TraitClause0: (T: core::marker::Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 pub fn core::array::{[T; N]}::as_mut_slice<'_0, T, const N : usize>(_1: &'_0 mut [T; N]) -> &'_0 mut [T]
 where
     TraitClause0: (T: core::marker::Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 pub fn core::clone::impls::{impl core::clone::Clone for usize}::clone<'_0>(_1: &'_0 usize) -> usize
@@ -286,7 +286,7 @@ where
     TraitClause0: (A: core::marker::Sized),
     TraitClause1: (A: core::iter::range::Step),
     TraitClause2: (A: core::marker::Destruct),
-    TypeOutlives0: A: '_0,
+    Outlives0: (A: '_0),
 = <opaque>
 
 // Full name: core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[TraitClause0]}
@@ -335,9 +335,9 @@ where
     TraitClause0: (T: core::marker::Sized),
     TraitClause1: (I: core::marker::Sized),
     TraitClause2: (I: core::slice::index::SliceIndex<[T]>),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: TraitClause2::Output: '_0,
-    TypeOutlives2: I: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (TraitClause2::Output: '_0),
+    Outlives2: (I: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl core::ops::index::Index<I> for [T]}
@@ -360,9 +360,9 @@ where
     TraitClause0: (T: core::marker::Sized),
     TraitClause1: (I: core::marker::Sized),
     TraitClause2: (I: core::slice::index::SliceIndex<[T]>),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: TraitClause2::Output: '_0,
-    TypeOutlives2: I: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (TraitClause2::Output: '_0),
+    Outlives2: (I: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl core::ops::index::IndexMut<I> for [T]}
@@ -382,13 +382,13 @@ where
 pub fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
 where
     TraitClause0: (T: core::marker::Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 pub fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_0, T>(_1: usize, _2: &'_0 [T]) -> &'_0 T
 where
     TraitClause0: (T: core::marker::Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 #[track_caller]
@@ -406,13 +406,13 @@ where
 pub fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::get_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> core::option::Option<&'_0 mut T>[{built_in impl core::marker::Sized for &'_0 mut T}]
 where
     TraitClause0: (T: core::marker::Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 pub fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::get<'_0, T>(_1: usize, _2: &'_0 [T]) -> core::option::Option<&'_0 T>[{built_in impl core::marker::Sized for &'_0 T}]
 where
     TraitClause0: (T: core::marker::Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}
@@ -436,13 +436,13 @@ where
 pub fn core::slice::{[T]}::as_ptr<'_0, T>(_1: &'_0 [T]) -> *const T
 where
     TraitClause0: (T: core::marker::Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 pub fn core::slice::{[T]}::as_mut_ptr<'_0, T>(_1: &'_0 mut [T]) -> *mut T
 where
     TraitClause0: (T: core::marker::Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 trait test_crate::NttIntrinsicsInterface<Self>

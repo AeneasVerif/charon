@@ -39,14 +39,14 @@ impl "impl_Clone_for_u8" Clone for u8 {
 #[diagnostic_item("noop_method_clone")]
 pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
 where
-    TypeOutlives0: T: '_0,
-    RegionOutlives0: '_0: '_1,
+    Outlives0: ('_0: '_1),
+    Outlives1: (T: '_0),
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for &'_0 T}
 impl<'_0, T> Clone for &'_0 T
 where
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
     fn clone<'_0_1> = {impl Clone for &'_0 T}::clone<'_0, '_0_1, T>
@@ -73,7 +73,7 @@ impl "impl_Copy_for_u8" Copy for u8 {
 // Full name: core::marker::{impl Copy for &'_0 T}
 impl<'_0, T> Copy for &'_0 T
 where
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     proof ImpliedClause0: (&'_0 T: MetaSized) = {built_in impl MetaSized for &'_0 T}
     proof ImpliedClause1: (&'_0 T: Clone) = {impl Clone for &'_0 T}<'_, T>
@@ -105,8 +105,8 @@ pub fn captured_ref<'a>(x: &'a u8) -> test_crate::captured_ref::{closure}<'a, 'a
 // Full name: test_crate::captured_ref::{impl Fn<()> for test_crate::captured_ref::{closure}<'_0, '_1>}::call
 extern "rust-call" fn {impl Fn<()> for test_crate::captured_ref::{closure}<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::captured_ref::{closure}<'_0, '_1>, tupled_args: ()) -> &'_0 u8
 where
-    RegionOutlives0: '_0: '_2,
-    RegionOutlives1: '_1: '_2,
+    Outlives0: ('_0: '_2),
+    Outlives1: ('_1: '_2),
 {
     let _0: &'1 u8; // return
     let _1: &'10 test_crate::captured_ref::{closure}<'_0, '_1>; // arg #1
@@ -147,8 +147,8 @@ pub fn captured_closure<'a>(x: &'a u8) -> test_crate::captured_closure::{closure
 // Full name: test_crate::captured_closure::{impl Fn<()> for test_crate::captured_closure::{closure}<'_0, '_1>}::call
 extern "rust-call" fn {impl Fn<()> for test_crate::captured_closure::{closure}<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::captured_closure::{closure}<'_0, '_1>, tupled_args: ()) -> &'_0 u8
 where
-    RegionOutlives0: '_0: '_2,
-    RegionOutlives1: '_1: '_2,
+    Outlives0: ('_0: '_2),
+    Outlives1: ('_1: '_2),
 {
     let _0: &'1 u8; // return
     let _1: &'10 test_crate::captured_closure::{closure}<'_0, '_1>; // arg #1
@@ -164,9 +164,9 @@ where
 // Full name: test_crate::captured_closure::{impl Fn<()> for test_crate::captured_closure::{closure#1}<'_0, '_1, '_2>}::call
 extern "rust-call" fn {impl Fn<()> for test_crate::captured_closure::{closure#1}<'_0, '_1, '_2>}::call<'_0, '_1, '_2, '_3>(_1: &'_3 test_crate::captured_closure::{closure#1}<'_0, '_1, '_2>, tupled_args: ()) -> &'_0 u8
 where
-    RegionOutlives0: '_0: '_3,
-    RegionOutlives1: '_1: '_3,
-    RegionOutlives2: '_2: '_3,
+    Outlives0: ('_0: '_3),
+    Outlives1: ('_1: '_3),
+    Outlives2: ('_2: '_3),
 {
     let _0: &'1 u8; // return
     let _1: &'18 test_crate::captured_closure::{closure#1}<'_0, '_1, '_2>; // arg #1
@@ -222,7 +222,7 @@ extern "rust-call" fn {impl Fn<()> for test_crate::generic_closure::{closure}<T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let _0: T; // return
     let _1: &'1 test_crate::generic_closure::{closure}<T>[TraitClause0, TraitClause1]; // arg #1
@@ -265,8 +265,8 @@ pub fn captured_generic_closure<'a>(x: &'a u8) -> test_crate::captured_generic_c
 // Full name: test_crate::captured_generic_closure::{impl Fn<()> for test_crate::captured_generic_closure::{closure}<'_0, '_1>}::call
 extern "rust-call" fn {impl Fn<()> for test_crate::captured_generic_closure::{closure}<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::captured_generic_closure::{closure}<'_0, '_1>, tupled_args: ()) -> &'_0 u8
 where
-    RegionOutlives0: '_0: '_2,
-    RegionOutlives1: '_1: '_2,
+    Outlives0: ('_0: '_2),
+    Outlives1: ('_1: '_2),
 {
     let _0: &'1 u8; // return
     let _1: &'41 test_crate::captured_generic_closure::{closure}<'_0, '_1>; // arg #1
@@ -363,8 +363,8 @@ pub fn captured_fn_ptr_with_free_region<'a>(f: fn<'b>(&'b u8) -> &'a u8) -> test
 // Full name: test_crate::captured_fn_ptr_with_free_region::{impl Fn<(&'_2 u8,)> for test_crate::captured_fn_ptr_with_free_region::{closure}<'_0, '_1>}::call
 extern "rust-call" fn {impl Fn<(&'_2 u8,)> for test_crate::captured_fn_ptr_with_free_region::{closure}<'_0, '_1>}::call<'_0, '_1, '_2, '_3>(_1: &'_3 test_crate::captured_fn_ptr_with_free_region::{closure}<'_0, '_1>, tupled_args: (&'_2 u8,)) -> &'_0 u8
 where
-    RegionOutlives0: '_0: '_3,
-    RegionOutlives1: '_1: '_3,
+    Outlives0: ('_0: '_3),
+    Outlives1: ('_1: '_3),
 {
     let _0: &'1 u8; // return
     let _1: &'12 test_crate::captured_fn_ptr_with_free_region::{closure}<'_0, '_1>; // arg #1
@@ -416,8 +416,8 @@ struct test_crate::generic_assoc_closure::{closure}<'_0, '_1, T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithItem),
-    TypeOutlives0: TraitClause1::Item: '_1,
-    TypeOutlives1: T: '_1,
+    Outlives0: (TraitClause1::Item: '_1),
+    Outlives1: (T: '_1),
 {
   _0: &'_1 TraitClause1::Item,
 }
@@ -427,8 +427,8 @@ fn generic_assoc_closure<'a, T>(x: &'a TraitClause1::Item) -> test_crate::generi
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithItem),
-    TypeOutlives0: TraitClause1::Item: 'a,
-    TypeOutlives1: T: 'a,
+    Outlives0: (TraitClause1::Item: 'a),
+    Outlives1: (T: 'a),
 {
     let _0: test_crate::generic_assoc_closure::{closure}<'8, '9, T>[TraitClause0, TraitClause1]; // return
     let x: &'10 TraitClause1::Item; // arg #1
@@ -444,13 +444,13 @@ extern "rust-call" fn {impl Fn<()> for test_crate::generic_assoc_closure::{closu
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithItem),
-    TypeOutlives0: TraitClause1::Item: '_1,
-    TypeOutlives1: T: '_1,
-    TypeOutlives2: T: '_2,
-    TypeOutlives3: TraitClause1::Item: '_0,
-    TypeOutlives4: T: '_0,
-    RegionOutlives0: '_0: '_2,
-    RegionOutlives1: '_1: '_2,
+    Outlives0: (TraitClause1::Item: '_1),
+    Outlives1: (T: '_1),
+    Outlives2: ('_0: '_2),
+    Outlives3: ('_1: '_2),
+    Outlives4: (T: '_2),
+    Outlives5: (TraitClause1::Item: '_0),
+    Outlives6: (T: '_0),
 {
     let _0: &'1 TraitClause1::Item; // return
     let _1: &'10 test_crate::generic_assoc_closure::{closure}<'_0, '_1, T>[TraitClause0, TraitClause1]; // arg #1
@@ -465,8 +465,8 @@ where
 
 struct test_crate::captured_assoc_closure::{closure}<'_0, '_1>
 where
-    TypeOutlives0: u8: '_1,
-    TypeOutlives1: (): '_1,
+    Outlives0: (u8: '_1),
+    Outlives1: ((): '_1),
 {
   _0: test_crate::generic_assoc_closure::{closure}<'_1, '_1, ()>[{built_in impl Sized for ()}, impl_WithItem_for_unit],
 }
@@ -474,8 +474,8 @@ where
 // Full name: test_crate::captured_assoc_closure
 pub fn captured_assoc_closure<'a>(x: &'a u8) -> test_crate::captured_assoc_closure::{closure}<'a, 'a>
 where
-    TypeOutlives0: u8: 'a,
-    TypeOutlives1: (): 'a,
+    Outlives0: (u8: 'a),
+    Outlives1: ((): 'a),
 {
     let _0: test_crate::captured_assoc_closure::{closure}<'15, '16>; // return
     let x: &'17 u8; // arg #1
@@ -500,10 +500,10 @@ where
 // Full name: test_crate::captured_assoc_closure::{impl Fn<()> for test_crate::captured_assoc_closure::{closure}<'_0, '_1>}::call
 extern "rust-call" fn {impl Fn<()> for test_crate::captured_assoc_closure::{closure}<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::captured_assoc_closure::{closure}<'_0, '_1>, tupled_args: ()) -> &'_0 u8
 where
-    TypeOutlives0: u8: '_1,
-    TypeOutlives1: (): '_1,
-    RegionOutlives0: '_0: '_2,
-    RegionOutlives1: '_1: '_2,
+    Outlives0: (u8: '_1),
+    Outlives1: ((): '_1),
+    Outlives2: ('_0: '_2),
+    Outlives3: ('_1: '_2),
 {
     let _0: &'1 u8; // return
     let _1: &'17 test_crate::captured_assoc_closure::{closure}<'_0, '_1>; // arg #1
@@ -569,11 +569,11 @@ extern "rust-call" fn {impl Fn<()> for test_crate::lifetime_assoc_closure::{clos
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithLifetimeItem<'a>),
-    TypeOutlives0: T: '_4,
-    RegionOutlives0: 'a: '_4,
-    RegionOutlives1: '_1: '_4,
-    RegionOutlives2: '_2: '_4,
-    RegionOutlives3: '_3: '_4,
+    Outlives0: ('a: '_4),
+    Outlives1: ('_1: '_4),
+    Outlives2: ('_2: '_4),
+    Outlives3: ('_3: '_4),
+    Outlives4: (T: '_4),
 {
     let _0: TraitClause1::Item; // return
     let _1: &'15 test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>[TraitClause0, TraitClause1]; // arg #1
@@ -627,12 +627,12 @@ extern "rust-call" fn {impl Fn<()> for test_crate::captured_lifetime_assoc_closu
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithLifetimeItem<'a>),
-    TypeOutlives0: T: '_5,
-    RegionOutlives0: 'a: '_5,
-    RegionOutlives1: '_1: '_5,
-    RegionOutlives2: '_2: '_5,
-    RegionOutlives3: '_3: '_5,
-    RegionOutlives4: '_4: '_5,
+    Outlives0: ('a: '_5),
+    Outlives1: ('_1: '_5),
+    Outlives2: ('_2: '_5),
+    Outlives3: ('_3: '_5),
+    Outlives4: ('_4: '_5),
+    Outlives5: (T: '_5),
     TypeConstraint0: TraitClause1::Item = &'a (),
 {
     let _0: &'1 (); // return

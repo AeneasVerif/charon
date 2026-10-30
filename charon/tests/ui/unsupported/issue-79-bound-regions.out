@@ -18,7 +18,7 @@ pub trait Sized<Self>
 pub fn as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 // Full name: core::option::Option
@@ -37,16 +37,16 @@ where
 pub opaque type Iter<'a, T>
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
-    TypeOutlives1: T: 'a,
+    Outlives0: (T: 'a),
+    Outlives1: (T: 'a),
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::next
 pub fn next<'a, '_1, T>(_1: &'_1 mut Iter<'a, T>[TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'a T}]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
-    TypeOutlives1: T: '_1,
-    RegionOutlives0: 'a: '_1,
+    Outlives0: (T: 'a),
+    Outlives1: ('a: '_1),
+    Outlives2: (T: '_1),
 = <opaque>
 
 // Full name: core::slice::{[T]}::iter
@@ -54,7 +54,7 @@ where
 pub fn iter<'_0, T>(_1: &'_0 [T]) -> Iter<'_0, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 struct () {}

@@ -44,13 +44,13 @@ trait Foo<Self, T>
     proof ImpliedClause1: (T: Sized)
     type iter_ty<'a, '_1_1>
     where
-        TypeOutlives0: T: 'a,
-        RegionOutlives0: 'a: '_1_1,
-        RegionOutlives1: '_1_1: 'a,
+        Outlives0: (T: 'a),
+        Outlives1: ('a: '_1_1),
+        Outlives2: ('_1_1: 'a),
         TypeConstraint0: Self::iter_ty<'_, '_>::ImpliedClause1::Item = &'_1_1 T,
         proof ImpliedClause0: (Self::iter_ty<'a, '_1_1>: Sized),
         proof ImpliedClause1: (Self::iter_ty<'a, '_1_1>: Iterator);
-    fn iter<'a, TypeOutlives0: T: 'a>;
+    fn iter<'a, Outlives0: (T: 'a)>;
     non-dyn-compatible
 }
 

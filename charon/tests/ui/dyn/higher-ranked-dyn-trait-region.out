@@ -36,7 +36,7 @@ pub trait Trait<'a, Self>
 pub fn use_type<T>()
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'static,
+    Outlives0: (T: 'static),
 {
     let _0: (); // return
 

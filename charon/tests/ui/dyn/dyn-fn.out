@@ -168,7 +168,7 @@ extern "rust-call" fn call<'_0, '_1>(_1: &'_1 {closure}, tupled_args: (&'_0 mut 
 // Full name: test_crate::gives_fn::{impl Fn<(&'_0 mut u32,)> for {closure}}::{vtable_method}
 extern "rust-call" fn {vtable_method}<'_0, '_1>(_1: &'_1 (dyn Fn<(&'_0 mut u32,), ImpliedClause1::ImpliedClause1::Output = bool>), _2: (&'_0 mut u32,)) -> bool
 where
-    RegionOutlives0: '_0: '_1,
+    Outlives0: ('_0: '_1),
 {
     let _0: bool; // return
     let _1: &'_1 (dyn Fn<(&'_0 mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '0); // arg #1
@@ -192,7 +192,7 @@ where
 // Full name: test_crate::gives_fn::{impl Fn<(&'_0 mut u32,)> for {closure}}::{vtable_drop_shim}
 unsafe fn {vtable_drop_shim}<'_0, '_1>(dyn_self: &'_1 mut (dyn Fn<(&'_0 mut u32,), ImpliedClause1::ImpliedClause1::Output = bool>))
 where
-    RegionOutlives0: '_0: '_1,
+    Outlives0: ('_0: '_1),
 {
     let ret: (); // return
     let dyn_self: &'_1 mut (dyn Fn<(&'_0 mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '0); // arg #1

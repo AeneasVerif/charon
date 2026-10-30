@@ -78,7 +78,7 @@ trait DoubleEndedIterator<Self>
 struct Iter<'a, T>
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
   _0: &'a T,
 }
@@ -90,9 +90,9 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (P: FnMut<(TraitClause3::ImpliedClause1::Item,)>),
     TraitClause3: (Iter<'a, T>[TraitClause0]: DoubleEndedIterator),
-    TypeOutlives0: T: 'a,
-    TypeOutlives1: T: '_1,
-    RegionOutlives0: 'a: '_1,
+    Outlives0: (T: 'a),
+    Outlives1: ('a: '_1),
+    Outlives2: (T: '_1),
     TypeConstraint0: TraitClause2::ImpliedClause1::Output = (),
 {
     let _0: (); // return
@@ -109,7 +109,7 @@ where
 impl<'a, T> "impl_Iterator_for_Iter" Iterator for Iter<'a, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
     proof ImpliedClause0: (Iter<'a, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Iter<'a, T>[TraitClause0]}
     proof ImpliedClause1: (&'a T: Sized) = {built_in impl Sized for &'a T}
@@ -122,7 +122,7 @@ where
 impl<'a, T> "impl_DoubleEndedIterator_for_Iter" DoubleEndedIterator for Iter<'a, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
     proof ImpliedClause0: (Iter<'a, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Iter<'a, T>[TraitClause0]}
     proof ImpliedClause1: (Iter<'a, T>[TraitClause0]: Iterator) = impl_Iterator_for_Iter<'_, T>[TraitClause0]

@@ -1,20 +1,15 @@
 //! Make explicit the outlives predicates implied by item signatures.
 use derive_generic_visitor::*;
 use itertools::Itertools;
-use std::hash::Hash;
 use std::mem;
 
 use crate::ast::*;
 use crate::transform::{TransformCtx, ctx::TransformPass};
 use crate::utils::CycleDetector;
 
-type BoundRegionOutlives = RegionBinder<RegionOutlives>;
-type BoundTypeOutlives = RegionBinder<TypeOutlives>;
-
 #[derive(Default)]
 struct OutlivesAtBinder {
-    regions_outlive: SeqHashSet<BoundRegionOutlives>,
-    types_outlive: SeqHashSet<BoundTypeOutlives>,
+    outlives: SeqHashSet<PolyOutlivesPred>,
     /// The lifetime of the innermost reference we're inside of. When going under a binder, we keep
     /// it there.
     ///
@@ -25,23 +20,13 @@ struct OutlivesAtBinder {
 }
 
 impl OutlivesAtBinder {
-    fn finish(
-        self,
-        regions_outlive: &mut Vec<BoundRegionOutlives>,
-        types_outlive: &mut Vec<BoundTypeOutlives>,
-    ) {
+    fn finish(self, outlives: &mut Vec<PolyOutlivesPred>) {
         debug_assert!(self.shorter_region.is_none());
-        let mut regions: SeqHashSet<_> = mem::take(regions_outlive).into_iter().collect();
-        regions.extend(self.regions_outlive);
-        regions_outlive.extend(regions.into_iter().filter(|pred| {
-            let OutlivesPred(longer, shorter) = pred.skip_binder;
-            longer != shorter && longer != Region::Erased && shorter != Region::Erased
-        }));
-        let mut types: SeqHashSet<_> = mem::take(types_outlive).into_iter().collect();
-        types.extend(self.types_outlive);
-        types_outlive.extend(types.into_iter().filter(|pred| {
-            let OutlivesPred(_, shorter) = pred.skip_binder;
-            shorter != Region::Erased
+        let mut predicates: SeqHashSet<_> = mem::take(outlives).into_iter().collect();
+        predicates.extend(self.outlives);
+        outlives.extend(predicates.into_iter().filter(|pred| {
+            let OutlivesPred(longer, shorter) = &pred.skip_binder;
+            longer != shorter && !longer.is_erased() && !shorter.is_erased()
         }));
     }
 }
@@ -69,41 +54,19 @@ impl<'a> OutlivesGatherer<'a> {
     fn finish(mut self) {
         let outlives = self.binders.pop().unwrap();
         debug_assert!(self.binders.is_empty());
-        outlives.finish(
-            &mut self.item_params.regions_outlive,
-            &mut self.item_params.types_outlive,
-        );
+        outlives.finish(&mut self.item_params.outlives);
     }
 
-    fn add_region_outlives(&mut self, pred: BoundRegionOutlives) {
+    fn add_outlives(&mut self, pred: PolyOutlivesPred) {
         let (pred, level) = self.binders.place_at_outermost(&pred);
-        level.regions_outlive.insert(pred);
+        level.outlives.insert(pred);
     }
-    fn add_type_outlives(&mut self, pred: BoundTypeOutlives) {
-        let (pred, level) = self.binders.place_at_outermost(&pred);
-        level.types_outlive.insert(pred);
-    }
-
-    fn add_outliving_region(&mut self, longer: Region) {
-        self.add_outliving(&longer, |outlives| &mut outlives.regions_outlive);
-    }
-    fn add_outliving_type(&mut self, longer: &Ty) {
-        self.add_outliving(longer, |outlives| &mut outlives.types_outlive);
-    }
-    fn add_outliving<T>(
-        &mut self,
-        longer: &T,
-        mut get: impl FnMut(
-            &mut OutlivesAtBinder,
-        ) -> &mut SeqHashSet<RegionBinder<OutlivesPred<T, Region>>>,
-    ) where
-        T: TyVisitable + Clone + Eq + Hash,
-    {
+    fn add_outliving_region(&mut self, longer: &Region) {
         // Find the innermost region that affects `longer`: it needs to be bound at a level where
         // `longer` can be moved to.
         let Some((bound_depth, pred)) =
             self.binders.iter_enumerated().find_map(|(depth, binder)| {
-                let shorter = binder.shorter_region?;
+                let shorter = binder.shorter_region.clone()?;
                 let longer = longer.clone().move_from_under_binders(depth)?;
                 let pred = RegionBinder::empty(OutlivesPred(longer, shorter));
                 Some((depth, pred))
@@ -113,7 +76,7 @@ impl<'a> OutlivesGatherer<'a> {
         };
         // Place the predicate at the outermost level.
         let (pred, level) = self.binders[bound_depth..].place_at_outermost(&pred);
-        get(level).insert(pred);
+        level.outlives.insert(pred);
     }
 
     fn with_shorter_region(
@@ -121,7 +84,7 @@ impl<'a> OutlivesGatherer<'a> {
         region: Region,
         f: impl FnOnce(&mut Self) -> ControlFlow<Infallible>,
     ) -> ControlFlow<Infallible> {
-        self.add_outliving_region(region);
+        self.add_outliving_region(&region);
         let previous = self.binders.innermost_mut().shorter_region.replace(region);
         let result = f(self);
         self.binders.innermost_mut().shorter_region = previous;
@@ -136,10 +99,10 @@ impl VisitAstMut for OutlivesGatherer<'_> {
     ) -> ControlFlow<Self::Break> {
         self.binders.push(OutlivesAtBinder::default());
         let result = self.visit_inner(binder);
-        self.binders.pop().unwrap().finish(
-            &mut binder.params.regions_outlive,
-            &mut binder.params.types_outlive,
-        );
+        self.binders
+            .pop()
+            .unwrap()
+            .finish(&mut binder.params.outlives);
         result
     }
 
@@ -149,55 +112,42 @@ impl VisitAstMut for OutlivesGatherer<'_> {
     ) -> ControlFlow<Self::Break> {
         self.binders.push(OutlivesAtBinder::default());
         let result = self.visit_inner(binder);
-        self.binders
-            .pop()
-            .unwrap()
-            .finish(&mut binder.regions_outlive, &mut binder.types_outlive);
+        self.binders.pop().unwrap().finish(&mut binder.outlives);
         result
     }
 
     fn visit_ty(&mut self, ty: &mut Ty) -> ControlFlow<Self::Break> {
         match ty.kind() {
             TyKind::TypeVar(_) | TyKind::TraitType(..) => {
-                self.add_outliving_type(ty);
+                self.add_outliving_region(&Region::Lub(ty.clone()));
             }
             TyKind::Adt(type_ref) => {
                 if let Some(decl) = self.type_decls.get(type_ref.id) {
-                    let regions_outlive = decl
+                    let outlives = decl
                         .generics
-                        .regions_outlive
+                        .outlives
                         .iter()
                         .cloned()
                         .map(|pred| pred.substitute(&type_ref.generics))
                         .collect_vec();
-                    let types_outlive = decl
-                        .generics
-                        .types_outlive
-                        .iter()
-                        .cloned()
-                        .map(|pred| pred.substitute(&type_ref.generics))
-                        .collect_vec();
-                    for pred in regions_outlive {
-                        self.add_region_outlives(pred);
-                    }
-                    for pred in types_outlive {
-                        self.add_type_outlives(pred);
+                    for pred in outlives {
+                        self.add_outlives(pred);
                     }
                 }
             }
             _ => {}
         }
         match ty.kind() {
-            TyKind::Ref(region @ (Region::Static | Region::Var(_)), _, _) => {
-                self.with_shorter_region(*region, |this| this.visit_inner(ty))
+            TyKind::Ref(region @ (Region::Static | Region::Var(_) | Region::Lub(_)), _, _) => {
+                self.with_shorter_region(region.clone(), |this| this.visit_inner(ty))
             }
             _ => self.visit_inner(ty),
         }
     }
 
     fn enter_region(&mut self, region: &mut Region) {
-        if let longer @ Region::Var(_) = *region {
-            self.add_outliving_region(longer);
+        if matches!(region, Region::Var(_) | Region::Lub(_)) {
+            self.add_outliving_region(region);
         }
     }
 }

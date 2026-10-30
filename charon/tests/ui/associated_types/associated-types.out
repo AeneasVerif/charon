@@ -38,14 +38,14 @@ pub trait Clone<Self>
 #[diagnostic_item("noop_method_clone")]
 pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
 where
-    TypeOutlives0: T: '_0,
-    RegionOutlives0: '_0: '_1,
+    Outlives0: ('_0: '_1),
+    Outlives1: (T: '_0),
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for &'_0 T}
 impl<'_0, T> Clone for &'_0 T
 where
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
     fn clone<'_0_1> = {impl Clone for &'_0 T}::clone<'_0, '_0_1, T>
@@ -65,7 +65,7 @@ pub trait Copy<Self>
 // Full name: core::marker::{impl Copy for &'_0 T}
 impl<'_0, T> Copy for &'_0 T
 where
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     proof ImpliedClause0: (&'_0 T: MetaSized) = {built_in impl MetaSized for &'_0 T}
     proof ImpliedClause1: (&'_0 T: Clone) = {impl Clone for &'_0 T}<'_, T>
@@ -99,7 +99,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
     TraitClause2: (T: Destruct),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 // Full name: core::option::{impl Clone for Option<T>[TraitClause0]}
@@ -146,7 +146,7 @@ where
 
 trait test_crate::Foo<'a, Self, Self_Item>
 where
-    TypeOutlives0: Self_Item: 'a,
+    Outlives0: (Self_Item: 'a),
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Copy)
@@ -175,7 +175,7 @@ where
 fn {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}::use_item_required<'a, T>(x: Option<&'a T>[{built_in impl Sized for &'a T}]) -> Option<&'a T>[{built_in impl Sized for &'a T}]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
     let _0: Option<&'8 T>[{built_in impl Sized for &'8 T}]; // return
     let x: Option<&'12 T>[{built_in impl Sized for &'12 T}]; // arg #1
@@ -191,7 +191,7 @@ fn {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Option<&'a T>[{built_in impl Sized for &'a T}]: test_crate::Foo<'a, Clause1_Item>),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
     let _0: Option<&'a T>[{built_in impl Sized for &'a T}]; // return
     let x: Option<&'a T>[{built_in impl Sized for &'a T}]; // arg #1
@@ -206,7 +206,7 @@ where
 impl<'a, T> test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
     proof ImpliedClause0: (&'a T: MetaSized) = {built_in impl MetaSized for &'a T}
     proof ImpliedClause1: (&'a T: Copy) = {impl Copy for &'_0 T}<'_, T>
@@ -222,7 +222,7 @@ fn impl_Foo_for_Option::use_item_required<'a, T>(x: T) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
     let _0: T; // return
     let x: T; // arg #1
@@ -239,7 +239,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
     TraitClause2: (T: test_crate::Foo<'a, Clause2_Item>),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
     let _0: T; // return
     let x: T; // arg #1
@@ -255,7 +255,7 @@ impl<'a, T> "impl_Foo_for_Option" test_crate::Foo<'a, T> for Option<T>[TraitClau
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
     proof ImpliedClause0: (Option<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Option<T>[TraitClause0]}
     proof ImpliedClause1: (Option<T>[TraitClause0]: Copy) = impl_Copy_for_Option<T>[TraitClause0, TraitClause1]
@@ -412,7 +412,7 @@ trait test_crate::loopy_with_generics::Bar<'a, Self, T, U, Self_BarTy>
 impl<'a, T> "impl_Bar_u8_for_unit" test_crate::loopy_with_generics::Bar<'a, u8, T, &'a T> for ()
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: (u8: Sized) = {built_in impl Sized for u8}
@@ -450,8 +450,8 @@ enum Cow<'a, B, Clause1_Owned>
 where
     TraitClause0: (B: MetaSized),
     TraitClause1: (B: ToOwned<Clause1_Owned>),
-    TypeOutlives0: B: 'a,
-    TypeOutlives1: B: 'a,
+    Outlives0: (B: 'a),
+    Outlives1: (B: 'a),
 {
   Borrowed { _0: &'a B },
   Owned { _0: Clause1_Owned },
@@ -459,8 +459,8 @@ where
 
 trait test_crate::params::Foo<'a, Self, T, Self_X, Self_Item>
 where
-    TypeOutlives0: T: 'a,
-    TypeOutlives1: Self_X: 'a,
+    Outlives0: (T: 'a),
+    Outlives1: (Self_X: 'a),
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: Sized)
@@ -473,7 +473,7 @@ where
 impl<'a, T> "impl_Foo_Option_for_unit" test_crate::params::Foo<'a, Option<T>[TraitClause0], &'a (), &'a (Option<T>[TraitClause0], &'a ())> for ()
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: (Option<T>[TraitClause0]: Sized) = {built_in impl Sized for Option<T>[TraitClause0]}

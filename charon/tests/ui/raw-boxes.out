@@ -728,7 +728,7 @@ where
 pub fn allocate_zeroed<'_0, Self>(self: &'_0 Self, layout: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 where
     TraitClause0: (Self: Allocator),
-    TypeOutlives0: Self: '_0,
+    Outlives0: (Self: '_0),
 {
     let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
     let self: &'1 Self; // arg #1
@@ -1072,7 +1072,7 @@ where
 pub unsafe fn grow<'_0, Self>(self: &'_0 Self, ptr: NonNull<u8>, old_layout: Layout, new_layout: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 where
     TraitClause0: (Self: Allocator),
-    TypeOutlives0: Self: '_0,
+    Outlives0: (Self: '_0),
 {
     let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
     let self: &'1 Self; // arg #1
@@ -1244,7 +1244,7 @@ pub const core::alloc::Allocator::grow_zeroed::{promoted_const}: str = "`new_lay
 pub unsafe fn grow_zeroed<'_0, Self>(self: &'_0 Self, ptr: NonNull<u8>, old_layout: Layout, new_layout: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 where
     TraitClause0: (Self: Allocator),
-    TypeOutlives0: Self: '_0,
+    Outlives0: (Self: '_0),
 {
     let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
     let self: &'1 Self; // arg #1
@@ -1416,7 +1416,7 @@ pub const core::alloc::Allocator::shrink::{promoted_const}: str = "`new_layout.s
 pub unsafe fn shrink<'_0, Self>(self: &'_0 Self, ptr: NonNull<u8>, old_layout: Layout, new_layout: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 where
     TraitClause0: (Self: Allocator),
-    TypeOutlives0: Self: '_0,
+    Outlives0: (Self: '_0),
 {
     let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
     let self: &'1 Self; // arg #1
@@ -1619,7 +1619,7 @@ where
 pub fn deref<'_0, T>(self: &'_0 ManuallyDrop<T>[TraitClause0]) -> &'_0 T
 where
     TraitClause0: (T: MetaSized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let _0: &'1 T; // return
     let self: &'3 ManuallyDrop<T>[TraitClause0]; // arg #1
@@ -1637,7 +1637,7 @@ where
 pub fn deref_mut<'_0, T>(self: &'_0 mut ManuallyDrop<T>[TraitClause0]) -> &'_0 mut T
 where
     TraitClause0: (T: MetaSized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let _0: &'1 mut T; // return
     let self: &'3 mut ManuallyDrop<T>[TraitClause0]; // arg #1
@@ -2028,8 +2028,8 @@ where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 {
     let _0: (); // return
     let self: &'1 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
@@ -2117,8 +2117,8 @@ where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 {
     let _0: (); // return
     let _1: &'1 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
@@ -2457,8 +2457,8 @@ where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
-    TypeOutlives0: A: 'a,
-    TypeOutlives1: T: 'a,
+    Outlives0: (A: 'a),
+    Outlives1: (T: 'a),
 {
     let _0: &'1 mut T; // return
     let b: Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1

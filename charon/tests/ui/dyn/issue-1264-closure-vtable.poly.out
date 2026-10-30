@@ -49,7 +49,7 @@ pub trait Drop<Self>
 pub fn core::ops::drop::Drop::drop<'_0, Self>(_1: &'_0 mut Self)
 where
     TraitClause0: (Self: Drop),
-    TypeOutlives0: Self: '_0,
+    Outlives0: (Self: '_0),
 = <opaque>
 
 struct core::ops::function::FnOnce::{vtable}<Args, Ty0> {
@@ -135,8 +135,8 @@ unsafe fn impl_Destruct_for_Box::drop_glue<'_0, T, A>(_1: &'_0 mut Box<T>[TraitC
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 = <opaque>
 
 // Full name: alloc::boxed::{Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new
@@ -203,7 +203,7 @@ impl "impl_Drop_for_Droppable" Drop for Droppable {
 struct test_crate::wrap::{closure}<T>
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'static,
+    Outlives0: (T: 'static),
 {
   _0: T,
 }
@@ -212,8 +212,8 @@ where
 unsafe fn {impl Destruct for test_crate::wrap::{closure}<T>[TraitClause0]}::drop_glue<'_0, T>(_1: &'_0 mut test_crate::wrap::{closure}<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'static,
-    TypeOutlives1: T: '_0,
+    Outlives0: (T: 'static),
+    Outlives1: (T: '_0),
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::wrap::{closure}<T>[TraitClause0]; // arg #1
@@ -231,7 +231,7 @@ where
 extern "rust-call" fn {impl FnOnce<()> for test_crate::wrap::{closure}<T>[TraitClause0]}::call_once<T>(_1: test_crate::wrap::{closure}<T>[TraitClause0], tupled_args: ()) -> T
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'static,
+    Outlives0: (T: 'static),
 {
     let _0: T; // return
     let _1: test_crate::wrap::{closure}<T>[TraitClause0]; // arg #1
@@ -252,7 +252,7 @@ where
 extern "rust-call" fn {impl FnOnce<()> for test_crate::wrap::{closure}<T>[TraitClause0]}::{vtable_method}<T>(_1: *mut (dyn FnOnce<(), Output = T>), _2: ()) -> T
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'static,
+    Outlives0: (T: 'static),
 {
     let _0: T; // return
     let _1: *mut (dyn FnOnce<(), Output = T> + '0); // arg #1
@@ -277,8 +277,8 @@ where
 unsafe fn {impl FnOnce<()> for test_crate::wrap::{closure}<T>[TraitClause0]}::{vtable_drop_shim}<'_0, T>(dyn_self: &'_0 mut (dyn FnOnce<(), Output = T>))
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'static,
-    TypeOutlives1: T: '_0,
+    Outlives0: (T: 'static),
+    Outlives1: (T: '_0),
 {
     let ret: (); // return
     let dyn_self: &'_0 mut (dyn FnOnce<(), Output = T> + '0); // arg #1
@@ -301,14 +301,14 @@ where
 vtable {impl FnOnce<()> for test_crate::wrap::{closure}<T>[TraitClause0]}::{vtable}<T>: core::ops::function::FnOnce::{vtable}<(), T>
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'static,
+    Outlives0: (T: 'static),
  = core::ops::function::FnOnce::{vtable} { size: size_of::<test_crate::wrap::{closure}<T>[TraitClause0]>(), align: align_of::<test_crate::wrap::{closure}<T>[TraitClause0]>(), drop: fnptr({impl FnOnce<()> for test_crate::wrap::{closure}<T>[TraitClause0]}::{vtable_drop_shim}<'_, T>[TraitClause0]), method_call_once: fnptr({impl FnOnce<()> for test_crate::wrap::{closure}<T>[TraitClause0]}::{vtable_method}<T>[TraitClause0]), super_trait_0: &core::marker::MetaSized::{vtable}<test_crate::wrap::{closure}<T>[TraitClause0]> }
 
 // Full name: test_crate::wrap::{impl FnOnce<()> for test_crate::wrap::{closure}<T>[TraitClause0]}
 impl<T> FnOnce<()> for test_crate::wrap::{closure}<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'static,
+    Outlives0: (T: 'static),
 {
     proof ImpliedClause0: (test_crate::wrap::{closure}<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for test_crate::wrap::{closure}<T>[TraitClause0]}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
@@ -323,7 +323,7 @@ where
 fn wrap<T>(x: T) -> Box<(dyn FnOnce<(), Output = T> + 'static)>[{built_in impl MetaSized for (dyn FnOnce<(), Output = T> + 'static)}, {built_in impl Sized for Global}]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'static,
+    Outlives0: (T: 'static),
 {
     let _0: Box<(dyn FnOnce<(), Output = T> + '6)>[{built_in impl MetaSized for (dyn FnOnce<(), Output = T> + '8)}, {built_in impl Sized for Global}]; // return
     let x: T; // arg #1
@@ -461,7 +461,7 @@ extern "rust-call" fn {impl FnOnce<(&'_0 u32,)> for test_crate::main::{closure#3
 // Full name: test_crate::main::{impl FnOnce<(&'_0 u32,)> for test_crate::main::{closure#3}}::{vtable_drop_shim}
 unsafe fn {impl FnOnce<(&'_0 u32,)> for test_crate::main::{closure#3}}::{vtable_drop_shim}<'_0, '_1>(dyn_self: &'_1 mut (dyn FnOnce<(&'_0 u32,), Output = u32>))
 where
-    RegionOutlives0: '_0: '_1,
+    Outlives0: ('_0: '_1),
 {
     let ret: (); // return
     let dyn_self: &'_1 mut (dyn FnOnce<(&'_0 u32,), Output = u32> + '0); // arg #1
@@ -482,7 +482,7 @@ vtable {impl FnOnce<(&'_0 u32,)> for test_crate::main::{closure#3}}::{vtable}<'_
 // Full name: test_crate::main::{impl FnMut<(&'_0 u32,)> for test_crate::main::{closure#3}}::{vtable_method}
 extern "rust-call" fn {impl FnMut<(&'_0 u32,)> for test_crate::main::{closure#3}}::{vtable_method}<'_0, '_1>(_1: &'_1 mut (dyn FnMut<(&'_0 u32,), ImpliedClause1::Output = u32>), _2: (&'_0 u32,)) -> u32
 where
-    RegionOutlives0: '_0: '_1,
+    Outlives0: ('_0: '_1),
 {
     let _0: u32; // return
     let _1: &'_1 mut (dyn FnMut<(&'_0 u32,), ImpliedClause1::Output = u32> + '0); // arg #1
@@ -506,7 +506,7 @@ where
 // Full name: test_crate::main::{impl FnMut<(&'_0 u32,)> for test_crate::main::{closure#3}}::{vtable_drop_shim}
 unsafe fn {impl FnMut<(&'_0 u32,)> for test_crate::main::{closure#3}}::{vtable_drop_shim}<'_0, '_1>(dyn_self: &'_1 mut (dyn FnMut<(&'_0 u32,), ImpliedClause1::Output = u32>))
 where
-    RegionOutlives0: '_0: '_1,
+    Outlives0: ('_0: '_1),
 {
     let ret: (); // return
     let dyn_self: &'_1 mut (dyn FnMut<(&'_0 u32,), ImpliedClause1::Output = u32> + '0); // arg #1
@@ -527,7 +527,7 @@ vtable {impl FnMut<(&'_0 u32,)> for test_crate::main::{closure#3}}::{vtable}<'_0
 // Full name: test_crate::main::{impl Fn<(&'_0 u32,)> for test_crate::main::{closure#3}}::{vtable_method}
 extern "rust-call" fn {impl Fn<(&'_0 u32,)> for test_crate::main::{closure#3}}::{vtable_method}<'_0, '_1>(_1: &'_1 (dyn Fn<(&'_0 u32,), ImpliedClause1::ImpliedClause1::Output = u32>), _2: (&'_0 u32,)) -> u32
 where
-    RegionOutlives0: '_0: '_1,
+    Outlives0: ('_0: '_1),
 {
     let _0: u32; // return
     let _1: &'_1 (dyn Fn<(&'_0 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '0); // arg #1
@@ -551,7 +551,7 @@ where
 // Full name: test_crate::main::{impl Fn<(&'_0 u32,)> for test_crate::main::{closure#3}}::{vtable_drop_shim}
 unsafe fn {impl Fn<(&'_0 u32,)> for test_crate::main::{closure#3}}::{vtable_drop_shim}<'_0, '_1>(dyn_self: &'_1 mut (dyn Fn<(&'_0 u32,), ImpliedClause1::ImpliedClause1::Output = u32>))
 where
-    RegionOutlives0: '_0: '_1,
+    Outlives0: ('_0: '_1),
 {
     let ret: (); // return
     let dyn_self: &'_1 mut (dyn Fn<(&'_0 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '0); // arg #1
@@ -700,7 +700,7 @@ struct test_crate::main::{closure#1}<'_0> {
 // Full name: test_crate::main::{impl Fn<(u32,)> for test_crate::main::{closure#1}<'_0>}::call
 extern "rust-call" fn {impl Fn<(u32,)> for test_crate::main::{closure#1}<'_0>}::call<'_0, '_1>(_1: &'_1 test_crate::main::{closure#1}<'_0>, tupled_args: (u32,)) -> u32
 where
-    RegionOutlives0: '_0: '_1,
+    Outlives0: ('_0: '_1),
 {
     let _0: u32; // return
     let _1: &'5 test_crate::main::{closure#1}<'_0>; // arg #1
@@ -732,7 +732,7 @@ where
 // Full name: test_crate::main::{impl FnMut<(u32,)> for test_crate::main::{closure#1}<'_0>}::call_mut
 extern "rust-call" fn {impl FnMut<(u32,)> for test_crate::main::{closure#1}<'_0>}::call_mut<'_0, '_1>(state: &'_1 mut test_crate::main::{closure#1}<'_0>, args: (u32,)) -> u32
 where
-    RegionOutlives0: '_0: '_1,
+    Outlives0: ('_0: '_1),
 {
     let _0: u32; // return
     let state: &'_1 mut test_crate::main::{closure#1}<'_0>; // arg #1

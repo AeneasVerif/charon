@@ -918,8 +918,7 @@ and generic_params_of_json (ctx : of_json_ctx) (js : json) :
           ("types", types);
           ("const_generics", const_generics);
           ("trait_clauses", trait_clauses);
-          ("regions_outlive", regions_outlive);
-          ("types_outlive", types_outlive);
+          ("outlives", outlives);
           ("trait_type_constraints", trait_type_constraints);
         ] ->
         let* regions =
@@ -936,17 +935,10 @@ and generic_params_of_json (ctx : of_json_ctx) (js : json) :
           index_vec_of_json trait_clause_id_of_json trait_param_of_json ctx
             trait_clauses
         in
-        let* regions_outlive =
+        let* outlives =
           list_of_json
-            (region_binder_of_json
-               (outlives_pred_of_json region_of_json region_of_json))
-            ctx regions_outlive
-        in
-        let* types_outlive =
-          list_of_json
-            (region_binder_of_json
-               (outlives_pred_of_json ty_of_json region_of_json))
-            ctx types_outlive
+            (region_binder_of_json outlives_pred_of_json)
+            ctx outlives
         in
         let* trait_type_constraints =
           index_vec_of_json trait_type_constraint_id_of_json
@@ -959,8 +951,7 @@ and generic_params_of_json (ctx : of_json_ctx) (js : json) :
              types;
              const_generics;
              trait_clauses;
-             regions_outlive;
-             types_outlive;
+             outlives;
              trait_type_constraints;
            }
             : generic_params)
@@ -1173,19 +1164,13 @@ and operand_of_json (ctx : of_json_ctx) (js : json) : (operand, string) result =
         Ok (Constant _0)
     | _ -> Error "")
 
-and outlives_pred_of_json :
-    'a0 'a1.
-    (of_json_ctx -> json -> ('a0, string) result) ->
-    (of_json_ctx -> json -> ('a1, string) result) ->
-    of_json_ctx ->
-    json ->
-    (('a0, 'a1) outlives_pred, string) result =
- fun arg0_of_json arg1_of_json ctx js ->
+and outlives_pred_of_json (ctx : of_json_ctx) (js : json) :
+    (outlives_pred, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `List [ _0; _1 ] ->
-        let* _0 = arg0_of_json ctx _0 in
-        let* _1 = arg1_of_json ctx _1 in
+        let* _0 = region_of_json ctx _0 in
+        let* _1 = region_of_json ctx _1 in
         Ok (_0, _1)
     | _ -> Error "")
 
@@ -1324,6 +1309,9 @@ and region_of_json (ctx : of_json_ctx) (js : json) : (region, string) result =
     | `Assoc [ ("Var", _0) ] ->
         let* _0 = de_bruijn_var_of_json region_id_of_json ctx _0 in
         Ok (RVar _0)
+    | `Assoc [ ("Lub", _0) ] ->
+        let* _0 = ty_of_json ctx _0 in
+        Ok (RLub _0)
     | `String "Static" -> Ok RStatic
     | `Assoc [ ("Body", _0) ] ->
         let* _0 = region_id_of_json ctx _0 in
@@ -1354,29 +1342,19 @@ and region_binder_of_json :
     | `Assoc
         [
           ("regions", regions);
-          ("regions_outlive", regions_outlive);
-          ("types_outlive", types_outlive);
+          ("outlives", outlives);
           ("skip_binder", skip_binder);
         ] ->
         let* binder_regions =
           index_vec_of_json region_id_of_json region_param_of_json ctx regions
         in
-        let* regions_outlive =
+        let* outlives =
           list_of_json
-            (region_binder_of_json
-               (outlives_pred_of_json region_of_json region_of_json))
-            ctx regions_outlive
-        in
-        let* types_outlive =
-          list_of_json
-            (region_binder_of_json
-               (outlives_pred_of_json ty_of_json region_of_json))
-            ctx types_outlive
+            (region_binder_of_json outlives_pred_of_json)
+            ctx outlives
         in
         let* binder_value = arg0_of_json ctx skip_binder in
-        Ok
-          ({ binder_regions; regions_outlive; types_outlive; binder_value }
-            : _ region_binder)
+        Ok ({ binder_regions; outlives; binder_value } : _ region_binder)
     | _ -> Error "")
 
 and region_id_of_json (ctx : of_json_ctx) (js : json) :

@@ -499,10 +499,8 @@ and generic_params = {
   types : type_param list;
   const_generics : const_generic_param list;
   trait_clauses : trait_param list;
-  regions_outlive : (region, region) outlives_pred region_binder list;
+  outlives : outlives_pred region_binder list;
       (** The first region in the pair outlives the second region *)
-  types_outlive : (ty, region) outlives_pred region_binder list;
-      (** The type outlives the region *)
   trait_type_constraints : trait_type_constraint region_binder list;
       (** Constraints over trait associated types *)
 }
@@ -554,8 +552,12 @@ and lifetime_mutability =
   | LtUnknown
       (** A lifetime for which we couldn't/didn't compute mutability. *)
 
-(** .0 outlives .1 *)
-and ('a0, 'a1) outlives_pred = 'a0 * 'a1
+(** The predicate that the left region outlives the right region, i.e. ['l: 'r].
+    The left one is longer, and also contains fewer loans.
+
+    This can also represent [T: 'r], by using [Region::Lub] for the left region.
+    The right region may not be [Region::Lub]. *)
+and outlives_pred = region * region
 
 (** A proof of a higher-ranked trait predicate. *)
 and poly_trait_ref = trait_ref region_binder
@@ -575,6 +577,9 @@ and ref_kind = RMut | RShared
 and region =
   | RVar of region_id de_bruijn_var
       (** Region variable. See [DeBruijnVar] for details. *)
+  | RLub of ty
+      (** The least upper bound, in the outlives ordering, of the regions in
+          this type. ['lub<T>: 'a] is equivalent to [T: 'a]. *)
   | RStatic  (** Static region *)
   | RBody of region_id
       (** Body-local region, considered existentially-bound at the level of a
@@ -588,9 +593,7 @@ and region_args = { regions : region list }
     this causes name clash issues in the derived ocaml visitors. *)
 and 'a0 region_binder = {
   binder_regions : region_param list;
-  regions_outlive : (region, region) outlives_pred region_binder list;
-      (** Outlives relations involving the bound regions. *)
-  types_outlive : (ty, region) outlives_pred region_binder list;
+  outlives : outlives_pred region_binder list;
       (** Outlives relations involving the bound regions. *)
   binder_value : 'a0;
       (** Named this way to highlight accesses to the inner value that might be

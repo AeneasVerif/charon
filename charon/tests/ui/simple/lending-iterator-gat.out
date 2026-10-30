@@ -75,7 +75,7 @@ where
 unsafe fn impl_Destruct_for_Option::drop_glue<'_0, T>(_1: &'_0 mut Option<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 // Full name: core::panicking::AssertKind
@@ -100,7 +100,7 @@ where
 // Full name: (_,)::{impl Destruct for (A,)}::drop_glue
 unsafe fn impl_Destruct_for_tuple::drop_glue<'_0, A>(_1: &'_0 mut (A,))
 where
-    TypeOutlives0: A: '_0,
+    Outlives0: (A: '_0),
 {
     let _0: (); // return
     let _1: &'1 mut (A,); // arg #1
@@ -120,7 +120,7 @@ pub trait LendingIterator<Self>
     proof ImpliedClause0: (Self: MetaSized)
     type Item<'a>
     where
-        TypeOutlives0: Self: 'a,
+        Outlives0: (Self: 'a),
         proof ImpliedClause0: (Self::Item<'a>: Sized);
     fn next<'a>;
     non-dyn-compatible
@@ -130,9 +130,9 @@ pub trait LendingIterator<Self>
 pub fn next<'a, '_1, T>(self: &'_1 mut Option<&'a T>[{built_in impl Sized for &'a T}]) -> Option<&'_1 T>[{built_in impl Sized for &'_1 T}]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
-    TypeOutlives1: T: '_1,
-    RegionOutlives0: 'a: '_1,
+    Outlives0: ('a: '_1),
+    Outlives1: (T: 'a),
+    Outlives2: (T: '_1),
 {
     let _0: Option<&'8 T>[{built_in impl Sized for &'8 T}]; // return
     let self: &'17 mut Option<&'18 T>[{built_in impl Sized for &'18 T}]; // arg #1
@@ -174,12 +174,12 @@ where
 impl<'a, T> "impl_LendingIterator_for_Option" LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
     proof ImpliedClause0: (Option<&'a T>[{built_in impl Sized for &'a T}]: MetaSized) = {built_in impl MetaSized for Option<&'a T>[{built_in impl Sized for &'a T}]}
     type Item<'a> = &'a T
     where
-        TypeOutlives0: Option<&'a T>[{built_in impl Sized for &'a T}]: 'a,
+        Outlives0: (Option<&'a T>[{built_in impl Sized for &'a T}]: 'a),
         proof ImpliedClause0: (&'a T: Sized) = {built_in impl Sized for &'a T};
     fn next<'_0_1> = next<'a, '_0_1, T>[TraitClause0]
     non-dyn-compatible
@@ -391,7 +391,7 @@ struct {closure}<'_0> {
 // Full name: test_crate::main::{impl FnMut<(&'_1 i32,)> for {closure}<'_0>}::call_mut
 extern "rust-call" fn call_mut<'_0, '_1, '_2>(_1: &'_2 mut {closure}<'_0>, tupled_args: (&'_1 i32,))
 where
-    RegionOutlives0: '_0: '_2,
+    Outlives0: ('_0: '_2),
 {
     let _0: (); // return
     let _1: &'5 mut {closure}<'_0>; // arg #1

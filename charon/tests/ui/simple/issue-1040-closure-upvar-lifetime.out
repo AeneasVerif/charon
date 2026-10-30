@@ -31,8 +31,8 @@ pub fn foo<'_0>(s: &'_0 u8)
 // Full name: test_crate::foo::{impl Fn<()> for {closure}<'_0, '_1>}::call
 extern "rust-call" fn call<'_0, '_1, '_2>(_1: &'_2 {closure}<'_0, '_1>, tupled_args: ()) -> &'_0 u8
 where
-    RegionOutlives0: '_0: '_2,
-    RegionOutlives1: '_1: '_2,
+    Outlives0: ('_0: '_2),
+    Outlives1: ('_1: '_2),
 {
     let _0: &'1 u8; // return
     let _1: &'10 {closure}<'_0, '_1>; // arg #1

@@ -50,7 +50,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (P: HasAssoc<TraitClause0::Item>),
     TraitClause3: (Self: Exact),
-    TypeOutlives0: Self: '_0,
+    Outlives0: (Self: '_0),
     TypeConstraint0: TraitClause2::Assoc = bool,
 {
     let _0: (); // return
@@ -78,7 +78,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (P: HasAssoc<T>),
     TraitClause3: (Empty<T>[TraitClause0]: Exact),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
     TypeConstraint0: TraitClause2::Assoc = bool,
 {
     let _0: (); // return
