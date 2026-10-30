@@ -1350,7 +1350,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     )
                     | mir::CastKind::FnPtrToPtr => CastKind::RawPtr(tgt_ty.clone()),
 
-                    mir::CastKind::PointerExposeProvenance => CastKind::PtrExposeProvenance,
+                    mir::CastKind::PointerExposeProvenance => {
+                        let tgt_ty = *tgt_ty.kind().as_scalar().unwrap().as_integer().unwrap();
+                        CastKind::PtrExposeProvenance(tgt_ty)
+                    }
                     mir::CastKind::PointerWithExposedProvenance => {
                         CastKind::PtrWithExposedProvenance(tgt_ty.clone())
                     }

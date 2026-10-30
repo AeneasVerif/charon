@@ -475,7 +475,9 @@ and cast_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 1 ->
          let* _0 = ty_of_postcard ctx st in
          Ok (CastRawPtr _0)
-     | 2 -> Ok CastPtrExposeProvenance
+     | 2 ->
+         let* _0 = integer_type_of_postcard ctx st in
+         Ok (CastPtrExposeProvenance _0)
      | 3 ->
          let* _0 = ty_of_postcard ctx st in
          Ok (CastPtrWithExposedProvenance _0)

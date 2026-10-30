@@ -361,14 +361,14 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                         destination,
                         Rvalue::UnaryOp(
                             UnOp::Cast(
-                                cast @ (CastKind::PtrExposeProvenance
+                                cast @ (CastKind::PtrExposeProvenance(..)
                                 | CastKind::PtrWithExposedProvenance(..)),
                             ),
                             operand,
                         ),
                     ) => {
                         let intrinsic = match cast {
-                            CastKind::PtrExposeProvenance => {
+                            CastKind::PtrExposeProvenance(..) => {
                                 mini::IntrinsicOp::PointerExposeProvenance
                             }
                             CastKind::PtrWithExposedProvenance(_) => {
@@ -914,7 +914,9 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 }
             }
             // Handled at the statement level.
-            UnOp::Cast(CastKind::PtrExposeProvenance | CastKind::PtrWithExposedProvenance(..)) => {
+            UnOp::Cast(
+                CastKind::PtrExposeProvenance(..) | CastKind::PtrWithExposedProvenance(..),
+            ) => {
                 unreachable!()
             }
             UnOp::Cast(CastKind::FnDefToFnPtr) => {

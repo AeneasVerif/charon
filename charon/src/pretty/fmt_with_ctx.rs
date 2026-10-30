@@ -486,7 +486,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for CastKind {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             CastKind::Scalar(tgt) => write!(f, "cast<{tgt}>"),
-            CastKind::PtrExposeProvenance => write!(f, "cast_expose"),
+            CastKind::PtrExposeProvenance(tgt) => write!(f, "cast_expose<{tgt}>"),
             CastKind::PtrWithExposedProvenance(tgt) => {
                 write!(f, "cast_with_exposed<{}>", tgt.with_ctx(ctx))
             }

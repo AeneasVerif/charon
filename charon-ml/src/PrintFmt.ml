@@ -651,7 +651,8 @@ and pp_cast_kind (env : fmt_env) (fmt : Format.formatter) (cast : cast_kind) :
     unit =
   match cast with
   | CastScalar tgt -> Format.fprintf fmt "cast<%a>" pp_scalar_type tgt
-  | CastPtrExposeProvenance -> Format.pp_print_string fmt "cast_expose"
+  | CastPtrExposeProvenance tgt ->
+      Format.fprintf fmt "cast_expose<%a>" pp_integer_type tgt
   | CastPtrWithExposedProvenance tgt ->
       Format.fprintf fmt "cast_with_exposed<%a>" (pp_ty env) tgt
   | CastFnDefToFnPtr -> Format.pp_print_string fmt "fn_def_to_fn_ptr"

@@ -32,6 +32,10 @@ fn ptr_casts() {
 
     fn foo() {}
     let _ = foo as *const u8;
+
+    let _ = x as u8;
+    let _ = x as i32;
+    let _ = x as u128;
 }
 
 fn fn_casts() {

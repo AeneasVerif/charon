@@ -172,8 +172,9 @@ pub enum CastKind {
     /// Convert a raw pointer or function pointer to a raw pointer.
     RawPtr(Ty),
     /// Converts a pointer or function pointer to an address, exposing its provenance.
+    /// The parameter is the destination integer type, which need not be `usize`.
     /// See <https://doc.rust-lang.org/std/primitive.pointer.html#method.expose_provenance>.
-    PtrExposeProvenance,
+    PtrExposeProvenance(#[serde_state(stateless)] IntegerTy),
     /// Converts an address to a pointer, which picks up exposed provenance.
     /// See <https://doc.rust-lang.org/std/ptr/fn.with_exposed_provenance.html>.
     PtrWithExposedProvenance(Ty),

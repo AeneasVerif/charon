@@ -525,7 +525,9 @@ and cast_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("RawPtr", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (CastRawPtr _0)
-    | `String "PtrExposeProvenance" -> Ok CastPtrExposeProvenance
+    | `Assoc [ ("PtrExposeProvenance", _0) ] ->
+        let* _0 = integer_type_of_json ctx _0 in
+        Ok (CastPtrExposeProvenance _0)
     | `Assoc [ ("PtrWithExposedProvenance", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (CastPtrWithExposedProvenance _0)

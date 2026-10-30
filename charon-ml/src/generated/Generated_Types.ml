@@ -273,9 +273,10 @@ and cast_kind =
       *)
   | CastRawPtr of ty
       (** Convert a raw pointer or function pointer to a raw pointer. *)
-  | CastPtrExposeProvenance
+  | CastPtrExposeProvenance of integer_type
       (** Converts a pointer or function pointer to an address, exposing its
-          provenance. See
+          provenance. The parameter is the destination integer type, which need
+          not be [usize]. See
           <https://doc.rust-lang.org/std/primitive.pointer.html#method.expose_provenance>.
       *)
   | CastPtrWithExposedProvenance of ty

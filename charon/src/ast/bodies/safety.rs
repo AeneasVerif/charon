@@ -221,7 +221,7 @@ impl HasSafety for UnOp {
                 CastKind::Scalar(..)
                 | CastKind::Subtype(..)
                 | CastKind::RawPtr(..)
-                | CastKind::PtrExposeProvenance
+                | CastKind::PtrExposeProvenance(..)
                 | CastKind::PtrWithExposedProvenance(..)
                 | CastKind::Unsize(..)
                 | CastKind::FnDefToFnPtr
