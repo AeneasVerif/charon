@@ -1,0 +1,300 @@
+# Final LLBC before serialization:
+
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+pub trait test_crate::equality_constraint::Lang<Self, Self_T>
+
+// Full name: test_crate::equality_constraint::Abstr
+pub trait Abstr<Self, Self_L, Self_Clause0_T>
+{
+    proof ImpliedClause0: (Self_L: test_crate::equality_constraint::Lang<Self_Clause0_T>)
+    vtable: test_crate::equality_constraint::Abstr::{vtable}<Self_L>
+}
+
+// Full name: test_crate::equality_constraint::put
+pub fn put<A, Clause0_L, Clause0_Clause0_T>(_1: Clause0_Clause0_T)
+where
+    TraitClause0: (A: Abstr<Clause0_L, Clause0_Clause0_T>),
+{
+    let _0: (); // return
+    let _1: Clause0_Clause0_T; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    conditional_drop[{built_in impl Destruct for Clause0_Clause0_T}::drop_glue<'0>] _1
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::equality_constraint::f
+pub fn f<A, B, Clause0_L, Clause0_Clause0_T, Clause1_Clause0_T>(x: Clause0_Clause0_T)
+where
+    TraitClause0: (A: Abstr<Clause0_L, Clause0_Clause0_T>),
+    TraitClause1: (B: Abstr<Clause0_L, Clause1_Clause0_T>),
+{
+    let _0: (); // return
+    let x: Clause0_Clause0_T; // arg #1
+    let _2: Clause0_Clause0_T; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = move x
+    _0 = put<B, Clause0_L, Clause1_Clause0_T>[TraitClause1](move _2)
+    ↳⚡ conditional_drop[{built_in impl Destruct for Clause0_Clause0_T}::drop_glue<'0>] _2
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        conditional_drop[{built_in impl Destruct for Clause0_Clause0_T}::drop_glue<'2>] x
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    conditional_drop[{built_in impl Destruct for Clause0_Clause0_T}::drop_glue<'1>] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::equality_constraint::known_value
+pub fn known_value<L, A, Clause1_Clause0_T>(x: u8)
+where
+    TraitClause0: (L: test_crate::equality_constraint::Lang<u8>),
+    TraitClause1: (A: Abstr<L, Clause1_Clause0_T>),
+{
+    let _0: (); // return
+    let x: u8; // arg #1
+    let _2: u8; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = copy x
+    _0 = put<A, L, Clause1_Clause0_T>[TraitClause1](move _2)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::equality_constraint::known_value_via_equality
+pub fn known_value_via_equality<A, B, Clause0_L, Clause0_Clause0_T, Clause1_Clause0_T>(x: u8)
+where
+    TraitClause0: (A: Abstr<Clause0_L, Clause0_Clause0_T>),
+    TraitClause1: (B: Abstr<Clause0_L, Clause1_Clause0_T>),
+    TraitClause2: (Clause0_L: test_crate::equality_constraint::Lang<u8>),
+{
+    let _0: (); // return
+    let x: u8; // arg #1
+    let _2: u8; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = copy x
+    _0 = put<A, Clause0_L, Clause0_Clause0_T>[TraitClause0](move _2)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+pub trait test_crate::clause_on_trait_param::Lang<Self, Self_T>
+
+// Full name: test_crate::clause_on_trait_param::Process
+pub trait Process<Self, L, Self_Clause0_T>
+{
+    proof ImpliedClause0: (L: test_crate::clause_on_trait_param::Lang<Self_Clause0_T>)
+    fn run;
+    non-dyn-compatible
+}
+
+// Full name: test_crate::clause_on_trait_param::explore
+pub fn explore<L, P, Clause0_T, Clause1_Clause0_T>(x: Clause0_T)
+where
+    TraitClause0: (L: test_crate::clause_on_trait_param::Lang<Clause0_T>),
+    TraitClause1: (P: Process<L, Clause1_Clause0_T>),
+{
+    let _0: (); // return
+    let x: Clause0_T; // arg #1
+    let _2: Clause0_T; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = move x
+    _0 = TraitClause1::run(move _2)
+    ↳⚡ conditional_drop[{built_in impl Destruct for Clause0_T}::drop_glue<'0>] _2
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        conditional_drop[{built_in impl Destruct for Clause0_T}::drop_glue<'2>] x
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    conditional_drop[{built_in impl Destruct for Clause0_T}::drop_glue<'1>] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::impl_bound_for_method_bound::Logic
+pub trait Logic<Self, Self_B>
+
+// Full name: test_crate::impl_bound_for_method_bound::State
+pub trait State<Self, L>
+{
+    fn make<Clause0_B, TraitClause0_1: (L: Logic<Clause0_B>)>;
+    non-dyn-compatible
+}
+
+// Full name: test_crate::impl_bound_for_method_bound::{impl State<L> for ()}::make
+pub fn make<L, Clause0_B>(b: Clause0_B) -> Clause0_B
+where
+    TraitClause0: (L: Logic<Clause0_B>),
+{
+    let _0: Clause0_B; // return
+    let b: Clause0_B; // arg #1
+
+    storage_live(_0)
+    _0 = move b
+    conditional_drop[{built_in impl Destruct for Clause0_B}::drop_glue<'0>] b
+    ↳⚡ storage_dead(b)
+        unwind_continue
+    storage_dead(b)
+    return
+}
+
+// Full name: test_crate::impl_bound_for_method_bound::{impl State<L> for ()}
+impl<L, Clause0_B> "impl_State_for_unit" State<L> for ()
+where
+    TraitClause0: (L: Logic<Clause0_B>),
+{
+    fn make<Clause0_B, TraitClause0_1: (L: Logic<Clause0_B>)> = make<L, Clause0_B>[TraitClause0]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::trait_with_two_paths::X
+pub trait X<Self, Self_Assoc>
+
+// Full name: test_crate::trait_with_two_paths::A
+pub trait A<Self, Self_Clause0_Assoc>
+{
+    proof ImpliedClause0: (Self: X<Self_Clause0_Assoc>)
+    vtable: test_crate::trait_with_two_paths::A::{vtable}<Self_Clause0_Assoc>
+}
+
+// Full name: test_crate::trait_with_two_paths::B
+pub trait B<Self, Self_Clause0_Assoc>
+{
+    proof ImpliedClause0: (Self: X<Self_Clause0_Assoc>)
+    vtable: test_crate::trait_with_two_paths::B::{vtable}<Self_Clause0_Assoc>
+}
+
+// Full name: test_crate::trait_with_two_paths::Both
+pub trait Both<Self, Self_Clause0_Clause0_Assoc, Self_Clause1_Clause0_Assoc>
+{
+    proof ImpliedClause0: (Self: A<Self_Clause0_Clause0_Assoc>)
+    proof ImpliedClause1: (Self: B<Self_Clause1_Clause0_Assoc>)
+    vtable: test_crate::trait_with_two_paths::Both::{vtable}<Self_Clause0_Clause0_Assoc, Self_Clause0_Clause0_Assoc>
+}
+
+// Full name: test_crate::trait_with_two_paths::{impl X<bool> for u8}
+impl "impl_X_for_u8" X<bool> for u8 {
+    vtable: lazy
+}
+
+// Full name: test_crate::trait_with_two_paths::{impl A<bool> for u8}
+impl "impl_A_for_u8" A<bool> for u8 {
+    proof ImpliedClause0: (u8: X<bool>) = impl_X_for_u8
+    vtable: lazy
+}
+
+// Full name: test_crate::trait_with_two_paths::{impl B<bool> for u8}
+impl "impl_B_for_u8" B<bool> for u8 {
+    proof ImpliedClause0: (u8: X<bool>) = impl_X_for_u8
+    vtable: lazy
+}
+
+// Full name: test_crate::trait_with_two_paths::{impl Both<bool, bool> for u8}
+impl "impl_Both_for_u8" Both<bool, bool> for u8 {
+    proof ImpliedClause0: (u8: A<bool>) = impl_A_for_u8
+    proof ImpliedClause1: (u8: B<bool>) = impl_B_for_u8
+    vtable: lazy
+}
+
+// Full name: test_crate::trait_with_two_paths::via_b
+pub fn via_b<T, Clause0_Clause0_Assoc>(x: Clause0_Clause0_Assoc) -> Clause0_Clause0_Assoc
+where
+    TraitClause0: (T: B<Clause0_Clause0_Assoc>),
+{
+    let _0: Clause0_Clause0_Assoc; // return
+    let x: Clause0_Clause0_Assoc; // arg #1
+
+    storage_live(_0)
+    _0 = move x
+    conditional_drop[{built_in impl Destruct for Clause0_Clause0_Assoc}::drop_glue<'0>] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::trait_with_two_paths::via_both
+pub fn via_both<T, Clause0_Clause0_Clause0_Assoc, Clause0_Clause1_Clause0_Assoc>(x: Clause0_Clause0_Clause0_Assoc) -> Clause0_Clause0_Clause0_Assoc
+where
+    TraitClause0: (T: Both<Clause0_Clause0_Clause0_Assoc, Clause0_Clause1_Clause0_Assoc>),
+{
+    let _0: Clause0_Clause0_Clause0_Assoc; // return
+    let x: Clause0_Clause0_Clause0_Assoc; // arg #1
+    let _2: Clause0_Clause0_Clause0_Assoc; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = move x
+    _0 = via_b<T, Clause0_Clause1_Clause0_Assoc>[TraitClause0::ImpliedClause1](move _2)
+    ↳⚡ conditional_drop[{built_in impl Destruct for Clause0_Clause0_Clause0_Assoc}::drop_glue<'0>] _2
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        conditional_drop[{built_in impl Destruct for Clause0_Clause0_Clause0_Assoc}::drop_glue<'2>] x
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    conditional_drop[{built_in impl Destruct for Clause0_Clause0_Clause0_Assoc}::drop_glue<'1>] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::trait_with_two_paths::call
+pub fn call() -> bool
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = via_both<u8, bool, bool>[impl_Both_for_u8](const true)
+    ↳⚡ unwind_continue
+    return
+}
+
+
+
