@@ -1,4 +1,3 @@
-//@ known-failure
 //@ charon-args=--lift-associated-types=*
 pub trait Lang {
     type B;
