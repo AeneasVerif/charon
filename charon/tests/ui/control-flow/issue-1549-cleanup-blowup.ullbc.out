@@ -140,46 +140,46 @@ pub fn cleanup_dag(fail: bool, tag: u8) -> u8
         storage_dead(_10);
         fake_read(_d);
         storage_live(_11);
-        _11 = adds_an_unwind_edge() -> bb1 (unwind: bb52);
+        _11 = adds_an_unwind_edge() -> bb1 (unwind: bb9);
     }
 
     bb1: {
         storage_dead(_11);
         storage_live(_12);
-        _12 = adds_an_unwind_edge() -> bb2 (unwind: bb43);
+        _12 = adds_an_unwind_edge() -> bb2 (unwind: bb9);
     }
 
     bb2: {
         storage_dead(_12);
         storage_live(_13);
-        _13 = adds_an_unwind_edge() -> bb3 (unwind: bb34);
+        _13 = adds_an_unwind_edge() -> bb3 (unwind: bb9);
     }
 
     bb3: {
         storage_dead(_13);
         storage_live(_14);
-        _14 = adds_an_unwind_edge() -> bb4 (unwind: bb25);
+        _14 = adds_an_unwind_edge() -> bb4 (unwind: bb9);
     }
 
     bb4: {
         storage_dead(_14);
         _0 = const 7u8;
-        conditional_drop[drop_glue<'4>] _d -> bb5 (unwind: bb18);
+        conditional_drop[drop_glue<'4>] _d -> bb5 (unwind: bb10);
     }
 
     bb5: {
         storage_dead(_d);
-        conditional_drop[drop_glue<'5>] _c -> bb6 (unwind: bb13);
+        conditional_drop[drop_glue<'5>] _c -> bb6 (unwind: bb11);
     }
 
     bb6: {
         storage_dead(_c);
-        conditional_drop[drop_glue<'6>] _b -> bb7 (unwind: bb10);
+        conditional_drop[drop_glue<'6>] _b -> bb7 (unwind: bb12);
     }
 
     bb7: {
         storage_dead(_b);
-        conditional_drop[drop_glue<'7>] _a -> bb8 (unwind: bb9);
+        conditional_drop[drop_glue<'7>] _a -> bb8 (unwind: bb13);
     }
 
     bb8: {
@@ -190,39 +190,37 @@ pub fn cleanup_dag(fail: bool, tag: u8) -> u8
     }
 
     bb9 (cleanup): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_continue;
+        conditional_drop[drop_glue<'0>] _d -> bb10 (unwind: bb17);
     }
 
     bb10 (cleanup): {
-        conditional_drop[drop_glue<'3>] _a -> bb11 (unwind: bb12);
+        conditional_drop[drop_glue<'1>] _c -> bb11 (unwind: bb16);
     }
 
     bb11 (cleanup): {
+        conditional_drop[drop_glue<'2>] _b -> bb12 (unwind: bb15);
+    }
+
+    bb12 (cleanup): {
+        conditional_drop[drop_glue<'3>] _a -> bb13 (unwind: bb14);
+    }
+
+    bb13 (cleanup): {
         storage_dead(tag);
         storage_dead(fail);
         unwind_continue;
     }
 
-    bb12 (terminate): {
+    bb14 (terminate): {
         storage_dead(tag);
         storage_dead(fail);
         unwind_terminate;
     }
 
-    bb13 (cleanup): {
-        conditional_drop[drop_glue<'2>] _b -> bb14 (unwind: bb17);
-    }
-
-    bb14 (cleanup): {
-        conditional_drop[drop_glue<'3>] _a -> bb15 (unwind: bb16);
-    }
-
-    bb15 (cleanup): {
+    bb15 (terminate): {
         storage_dead(tag);
         storage_dead(fail);
-        unwind_continue;
+        unwind_terminate;
     }
 
     bb16 (terminate): {
@@ -232,226 +230,6 @@ pub fn cleanup_dag(fail: bool, tag: u8) -> u8
     }
 
     bb17 (terminate): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_terminate;
-    }
-
-    bb18 (cleanup): {
-        conditional_drop[drop_glue<'1>] _c -> bb19 (unwind: bb24);
-    }
-
-    bb19 (cleanup): {
-        conditional_drop[drop_glue<'2>] _b -> bb20 (unwind: bb23);
-    }
-
-    bb20 (cleanup): {
-        conditional_drop[drop_glue<'3>] _a -> bb21 (unwind: bb22);
-    }
-
-    bb21 (cleanup): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_continue;
-    }
-
-    bb22 (terminate): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_terminate;
-    }
-
-    bb23 (terminate): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_terminate;
-    }
-
-    bb24 (terminate): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_terminate;
-    }
-
-    bb25 (cleanup): {
-        conditional_drop[drop_glue<'0>] _d -> bb26 (unwind: bb33);
-    }
-
-    bb26 (cleanup): {
-        conditional_drop[drop_glue<'1>] _c -> bb27 (unwind: bb32);
-    }
-
-    bb27 (cleanup): {
-        conditional_drop[drop_glue<'2>] _b -> bb28 (unwind: bb31);
-    }
-
-    bb28 (cleanup): {
-        conditional_drop[drop_glue<'3>] _a -> bb29 (unwind: bb30);
-    }
-
-    bb29 (cleanup): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_continue;
-    }
-
-    bb30 (terminate): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_terminate;
-    }
-
-    bb31 (terminate): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_terminate;
-    }
-
-    bb32 (terminate): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_terminate;
-    }
-
-    bb33 (terminate): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_terminate;
-    }
-
-    bb34 (cleanup): {
-        conditional_drop[drop_glue<'0>] _d -> bb35 (unwind: bb42);
-    }
-
-    bb35 (cleanup): {
-        conditional_drop[drop_glue<'1>] _c -> bb36 (unwind: bb41);
-    }
-
-    bb36 (cleanup): {
-        conditional_drop[drop_glue<'2>] _b -> bb37 (unwind: bb40);
-    }
-
-    bb37 (cleanup): {
-        conditional_drop[drop_glue<'3>] _a -> bb38 (unwind: bb39);
-    }
-
-    bb38 (cleanup): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_continue;
-    }
-
-    bb39 (terminate): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_terminate;
-    }
-
-    bb40 (terminate): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_terminate;
-    }
-
-    bb41 (terminate): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_terminate;
-    }
-
-    bb42 (terminate): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_terminate;
-    }
-
-    bb43 (cleanup): {
-        conditional_drop[drop_glue<'0>] _d -> bb44 (unwind: bb51);
-    }
-
-    bb44 (cleanup): {
-        conditional_drop[drop_glue<'1>] _c -> bb45 (unwind: bb50);
-    }
-
-    bb45 (cleanup): {
-        conditional_drop[drop_glue<'2>] _b -> bb46 (unwind: bb49);
-    }
-
-    bb46 (cleanup): {
-        conditional_drop[drop_glue<'3>] _a -> bb47 (unwind: bb48);
-    }
-
-    bb47 (cleanup): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_continue;
-    }
-
-    bb48 (terminate): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_terminate;
-    }
-
-    bb49 (terminate): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_terminate;
-    }
-
-    bb50 (terminate): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_terminate;
-    }
-
-    bb51 (terminate): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_terminate;
-    }
-
-    bb52 (cleanup): {
-        conditional_drop[drop_glue<'0>] _d -> bb53 (unwind: bb60);
-    }
-
-    bb53 (cleanup): {
-        conditional_drop[drop_glue<'1>] _c -> bb54 (unwind: bb59);
-    }
-
-    bb54 (cleanup): {
-        conditional_drop[drop_glue<'2>] _b -> bb55 (unwind: bb58);
-    }
-
-    bb55 (cleanup): {
-        conditional_drop[drop_glue<'3>] _a -> bb56 (unwind: bb57);
-    }
-
-    bb56 (cleanup): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_continue;
-    }
-
-    bb57 (terminate): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_terminate;
-    }
-
-    bb58 (terminate): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_terminate;
-    }
-
-    bb59 (terminate): {
-        storage_dead(tag);
-        storage_dead(fail);
-        unwind_terminate;
-    }
-
-    bb60 (terminate): {
         storage_dead(tag);
         storage_dead(fail);
         unwind_terminate;

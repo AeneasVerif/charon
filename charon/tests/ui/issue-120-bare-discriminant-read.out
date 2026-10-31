@@ -48,15 +48,15 @@ where
     _0 = ()
     match (*_1) {
         Option::None => {
-        },
-        _ => {
-            drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1) as variant Option::Some)._0
-            ↳⚡ storage_dead(_1)
-                unwind_continue
             storage_dead(_1)
             return
         },
+        _ => {
+        },
     }
+    drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1) as variant Option::Some)._0
+    ↳⚡ storage_dead(_1)
+        unwind_continue
     storage_dead(_1)
     return
 }

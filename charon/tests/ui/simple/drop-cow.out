@@ -80,15 +80,15 @@ where
     _0 = ()
     match (*_1) {
         Cow::Borrowed => {
-        },
-        _ => {
-            drop[TraitClause1::ImpliedClause4::drop_glue<'2>] ((*_1) as variant Cow::Owned)._0
-            ↳⚡ storage_dead(_1)
-                unwind_continue
             storage_dead(_1)
             return
         },
+        _ => {
+        },
     }
+    drop[TraitClause1::ImpliedClause4::drop_glue<'2>] ((*_1) as variant Cow::Owned)._0
+    ↳⚡ storage_dead(_1)
+        unwind_continue
     storage_dead(_1)
     return
 }
