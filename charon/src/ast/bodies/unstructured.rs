@@ -224,12 +224,10 @@ impl BlockData {
         }
     }
     pub fn as_goto(&self) -> Option<BlockId> {
-        if let TerminatorKind::Goto { target } = self.terminator.kind {
-            Some(target)
-        } else {
-            None
-        }
+        self.terminator.kind.as_goto().copied()
     }
+
+    /// Whether this block has a goto terminator, with only no-op statements.
     pub fn as_trivial_goto(&self) -> Option<BlockId> {
         self.as_goto().filter(|_| {
             self.statements

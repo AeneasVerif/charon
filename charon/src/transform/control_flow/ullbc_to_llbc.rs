@@ -90,8 +90,6 @@ struct BlockData {
     pub span: Span,
     /// The (unique) entrypoints of each loop. Unique because we error on irreducible cfgs.
     pub is_loop_header: bool,
-    /// Whether this block is a switch.
-    pub is_switch: bool,
     /// Whether this block is only reachable by taking an unwind edge.
     pub is_unwind: bool,
     /// Whether this block has multiple incoming control-flow edges in the forward graph.
@@ -168,6 +166,26 @@ struct ExitInfo {
 /// block involved in an irreducible subgraph.
 struct Irreducible(BlockId);
 
+impl BlockData {
+    fn new(id: BlockId, data: &ullbc_ast::BlockData, flow: IndexVec<BlockId, Flow>) -> Self {
+        Self {
+            id,
+            span: data.terminator.span,
+            is_loop_header: false,
+            is_unwind: false,
+            is_merge_target: false,
+            reverse_postorder: None,
+            immediately_dominates: Default::default(),
+            immediately_dominated_merge_targets: Default::default(),
+            within_loops: Default::default(),
+            only_reach_error: false,
+            shortest_paths: Default::default(),
+            flow,
+            exit_info: Default::default(),
+        }
+    }
+}
+
 impl CfgInfo {
     /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and precompute a
     /// bunch of graph information about the CFG.
@@ -178,22 +196,7 @@ impl CfgInfo {
 
         let empty_flow = body.map_ref(|_| Flow::ZERO);
         let mut block_data: IndexVec<BlockId, _> = body.map_ref_indexed(|id, contents| {
-            Box::new(BlockData {
-                id,
-                span: contents.terminator.span,
-                is_loop_header: false,
-                is_switch: false,
-                is_unwind: false,
-                is_merge_target: false,
-                reverse_postorder: None,
-                immediately_dominates: Default::default(),
-                immediately_dominated_merge_targets: Default::default(),
-                within_loops: Default::default(),
-                only_reach_error: false,
-                shortest_paths: Default::default(),
-                flow: empty_flow.clone(),
-                exit_info: Default::default(),
-            })
+            Box::new(BlockData::new(id, contents, empty_flow.clone()))
         });
 
         // Build the node graph.
@@ -233,7 +236,6 @@ impl CfgInfo {
 
             if body[block_id].terminator.kind.is_switch() {
                 switch_blocks.insert(block_id);
-                block_data[block_id].is_switch = true;
             }
 
             // Iterate over edges into this node (so that we can determine whether this node is a
