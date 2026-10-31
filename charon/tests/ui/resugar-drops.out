@@ -522,14 +522,18 @@ fn partial_enum_move(value: EnumWithTwoDrops, b: bool)
             0isize => {
                 conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] (value as variant EnumWithTwoDrops::Pair)._1
                 ↳⚡ unwind_continue
+                _9 = const false
+                return
             },
             _ => {
+                _9 = const false
+                return
             },
         }
     } else {
+        _9 = const false
+        return
     }
-    _9 = const false
-    return
 }
 
 
