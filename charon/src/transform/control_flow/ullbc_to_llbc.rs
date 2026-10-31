@@ -335,8 +335,6 @@ impl CfgInfo {
                 .iter()
                 .copied()
                 .filter(|&child| block_data[child].is_merge_target)
-                .filter(|&child| !block_data[child].is_return)
-                .filter(|&child| is_unwind || !block_data[child].is_unwind)
                 .collect();
         }
 
@@ -421,11 +419,7 @@ impl CfgInfo {
         through_node: src::BlockId,
         target_set: &HashSet<src::BlockId>,
     ) -> bool {
-        let graph = EdgeFiltered::from_fn(&self.fwd_cfg, |edge| {
-            edge.source() != through_node
-                && (self.block_data[edge.source()].is_unwind
-                    || !self.block_data[edge.target()].is_unwind)
-        });
+        let graph = EdgeFiltered::from_fn(&self.fwd_cfg, |edge| edge.source() != through_node);
         !Dfs::new(&graph, src)
             .iter(&graph)
             .skip(1) // skip src
@@ -521,7 +515,7 @@ impl ExitInfo {
         for block_id in Self::compute_loop_exit_starting_points(cfg, loop_header) {
             for bid in cfg.block_data(block_id).reachable_including_self() {
                 let block_data = &cfg.block_data[bid];
-                // Return blocks get duplicated at each jump to them, so they only count for the
+                // We want to force duplication of return-only blocks, so we only count them for the
                 // paths that jump to them directly.
                 if block_data.is_return && bid != block_id {
                     continue;
