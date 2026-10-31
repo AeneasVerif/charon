@@ -236,6 +236,15 @@ impl BlockData {
         })
     }
 
+    /// Whether this block has a return terminator, with only no-op or storage dead statements.
+    pub fn is_trivial_return(&self) -> bool {
+        self.terminator.kind.is_return()
+            && self
+                .statements
+                .iter()
+                .all(|st| st.kind.is_storage_dead() || st.kind.is_nop())
+    }
+
     pub fn as_abort(&self) -> Option<AbortKind> {
         if self.statements.iter().all(|st| {
             matches!(

@@ -111,13 +111,13 @@ fn shared_cleanup()
         _second = Guard {  };
         fake_read(_second);
         storage_live(_3);
-        _3 = may_panic() -> bb1 (unwind: bb14);
+        _3 = may_panic() -> bb1 (unwind: bb5);
     }
 
     bb1: {
         storage_dead(_3);
         storage_live(_4);
-        _4 = may_panic() -> bb2 (unwind: bb9);
+        _4 = may_panic() -> bb2 (unwind: bb5);
     }
 
     bb2: {
@@ -128,7 +128,7 @@ fn shared_cleanup()
 
     bb3: {
         storage_dead(_second);
-        conditional_drop[drop_glue<'3>] _first -> bb4 (unwind: bb5);
+        conditional_drop[drop_glue<'3>] _first -> bb4 (unwind: bb7);
     }
 
     bb4: {
@@ -137,7 +137,7 @@ fn shared_cleanup()
     }
 
     bb5 (cleanup): {
-        unwind_continue;
+        conditional_drop[drop_glue<'0>] _second -> bb6 (unwind: bb9);
     }
 
     bb6 (cleanup): {
@@ -152,43 +152,7 @@ fn shared_cleanup()
         unwind_terminate;
     }
 
-    bb9 (cleanup): {
-        conditional_drop[drop_glue<'0>] _second -> bb10 (unwind: bb13);
-    }
-
-    bb10 (cleanup): {
-        conditional_drop[drop_glue<'1>] _first -> bb11 (unwind: bb12);
-    }
-
-    bb11 (cleanup): {
-        unwind_continue;
-    }
-
-    bb12 (terminate): {
-        unwind_terminate;
-    }
-
-    bb13 (terminate): {
-        unwind_terminate;
-    }
-
-    bb14 (cleanup): {
-        conditional_drop[drop_glue<'0>] _second -> bb15 (unwind: bb18);
-    }
-
-    bb15 (cleanup): {
-        conditional_drop[drop_glue<'1>] _first -> bb16 (unwind: bb17);
-    }
-
-    bb16 (cleanup): {
-        unwind_continue;
-    }
-
-    bb17 (terminate): {
-        unwind_terminate;
-    }
-
-    bb18 (terminate): {
+    bb9 (terminate): {
         unwind_terminate;
     }
 }

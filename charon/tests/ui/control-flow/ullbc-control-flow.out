@@ -319,7 +319,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         storage_live(_4);
         storage_live(_5);
         _5 = Range { start: const 0i32, end: const 128i32 };
-        _4 = into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_Range<i32>[{built_in impl Sized for i32}, impl_Step_for_i32, {built_in impl Destruct for i32}]](move _5) -> bb1 (unwind: bb24);
+        _4 = into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_Range<i32>[{built_in impl Sized for i32}, impl_Step_for_i32, {built_in impl Destruct for i32}]](move _5) -> bb1 (unwind: bb19);
     }
 
     bb1: {
@@ -335,12 +335,12 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         storage_live(_9);
         _9 = &mut iter_6;
         _8 = &two-phase-mut (*_9);
-        _7 = next<'9, i32>[{built_in impl Sized for i32}, impl_Step_for_i32, {built_in impl Destruct for i32}](move _8) -> bb3 (unwind: bb23);
+        _7 = next<'9, i32>[{built_in impl Sized for i32}, impl_Step_for_i32, {built_in impl Destruct for i32}](move _8) -> bb3 (unwind: bb19);
     }
 
     bb3: {
         storage_dead(_8);
-        match _7 -> Option::None: bb4, Option::Some: bb21;
+        match _7 -> Option::None: bb4, Option::Some: bb17;
     }
 
     bb4: {
@@ -354,7 +354,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         _13 = copy step_out;
         _12 = Range { start: const 0usize, end: move _13 };
         storage_dead(_13);
-        _11 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}]](move _12) -> bb5 (unwind: bb20);
+        _11 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}]](move _12) -> bb5 (unwind: bb19);
     }
 
     bb5: {
@@ -400,7 +400,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         _20 = copy step_in;
         _19 = Range { start: const 0usize, end: move _20 };
         storage_dead(_20);
-        _18 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}]](move _19) -> bb10 (unwind: bb17);
+        _18 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}]](move _19) -> bb10 (unwind: bb19);
     }
 
     bb10: {
@@ -416,7 +416,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         storage_live(_24);
         _24 = &mut iter_21;
         _23 = &two-phase-mut (*_24);
-        _22 = next<'13, usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}](move _23) -> bb12 (unwind: bb16);
+        _22 = next<'13, usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}](move _23) -> bb12 (unwind: bb19);
     }
 
     bb12: {
@@ -454,44 +454,12 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         undefined_behavior;
     }
 
-    bb16 (cleanup): {
-        storage_dead(_25);
-        storage_dead(_10);
-        storage_dead(step_in);
-        storage_dead(step_out);
-        unwind_continue;
-    }
-
-    bb17 (cleanup): {
-        storage_dead(_25);
-        storage_dead(_10);
-        storage_dead(step_in);
-        storage_dead(step_out);
-        unwind_continue;
-    }
-
-    bb18: {
+    bb16: {
         fake_read(_15);
         undefined_behavior;
     }
 
-    bb19 (cleanup): {
-        storage_dead(_25);
-        storage_dead(_10);
-        storage_dead(step_in);
-        storage_dead(step_out);
-        unwind_continue;
-    }
-
-    bb20 (cleanup): {
-        storage_dead(_25);
-        storage_dead(_10);
-        storage_dead(step_in);
-        storage_dead(step_out);
-        unwind_continue;
-    }
-
-    bb21: {
+    bb17: {
         _10 = copy s panic.+ const 1usize;
         s = move _10;
         storage_dead(_9);
@@ -499,20 +467,12 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         goto bb2;
     }
 
-    bb22: {
+    bb18: {
         fake_read(_7);
         undefined_behavior;
     }
 
-    bb23 (cleanup): {
-        storage_dead(_25);
-        storage_dead(_10);
-        storage_dead(step_in);
-        storage_dead(step_out);
-        unwind_continue;
-    }
-
-    bb24 (cleanup): {
+    bb19 (cleanup): {
         storage_dead(_25);
         storage_dead(_10);
         storage_dead(step_in);

@@ -92,6 +92,8 @@ struct BlockData {
     pub is_loop_header: bool,
     /// Whether this block is only reachable by taking an unwind edge.
     pub is_unwind: bool,
+    /// Whether this block does nothing but return (and possibly deallocate locals).
+    pub is_return: bool,
     /// Whether this block has multiple incoming control-flow edges in the forward graph.
     pub is_merge_target: bool,
     /// Order in a reverse postorder numbering. `None` if the block is unreachable.
@@ -173,6 +175,7 @@ impl BlockData {
             span: data.terminator.span,
             is_loop_header: false,
             is_unwind: false,
+            is_return: data.is_trivial_return(),
             is_merge_target: false,
             reverse_postorder: None,
             immediately_dominates: Default::default(),
@@ -331,6 +334,7 @@ impl CfgInfo {
                 .iter()
                 .copied()
                 .filter(|&child| block_data[child].is_merge_target)
+                .filter(|&child| !block_data[child].is_return)
                 .collect();
         }
 
@@ -511,6 +515,12 @@ impl ExitInfo {
         let mut loop_exits: SeqHashMap<BlockId, LoopExitRank> = SeqHashMap::new();
         for block_id in Self::compute_loop_exit_starting_points(cfg, loop_header) {
             for bid in cfg.block_data(block_id).reachable_including_self() {
+                let block_data = &cfg.block_data[bid];
+                // Return blocks get duplicated at each jump to them, so they only count for the
+                // paths that jump to them directly.
+                if block_data.is_return && bid != block_id {
+                    continue;
+                }
                 loop_exits
                     .entry(bid)
                     .or_insert_with(|| LoopExitRank {
@@ -759,6 +769,7 @@ impl ExitInfo {
             let current_loop = block_data.within_loops.last().copied();
             let best_exit: Option<BlockId> = block_data
                 .reachable_excluding_self()
+                .filter(|&b| !cfg.block_data[b].is_return)
                 .filter(|&b| {
                     current_loop.is_none_or(|current_loop| cfg.is_within_loop(current_loop, b))
                 })
