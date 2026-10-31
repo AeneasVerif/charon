@@ -45,6 +45,7 @@ let builtin_path_elem_ident (e : builtin_path_elem) : string =
   | PeVTable -> "vtable"
   | PeVTableMethod -> "vtable_method"
   | PeVTableDropShim -> "vtable_drop_shim"
+  | PeIntrinsicFallback -> "fallback"
 
 let as_ident (e : path_elem) : string =
   match e with

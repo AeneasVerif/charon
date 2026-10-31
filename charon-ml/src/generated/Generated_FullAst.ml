@@ -94,13 +94,22 @@ and body =
   | ExternBody of string
       (** Function declared in an [extern { ... }] block. The string is the
           foreign symbol name. *)
-  | IntrinsicBody of string * string option list
-      (** Rust intrinsic function. This has no body and describes a "built-in"
-          operation that must be handled by the codegen backend.
+  | IntrinsicBody of string * string option list * fun_decl_ref option * bool
+      (** Rust intrinsic function. This describes a "built-in" operation that
+          must be handled by the codegen backend.
 
           Fields:
           - [name]: The intrinsic name.
-          - [arg_names]: The argument names, None if not available. *)
+          - [arg_names]: The argument names, None if not available.
+          - [fallback]: Some intrinsics have a fallback body that backends can
+            use if they don't implement the intrinsic themselves. We translate
+            it as a separate function named [path::to::intrinsic::{fallback}].
+            The reference uses the generics of the intrinsic.
+          - [fallback_is_spec]: Whether the fallback body is marked
+            [#[miri::intrinsic_fallback_is_spec]], i.e. it exactly describes the
+            behavior of the intrinsic. Otherwise the fallback is only one of the
+            valid implementations of the intrinsic, e.g. the intrinsic may have
+            more UB or more non-determinism. *)
   | OpaqueBody
       (** A body that the user chose not to translate, based on opacity settings
           like [--include]/[--opaque]. *)
