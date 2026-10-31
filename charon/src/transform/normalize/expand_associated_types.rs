@@ -1020,6 +1020,24 @@ impl UpdateItemBody<'_> {
     }
 
     fn lookup_path_on_trait_ref(&self, path: &AssocTypePath, tref: &TraitRef) -> Option<Ty> {
+        if let Some(ty) = self.lookup_path_in_env(path, tref) {
+            return Some(ty);
+        }
+        // The environment doesn't know this path. If the trait kept its associated types, it may
+        // have added a new associated type for that path. This is necessary for traits in a
+        // cycle: the environment only records facts up to the point where we detected the cycle,
+        // whereas paths through the cycle can be arbitrarily long.
+        let tmods = self
+            .item_modifications
+            .get(&GenericsSource::item(tref.trait_id()))?;
+        let (_, type_id) = tmods
+            .required_extra_assoc_types_with_ids()
+            .find(|(p, _)| *p == path)?;
+        Some(TyKind::TraitType(tref.clone(), type_id, GenericArgs::empty()).into_ty())
+    }
+
+    /// Look up the path using the facts available for this specific trait ref.
+    fn lookup_path_in_env(&self, path: &AssocTypePath, tref: &TraitRef) -> Option<Ty> {
         assert!(path.tref.base.is_self_clause());
         match &tref.kind {
             TraitRefKind::TraitImpl(impl_ref) => {
