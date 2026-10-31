@@ -104,13 +104,6 @@ pub fn infinite_loop()
             unwind_continue
         continue 0
     }
-    conditional_drop[drop_glue<'0>] _g
-    ↳⚡ storage_dead(_2)
-        storage_dead(_g)
-        unwind_terminate
-    storage_dead(_2)
-    storage_dead(_g)
-    unwind_continue
 }
 
 
