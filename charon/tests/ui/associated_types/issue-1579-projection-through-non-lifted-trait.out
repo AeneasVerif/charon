@@ -1,0 +1,66 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: test_crate::Lang
+pub trait Lang<Self, Self_B>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_B: Sized)
+    vtable: test_crate::Lang::{vtable}<Self_B>
+}
+
+// Full name: test_crate::Values
+pub trait Values<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Lang<Self::Self_Clause1_B>)
+    proof ImpliedClause2: (Self::Self_Clause1_B: Typed<Self>)
+    type Self_Clause1_B
+    vtable: test_crate::Values::{vtable}<Self::Self_Clause1_B>
+}
+
+// Full name: test_crate::Typed
+pub trait Typed<Self, Self_V>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_V: Sized)
+    proof ImpliedClause2: (Self_V: Values)
+    vtable: test_crate::Typed::{vtable}<Self_V>
+}
+
+// Full name: test_crate::f
+pub fn f<'_0, T, Clause1_V>(_1: &'_0 TraitClause1::ImpliedClause2::Self_Clause1_B)
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Typed<Clause1_V>),
+    Outlives0: (TraitClause1::ImpliedClause2::Self_Clause1_B: '_0),
+    Outlives1: (T: '_0),
+    Outlives2: (Clause1_V: '_0),
+{
+    let _0: (); // return
+    let _1: &'1 TraitClause1::ImpliedClause2::Self_Clause1_B; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+
+
