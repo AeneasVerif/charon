@@ -171,6 +171,7 @@ where
     TraitClause1: (T: Clone),
     Outlives0: ('b: 'a),
     Outlives1: (T: 'b),
+    Outlives2: (T: 'a),
 {
     let _0: T; // return
     let x: &'3 &'4 T; // arg #1

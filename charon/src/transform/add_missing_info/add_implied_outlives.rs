@@ -222,6 +222,11 @@ impl TransformPass for Transform {
         for fun_decl in &mut ctx.translated.fun_decls {
             let mut visitor = OutlivesGatherer::new(&mut fun_decl.generics, type_decls);
             visitor.visit(&mut fun_decl.signature);
+            if let FunSource::InherentImpl { self_ty } = &mut fun_decl.src {
+                // The inherent impl header contributes to the implied bounds even if that type is
+                // not mentioned in the signature.
+                visitor.visit(self_ty);
+            }
             visitor.finish();
         }
 

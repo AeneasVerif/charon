@@ -1,0 +1,28 @@
+# Final LLBC before serialization:
+
+struct () {}
+
+// Full name: test_crate::Foo
+pub struct Foo<'a, 'b>
+where
+    Outlives0: ('b: 'a),
+{
+  _0: &'a &'b u32,
+}
+
+// Full name: test_crate::{Foo<'a, 'b>}::shorten
+pub fn shorten<'a, 'b>(x: &'b u32) -> &'a u32
+where
+    Outlives0: ('b: 'a),
+{
+    let _0: &'1 u32; // return
+    let x: &'2 u32; // arg #1
+
+    storage_live(_0)
+    _0 = &(*x)
+    storage_dead(x)
+    return
+}
+
+
+

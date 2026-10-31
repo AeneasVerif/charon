@@ -262,6 +262,11 @@ and fun_source =
   | NormalFun  (** A normal function. *)
   | AdtConstructorFun
       (** A synthetic function representing an ADT constructor. *)
+  | InherentImplFun of ty
+      (** A method in an inherent implementation.
+
+          Fields:
+          - [self_ty]: The self type of the impl block. *)
   | TraitDefaultFun of trait_decl_ref * trait_method_id
       (** A default method in a trait declaration.
 
