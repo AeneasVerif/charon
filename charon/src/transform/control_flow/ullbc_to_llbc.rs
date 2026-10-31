@@ -329,12 +329,14 @@ impl CfgInfo {
             dominatees.sort_by_key(|&child| block_data[child].reverse_postorder);
             dominatees.reverse();
             block_data[block_id].immediately_dominates = dominatees;
+            let is_unwind = block_data[block_id].is_unwind;
             block_data[block_id].immediately_dominated_merge_targets = block_data[block_id]
                 .immediately_dominates
                 .iter()
                 .copied()
                 .filter(|&child| block_data[child].is_merge_target)
                 .filter(|&child| !block_data[child].is_return)
+                .filter(|&child| is_unwind || !block_data[child].is_unwind)
                 .collect();
         }
 
@@ -419,7 +421,11 @@ impl CfgInfo {
         through_node: src::BlockId,
         target_set: &HashSet<src::BlockId>,
     ) -> bool {
-        let graph = EdgeFiltered::from_fn(&self.fwd_cfg, |edge| edge.source() != through_node);
+        let graph = EdgeFiltered::from_fn(&self.fwd_cfg, |edge| {
+            edge.source() != through_node
+                && (self.block_data[edge.source()].is_unwind
+                    || !self.block_data[edge.target()].is_unwind)
+        });
         !Dfs::new(&graph, src)
             .iter(&graph)
             .skip(1) // skip src
@@ -450,8 +456,6 @@ impl BlockData {
 /// See [`ExitInfo::compute_loop_exit_ranks`].
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 struct LoopExitRank {
-    /// Prefer regular blocks over blocks reachable only through unwind edges.
-    is_unwind_block: Reverse<bool>,
     /// Number of paths we found going to this exit.
     path_count: usize,
     /// Distance from the loop header.
@@ -513,6 +517,7 @@ impl ExitInfo {
         loop_header: src::BlockId,
     ) -> SeqHashMap<src::BlockId, LoopExitRank> {
         let mut loop_exits: SeqHashMap<BlockId, LoopExitRank> = SeqHashMap::new();
+        let header_is_unwind = cfg.block_data[loop_header].is_unwind;
         for block_id in Self::compute_loop_exit_starting_points(cfg, loop_header) {
             for bid in cfg.block_data(block_id).reachable_including_self() {
                 let block_data = &cfg.block_data[bid];
@@ -521,10 +526,14 @@ impl ExitInfo {
                 if block_data.is_return && bid != block_id {
                     continue;
                 }
+                // Unwind paths are translated inside the `on_unwind` block of the statement that
+                // unwinds, so we can't `break` to them from a regular loop.
+                if block_data.is_unwind && !header_is_unwind {
+                    continue;
+                }
                 loop_exits
                     .entry(bid)
                     .or_insert_with(|| LoopExitRank {
-                        is_unwind_block: Reverse(cfg.block_data[bid].is_unwind),
                         path_count: 0,
                         distance_from_header: Reverse(
                             cfg.block_data[loop_header].shortest_paths[&bid],
