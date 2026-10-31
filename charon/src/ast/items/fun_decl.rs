@@ -56,6 +56,11 @@ pub enum FunSource {
     Normal,
     /// A synthetic function representing an ADT constructor.
     AdtConstructor,
+    /// A method in an inherent implementation.
+    InherentImpl {
+        /// The self type of the impl block.
+        self_ty: Ty,
+    },
     /// A default method in a trait declaration.
     TraitDefault {
         /// The trait declaration this item belongs to.

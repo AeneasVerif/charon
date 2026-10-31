@@ -3046,6 +3046,9 @@ and fun_source_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `String "Normal" -> Ok NormalFun
     | `String "AdtConstructor" -> Ok AdtConstructorFun
+    | `Assoc [ ("InherentImpl", `Assoc [ ("self_ty", self_ty) ]) ] ->
+        let* self_ty = ty_of_json ctx self_ty in
+        Ok (InherentImplFun self_ty)
     | `Assoc
         [
           ( "TraitDefault",

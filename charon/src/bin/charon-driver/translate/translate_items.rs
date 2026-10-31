@@ -512,6 +512,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             })
         } else if matches!(def.kind(), hax::FullDefKind::Ctor(_)) {
             FunSource::AdtConstructor
+        } else if let hax::FullDefKind::AssocFn(f) = def.kind()
+            && let hax::AssocItemContainer::InherentImplContainer { self_ty, .. } =
+                &f.associated_item().container
+        {
+            FunSource::InherentImpl {
+                self_ty: self.translate_ty(span, self_ty)?,
+            }
         } else {
             match self.get_trait_item_source(span, def)? {
                 None => FunSource::Normal,

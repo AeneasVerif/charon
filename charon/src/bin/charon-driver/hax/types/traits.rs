@@ -80,6 +80,13 @@ impl<'tcx> AssocItem<'tcx> {
             }
             ty::AssocContainer::InherentImpl => AssocItemContainer::InherentImplContainer {
                 impl_id: container_id.sinto(s),
+                self_ty: inst_binder(
+                    tcx,
+                    s.typing_env(),
+                    Some(container_args),
+                    tcx.type_of(container_id),
+                )
+                .sinto(s),
             },
         };
         let name = match item.opt_name() {
@@ -152,6 +159,8 @@ pub enum AssocItemContainer<'tcx> {
     },
     InherentImplContainer {
         impl_id: DefId,
+        /// The self type instantiated with this associated item's arguments.
+        self_ty: Ty<'tcx>,
     },
 }
 

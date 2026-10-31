@@ -1359,6 +1359,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
         match kind {
             FunSource::Normal
             | FunSource::AdtConstructor
+            | FunSource::InherentImpl { .. }
             | FunSource::GlobalInitializer(_)
             | FunSource::TargetDependent { .. }
             | FunSource::VTableShim => {}
