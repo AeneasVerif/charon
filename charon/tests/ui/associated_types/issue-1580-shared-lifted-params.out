@@ -186,7 +186,7 @@ impl<L, Clause0_B> "impl_State_for_unit" State<L> for ()
 where
     TraitClause0: (L: Logic<Clause0_B>),
 {
-    fn make<Clause0_B, TraitClause0_1: (L: Logic<Clause0_B>)> = make<L, Clause0_B>[TraitClause0]
+    fn make<Clause0_B, TraitClause0_1: (L: Logic<Clause0_B>)> = make<L, Clause0_B>[TraitClause0_1]
     non-dyn-compatible
 }
 

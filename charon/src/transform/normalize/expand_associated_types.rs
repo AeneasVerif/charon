@@ -1324,6 +1324,62 @@ impl VisitAstMut for UpdateItemBody<'_> {
         &mut self,
         binder: &mut Binder<T>,
     ) -> ControlFlow<Self::Break> {
+        // Within the binder, prefer the binder's own clauses over outer clauses that prove the same
+        // predicate. E.g. in a trait impl, a method-level clause from the trait signature may
+        // coincide with a clause of the impl, and rustc may use either to prove that predicate.
+        // Both proofs are valid, but they give separate parameters for the lifted associated
+        // types, and only the binder's ones match the binder's signature.
+        let mut binder_preds: Vec<(TraitClauseId, TraitDeclRef)> = vec![];
+        for clause in &binder.params.trait_clauses {
+            if clause.trait_.regions.is_empty()
+                && let Some(tmods) = self
+                    .item_modifications
+                    .get(&GenericsSource::item(clause.trait_.skip_binder.id))
+                && tmods.required_extra_params().next().is_some()
+            {
+                let mut pred = clause.trait_.clone().erase();
+                pred.generics.trait_refs.clear();
+                binder_preds.push((clause.clause_id, pred));
+            }
+        }
+        if !binder_preds.is_empty() {
+            #[derive(Visitor)]
+            struct PreferBinderClauses<'a> {
+                preds: &'a [(TraitClauseId, TraitDeclRef)],
+                binder_depth: DeBruijnId,
+            }
+            impl VisitorWithBinderDepth for PreferBinderClauses<'_> {
+                fn binder_depth_mut(&mut self) -> &mut DeBruijnId {
+                    &mut self.binder_depth
+                }
+            }
+            impl VisitAstMut for PreferBinderClauses<'_> {
+                fn visit<T: AstVisitable>(&mut self, x: &mut T) -> ControlFlow<Self::Break> {
+                    VisitWithBinderDepth::new(self).visit(x)
+                }
+                fn enter_trait_ref_contents(&mut self, tref: &mut TraitRefContents) {
+                    if let TraitRefKind::Clause(DeBruijnVar::Bound(dbid, _), _) = tref.kind
+                        && dbid > self.binder_depth
+                    {
+                        let mut pred = tref.trait_decl_ref.clone();
+                        pred.generics.trait_refs.clear();
+                        if let Some(pred) = pred.move_from_under_binders(self.binder_depth)
+                            && let Some((clause_id, _)) =
+                                self.preds.iter().find(|(_, p)| *p == pred)
+                        {
+                            let var = DeBruijnVar::bound(self.binder_depth, *clause_id);
+                            tref.kind = TraitRefKind::Clause(var, RegionArgs::empty());
+                        }
+                    }
+                }
+            }
+            let _ = PreferBinderClauses {
+                preds: &binder_preds,
+                binder_depth: DeBruijnId::zero(),
+            }
+            .visit(&mut binder.skip_binder);
+        }
+
         // An inner binder. Apart from the case of trait method declarations, this is not a
         // globally-addressable item, so we haven't computed appropriate modifications yet. Hence
         // we compute them here.
