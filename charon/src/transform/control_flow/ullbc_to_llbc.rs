@@ -90,10 +90,10 @@ struct BlockData {
     pub span: Span,
     /// The (unique) entrypoints of each loop. Unique because we error on irreducible cfgs.
     pub is_loop_header: bool,
-    /// Whether this block is a switch.
-    pub is_switch: bool,
     /// Whether this block is only reachable by taking an unwind edge.
     pub is_unwind: bool,
+    /// Whether this block does nothing but return (and possibly deallocate locals).
+    pub is_return: bool,
     /// Whether this block has multiple incoming control-flow edges in the forward graph.
     pub is_merge_target: bool,
     /// Order in a reverse postorder numbering. `None` if the block is unreachable.
@@ -168,6 +168,27 @@ struct ExitInfo {
 /// block involved in an irreducible subgraph.
 struct Irreducible(BlockId);
 
+impl BlockData {
+    fn new(id: BlockId, data: &ullbc_ast::BlockData, flow: IndexVec<BlockId, Flow>) -> Self {
+        Self {
+            id,
+            span: data.terminator.span,
+            is_loop_header: false,
+            is_unwind: false,
+            is_return: data.is_trivial_return(),
+            is_merge_target: false,
+            reverse_postorder: None,
+            immediately_dominates: Default::default(),
+            immediately_dominated_merge_targets: Default::default(),
+            within_loops: Default::default(),
+            only_reach_error: false,
+            shortest_paths: Default::default(),
+            flow,
+            exit_info: Default::default(),
+        }
+    }
+}
+
 impl CfgInfo {
     /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and precompute a
     /// bunch of graph information about the CFG.
@@ -178,22 +199,7 @@ impl CfgInfo {
 
         let empty_flow = body.map_ref(|_| Flow::ZERO);
         let mut block_data: IndexVec<BlockId, _> = body.map_ref_indexed(|id, contents| {
-            Box::new(BlockData {
-                id,
-                span: contents.terminator.span,
-                is_loop_header: false,
-                is_switch: false,
-                is_unwind: false,
-                is_merge_target: false,
-                reverse_postorder: None,
-                immediately_dominates: Default::default(),
-                immediately_dominated_merge_targets: Default::default(),
-                within_loops: Default::default(),
-                only_reach_error: false,
-                shortest_paths: Default::default(),
-                flow: empty_flow.clone(),
-                exit_info: Default::default(),
-            })
+            Box::new(BlockData::new(id, contents, empty_flow.clone()))
         });
 
         // Build the node graph.
@@ -233,7 +239,6 @@ impl CfgInfo {
 
             if body[block_id].terminator.kind.is_switch() {
                 switch_blocks.insert(block_id);
-                block_data[block_id].is_switch = true;
             }
 
             // Iterate over edges into this node (so that we can determine whether this node is a
@@ -324,6 +329,7 @@ impl CfgInfo {
             dominatees.sort_by_key(|&child| block_data[child].reverse_postorder);
             dominatees.reverse();
             block_data[block_id].immediately_dominates = dominatees;
+            let is_unwind = block_data[block_id].is_unwind;
             block_data[block_id].immediately_dominated_merge_targets = block_data[block_id]
                 .immediately_dominates
                 .iter()
@@ -444,8 +450,6 @@ impl BlockData {
 /// See [`ExitInfo::compute_loop_exit_ranks`].
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 struct LoopExitRank {
-    /// Prefer regular blocks over blocks reachable only through unwind edges.
-    is_unwind_block: Reverse<bool>,
     /// Number of paths we found going to this exit.
     path_count: usize,
     /// Distance from the loop header.
@@ -507,12 +511,23 @@ impl ExitInfo {
         loop_header: src::BlockId,
     ) -> SeqHashMap<src::BlockId, LoopExitRank> {
         let mut loop_exits: SeqHashMap<BlockId, LoopExitRank> = SeqHashMap::new();
+        let header_is_unwind = cfg.block_data[loop_header].is_unwind;
         for block_id in Self::compute_loop_exit_starting_points(cfg, loop_header) {
             for bid in cfg.block_data(block_id).reachable_including_self() {
+                let block_data = &cfg.block_data[bid];
+                // We want to force duplication of return-only blocks, so we only count them for the
+                // paths that jump to them directly.
+                if block_data.is_return && bid != block_id {
+                    continue;
+                }
+                // Unwind paths are translated inside the `on_unwind` block of the statement that
+                // unwinds, so we can't `break` to them from a regular loop.
+                if block_data.is_unwind && !header_is_unwind {
+                    continue;
+                }
                 loop_exits
                     .entry(bid)
                     .or_insert_with(|| LoopExitRank {
-                        is_unwind_block: Reverse(cfg.block_data[bid].is_unwind),
                         path_count: 0,
                         distance_from_header: Reverse(
                             cfg.block_data[loop_header].shortest_paths[&bid],
@@ -757,6 +772,7 @@ impl ExitInfo {
             let current_loop = block_data.within_loops.last().copied();
             let best_exit: Option<BlockId> = block_data
                 .reachable_excluding_self()
+                .filter(|&b| !cfg.block_data[b].is_return)
                 .filter(|&b| {
                     current_loop.is_none_or(|current_loop| cfg.is_within_loop(current_loop, b))
                 })

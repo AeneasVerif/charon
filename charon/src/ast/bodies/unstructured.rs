@@ -224,18 +224,25 @@ impl BlockData {
         }
     }
     pub fn as_goto(&self) -> Option<BlockId> {
-        if let TerminatorKind::Goto { target } = self.terminator.kind {
-            Some(target)
-        } else {
-            None
-        }
+        self.terminator.kind.as_goto().copied()
     }
+
+    /// Whether this block has a goto terminator, with only no-op statements.
     pub fn as_trivial_goto(&self) -> Option<BlockId> {
         self.as_goto().filter(|_| {
             self.statements
                 .iter()
                 .all(|st| matches!(st.kind, StatementKind::Nop))
         })
+    }
+
+    /// Whether this block has a return terminator, with only no-op or storage dead statements.
+    pub fn is_trivial_return(&self) -> bool {
+        self.terminator.kind.is_return()
+            && self
+                .statements
+                .iter()
+                .all(|st| st.kind.is_storage_dead() || st.kind.is_nop())
     }
 
     pub fn as_abort(&self) -> Option<AbortKind> {

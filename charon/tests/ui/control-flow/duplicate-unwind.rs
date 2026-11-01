@@ -7,8 +7,7 @@ impl Drop for Guard {
 
 fn may_panic() {}
 
-// Both calls share the same cleanup chain in MIR. Each must get its own copy,
-// including the shared tail and the abort path for a panic during cleanup.
+// Both calls share the same cleanup chain in MIR. We duplicate the paths in LLBC (see https://github.com/AeneasVerif/charon/issues/1549).
 fn shared_cleanup() {
     let _first = Guard;
     let _second = Guard;
