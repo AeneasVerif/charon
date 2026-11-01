@@ -505,6 +505,8 @@ pub struct TargetInfo {
     pub env: from_rustc::Env,
     /// The target ABI, as seen by `cfg(target_abi)`.
     pub cfg_abi: from_rustc::CfgAbi,
+    /// The binary format of the target's object files.
+    pub binary_format: from_rustc::BinaryFormat,
     /// The pointer size of the target in bytes.
     pub target_pointer_size: ByteCount,
     /// Whether the target platform uses little endian byte order.

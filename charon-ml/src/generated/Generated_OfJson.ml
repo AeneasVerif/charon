@@ -2474,6 +2474,17 @@ and rustc_attribute_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (RustcAttributeKindTrackCaller _0)
     | _ -> Error "")
 
+and rustc_binary_format_of_json (ctx : of_json_ctx) (js : json) :
+    (rustc_binary_format, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Coff" -> Ok RustcBinaryFormatCoff
+    | `String "Elf" -> Ok RustcBinaryFormatElf
+    | `String "MachO" -> Ok RustcBinaryFormatMachO
+    | `String "Wasm" -> Ok RustcBinaryFormatWasm
+    | `String "Xcoff" -> Ok RustcBinaryFormatXcoff
+    | _ -> Error "")
+
 and body_of_json (ctx : of_json_ctx) (js : json) : (body, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -4042,6 +4053,7 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
           ("os", os);
           ("env", env);
           ("cfg_abi", cfg_abi);
+          ("binary_format", binary_format);
           ("target_pointer_size", target_pointer_size);
           ("is_little_endian", is_little_endian);
           ("c_enum_smallest_repr_ty", c_enum_smallest_repr_ty);
@@ -4052,6 +4064,7 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
         let* os = rustc_os_of_json ctx os in
         let* env = rustc_env_of_json ctx env in
         let* cfg_abi = rustc_cfg_abi_of_json ctx cfg_abi in
+        let* binary_format = rustc_binary_format_of_json ctx binary_format in
         let* target_pointer_size = int_of_json ctx target_pointer_size in
         let* is_little_endian = bool_of_json ctx is_little_endian in
         let* c_enum_smallest_repr_ty =
@@ -4068,6 +4081,7 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
              os;
              env;
              cfg_abi;
+             binary_format;
              target_pointer_size;
              is_little_endian;
              c_enum_smallest_repr_ty;

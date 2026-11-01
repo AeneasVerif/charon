@@ -737,6 +737,9 @@ impl<'tcx> TranslateCtx<'tcx> {
             cfg_abi: self
                 .translate_rustc_cfg_abi(&target.cfg_abi)
                 .expect("all rustc CfgAbi variants should be translated"),
+            binary_format: self
+                .translate_rustc_binary_format(&target.binary_format)
+                .expect("all rustc BinaryFormat variants should be translated"),
             target_pointer_size: target_data.pointer_size().bytes(),
             is_little_endian: matches!(target_data.endian, rustc_abi::Endian::Little),
             c_enum_smallest_repr_ty,

@@ -89,6 +89,7 @@ impl RustcDatatypes {
             "rustc_target::spec::Os",
             "rustc_target::spec::Env",
             "rustc_target::spec::CfgAbi",
+            "rustc_target::spec::BinaryFormat",
         ] {
             datatypes.insert(
                 path,
