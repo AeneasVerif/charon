@@ -953,6 +953,7 @@ and builtin_path_elem =
       (** The vtable struct of a trait, or the vtable global of a trait impl. *)
   | PeVTableMethod  (** The version of a method that is stored in a vtable. *)
   | PeVTableDropShim  (** The [drop_in_place] shim stored in a vtable. *)
+  | PeIntrinsicFallback  (** The fallback body of an intrinsic. *)
 
 (** Additional information for closures. *)
 and closure_info = {

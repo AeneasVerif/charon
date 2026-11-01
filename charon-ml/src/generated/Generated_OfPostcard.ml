@@ -428,6 +428,7 @@ and builtin_path_elem_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
      | 8 -> Ok PeVTable
      | 9 -> Ok PeVTableMethod
      | 10 -> Ok PeVTableDropShim
+     | 11 -> Ok PeIntrinsicFallback
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and byte_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -2096,7 +2097,9 @@ and body_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* arg_names =
            list_of_postcard (option_of_postcard string_of_postcard) ctx st
          in
-         Ok (IntrinsicBody (name, arg_names))
+         let* fallback = option_of_postcard fun_decl_ref_of_postcard ctx st in
+         let* fallback_is_spec = bool_of_postcard ctx st in
+         Ok (IntrinsicBody (name, arg_names, fallback, fallback_is_spec))
      | 5 -> Ok OpaqueBody
      | 6 -> Ok MissingBody
      | 7 ->

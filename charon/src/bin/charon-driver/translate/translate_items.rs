@@ -9,7 +9,7 @@ use charon_lib::pretty::FmtWithCtx;
 use derive_generic_visitor::Visitor;
 use itertools::Itertools;
 use rustc_middle::ty;
-use rustc_span::sym;
+use rustc_span::{Symbol, sym};
 use std::mem;
 use std::ops::ControlFlow;
 
@@ -147,7 +147,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                 let ty = bt_ctx.translate_type_decl(id, item_meta, &def)?;
                 self.translated.type_decls.set_slot(id, ty);
             }
-            TransItemSourceKind::Fun => {
+            TransItemSourceKind::Fun | TransItemSourceKind::IntrinsicFallback => {
                 let id = trans_id.expect_item();
                 let fun_decl = bt_ctx.translate_fun_decl(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
@@ -593,17 +593,41 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             _ => panic!("Unexpected definition for function: {def:?}"),
         };
 
-        let intrinsic_name = def
+        let intrinsic = def
             .def_id()
             .as_real_def_id()
-            .and_then(|id| self.tcx.intrinsic(id))
-            .map(|i| i.name.to_ident_string());
+            .and_then(|id| self.tcx.intrinsic(id));
 
-        let body = if intrinsic_name.as_deref() == Some("type_id") {
+        let body = if let Some(intrinsic) = intrinsic
+            && intrinsic.name == sym::type_id
+            && TransItemSourceKind::IntrinsicFallback == self.item_src.kind
+        {
             self.build_type_id_body(span, &signature)?
-        } else if let Some(name) = intrinsic_name {
+        } else if let Some(intrinsic) = intrinsic
+            && TransItemSourceKind::IntrinsicFallback != self.item_src.kind
+        {
+            // we special-case type_id: we give it a custom fallback that is the spec
+            let is_type_id = intrinsic.name == sym::type_id;
             let arg_names = self.translate_argument_names(span, def, signature.inputs.len());
-            Body::Intrinsic { name, arg_names }
+            let fallback = if intrinsic.must_be_overridden && !is_type_id {
+                None
+            } else {
+                let kind = TransItemSourceKind::IntrinsicFallback;
+                Some(self.translate_item(span, def.this(), kind)?)
+            };
+            // from nightly-2026-10-29 onwards, we can use tcx.tool_attrs for this (https://rust.tf/164900)
+            let fallback_is_spec = item_meta
+                .attr_info
+                .attributes
+                .iter()
+                .filter_map(|a| a.as_unknown())
+                .any(|a| a.path == "miri::intrinsic_fallback_is_spec");
+            Body::Intrinsic {
+                name: intrinsic.name.to_ident_string(),
+                arg_names,
+                fallback,
+                fallback_is_spec: fallback_is_spec || is_type_id,
+            }
         } else if let Some(name) = self.t_ctx.extern_item_symbol_name(def) {
             Body::Extern(name)
         } else if item_meta.diagnostic_item.as_deref()
