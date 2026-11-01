@@ -66,9 +66,10 @@
 //!
 //! Limitations:
 //! - we don't track bound lifetimes in quantified clauses properly (<https://github.com/AeneasVerif/charon/issues/534>).
-//! - we don't take into account unicity of trait implementations. This means we won't detect type
-//!   equalities due to the same trait predicate appearing twice, or a trait predicate coinciding
-//!   with an existing trait impl. See the `dictionary_passing_style_woes.rs` test file.
+//! - we only partially take into account unicity of trait implementations. We detect type
+//!   equalities due to the same trait predicate appearing twice, but only among the parameters of
+//!   top-level items (see `merge_equal_paths`). We don't detect a trait predicate coinciding with
+//!   an existing trait impl. See the `dictionary_passing_style_woes.rs` test file.
 use derive_generic_visitor::*;
 use itertools::Itertools;
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
@@ -229,7 +230,7 @@ mod trait_ref_path {
             }
         }
 
-        fn move_from_under_binders(mut self, depth: DeBruijnId) -> Option<Self> {
+        pub fn move_from_under_binders(mut self, depth: DeBruijnId) -> Option<Self> {
             match &mut self.base {
                 BaseClause::SelfClause => {}
                 BaseClause::Local(var) => *var = var.move_from_under_binders(depth)?,
@@ -486,6 +487,42 @@ mod type_constraint_set {
             Some(self.find_ty_and_used_constraint(path)?.1)
         }
 
+        /// Replace the associated types found in `x` with their value, if this set knows it.
+        pub fn normalize<T: AstVisitable>(&self, x: &mut T) {
+            #[derive(Visitor)]
+            struct NormalizeVisitor<'a> {
+                set: &'a TypeConstraintSet,
+                binder_depth: DeBruijnId,
+            }
+            impl VisitorWithBinderDepth for NormalizeVisitor<'_> {
+                fn binder_depth_mut(&mut self) -> &mut DeBruijnId {
+                    &mut self.binder_depth
+                }
+            }
+            impl VisitAstMut for NormalizeVisitor<'_> {
+                fn visit<T: AstVisitable>(&mut self, x: &mut T) -> ControlFlow<Self::Break> {
+                    VisitWithBinderDepth::new(self).visit(x)
+                }
+                fn enter_ty_kind(&mut self, kind: &mut TyKind) {
+                    if let TyKind::TraitType(tref, type_id, _) = kind
+                        && let Some(path) = tref.to_path()
+                        && let Some(path) = path.move_from_under_binders(self.binder_depth)
+                        && let Some(ty) = self.set.find(&path.with_assoc_type(*type_id))
+                    {
+                        let ty = ty.clone().move_under_binders(self.binder_depth);
+                        *kind = ty.kind().clone();
+                        // The new type may need normalizing too.
+                        self.enter_ty_kind(kind)
+                    }
+                }
+            }
+            let mut visitor = NormalizeVisitor {
+                set: self,
+                binder_depth: DeBruijnId::zero(),
+            };
+            let _ = visitor.visit(x);
+        }
+
         pub fn iter(&self) -> impl Iterator<Item = (AssocTypePath, Ty)> {
             let mut vec = vec![];
             for (base, inner) in &self.clauses {
@@ -732,11 +769,13 @@ impl<'a> ComputeItemModifications<'a> {
             // The complex case is traits: we call `compute_extra_params_for_trait` to
             // compute the right thing.
             let id = tdecl.def_id;
-            self.compute_trait_modifications(id)
+            return self
+                .compute_trait_modifications(id)
                 .as_processed()
                 .unwrap()
-                .clone()
-        } else if let ItemRef::TraitImpl(timpl) = item {
+                .clone();
+        }
+        let mut modifications = if let ItemRef::TraitImpl(timpl) = item {
             let type_constraints = self
                 .compute_assoc_tys_for_impl(timpl.def_id)
                 .unwrap()
@@ -751,6 +790,82 @@ impl<'a> ComputeItemModifications<'a> {
             modifications
         } else {
             self.compute_non_trait_modifications(item.generic_params())
+        };
+        self.merge_equal_paths(&mut modifications, item.generic_params(), None);
+        modifications
+    }
+
+    /// Like rustc, we consider that an associated type is determined by the trait predicate it is
+    /// taken on, regardless of how that predicate was proven (this is ensured by coherence). Hence
+    /// two paths whose trait refs prove the same predicate refer to the same type, e.g. in:
+    /// ```rust,ignore
+    /// fn foo<A: Abstr, B: Abstr<L = A::L>>(x: <A::L as Lang>::T) -> <B::L as Lang>::T
+    /// ```
+    /// This finds such paths among the ones we were going to add parameters for, and gives them
+    /// the known value of an equal path if there is one, or makes them share a single parameter.
+    ///
+    /// We only do this for top-level items: the parameters we add to an inner binder (e.g. a trait
+    /// method) must not change when the binder is substituted (e.g. in a trait impl), which this
+    /// merging isn't stable under.
+    fn merge_equal_paths(
+        &self,
+        modifications: &mut ItemModifications,
+        params: &GenericParams,
+        self_tref: Option<&TraitRef>,
+    ) {
+        let krate = &self.ctx.translated;
+        // Compute the trait ref that `path` stands for, along with the predicate it proves. We
+        // normalize the predicate and erase its `trait_refs` since these are proofs.
+        let to_tref_and_pred = |set: &TypeConstraintSet, path: &TraitRefPath| {
+            let tref = match path.base {
+                BaseClause::SelfClause => path.on_real_tref(krate, self_tref?.clone())?,
+                BaseClause::Local(var) => {
+                    let clause_id = var.bound_at_depth(DeBruijnId::zero()).unwrap();
+                    let clause_tref = params.trait_clauses[clause_id].identity_tref().erase();
+                    path.pop_base().on_real_tref(krate, clause_tref)?
+                }
+            };
+            let mut pred = tref.trait_decl_ref.clone();
+            pred.generics.trait_refs.clear();
+            set.normalize(&mut pred);
+            Some((tref, pred))
+        };
+        // The value of each associated type we know so far, indexed by predicate.
+        let mut known: Vec<(TraitDeclRef, AssocTypeId, Ty)> = vec![];
+        for (path, mut ty) in modifications.type_constraints.iter() {
+            modifications.type_constraints.normalize(&mut ty);
+            // Skip entries that only point to one of the paths we don't know the value of.
+            if let TyKind::TraitType(tref, type_id, _) = ty.kind()
+                && let Some(tref) = tref.to_path()
+                && modifications
+                    .required_extra_paths
+                    .contains(&tref.with_assoc_type(*type_id))
+            {
+                continue;
+            }
+            if let Some((_, pred)) = to_tref_and_pred(&modifications.type_constraints, &path.tref) {
+                known.push((pred, path.type_id, ty));
+            }
+        }
+        for path in std::mem::take(&mut modifications.required_extra_paths) {
+            if let Some((tref, pred)) =
+                to_tref_and_pred(&modifications.type_constraints, &path.tref)
+            {
+                if let Some((.., ty)) = known
+                    .iter()
+                    .find(|(p, type_id, _)| *p == pred && *type_id == path.type_id)
+                {
+                    // This path refers to the same type as a previous one: we use its value
+                    // instead of adding a new parameter.
+                    modifications
+                        .type_constraints
+                        .insert_path(&path, ty.clone());
+                    continue;
+                }
+                let ty = TyKind::TraitType(tref, path.type_id, GenericArgs::empty()).into_ty();
+                known.push((pred, path.type_id, ty));
+            }
+            modifications.required_extra_paths.push(path);
         }
     }
 
@@ -841,15 +956,15 @@ impl<'a> ComputeItemModifications<'a> {
                     .any(|pat| pat.matches(&self.ctx.translated, &tr.item_meta.name));
             let remove_assoc_types = !is_self_referential && remove_assoc_type;
 
+            let self_tref = TraitRef::new(
+                TraitRefKind::SelfId,
+                TraitDeclRef {
+                    id: tr.def_id,
+                    generics: Box::new(tr.generics.identity_args()),
+                },
+            );
             let type_constraints = {
                 let mut type_constraints = self.compute_constraint_set(&tr.generics);
-                let self_tref = TraitRef::new(
-                    TraitRefKind::SelfId,
-                    TraitDeclRef {
-                        id: tr.def_id,
-                        generics: Box::new(tr.generics.identity_args()),
-                    },
-                );
                 // Inherit known constraints from implied clauses.
                 for (clause_id, clause) in tr.implied_clauses.iter_enumerated() {
                     let tref = TraitRef::new(
@@ -881,6 +996,7 @@ impl<'a> ComputeItemModifications<'a> {
             for path in replace {
                 modifications.replace_path(path);
             }
+            self.merge_equal_paths(&mut modifications, &tr.generics, Some(&self_tref));
 
             self.trait_modifications[id] = CycleDetector::Processed(modifications);
         }
@@ -1226,6 +1342,62 @@ impl VisitAstMut for UpdateItemBody<'_> {
         &mut self,
         binder: &mut Binder<T>,
     ) -> ControlFlow<Self::Break> {
+        // Within the binder, prefer the binder's own clauses over outer clauses that prove the same
+        // predicate. E.g. in a trait impl, a method-level clause from the trait signature may
+        // coincide with a clause of the impl, and rustc may use either to prove that predicate.
+        // Both proofs are valid, but they give separate parameters for the lifted associated
+        // types, and only the binder's ones match the binder's signature.
+        let mut binder_preds: Vec<(TraitClauseId, TraitDeclRef)> = vec![];
+        for clause in &binder.params.trait_clauses {
+            if clause.trait_.regions.is_empty()
+                && let Some(tmods) = self
+                    .item_modifications
+                    .get(&GenericsSource::item(clause.trait_.skip_binder.id))
+                && tmods.required_extra_params().next().is_some()
+            {
+                let mut pred = clause.trait_.clone().erase();
+                pred.generics.trait_refs.clear();
+                binder_preds.push((clause.clause_id, pred));
+            }
+        }
+        if !binder_preds.is_empty() {
+            #[derive(Visitor)]
+            struct PreferBinderClauses<'a> {
+                preds: &'a [(TraitClauseId, TraitDeclRef)],
+                binder_depth: DeBruijnId,
+            }
+            impl VisitorWithBinderDepth for PreferBinderClauses<'_> {
+                fn binder_depth_mut(&mut self) -> &mut DeBruijnId {
+                    &mut self.binder_depth
+                }
+            }
+            impl VisitAstMut for PreferBinderClauses<'_> {
+                fn visit<T: AstVisitable>(&mut self, x: &mut T) -> ControlFlow<Self::Break> {
+                    VisitWithBinderDepth::new(self).visit(x)
+                }
+                fn enter_trait_ref_contents(&mut self, tref: &mut TraitRefContents) {
+                    if let TraitRefKind::Clause(DeBruijnVar::Bound(dbid, _), _) = tref.kind
+                        && dbid > self.binder_depth
+                    {
+                        let mut pred = tref.trait_decl_ref.clone();
+                        pred.generics.trait_refs.clear();
+                        if let Some(pred) = pred.move_from_under_binders(self.binder_depth)
+                            && let Some((clause_id, _)) =
+                                self.preds.iter().find(|(_, p)| *p == pred)
+                        {
+                            let var = DeBruijnVar::bound(self.binder_depth, *clause_id);
+                            tref.kind = TraitRefKind::Clause(var, RegionArgs::empty());
+                        }
+                    }
+                }
+            }
+            let _ = PreferBinderClauses {
+                preds: &binder_preds,
+                binder_depth: DeBruijnId::zero(),
+            }
+            .visit(&mut binder.skip_binder);
+        }
+
         // An inner binder. Apart from the case of trait method declarations, this is not a
         // globally-addressable item, so we haven't computed appropriate modifications yet. Hence
         // we compute them here.

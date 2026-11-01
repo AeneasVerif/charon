@@ -58,12 +58,12 @@ where
 }
 
 // Full name: test_crate::foo
-pub fn foo<T, Clause1_ReaderCore, Clause1_Clause2_BlockSize, Clause1_Clause2_Clause2_Output, Clause2_Output>() -> Wrapper<Clause1_ReaderCore, Clause1_Clause2_BlockSize, Clause1_Clause2_Clause2_Output>[TraitClause1::ImpliedClause1, TraitClause1::ImpliedClause2, TraitClause3]
+pub fn foo<T, Clause1_ReaderCore, Clause1_Clause2_BlockSize, Clause1_Clause2_Clause2_Output>() -> Wrapper<Clause1_ReaderCore, Clause1_Clause2_BlockSize, Clause1_Clause2_Clause2_Output>[TraitClause1::ImpliedClause1, TraitClause1::ImpliedClause2, TraitClause3]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: HasReaderCore<Clause1_ReaderCore, Clause1_Clause2_BlockSize, Clause1_Clause2_Clause2_Output>),
-    TraitClause2: (Clause1_Clause2_BlockSize: HasOutput<Clause2_Output>),
-    TraitClause3: (Clause2_Output: Bound),
+    TraitClause2: (Clause1_Clause2_BlockSize: HasOutput<Clause1_Clause2_Clause2_Output>),
+    TraitClause3: (Clause1_Clause2_Clause2_Output: Bound),
 {
     let _0: Wrapper<Clause1_ReaderCore, Clause1_Clause2_BlockSize, Clause1_Clause2_Clause2_Output>[TraitClause1::ImpliedClause1, TraitClause1::ImpliedClause2, TraitClause3]; // return
 
