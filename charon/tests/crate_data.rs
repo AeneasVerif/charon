@@ -1142,6 +1142,7 @@ fn target_info_cfg_values() -> anyhow::Result<()> {
     assert_eq!(linux.os, from_rustc::Os::Linux);
     assert_eq!(linux.env, from_rustc::Env::Gnu);
     assert_eq!(linux.cfg_abi, from_rustc::CfgAbi::Unspecified);
+    assert_eq!(linux.binary_format, from_rustc::BinaryFormat::Elf);
 
     let windows = &crate_data.target_information["x86_64-pc-windows-msvc"];
     assert_eq!(windows.arch, from_rustc::Arch::X86_64);
@@ -1149,6 +1150,7 @@ fn target_info_cfg_values() -> anyhow::Result<()> {
     assert_eq!(windows.os, from_rustc::Os::Windows);
     assert_eq!(windows.env, from_rustc::Env::Msvc);
     assert_eq!(windows.cfg_abi, from_rustc::CfgAbi::Unspecified);
+    assert_eq!(windows.binary_format, from_rustc::BinaryFormat::Coff);
     Ok(())
 }
 

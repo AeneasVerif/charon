@@ -786,6 +786,21 @@ pub enum CfgAbi {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
+#[cfg_attr(feature = "charon_on_charon", charon::rename("RustcBinaryFormat"))]
+#[cfg_attr(
+    feature = "charon_on_charon",
+    charon::variants_prefix("RustcBinaryFormat")
+)]
+pub enum BinaryFormat {
+    Coff,
+    Elf,
+    MachO,
+    Wasm,
+    Xcoff,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcDeprecation"))]
 pub struct Deprecation {
     pub since: DeprecatedSince,

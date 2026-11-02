@@ -737,6 +737,9 @@ impl<'tcx> TranslateCtx<'tcx> {
             cfg_abi: self
                 .translate_rustc_cfg_abi(&target.cfg_abi)
                 .expect("all rustc CfgAbi variants should be translated"),
+            binary_format: self
+                .translate_rustc_binary_format(&target.binary_format)
+                .expect("all rustc BinaryFormat variants should be translated"),
             target_pointer_size: target_data.pointer_size().bytes(),
             is_little_endian: matches!(target_data.endian, rustc_abi::Endian::Little),
             c_enum_smallest_repr_ty,
@@ -1255,6 +1258,63 @@ pub fn translate<'tcx>(
                 };
                 for ldid in tcx.hir_crate_items(()).definitions() {
                     add_if_matches(ldid)
+                }
+            }
+            StartFrom::GlobalCtors => {
+                // Translate constructors that run before the program start; this is decided
+                // by the linker, which is a bit obscure, so we follow the same logic as Miri. See:
+                // https://github.com/rust-lang/miri/blob/ddd2b2fc87565b16fd38e7cab9838295aaca1c40/src/shims/global_ctor.rs
+                use rustc_middle::middle::codegen_fn_attrs::CodegenFnAttrFlags;
+                use rustc_middle::middle::exported_symbols::ExportedSymbol;
+                use rustc_structures::CrateType;
+                use rustc_target::spec::BinaryFormat;
+                let is_ctor_section = |section: &str| match tcx.sess.target.binary_format {
+                    BinaryFormat::Coff => section == ".CRT$XCU",
+                    BinaryFormat::MachO => {
+                        let mut parts = section.splitn(3, ',');
+                        parts.next() == Some("__DATA")
+                            && parts.next() == Some("__mod_init_func")
+                            && matches!(parts.next(), None | Some("mod_init_funcs"))
+                    }
+                    BinaryFormat::Elf | BinaryFormat::Wasm => section == ".init_array",
+                    _ => false,
+                };
+                let mut add_if_ctor = |rust_def_id: DefId, used: bool| {
+                    if used
+                        && let Some(section) = tcx.codegen_fn_attrs(rust_def_id).link_section
+                        && is_ctor_section(section.as_str())
+                    {
+                        let def_id: hax::DefId = rust_def_id.sinto(&ctx.hax_state);
+                        ctx.enqueue_module_item(&def_id, ContainmentNode::Start);
+                    }
+                };
+                // For the local crate, we walk all its items and check their `#[used]` flags.
+                // We can't do like below because if the crate is a binary its exported symbols
+                // don't include its `#[used]` statics.
+                for ldid in tcx.hir_crate_items(()).definitions() {
+                    if tcx.def_kind(ldid).has_codegen_attrs() && !tcx.is_foreign_item(ldid) {
+                        let flags = tcx.codegen_fn_attrs(ldid).flags;
+                        let used = flags.intersects(
+                            CodegenFnAttrFlags::USED_COMPILER | CodegenFnAttrFlags::USED_LINKER,
+                        );
+                        add_if_ctor(ldid.to_def_id(), used);
+                    }
+                }
+                // For binary crates, we also look at the exported symbols of the dependencies,
+                // because their constructors get linked into the final executable.
+                if tcx.crate_types().contains(&CrateType::Executable) {
+                    for &cnum in tcx.crates(()) {
+                        if tcx.crate_dep_kind(cnum).macros_only() {
+                            continue;
+                        }
+                        for &(symbol, info) in tcx.exported_non_generic_symbols(cnum) {
+                            if let ExportedSymbol::NonGeneric(def_id) = symbol
+                                && !tcx.is_foreign_item(def_id)
+                            {
+                                add_if_ctor(def_id, info.used);
+                            }
+                        }
+                    }
                 }
             }
         }

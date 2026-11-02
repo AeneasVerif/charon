@@ -17,6 +17,8 @@ pub struct TomlConfig {
     #[serde(default)]
     pub start_from_pub: bool,
     #[serde(default)]
+    pub start_from_global_ctors: bool,
+    #[serde(default)]
     pub hide_marker_traits: bool,
     #[serde(default)]
     pub include: Vec<String>,
@@ -47,6 +49,7 @@ impl TomlConfig {
             .start_from_attribute
             .extend(self.start_from_attribute);
         config.start_from_pub |= self.start_from_pub;
+        config.start_from_global_ctors |= self.start_from_global_ctors;
         config.hide_marker_traits |= self.hide_marker_traits;
         config.include.extend(self.include);
         config.opaque.extend(self.opaque);

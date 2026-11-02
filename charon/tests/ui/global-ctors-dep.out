@@ -1,0 +1,21 @@
+# Final LLBC before serialization:
+
+struct () {}
+
+// Full name: global_ctors_dep_aux::dep_ctor
+extern "C" fn dep_ctor()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: global_ctors_dep_aux::DEP_CTOR
+#[link_section = ".init_array"]
+static DEP_CTOR: extern "C" fn() = fn_def_to_fn_ptr(dep_ctor)
+
+
+

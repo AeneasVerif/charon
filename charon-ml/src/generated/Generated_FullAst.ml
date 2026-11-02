@@ -62,6 +62,13 @@ and assoc_item_names = {
   consts : trait_item_name list;
 }
 
+and rustc_binary_format =
+  | RustcBinaryFormatCoff
+  | RustcBinaryFormatElf
+  | RustcBinaryFormatMachO
+  | RustcBinaryFormatWasm
+  | RustcBinaryFormatXcoff
+
 (** The body of a function.
 
     A normal function has a body that's either structured or unstructured. These
@@ -210,6 +217,10 @@ and cli_options = {
   start_from_pub : bool;
       (** Use all the [pub] items as starting points for translation (except
           modules). *)
+  start_from_global_ctors : bool;
+      (** Use global constructors as starting points for translation, i.e. the
+          [#[used]] statics placed in the linker section that the target runs at
+          startup (e.g. [.init_array] on ELF). *)
   included : string list;
       (** Whitelist of items to translate. These use the name-matcher syntax. *)
   opaque : string list;
@@ -559,6 +570,8 @@ and target_info = {
   os : rustc_os;  (** The target OS, as seen by [cfg(target_os)]. *)
   env : rustc_env;  (** The target environment, as seen by [cfg(target_env)]. *)
   cfg_abi : rustc_cfg_abi;  (** The target ABI, as seen by [cfg(target_abi)]. *)
+  binary_format : rustc_binary_format;
+      (** The binary format of the target's object files. *)
   target_pointer_size : int;  (** The pointer size of the target in bytes. *)
   is_little_endian : bool;
       (** Whether the target platform uses little endian byte order. *)

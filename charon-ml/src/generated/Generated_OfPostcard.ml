@@ -2066,6 +2066,18 @@ and rustc_attribute_kind_of_postcard (ctx : of_postcard_ctx)
          Ok (RustcAttributeKindTrackCaller _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and rustc_binary_format_of_postcard (ctx : of_postcard_ctx)
+    (st : postcard_state) : (rustc_binary_format, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok RustcBinaryFormatCoff
+     | 1 -> Ok RustcBinaryFormatElf
+     | 2 -> Ok RustcBinaryFormatMachO
+     | 3 -> Ok RustcBinaryFormatWasm
+     | 4 -> Ok RustcBinaryFormatXcoff
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and body_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (body, string) result =
   combine_error_msgs st __FUNCTION__
@@ -2154,6 +2166,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* start_from_if_exists = list_of_postcard string_of_postcard ctx st in
      let* start_from_attribute = list_of_postcard string_of_postcard ctx st in
      let* start_from_pub = bool_of_postcard ctx st in
+     let* start_from_global_ctors = bool_of_postcard ctx st in
      let* included = list_of_postcard string_of_postcard ctx st in
      let* opaque = list_of_postcard string_of_postcard ctx st in
      let* exclude = list_of_postcard string_of_postcard ctx st in
@@ -2222,6 +2235,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           start_from_if_exists;
           start_from_attribute;
           start_from_pub;
+          start_from_global_ctors;
           included;
           opaque;
           exclude;
@@ -3353,6 +3367,7 @@ and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* os = rustc_os_of_postcard ctx st in
      let* env = rustc_env_of_postcard ctx st in
      let* cfg_abi = rustc_cfg_abi_of_postcard ctx st in
+     let* binary_format = rustc_binary_format_of_postcard ctx st in
      let* target_pointer_size = u64_of_postcard ctx st in
      let* is_little_endian = bool_of_postcard ctx st in
      let* c_enum_smallest_repr_ty = int_ty_of_postcard ctx st in
@@ -3367,6 +3382,7 @@ and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           os;
           env;
           cfg_abi;
+          binary_format;
           target_pointer_size;
           is_little_endian;
           c_enum_smallest_repr_ty;

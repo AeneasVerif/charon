@@ -87,6 +87,10 @@ pub fn run(args: UiTestArgs) -> Result<ExitStatus> {
         })
         .collect::<Result<_>>()?;
     for (crate_name, rs_path, rlib_path) in deps.iter() {
+        let target_flags = magic_comments
+            .rustc_opts
+            .iter()
+            .filter(|opt| opt.starts_with("--target="));
         let mut cmd = Command::new(std::env::current_exe()?);
         let status = cmd
             .arg("rustc")
@@ -97,6 +101,7 @@ pub fn run(args: UiTestArgs) -> Result<ExitStatus> {
             .arg("-o")
             .arg(rlib_path)
             .arg(rs_path)
+            .args(target_flags)
             // The main test crate consumes this as an extern dependency, so unlike regular
             // `charon rustc` invocations we need rustc to leave the `.rlib` behind.
             .env("CHARON_EMIT_ARTIFACTS", "1")
@@ -144,7 +149,13 @@ pub fn run(args: UiTestArgs) -> Result<ExitStatus> {
     cmd.arg("--");
     cmd.arg(&args.file);
     cmd.arg("--crate-name=test_crate");
-    cmd.arg("--crate-type=rlib");
+    if !magic_comments
+        .rustc_opts
+        .iter()
+        .any(|opt| opt.starts_with("--crate-type"))
+    {
+        cmd.arg("--crate-type=rlib");
+    }
     cmd.arg("--allow=unused"); // Removes noise
     for (crate_name, _, rlib_path) in deps {
         cmd.arg(format!("--extern={crate_name}={}", rlib_path.display()));
