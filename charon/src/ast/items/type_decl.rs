@@ -1,5 +1,5 @@
 use derive_generic_visitor::*;
-use macros::{EnumAsGetters, EnumIsA};
+use enum_as_inner::EnumAsInner;
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 
@@ -47,7 +47,7 @@ generate_index_type!(VariantId, "Variant");
 generate_index_type!(FieldId, "Field");
 
 #[derive(Debug, Clone)]
-#[derive(EnumIsA, EnumAsGetters)]
+#[derive(EnumAsInner)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum TypeDeclKind {
     Struct(IndexVec<FieldId, Field>),
@@ -103,7 +103,7 @@ pub struct Field {
 /// their address. It's empty for `Sized` types, and interesting for unsized
 /// aka dynamically-sized types.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA)]
+#[derive(EnumAsInner)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(default_state = ())]
 pub enum PtrMetadata {
@@ -126,7 +126,7 @@ pub enum PtrMetadata {
 
 /// Where a given type came from.
 #[derive(Debug, Clone)]
-#[derive(EnumIsA, EnumAsGetters)]
+#[derive(EnumAsInner)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Type"))]
 pub enum TypeSource {

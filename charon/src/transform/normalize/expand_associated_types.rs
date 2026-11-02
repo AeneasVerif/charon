@@ -89,14 +89,14 @@ use trait_ref_path::*;
 mod trait_ref_path {
     use std::fmt::Display;
 
-    use macros::{EnumIsA, EnumToGetters};
+    use enum_as_inner::EnumAsInner;
 
     use crate::ast::*;
 
     /// A base clause: the special `Self: Trait` clause present in trait declarations, or a local
     /// clause.
     #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-    #[derive(EnumIsA, EnumToGetters)]
+    #[derive(EnumAsInner)]
     pub enum BaseClause {
         SelfClause,
         Local(DeBruijnVar<TraitClauseId>),

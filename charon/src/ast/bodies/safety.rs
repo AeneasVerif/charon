@@ -1,5 +1,5 @@
 //! Detect which operations and items require `unsafe`.
-use macros::EnumIsA;
+use enum_as_inner::EnumAsInner;
 
 use crate::ast::*;
 use crate::formatter::IntoFormatter;
@@ -8,7 +8,7 @@ use crate::{llbc_ast, ullbc_ast};
 
 /// Whether an operation requires `unsafe`.
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[derive(EnumIsA)]
+#[derive(EnumAsInner)]
 pub enum Safety {
     Safe,
     Unsafe,

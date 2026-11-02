@@ -1,7 +1,7 @@
 use crate::hax::prelude::*;
 use crate::hax::sinto_as_usize;
 
-use macros::{EnumAsGetters, EnumIsA};
+use enum_as_inner::EnumAsInner;
 use rustc_middle::ty;
 
 /// Reflects [`ty::ParamTy`]
@@ -179,7 +179,7 @@ pub struct Region {
 
 /// Reflects both [`ty::GenericArg`] and [`ty::GenericArgKind`]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[derive(EnumIsA, EnumAsGetters)]
+#[derive(EnumAsInner)]
 #[derive(AdtInto)]
 #[args(< S: UnderOwnerState<'tcx>>, from: ty::GenericArgKind<'tcx>, state: S as s)]
 pub enum GenericArg<'tcx> {

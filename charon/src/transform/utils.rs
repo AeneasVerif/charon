@@ -2,12 +2,12 @@ use crate::ast::*;
 use crate::formatter::{AstFormatter, FmtCtx};
 use crate::pretty::FmtWithCtx;
 use derive_generic_visitor::*;
-use macros::EnumIsA;
+use enum_as_inner::EnumAsInner;
 use std::fmt::{self, Debug};
 
 /// Each `GenericArgs` is meant for a corresponding `GenericParams`; this describes which one.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[derive(EnumIsA)]
+#[derive(EnumAsInner)]
 #[derive(Drive, DriveMut)]
 pub enum GenericsSource {
     /// A top-level item.

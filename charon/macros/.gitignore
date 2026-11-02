@@ -1,3 +1,0 @@
-# We don't need to track the Cargo.lock file in this crate.
-# Note that we track those files in the other crates only for Nix.
-*.lock

@@ -1,6 +1,6 @@
 //! Meta information about programs (spans, etc.).
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
-use macros::EnumIsA;
+use enum_as_inner::EnumAsInner;
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 
@@ -16,7 +16,7 @@ pub use spans::*;
 
 /// How much to translate for a given item.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-#[derive(EnumIsA)]
+#[derive(EnumAsInner)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 pub enum ItemOpacity {
     /// Translate the item fully.

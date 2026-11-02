@@ -133,7 +133,6 @@ clean-generated:
 .PHONY: clean
 clean: clean-generated
 	cd charon && cargo clean
-	cd charon/macros && cargo clean
 	dune clean
 
 # Build the Nix packages

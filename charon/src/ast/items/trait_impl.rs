@@ -1,8 +1,7 @@
 use crate::ast::*;
 use crate::ids::IndexVec;
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
-use macros::EnumAsGetters;
-use macros::EnumIsA;
+use enum_as_inner::EnumAsInner;
 use serde_state::DeserializeState;
 use serde_state::SerializeState;
 
@@ -73,7 +72,7 @@ pub enum TraitImplSource {
 
 /// The virtual table instance for a trait implementation.
 #[derive(Debug, Clone)]
-#[derive(EnumIsA, EnumAsGetters)]
+#[derive(EnumAsInner)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum VTableDecl {
     /// The trait is not dyn-compatible, so no vtable exists.

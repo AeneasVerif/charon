@@ -3,7 +3,7 @@
 use charon_lib::ast::*;
 
 mod util;
-use macros::EnumIsA;
+use enum_as_inner::EnumAsInner;
 use util::*;
 
 /// Number of different layout seeds to try.
@@ -14,7 +14,7 @@ const DYN_SIZE: u128 = 12;
 const DYN_ALIGN: u128 = 4;
 const SLICE_LENGTH: u128 = 3;
 
-#[derive(Debug, Copy, Clone, EnumIsA)]
+#[derive(Debug, Copy, Clone, EnumAsInner)]
 enum BoundOp {
     Equal,
     AtLeast,
