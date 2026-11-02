@@ -1,6 +1,6 @@
 use crate::ast::*;
 use derive_generic_visitor::{ControlFlow, Drive, DriveMut, DriveTwo, VisitTwo, Visitor};
-use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
+use macros::{EnumAsGetters, EnumIsA};
 
 pub mod fun_decl;
 pub mod global_decl;
@@ -22,7 +22,7 @@ pub use type_decl::*;
 
 /// A translated item.
 #[derive(Debug)]
-#[derive(EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
+#[derive(EnumIsA, EnumAsGetters)]
 #[derive(Drive, DriveMut, DriveTwo)]
 #[expect(clippy::large_enum_variant)]
 pub enum ItemByVal {
@@ -35,7 +35,7 @@ pub enum ItemByVal {
 
 /// A reference to a translated item.
 #[derive(Debug, Copy, Clone)]
-#[derive(EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
+#[derive(EnumIsA, EnumAsGetters)]
 #[derive(Drive, DriveMut, DriveTwo)]
 pub enum ItemRef<'ctx> {
     Type(&'ctx TypeDecl),
@@ -47,7 +47,7 @@ pub enum ItemRef<'ctx> {
 
 /// A mutable reference to a translated item.
 #[derive(Debug)]
-#[derive(EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
+#[derive(EnumIsA, EnumAsGetters)]
 #[derive(Drive, DriveMut, DriveTwo)]
 pub enum ItemRefMut<'ctx> {
     Type(&'ctx mut TypeDecl),

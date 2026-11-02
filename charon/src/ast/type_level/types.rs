@@ -1,6 +1,6 @@
 use crate::ast::*;
 use derive_generic_visitor::*;
-use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
+use macros::{EnumAsGetters, EnumIsA};
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 use std::ops::DerefMut;
@@ -17,7 +17,7 @@ pub struct Ty(pub HashConsed<WithCachedTypeInfo<TyKind>>);
 ///
 /// This is interned as `Ty`, making it cheap to clone and compare.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(VariantName, EnumIsA, EnumAsGetters, EnumToGetters, VariantIndexArity)]
+#[derive(EnumIsA, EnumAsGetters)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("T"))]
 pub enum TyKind {
@@ -85,7 +85,7 @@ pub enum TyKind {
 
 /// Types of primitive scalar values.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
+#[derive(EnumIsA, EnumAsGetters)]
 #[derive(
     Serialize,
     Deserialize,
@@ -106,7 +106,7 @@ pub enum ScalarTy {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA, VariantName)]
+#[derive(EnumIsA)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("IntegerType"))]
 pub enum IntegerTy {
@@ -115,7 +115,7 @@ pub enum IntegerTy {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA, VariantName)]
+#[derive(EnumIsA)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 pub enum IntTy {
     Isize,
@@ -127,7 +127,7 @@ pub enum IntTy {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA, VariantName)]
+#[derive(EnumIsA)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 pub enum UIntTy {
     Usize,
@@ -139,7 +139,7 @@ pub enum UIntTy {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA, VariantName)]
+#[derive(EnumIsA)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("FloatType"))]
 pub enum FloatTy {
@@ -151,7 +151,7 @@ pub enum FloatTy {
 
 /// Builtin ADT identifiers.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA, EnumAsGetters, VariantName)]
+#[derive(EnumIsA, EnumAsGetters)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("T"))]
 pub enum BuiltinAdt {
@@ -164,7 +164,7 @@ pub enum BuiltinAdt {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(VariantName, EnumIsA)]
+#[derive(EnumIsA)]
 #[derive(
     Serialize,
     Deserialize,
@@ -196,7 +196,7 @@ pub struct DynPredicate {
 
 /// A type-level pattern used by [`TyKind::Pattern`].
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(VariantName, EnumIsA)]
+#[derive(EnumIsA)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(state_implements = DedupSerializerState)] // Avoid corecursive impls due to perfect derive
 pub enum TypePattern {

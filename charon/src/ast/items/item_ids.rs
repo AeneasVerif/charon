@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 
 use crate::ast::*;
-use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
+use macros::{EnumAsGetters, EnumIsA, VariantIndexArity};
 
 generate_index_type!(FunDeclId, "Fun");
 generate_index_type!(TypeDeclId, "Adt");
@@ -21,7 +21,7 @@ generate_index_type!(TraitImplId, "TraitImpl");
 
 /// The id of a translated item.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
+#[derive(EnumIsA, EnumAsGetters, VariantIndexArity)]
 #[derive(
     Serialize,
     Deserialize,
@@ -43,7 +43,7 @@ pub enum ItemId {
 
 /// The id of an associated item within a trait.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
+#[derive(EnumIsA, EnumAsGetters)]
 #[derive(
     Serialize,
     Deserialize,
@@ -63,7 +63,7 @@ pub enum AssocItemId {
 
 /// The id of a translated item or associated item definition.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
+#[derive(EnumIsA, EnumAsGetters)]
 #[derive(
     Serialize,
     Deserialize,

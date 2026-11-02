@@ -1,7 +1,7 @@
 //! Contains definitions for variables and constant values.
 use core::hash::Hash;
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
-use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
+use macros::{EnumAsGetters, EnumIsA};
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 use std::vec::Vec;
@@ -15,7 +15,7 @@ use crate::ast::*;
 pub struct ConstantExpr(pub HashConsed<WithCachedTypeInfo<(ConstantExprKind, Ty)>>);
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(VariantName, EnumIsA, EnumAsGetters)]
+#[derive(EnumIsA, EnumAsGetters)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("C"))]
 pub enum ConstantExprKind {
@@ -193,7 +193,7 @@ pub enum ConstProjectionElem {
 
 /// A scalar value.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
+#[derive(EnumIsA, EnumAsGetters)]
 #[derive(
     Serialize,
     Deserialize,

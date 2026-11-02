@@ -3,7 +3,7 @@
 //!
 //! We reconstruct this structure from the unstructured ast in an optional translation pass.
 use derive_generic_visitor::*;
-use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
+use macros::{EnumAsGetters, EnumIsA};
 use serde_state::{DeserializeState, SerializeState};
 use std::mem;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -44,7 +44,7 @@ pub struct Statement {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[derive(EnumIsA, EnumToGetters, EnumAsGetters)]
+#[derive(EnumIsA, EnumAsGetters)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum StatementKind {
     /// Assigns an `Rvalue` to a `Place`. e.g. `let y = x;` could become

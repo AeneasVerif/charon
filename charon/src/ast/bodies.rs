@@ -6,7 +6,7 @@ use crate::ullbc_ast;
 use crate::utils::serialize_map_to_array::SeqHashMapToArray;
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
 use macros::EnumAsGetters;
-use macros::{EnumIsA, EnumToGetters};
+use macros::EnumIsA;
 use serde_state::DeserializeState;
 use serde_state::SerializeState;
 
@@ -33,7 +33,7 @@ pub use values::*;
 ///
 /// Besides these, some functions have virtual bodies or no body, see the doc for each variant.
 #[derive(Debug, Clone)]
-#[derive(EnumIsA, EnumAsGetters, EnumToGetters)]
+#[derive(EnumIsA, EnumAsGetters)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(state_implements = DedupSerializerState)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Body"))]

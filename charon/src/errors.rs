@@ -4,7 +4,6 @@ use crate::formatter::IntoFormatter;
 use crate::pretty::FmtWithCtx;
 pub use annotate_snippets::Level;
 use itertools::Itertools;
-use macros::VariantIndexArity;
 use petgraph::algo::dijkstra::dijkstra;
 use petgraph::prelude::DiGraphMap;
 use rustc_hash::FxHashSet as HashSet;
@@ -173,7 +172,6 @@ pub struct DepSource {
 
 /// For tracing error dependencies.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(VariantIndexArity)]
 enum DepNode {
     External(ItemId),
     /// We use the span information only for local references

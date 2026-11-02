@@ -29,7 +29,6 @@ use charon_lib::ast::*;
 use charon_lib::name_matcher::NamePattern;
 use charon_lib::options::{CliOpts, ConstHandling, StartFrom, TranslateOptions};
 use charon_lib::transform::TransformCtx;
-use macros::VariantIndexArity;
 
 /// The id of an untranslated item. Note that a given `DefId` may show up as multiple different
 /// item sources, e.g. a constant will have both a `Global` version (for the constant itself) and a
@@ -56,7 +55,6 @@ pub enum RustcItem<'tcx> {
 
 /// The kind of a [`TransItemSource`].
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(VariantIndexArity)]
 pub enum TransItemSourceKind {
     Global,
     TraitDecl,
@@ -90,7 +88,6 @@ pub enum TransItemSourceKind {
 
 /// The kind of a [`TransItemSourceKind::TraitImpl`].
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(VariantIndexArity)]
 pub enum TransImplSource {
     /// A user-written trait impl with a `DefId`.
     Normal,

@@ -2,7 +2,7 @@
 //!
 //! In effect, this is a cleaned up version of MIR.
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
-use macros::{EnumAsGetters, EnumIsA, VariantName};
+use macros::{EnumAsGetters, EnumIsA};
 use rustc_hash::FxHashMap as HashMap;
 use serde_state::{DeserializeState, SerializeState};
 use smallvec::{SmallVec, smallvec};
@@ -57,7 +57,7 @@ pub struct Statement {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[derive(EnumIsA, EnumAsGetters, VariantName)]
+#[derive(EnumIsA, EnumAsGetters)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum StatementKind {
     Assign(Place, Rvalue),

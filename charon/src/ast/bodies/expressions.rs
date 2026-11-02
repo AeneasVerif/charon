@@ -1,14 +1,14 @@
 //! Implements expressions: paths, operands, rvalues, lvalues
 use crate::ast::*;
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
-use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
+use macros::{EnumAsGetters, EnumIsA};
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 use std::vec::Vec;
 
 /// An expression that evaluates to a value. This is the RHS of an assignment.
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[derive(EnumToGetters, EnumAsGetters, EnumIsA)]
+#[derive(EnumAsGetters, EnumIsA)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum Rvalue {
     /// Lifts an operand as an rvalue.
@@ -72,7 +72,7 @@ pub enum Rvalue {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[derive(EnumIsA, EnumToGetters, EnumAsGetters, VariantName)]
+#[derive(EnumIsA, EnumAsGetters)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(state_implements = DedupSerializerState)] // Avoid corecursive impls due to perfect derive
 pub enum Operand {
@@ -111,7 +111,7 @@ pub enum OverflowMode {
 
 /// Binary operations.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-#[derive(EnumIsA, VariantName)]
+#[derive(EnumIsA)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("Binop"))]
 #[serde_state(stateless)]
@@ -140,7 +140,7 @@ pub enum BinOp {
 
 /// Unary operation
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[derive(EnumIsA, VariantName)]
+#[derive(EnumIsA)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("Unop"))]
 pub enum UnOp {
@@ -154,7 +154,7 @@ pub enum UnOp {
 
 /// Cast the operand to a new type.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA, VariantName)]
+#[derive(EnumIsA)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Cast"))]
 pub enum CastKind {
@@ -204,7 +204,7 @@ pub enum CastKind {
 
 /// Nullary operation
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[derive(EnumIsA, VariantName)]
+#[derive(EnumIsA)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("Nullop"))]
 pub enum NullOp {
@@ -259,7 +259,7 @@ impl BorrowKind {
 pub type MetadataPath = Vec<FieldId>;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA, VariantName)]
+#[derive(EnumIsA)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Meta"))]
 pub enum UnsizingMetadata {
@@ -298,7 +298,6 @@ pub enum UnsizingMetadata {
 /// `Cons (⊥, ⊥)` upon the first assignment, at which point we can initialize
 /// the field 0, etc.).
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[derive(VariantIndexArity)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Aggregated"))]
 pub enum AggregateKind {
