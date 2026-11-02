@@ -60,6 +60,9 @@ Options:
       --start-from-pub
           Use all the `pub` items as starting points for translation (except modules)
 
+      --start-from-global-ctors
+          Use global constructors as starting points for translation, i.e. the `#[used]` statics placed in the linker section that the target runs at startup (e.g. `.init_array` on ELF)
+
       --include <INCLUDE>
           Whitelist of items to translate. These use the name-matcher syntax (note: this differs
           a bit from the ocaml NameMatcher).

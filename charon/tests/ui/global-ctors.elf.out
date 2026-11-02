@@ -1,0 +1,51 @@
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait core::marker::MetaSized<Self>
+
+#[fundamental]
+#[lang_item(Sized)]
+pub trait core::marker::Sized<Self>
+{
+    proof ImpliedClause0: (Self: core::marker::MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+extern "C" fn test_crate::elf_ctor()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+extern "C" fn test_crate::elf_ctor_a()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+extern "C" fn test_crate::elf_ctor_b()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+#[link_section = ".init_array"]
+static test_crate::ELF_CTOR: extern "C" fn() = fn_def_to_fn_ptr(test_crate::elf_ctor)
+
+#[link_section = ".init_array"]
+static test_crate::ELF_CTORS: [extern "C" fn(); 2usize] = [fn_def_to_fn_ptr(test_crate::elf_ctor_a), fn_def_to_fn_ptr(test_crate::elf_ctor_b)]
+
+

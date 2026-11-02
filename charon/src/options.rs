@@ -128,6 +128,11 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub start_from_pub: bool,
+    /// Use global constructors as starting points for translation, i.e. the `#[used]` statics
+    /// placed in the linker section that the target runs at startup (e.g. `.init_array` on ELF).
+    #[clap(long)]
+    #[serde(default)]
+    pub start_from_global_ctors: bool,
 
     /// Whitelist of items to translate. These use the name-matcher syntax.
     #[clap(
@@ -757,6 +762,8 @@ pub enum StartFrom {
     /// Item marked `pub`. Note that this does not take accessibility into account; a
     /// non-reexported `pub` item will be included here.
     Pub,
+    /// The global constructors of the target.
+    GlobalCtors,
 }
 
 /// The options that control translation and transformation.
@@ -894,6 +901,9 @@ impl TranslateOptions {
         }
         if options.start_from_pub {
             start_from.push(StartFrom::Pub);
+        }
+        if options.start_from_global_ctors {
+            start_from.push(StartFrom::GlobalCtors);
         }
         if start_from.is_empty() {
             start_from.push(StartFrom::Pattern {

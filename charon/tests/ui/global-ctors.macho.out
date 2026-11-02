@@ -1,0 +1,16 @@
+struct () {}
+
+extern "C" fn test_crate::macho_ctor()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+#[link_section = "__DATA,__mod_init_func"]
+static test_crate::MACHO_CTOR: extern "C" fn() = fn_def_to_fn_ptr(test_crate::macho_ctor)
+
+

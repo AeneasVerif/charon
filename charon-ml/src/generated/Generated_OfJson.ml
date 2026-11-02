@@ -2572,6 +2572,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("start_from_if_exists", start_from_if_exists);
           ("start_from_attribute", start_from_attribute);
           ("start_from_pub", start_from_pub);
+          ("start_from_global_ctors", start_from_global_ctors);
           ("include", include_);
           ("opaque", opaque);
           ("exclude", exclude);
@@ -2643,6 +2644,9 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           list_of_json string_of_json ctx start_from_attribute
         in
         let* start_from_pub = bool_of_json ctx start_from_pub in
+        let* start_from_global_ctors =
+          bool_of_json ctx start_from_global_ctors
+        in
         let* included = list_of_json string_of_json ctx include_ in
         let* opaque = list_of_json string_of_json ctx opaque in
         let* exclude = list_of_json string_of_json ctx exclude in
@@ -2727,6 +2731,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              start_from_if_exists;
              start_from_attribute;
              start_from_pub;
+             start_from_global_ctors;
              included;
              opaque;
              exclude;

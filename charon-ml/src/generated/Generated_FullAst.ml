@@ -217,6 +217,10 @@ and cli_options = {
   start_from_pub : bool;
       (** Use all the [pub] items as starting points for translation (except
           modules). *)
+  start_from_global_ctors : bool;
+      (** Use global constructors as starting points for translation, i.e. the
+          [#[used]] statics placed in the linker section that the target runs at
+          startup (e.g. [.init_array] on ELF). *)
   included : string list;
       (** Whitelist of items to translate. These use the name-matcher syntax. *)
   opaque : string list;

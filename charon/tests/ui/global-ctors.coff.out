@@ -1,0 +1,16 @@
+struct () {}
+
+extern "C" fn test_crate::coff_ctor()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+#[link_section = ".CRT$XCU"]
+static test_crate::COFF_CTOR: extern "C" fn() = fn_def_to_fn_ptr(test_crate::coff_ctor)
+
+
