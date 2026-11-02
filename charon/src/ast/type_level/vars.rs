@@ -6,8 +6,8 @@ use std::{
 };
 
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
+use enum_as_inner::EnumAsInner;
 use index_vec::Idx;
-use macros::EnumIsA;
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 
@@ -144,7 +144,7 @@ pub struct RegionParam {
 /// The nature of locations where a given lifetime parameter is used. If this lifetime ever flows
 /// to be used as the lifetime of a mutable reference `&'a mut` then we consider it mutable.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA)]
+#[derive(EnumAsInner)]
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Lt"))]
 pub enum LifetimeMutability {

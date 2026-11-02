@@ -38,10 +38,8 @@ bench-popular-crates:
 	cargo test --release --features popular-crates-test --test bench-popular-crates -- --nocapture
 
 # Build the doc.
-# For some reason, I don't manage to build all the packages in one command.
 .PHONY: doc
 doc:
-	cargo doc --no-deps -p macros --document-private-items
 	cargo doc --no-deps --document-private-items
 
 .PHONY: clean-generated

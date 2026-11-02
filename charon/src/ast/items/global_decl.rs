@@ -2,7 +2,7 @@ use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
 use serde_state::{DeserializeState, SerializeState};
 
 use crate::ast::*;
-use macros::EnumIsA;
+use enum_as_inner::EnumAsInner;
 
 /// A global variable definition (constant or static).
 #[derive(Debug, Clone)]
@@ -45,7 +45,7 @@ pub struct GlobalDecl {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[derive(EnumIsA)]
+#[derive(EnumAsInner)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum GlobalKind {
     /// A static or thread-local static.

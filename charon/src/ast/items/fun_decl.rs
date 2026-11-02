@@ -1,6 +1,6 @@
 use crate::ast::*;
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
-use macros::EnumIsA;
+use enum_as_inner::EnumAsInner;
 use serde_state::DeserializeState;
 use serde_state::SerializeState;
 
@@ -35,7 +35,7 @@ pub struct FunSig {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA)]
+#[derive(EnumAsInner)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(stateless)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Abi"))]

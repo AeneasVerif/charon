@@ -11,7 +11,7 @@ use crate::formatter::{AstFormatter, FmtCtx, IntoFormatter};
 use crate::ids::{IndexMap, IndexVec};
 use crate::pretty::FmtWithCtx;
 use crate::utils::serialize_map_to_array::SeqHashMapToArray;
-use macros::{EnumAsGetters, EnumIsA};
+use enum_as_inner::EnumAsInner;
 
 /// A target triple, e.g. `x86_64-unknown-linux-gnu`.
 pub type TargetTriple = String;
@@ -114,7 +114,7 @@ pub struct RuntimeChecks {
 /// A (group of) top-level declaration(s), properly reordered.
 /// "G" stands for "generic"
 #[derive(Debug, Clone)]
-#[derive(EnumAsGetters, EnumIsA)]
+#[derive(EnumAsInner)]
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Group"))]
 pub enum GDeclarationGroup<Id> {
@@ -126,7 +126,7 @@ pub enum GDeclarationGroup<Id> {
 
 /// A (group of) top-level declaration(s), properly reordered.
 #[derive(Debug, Clone)]
-#[derive(EnumAsGetters, EnumIsA)]
+#[derive(EnumAsInner)]
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Group"))]
 pub enum DeclarationGroup {

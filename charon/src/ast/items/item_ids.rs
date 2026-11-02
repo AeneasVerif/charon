@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 
 use crate::ast::*;
-use macros::{EnumAsGetters, EnumIsA};
+use enum_as_inner::EnumAsInner;
 
 generate_index_type!(FunDeclId, "Fun");
 generate_index_type!(TypeDeclId, "Adt");
@@ -21,7 +21,7 @@ generate_index_type!(TraitImplId, "TraitImpl");
 
 /// The id of a translated item.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA, EnumAsGetters)]
+#[derive(EnumAsInner)]
 #[derive(
     Serialize,
     Deserialize,
@@ -43,7 +43,7 @@ pub enum ItemId {
 
 /// The id of an associated item within a trait.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA, EnumAsGetters)]
+#[derive(EnumAsInner)]
 #[derive(
     Serialize,
     Deserialize,
@@ -63,7 +63,7 @@ pub enum AssocItemId {
 
 /// The id of a translated item or associated item definition.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA, EnumAsGetters)]
+#[derive(EnumAsInner)]
 #[derive(
     Serialize,
     Deserialize,
@@ -103,7 +103,7 @@ pub struct FunDeclRef {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumAsGetters)]
+#[derive(EnumAsInner)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum FnPtrKind {
     Fun(FunDeclId),

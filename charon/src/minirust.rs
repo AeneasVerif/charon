@@ -167,7 +167,7 @@ impl<'a, T: mini::Target> TranslateCtx<'a, T> {
         for (id, fdecl) in self.krate.fun_decls.iter_enumerated() {
             if let FunSource::GlobalInitializer(init) = &fdecl.src
                 && let Some(gdecl) = self.krate.global_decls.get(init.id)
-                && gdecl.global_kind.is_vtable()
+                && gdecl.global_kind.is_v_table()
             {
                 continue;
             }
@@ -1142,7 +1142,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                                 .krate
                                 .global_decls
                                 .get(gref.id)
-                                .is_some_and(|global| global.global_kind.is_vtable()) =>
+                                .is_some_and(|global| global.global_kind.is_v_table()) =>
                         {
                             raise!(span, "MiniRust globals cannot contain pointers to vtables")
                         }

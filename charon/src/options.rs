@@ -1,9 +1,9 @@
 //! The options that control charon behavior.
 use annotate_snippets::Level;
 use clap::ValueEnum;
+use enum_as_inner::EnumAsInner;
 use indoc::indoc;
 use itertools::Itertools;
-use macros::EnumAsGetters;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -752,7 +752,7 @@ impl CliOpts {
 }
 
 /// Predicates that determine wihch items to use as starting point for translation.
-#[derive(Debug, Clone, EnumAsGetters)]
+#[derive(Debug, Clone, EnumAsInner)]
 pub enum StartFrom {
     /// Item identified by a pattern/path. If strict is true, then failing to
     /// find an item matching the pattern is an error; otherwise, we just ignore this pattern.

@@ -1,8 +1,8 @@
 //! User-visible names of items.
 use crate::ast::*;
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
+use enum_as_inner::EnumAsInner;
 use itertools::Itertools;
-use macros::{EnumAsGetters, EnumIsA};
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 
@@ -18,7 +18,7 @@ pub static BOX_WRITE_PATTERN: &str = "alloc::boxed::_::write"; // `_` matches an
 
 /// See the comments for [Name]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[derive(EnumIsA, EnumAsGetters)]
+#[derive(EnumAsInner)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Pe"))]
 pub enum PathElem {
@@ -40,7 +40,7 @@ pub enum PathElem {
 
 /// Used for builtin items, rather than hardcoding these as strings.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-#[derive(EnumIsA, EnumAsGetters)]
+#[derive(EnumAsInner)]
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Pe"))]
 pub enum BuiltinPathElem {
@@ -80,7 +80,7 @@ pub enum BuiltinPathElem {
 ///   ```
 /// We distinguish the two.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[derive(EnumIsA, EnumAsGetters)]
+#[derive(EnumAsInner)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("ImplElem"))]
 pub enum ImplElem {

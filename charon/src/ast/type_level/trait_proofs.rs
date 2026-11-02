@@ -1,7 +1,7 @@
 use crate::ast::*;
 use crate::ids::IndexVec;
 use derive_generic_visitor::*;
-use macros::{EnumAsGetters, EnumIsA};
+use enum_as_inner::EnumAsInner;
 use serde_state::{DeserializeState, SerializeState};
 
 /// A proof of a trait predicate.
@@ -34,7 +34,7 @@ pub struct PolyTraitRef(pub RegionBinder<TraitRef>);
 /// to a *trait instance*, which is why the [`TraitRefKind::Clause`] variant may seem redundant
 /// with some of the other variants.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA, EnumAsGetters)]
+#[derive(EnumAsInner)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum TraitRefKind {
     /// A specific top-level implementation item.
@@ -233,7 +233,7 @@ impl TraitRef {
             TraitRefKind::TraitImpl(impl_ref) => krate
                 .trait_impls
                 .get(impl_ref.id)
-                .and_then(|timpl| timpl.vtable.as_vtable()),
+                .and_then(|timpl| timpl.vtable.as_v_table()),
             TraitRefKind::BuiltinOrAuto { vtable, .. } => vtable.as_ref(),
             _ => None,
         }

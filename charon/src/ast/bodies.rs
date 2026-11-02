@@ -5,8 +5,7 @@ use crate::llbc_ast;
 use crate::ullbc_ast;
 use crate::utils::serialize_map_to_array::SeqHashMapToArray;
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
-use macros::EnumAsGetters;
-use macros::EnumIsA;
+use enum_as_inner::EnumAsInner;
 use serde_state::DeserializeState;
 use serde_state::SerializeState;
 
@@ -33,7 +32,7 @@ pub use values::*;
 ///
 /// Besides these, some functions have virtual bodies or no body, see the doc for each variant.
 #[derive(Debug, Clone)]
-#[derive(EnumIsA, EnumAsGetters)]
+#[derive(EnumAsInner)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(state_implements = DedupSerializerState)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Body"))]
@@ -190,7 +189,7 @@ pub struct Call {
 /// Whether we statically know something about the safety of this call, that takes
 /// precedence over the safety of the callee's signature.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-#[derive(EnumIsA)]
+#[derive(EnumAsInner)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum CallSafety {
     /// As safe as the callee's signature.

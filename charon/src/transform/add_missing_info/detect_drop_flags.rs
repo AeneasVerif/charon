@@ -6,8 +6,8 @@ use std::collections::HashMap;
 use std::ops::ControlFlow;
 
 use derive_generic_visitor::Visitor;
+use enum_as_inner::EnumAsInner;
 use itertools::Itertools;
-use macros::EnumAsGetters;
 use petgraph::graphmap::DiGraphMap;
 use petgraph::visit::{Dfs, Walker};
 
@@ -168,7 +168,7 @@ enum AnalysisNode {
     Invalid(LocalId),
 }
 
-#[derive(Debug, Default, Copy, Clone, EnumAsGetters)]
+#[derive(Debug, Default, Copy, Clone, EnumAsInner)]
 enum Update<T> {
     #[default]
     Unchanged,

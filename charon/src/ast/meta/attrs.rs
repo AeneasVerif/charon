@@ -1,6 +1,6 @@
 use crate::ast::*;
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
-use macros::{EnumAsGetters, EnumIsA};
+use enum_as_inner::EnumAsInner;
 use serde::{Deserialize, Serialize};
 
 /// `#[inline]` built-in attribute.
@@ -17,7 +17,7 @@ pub enum InlineAttr {
 
 /// Attributes (`#[...]`).
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[derive(EnumIsA, EnumAsGetters)]
+#[derive(EnumAsInner)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Attr"))]
 pub enum Attribute {

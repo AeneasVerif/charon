@@ -1,7 +1,7 @@
 //! Guarantees about the layout of types, as given by the Rust Reference.
 use crate::ast::*;
 use derive_generic_visitor::*;
-use macros::{EnumAsGetters, EnumIsA};
+use enum_as_inner::EnumAsInner;
 use serde_state::{DeserializeState, SerializeState};
 
 /// The predecessor of a field in a struct or enum variant.
@@ -15,7 +15,7 @@ pub enum FieldPredecessor {
 
 /// Guaranteed facts about a field offset.
 #[derive(Debug, Clone)]
-#[derive(EnumIsA, EnumAsGetters)]
+#[derive(EnumAsInner)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum OffsetGuarantee {
     /// Guaranteed to be exactly at the given offset.
@@ -29,7 +29,7 @@ pub enum OffsetGuarantee {
 
 /// Layout information given by the metadata of an unsized type.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA, EnumAsGetters)]
+#[derive(EnumAsInner)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variant_prefix("LayoutValue"))]
 pub enum MetadataValue {
@@ -48,7 +48,7 @@ pub enum MetadataValue {
 pub struct SizeExpr(pub HashConsed<WithCachedTypeInfo<SizeExprKind>>);
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA, EnumAsGetters)]
+#[derive(EnumAsInner)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("SizeExpr"))]
 pub enum SizeExprKind {

@@ -1,7 +1,7 @@
 use itertools::Itertools;
 use std::{cell::Cell, mem::DropGuard};
 
-use macros::EnumAsGetters;
+use enum_as_inner::EnumAsInner;
 
 pub mod dedup;
 pub mod hash_cons;
@@ -62,7 +62,7 @@ pub fn repeat_except_first<T: Clone>(x: T) -> impl Iterator<Item = Option<T>> {
 }
 
 /// An enum to manage potentially-cyclic computations.
-#[derive(Debug, EnumAsGetters)]
+#[derive(Debug, EnumAsInner)]
 pub enum CycleDetector<T> {
     /// We haven't analyzed this yet.
     Unprocessed,
