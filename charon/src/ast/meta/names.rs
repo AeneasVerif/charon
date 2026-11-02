@@ -67,6 +67,8 @@ pub enum BuiltinPathElem {
     VTableMethod,
     /// The `drop_in_place` shim stored in a vtable.
     VTableDropShim,
+    /// The fallback body of an intrinsic.
+    IntrinsicFallback,
 }
 
 /// There are two kinds of `impl` blocks:
@@ -322,6 +324,7 @@ impl BuiltinPathElem {
             BuiltinPathElem::VTable => "vtable",
             BuiltinPathElem::VTableMethod => "vtable_method",
             BuiltinPathElem::VTableDropShim => "vtable_drop_shim",
+            BuiltinPathElem::IntrinsicFallback => "fallback",
         }
     }
 }
