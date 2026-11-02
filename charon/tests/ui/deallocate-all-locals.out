@@ -92,11 +92,11 @@ fn sum(x: u32, y: u32) -> u32
         _4 = copy x;
         storage_live(_5);
         _5 = copy y;
-        _6 = add_with_overflow<u32>[{built_in impl Sized for u32}, impl_Copy_for_u32](copy _4, copy _5) -> bb1 (unwind: bb8);
+        _6 = add_with_overflow<u32>[{built_in impl Sized for u32}, impl_Copy_for_u32](copy _4, copy _5) -> bb1 (unwind: bb7);
     }
 
     bb1: {
-        assert assert(move _6._1 == false) (overflow) -> bb2 (unwind: bb7);
+        assert assert(move _6._1 == false) (overflow) -> bb2 (unwind: bb6);
     }
 
     bb2: {
@@ -106,11 +106,11 @@ fn sum(x: u32, y: u32) -> u32
         fake_read(z);
         storage_live(_7);
         _7 = copy z;
-        _8 = add_with_overflow<u32>[{built_in impl Sized for u32}, impl_Copy_for_u32](copy _7, const 1u32) -> bb3 (unwind: bb6);
+        _8 = add_with_overflow<u32>[{built_in impl Sized for u32}, impl_Copy_for_u32](copy _7, const 1u32) -> bb3 (unwind: bb5);
     }
 
     bb3: {
-        assert assert(move _8._1 == false) (overflow) -> bb4 (unwind: bb5);
+        assert assert(move _8._1 == false) (overflow) -> bb4 (unwind: bb6);
     }
 
     bb4: {
@@ -125,18 +125,10 @@ fn sum(x: u32, y: u32) -> u32
     }
 
     bb5 (cleanup): {
-        storage_dead(_8);
-        storage_dead(_6);
-        storage_dead(y);
-        storage_dead(x);
-        unwind_continue;
-    }
-
-    bb6 (cleanup): {
         undefined_behavior;
     }
 
-    bb7 (cleanup): {
+    bb6 (cleanup): {
         storage_dead(_8);
         storage_dead(_6);
         storage_dead(y);
@@ -144,7 +136,7 @@ fn sum(x: u32, y: u32) -> u32
         unwind_continue;
     }
 
-    bb8 (cleanup): {
+    bb7 (cleanup): {
         undefined_behavior;
     }
 }

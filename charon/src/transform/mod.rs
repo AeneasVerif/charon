@@ -71,7 +71,6 @@ pub mod simplify_output {
 
 /// Passes that manipulate the control flow and reconstruct its structure.
 pub mod control_flow {
-    pub mod duplicate_return;
     pub mod merge_goto_chains;
     pub mod prettify_cfg;
     pub mod ullbc_to_llbc;
@@ -198,8 +197,6 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         CowBox::Borrowed(&simplify_output::index_intermediate_assigns::Transform),
         // Remove locals of type `()` which show up a lot.
         CowBox::Borrowed(&simplify_output::remove_unit_locals::Transform),
-        // Duplicate return blocks and unwind paths.
-        CowBox::Borrowed(&control_flow::duplicate_return::Transform),
         // Reconstruct matches on enum variants.
         resugar::reconstruct_matches::Transform::new(ctx),
         // Remove the locals which are never used.

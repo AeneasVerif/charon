@@ -1,0 +1,240 @@
+# Final ULLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+struct () {}
+
+// Full name: core::ops::drop::Drop
+#[lang_item(Drop)]
+pub trait Drop<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(_1: &'_0 mut Self)
+where
+    TraitClause0: (Self: Drop),
+    Outlives0: (Self: '_0),
+= <opaque>
+
+// Full name: test_crate::Ticket
+pub struct Ticket {
+  _0: u8,
+}
+
+// Full name: test_crate::{impl Drop for Ticket}::drop
+pub fn impl_Drop_for_Ticket::drop<'_0>(self: &'_0 mut Ticket)
+{
+    let _0: (); // return
+    let self: &'1 mut Ticket; // arg #1
+
+    bb0: {
+        storage_live(_0);
+        _0 = ();
+        _0 = ();
+        storage_dead(self);
+        return;
+    }
+}
+
+// Full name: test_crate::Ticket::{impl Destruct for Ticket}::drop_glue
+unsafe fn drop_glue<'_0>(_1: &'_0 mut Ticket)
+{
+    let _0: (); // return
+    let _1: &'1 mut Ticket; // arg #1
+    let _2: &'2 mut Ticket; // anonymous local
+    let _3: (); // anonymous local
+
+    bb0: {
+        storage_live(_0);
+        storage_live(_2);
+        storage_live(_3);
+        _0 = ();
+        _2 = &mut (*_1);
+        _3 = impl_Drop_for_Ticket::drop<'4>(move _2) -> bb1 (unwind: bb2);
+    }
+
+    bb1: {
+        storage_dead(_3);
+        storage_dead(_2);
+        storage_dead(_1);
+        return;
+    }
+
+    bb2 (cleanup): {
+        storage_dead(_3);
+        storage_dead(_2);
+        storage_dead(_1);
+        unwind_continue;
+    }
+}
+
+// Full name: test_crate::{impl Drop for Ticket}
+impl "impl_Drop_for_Ticket" Drop for Ticket {
+    proof ImpliedClause0: (Ticket: MetaSized) = {built_in impl MetaSized for Ticket}
+    fn drop<'_0_1> = impl_Drop_for_Ticket::drop<'_0_1>
+    vtable: lazy
+}
+
+// Full name: test_crate::adds_an_unwind_edge
+fn adds_an_unwind_edge()
+{
+    let _0: (); // return
+
+    bb0: {
+        storage_live(_0);
+        _0 = ();
+        _0 = ();
+        return;
+    }
+}
+
+// Full name: test_crate::cleanup_dag
+pub fn cleanup_dag(fail: bool, tag: u8) -> u8
+{
+    let _0: u8; // return
+    let fail: bool; // arg #1
+    let tag: u8; // arg #2
+    let _a: Ticket; // local
+    let _4: u8; // anonymous local
+    let _b: Ticket; // local
+    let _6: u8; // anonymous local
+    let _c: Ticket; // local
+    let _8: u8; // anonymous local
+    let _d: Ticket; // local
+    let _10: u8; // anonymous local
+    let _11: (); // anonymous local
+    let _12: (); // anonymous local
+    let _13: (); // anonymous local
+    let _14: (); // anonymous local
+
+    bb0: {
+        storage_live(_0);
+        storage_live(_a);
+        storage_live(_4);
+        _4 = copy tag;
+        _a = Ticket { _0: move _4 };
+        storage_dead(_4);
+        fake_read(_a);
+        storage_live(_b);
+        storage_live(_6);
+        _6 = copy tag;
+        _b = Ticket { _0: move _6 };
+        storage_dead(_6);
+        fake_read(_b);
+        storage_live(_c);
+        storage_live(_8);
+        _8 = copy tag;
+        _c = Ticket { _0: move _8 };
+        storage_dead(_8);
+        fake_read(_c);
+        storage_live(_d);
+        storage_live(_10);
+        _10 = copy tag;
+        _d = Ticket { _0: move _10 };
+        storage_dead(_10);
+        fake_read(_d);
+        storage_live(_11);
+        _11 = adds_an_unwind_edge() -> bb1 (unwind: bb9);
+    }
+
+    bb1: {
+        storage_dead(_11);
+        storage_live(_12);
+        _12 = adds_an_unwind_edge() -> bb2 (unwind: bb9);
+    }
+
+    bb2: {
+        storage_dead(_12);
+        storage_live(_13);
+        _13 = adds_an_unwind_edge() -> bb3 (unwind: bb9);
+    }
+
+    bb3: {
+        storage_dead(_13);
+        storage_live(_14);
+        _14 = adds_an_unwind_edge() -> bb4 (unwind: bb9);
+    }
+
+    bb4: {
+        storage_dead(_14);
+        _0 = const 7u8;
+        conditional_drop[drop_glue<'4>] _d -> bb5 (unwind: bb10);
+    }
+
+    bb5: {
+        storage_dead(_d);
+        conditional_drop[drop_glue<'5>] _c -> bb6 (unwind: bb11);
+    }
+
+    bb6: {
+        storage_dead(_c);
+        conditional_drop[drop_glue<'6>] _b -> bb7 (unwind: bb12);
+    }
+
+    bb7: {
+        storage_dead(_b);
+        conditional_drop[drop_glue<'7>] _a -> bb8 (unwind: bb13);
+    }
+
+    bb8: {
+        storage_dead(_a);
+        storage_dead(tag);
+        storage_dead(fail);
+        return;
+    }
+
+    bb9 (cleanup): {
+        conditional_drop[drop_glue<'0>] _d -> bb10 (unwind: bb17);
+    }
+
+    bb10 (cleanup): {
+        conditional_drop[drop_glue<'1>] _c -> bb11 (unwind: bb16);
+    }
+
+    bb11 (cleanup): {
+        conditional_drop[drop_glue<'2>] _b -> bb12 (unwind: bb15);
+    }
+
+    bb12 (cleanup): {
+        conditional_drop[drop_glue<'3>] _a -> bb13 (unwind: bb14);
+    }
+
+    bb13 (cleanup): {
+        storage_dead(tag);
+        storage_dead(fail);
+        unwind_continue;
+    }
+
+    bb14 (terminate): {
+        storage_dead(tag);
+        storage_dead(fail);
+        unwind_terminate;
+    }
+
+    bb15 (terminate): {
+        storage_dead(tag);
+        storage_dead(fail);
+        unwind_terminate;
+    }
+
+    bb16 (terminate): {
+        storage_dead(tag);
+        storage_dead(fail);
+        unwind_terminate;
+    }
+
+    bb17 (terminate): {
+        storage_dead(tag);
+        storage_dead(fail);
+        unwind_terminate;
+    }
+}
+
+
+
