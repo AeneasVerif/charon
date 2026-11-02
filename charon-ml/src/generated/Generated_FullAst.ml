@@ -108,15 +108,13 @@ and body =
           Fields:
           - [name]: The intrinsic name.
           - [arg_names]: The argument names, None if not available.
-          - [fallback]: Some intrinsics have a fallback body that backends can
-            use if they don't implement the intrinsic themselves. We translate
-            it as a separate function named [path::to::intrinsic::{fallback}].
-            The reference uses the generics of the intrinsic.
+          - [fallback]: A fallback body that backends can use if they don't
+            implement the intrinsic themselves.
           - [fallback_is_spec]: Whether the fallback body is marked
-            [#[miri::intrinsic_fallback_is_spec]], i.e. it exactly describes the
-            behavior of the intrinsic. Otherwise the fallback is only one of the
-            valid implementations of the intrinsic, e.g. the intrinsic may have
-            more UB or more non-determinism. *)
+            [#[miri::intrinsic_fallback_is_spec]], in which case it exactly
+            describes the behavior of the intrinsic. Otherwise the fallback is
+            only one of the valid implementations of the intrinsic, e.g. the
+            fallback may have less UB or less non-determinism. *)
   | OpaqueBody
       (** A body that the user chose not to translate, based on opacity settings
           like [--include]/[--opaque]. *)

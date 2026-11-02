@@ -68,7 +68,7 @@ pub enum Body {
         fallback: Option<FunDeclRef>,
         /// Whether the fallback body is marked `#[miri::intrinsic_fallback_is_spec]`, in which case
         /// it exactly describes the behavior of the intrinsic. Otherwise the fallback is only one of
-        /// the valid implementations of the intrinsic, e.g. the intrinsic may have more UB or more
+        /// the valid implementations of the intrinsic, e.g. the fallback may have less UB or less
         /// non-determinism.
         fallback_is_spec: bool,
     },
