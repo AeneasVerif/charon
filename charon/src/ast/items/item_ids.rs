@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 
 use crate::ast::*;
-use macros::{EnumAsGetters, EnumIsA, VariantIndexArity};
+use macros::{EnumAsGetters, EnumIsA};
 
 generate_index_type!(FunDeclId, "Fun");
 generate_index_type!(TypeDeclId, "Adt");
@@ -21,7 +21,7 @@ generate_index_type!(TraitImplId, "TraitImpl");
 
 /// The id of a translated item.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumIsA, EnumAsGetters, VariantIndexArity)]
+#[derive(EnumIsA, EnumAsGetters)]
 #[derive(
     Serialize,
     Deserialize,

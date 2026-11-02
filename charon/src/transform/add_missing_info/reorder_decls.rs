@@ -65,7 +65,7 @@ impl DeclarationGroup {
         let id0 = ids[0];
         let all_same_kind = ids
             .iter()
-            .all(|id| id0.variant_index_arity() == id.variant_index_arity());
+            .all(|id| std::mem::discriminant(&id0) == std::mem::discriminant(id));
         match id0 {
             _ if !all_same_kind => {
                 DeclarationGroup::Mixed(GDeclarationGroup::make_group(is_rec, ids))
