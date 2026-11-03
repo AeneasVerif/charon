@@ -37,15 +37,6 @@ where
     Outlives1: (A: '_0),
 = <opaque>
 
-// Full name: alloc::boxed::{impl Drop for Box<T>[TraitClause0, TraitClause1]}::drop
-pub fn impl_Drop_for_Box::drop<'_0, T, A>(_1: &'_0 mut Box<T>[TraitClause0, TraitClause1])
-where
-    TraitClause0: (T: MetaSized),
-    TraitClause1: (A: Sized),
-    Outlives0: (T: '_0),
-    Outlives1: (A: '_0),
-= <opaque>
-
 // Full name: alloc::string::String
 #[lang_item(String)]
 pub opaque type String
@@ -59,21 +50,12 @@ fn into_inner(b: Box<String>[{built_in impl MetaSized for String}, {built_in imp
 {
     let _0: String; // return
     let b: Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // arg #1
-    let _2: &'1 mut Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
-    let _3: (); // anonymous local
 
     storage_live(_0)
-    storage_live(_2)
-    storage_live(_3)
     _0 = move (*b)
-    _2 = &mut b
-    _3 = impl_Drop_for_Box::drop<'4, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}](move _2)
-    ↳⚡ storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(b)
+    drop_empty_box b
+    ↳⚡ storage_dead(b)
         unwind_continue
-    storage_dead(_3)
-    storage_dead(_2)
     storage_dead(b)
     return
 }
@@ -162,21 +144,12 @@ fn field(b: Box<Struct>[{built_in impl MetaSized for Struct}, {built_in impl Siz
 {
     let _0: String; // return
     let b: Box<Struct>[{built_in impl MetaSized for Struct}, {built_in impl Sized for Global}]; // arg #1
-    let _2: &'1 mut Box<Struct>[{built_in impl MetaSized for Struct}, {built_in impl Sized for Global}]; // anonymous local
-    let _3: (); // anonymous local
 
     storage_live(_0)
-    storage_live(_2)
-    storage_live(_3)
     _0 = move (*b).b
-    _2 = &mut b
-    _3 = impl_Drop_for_Box::drop<'4, Struct, Global>[{built_in impl MetaSized for Struct}, {built_in impl Sized for Global}](move _2)
-    ↳⚡ storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(b)
+    drop_empty_box b
+    ↳⚡ storage_dead(b)
         unwind_continue
-    storage_dead(_3)
-    storage_dead(_2)
     storage_dead(b)
     return
 }

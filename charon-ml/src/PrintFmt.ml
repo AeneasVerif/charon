@@ -2265,6 +2265,11 @@ module Llbc = struct
           fn_ptr (place_to_string env p)
           (pp_unwind_block env indent indent_incr)
           on_unwind
+    | DropEmptyBox (p, on_unwind) ->
+        Format.fprintf fmt "%sdrop_empty_box %s%a" indent
+          (place_to_string env p)
+          (pp_unwind_block env indent indent_incr)
+          on_unwind
     | Assert (asrt, on_failure, on_unwind) ->
         Format.fprintf fmt "%s%a else %a%a" indent (pp_print_assertion env) asrt
           (pp_print_abort_kind env) on_failure
@@ -2476,6 +2481,10 @@ module Ullbc = struct
         Format.fprintf fmt "%s%s[%a] %s -> %s (unwind: %s)" indent kind
           (pp_fn_ptr env) fn_ptr (place_to_string env p)
           (block_id_to_string tgt)
+          (block_id_to_string unwind)
+    | DropEmptyBox (p, tgt, unwind) ->
+        Format.fprintf fmt "%sdrop_empty_box %s -> %s (unwind: %s)" indent
+          (place_to_string env p) (block_id_to_string tgt)
           (block_id_to_string unwind)
     | TAssert (asrt, tgt, unwind) ->
         Format.fprintf fmt "%sassert %a -> %s (unwind: %s)" indent

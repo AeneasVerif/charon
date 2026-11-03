@@ -338,9 +338,9 @@ impl HasSafety for llbc_ast::Statement {
                 place.write_safety(krate).or_else(|| rvalue.safety(krate))
             }
             StatementKind::SetDiscriminant(place, _) => place.write_safety(krate),
-            StatementKind::PlaceMention(place) | StatementKind::Drop { place, .. } => {
-                place.read_safety(krate)
-            }
+            StatementKind::PlaceMention(place)
+            | StatementKind::Drop { place, .. }
+            | StatementKind::DropEmptyBox { place, .. } => place.read_safety(krate),
             StatementKind::Borrowck(st) => st.safety(krate),
             StatementKind::Assert {
                 assert, on_failure, ..
@@ -398,7 +398,9 @@ impl HasSafety for ullbc_ast::Terminator {
             TerminatorKind::Call { call, dest, .. } => {
                 call.safety(krate).or_else(|| dest.write_safety(krate))
             }
-            TerminatorKind::Drop { place, .. } => place.read_safety(krate),
+            TerminatorKind::Drop { place, .. } | TerminatorKind::DropEmptyBox { place, .. } => {
+                place.read_safety(krate)
+            }
             TerminatorKind::Assert { assert, .. } => assert.cond.safety(krate),
             TerminatorKind::InlineAsm { asm, .. } => asm.kind.is_asm().into(),
             TerminatorKind::UndefinedBehavior => Safety::Unsafe,

@@ -2563,6 +2563,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 )?;
                 fmt_llbc_unwind_block(ctx, f, on_unwind)
             }
+            StatementKind::DropEmptyBox { place, on_unwind } => {
+                write!(f, "drop_empty_box {}", place.with_ctx(ctx))?;
+                fmt_llbc_unwind_block(ctx, f, on_unwind)
+            }
             StatementKind::Assert {
                 assert,
                 on_failure,
@@ -2795,6 +2799,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                     place.with_ctx(ctx),
                 )
             }
+            TerminatorKind::DropEmptyBox {
+                place,
+                target,
+                on_unwind,
+            } => write!(
+                f,
+                "drop_empty_box {} -> bb{target} (unwind: bb{on_unwind})",
+                place.with_ctx(ctx),
+            ),
             TerminatorKind::Assert {
                 assert,
                 target,

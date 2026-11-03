@@ -67,6 +67,15 @@ and statement_kind =
           - [fn_ptr]: Reference to the [drop_glue] code to call on drop.
           - [kind]
           - [on_unwind] *)
+  | DropEmptyBox of place * block
+      (** Deallocate a [Box] whose pointee has already been moved out/dropped.
+
+          Resugared when it appears in elaborated/optimized MIR, if
+          [--treat-box-as-builtin] is set and [--desugar-drops] isn't.
+
+          Fields:
+          - [place]
+          - [on_unwind] *)
   | Assert of assertion * abort_kind * block
       (** Fields:
           - [assert]

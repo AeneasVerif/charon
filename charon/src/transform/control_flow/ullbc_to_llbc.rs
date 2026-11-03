@@ -1051,6 +1051,23 @@ impl<'a> ReconstructCtx<'a> {
                 block.statements.insert(0, st);
                 block
             }
+            src::TerminatorKind::DropEmptyBox {
+                place,
+                target,
+                on_unwind,
+            } => {
+                let on_unwind = self.translate_block(*on_unwind);
+                let st = tgt::Statement::new(
+                    src_span,
+                    tgt::StatementKind::DropEmptyBox {
+                        place: place.clone(),
+                        on_unwind,
+                    },
+                );
+                let mut block = self.translate_jump(terminator.span, *target);
+                block.statements.insert(0, st);
+                block
+            }
             src::TerminatorKind::Assert {
                 assert,
                 target,
