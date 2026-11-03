@@ -267,12 +267,12 @@ let generic_params_at_dbid (env : fmt_env) (dbid : int) : generic_params option
       if dbid > 0 && index >= 0 then List.nth_opt env.generics index else None
 
 let find_short_name (env : fmt_env) (id : item_id) : name option =
-  match List.assoc_opt id env.crate.short_names with
+  match AnyDeclIdHashMap.find_opt id env.crate.short_names with
   | Some name -> Some name
-  | None -> List.assoc_opt id env.crate.item_names
+  | None -> AnyDeclIdHashMap.find_opt id env.crate.item_names
 
 let has_short_name (env : fmt_env) (id : item_id) : name option =
-  List.assoc_opt id env.crate.short_names
+  AnyDeclIdHashMap.find_opt id env.crate.short_names
 
 let item_id_to_pretty_string (id : item_id) : string =
   match id with
@@ -2691,21 +2691,21 @@ let pp_crate (fmt : Format.formatter) (m : crate) : unit =
   in
   (match m.declarations with
   | None ->
-      TypeDeclId.Map.iter
-        (fun _ d -> emit (fun fmt -> pp_type_decl env fmt d))
-        m.type_decls;
-      GlobalDeclId.Map.iter
-        (fun _ d -> emit (fun fmt -> pp_global_decl env "" tab_incr fmt d))
-        m.global_decls;
-      TraitDeclId.Map.iter
-        (fun _ d -> emit (fun fmt -> pp_trait_decl env "" tab_incr fmt d))
-        m.trait_decls;
-      TraitImplId.Map.iter
-        (fun _ d -> emit (fun fmt -> pp_trait_impl env "" tab_incr fmt d))
-        m.trait_impls;
-      FunDeclId.Map.iter
-        (fun _ d -> emit (fun fmt -> pp_fun_decl env "" tab_incr fmt d))
-        m.fun_decls
+      List.iter
+        (fun d -> emit (fun fmt -> pp_type_decl env fmt d))
+        (TypeDeclId.Map.values m.type_decls);
+      List.iter
+        (fun d -> emit (fun fmt -> pp_global_decl env "" tab_incr fmt d))
+        (GlobalDeclId.Map.values m.global_decls);
+      List.iter
+        (fun d -> emit (fun fmt -> pp_trait_decl env "" tab_incr fmt d))
+        (TraitDeclId.Map.values m.trait_decls);
+      List.iter
+        (fun d -> emit (fun fmt -> pp_trait_impl env "" tab_incr fmt d))
+        (TraitImplId.Map.values m.trait_impls);
+      List.iter
+        (fun d -> emit (fun fmt -> pp_fun_decl env "" tab_incr fmt d))
+        (FunDeclId.Map.values m.fun_decls)
   | Some declarations ->
       declarations
       |> List.iter (function

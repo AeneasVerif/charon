@@ -17,8 +17,8 @@ module GlobalDeclId = Expressions.GlobalDeclId
 module TraitDeclId = Types.TraitDeclId
 module TraitImplId = Types.TraitImplId
 module TraitClauseId = Types.TraitClauseId
-module BranchId = IdGen ()
-module AsmOperandId = IdGen ()
+module BranchId = OrdIdGen ()
+module AsmOperandId = OrdIdGen ()
 
 (* Imports *)
 type fn_ptr_kind = Types.fn_ptr_kind [@@deriving show, ord]
@@ -386,6 +386,7 @@ and switch_scrutinee =
   show,
   eq,
   ord,
+  hash,
   visitors
     {
       name = "iter_fun_sig";
@@ -465,6 +466,7 @@ and global_kind =
   show,
   eq,
   ord,
+  hash,
   visitors
     {
       name = "iter_global_decl";
@@ -616,6 +618,7 @@ and trait_method = {
   show,
   eq,
   ord,
+  hash,
   visitors
     {
       name = "iter_trait_decl";
@@ -707,6 +710,7 @@ and v_table_decl =
   show,
   eq,
   ord,
+  hash,
   visitors
     {
       name = "iter_trait_impl";

@@ -19,8 +19,8 @@ module GlobalDeclId = Expressions.GlobalDeclId
 module TraitDeclId = Types.TraitDeclId
 module TraitImplId = Types.TraitImplId
 module TraitClauseId = Types.TraitClauseId
-module BranchId = IdGen ()
-module AsmOperandId = IdGen ()
+module BranchId = OrdIdGen ()
+module AsmOperandId = OrdIdGen ()
 
 (* Imports *)
 type fn_ptr_kind = Types.fn_ptr_kind [@@deriving show, ord]

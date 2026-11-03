@@ -4,8 +4,8 @@ open Generated_Values
 open Generated_Expressions
 open Generated_Meta
 open Identifiers
-module StatementId = IdGen ()
-module BlockId = IdGen ()
+module StatementId = OrdIdGen ()
+module BlockId = OrdIdGen ()
 
 (** A sequence of statements. *)
 type block = {
@@ -121,6 +121,7 @@ and statement_kind =
   show,
   eq,
   ord,
+  hash,
   visitors
     {
       name = "iter_statement_base";

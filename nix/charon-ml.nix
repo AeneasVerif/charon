@@ -1,11 +1,30 @@
 { lib
 , charon
+, fetchurl
 , ocaml-ng
 , ocamlPackages
 , runCommand
 , stdenv
 }:
 let
+  # Not in nixpkgs at the version we need. We build it here rather than in the
+  # flake's `ocamlPackages` so that it is also available to projects that
+  # override `ocamlPackages` when using `charon-ml`.
+  ppx_deriving_hash = ocamlPackages.buildDunePackage {
+    pname = "ppx_deriving_hash";
+    version = "0.1.5";
+    src = fetchurl {
+      url = "https://github.com/sim642/ppx_deriving_hash/releases/download/0.1.5/ppx_deriving_hash-0.1.5.tbz";
+      hash = "sha256-zpHpRd54yzMvVb5C5buMXnW8LhP3L4LE2rTkWwmaaU8=";
+    };
+    # The package requires dune 3.21 only for its tests: lower the version so
+    # that it also builds with older nixpkgs.
+    postPatch = ''
+      substituteInPlace dune-project --replace-fail "(lang dune 3.21)" "(lang dune 3.7)"
+    '';
+    propagatedBuildInputs = with ocamlPackages; [ ppxlib ppx_deriving ];
+  };
+
   # We need both `charon-ml` and the `dune-project` file.
   src = lib.cleanSourceWith {
     src = ./..;
@@ -58,7 +77,7 @@ let
       duneVersion = "3";
       inherit src;
 
-      propagatedBuildInputs = with ocamlPackages; [
+      propagatedBuildInputs = [ ppx_deriving_hash ] ++ (with ocamlPackages; [
         core
         ppx_deriving
         visitors
@@ -68,7 +87,7 @@ let
         charon-name_matcher_parser
         unionFind
         ocaml-ng.ocamlPackages_4_14.ppx_tools # to view the output of visitor derivation
-      ];
+      ]);
 
       OCAMLPARAM = "_,warn-error=+A"; # Turn all warnings into errors.
 

@@ -4,7 +4,7 @@ open Generated_Expressions
 open Generated_Meta
 open Generated_GAst
 open Identifiers
-module BlockId = IdGen ()
+module BlockId = OrdIdGen ()
 
 (** A "basic block", which contains a linear sequence of statements, followed by
     a terminator, which is where non-linear control-flow happens. *)
@@ -142,6 +142,7 @@ and unwind_kind =
   show,
   eq,
   ord,
+  hash,
   visitors
     {
       name = "iter_ullbc_ast";

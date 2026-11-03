@@ -1,8 +1,8 @@
 open Identifiers
 open Generated_Meta
 open Generated_Types
-module FileId = IdGen ()
-module DedupId = IdGen ()
+module FileId = OrdIdGen ()
+module DedupId = OrdIdGen ()
 
 module FileTbl = Hashtbl.Make (struct
   type t = FileId.id

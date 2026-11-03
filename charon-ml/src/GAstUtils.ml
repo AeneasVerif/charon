@@ -270,17 +270,16 @@ let split_declarations_to_group_maps (decls : declaration_group list) :
     * trait_declaration_group TraitDeclId.Map.t
     * trait_impl_group TraitImplId.Map.t
     * mixed_declaration_group list =
-  let module G (M : Map.S) = struct
-    let add_group (map : M.key g_declaration_group M.t)
-        (group : M.key g_declaration_group) : M.key g_declaration_group M.t =
-      List.fold_left
-        (fun map id -> M.add id group map)
-        map
-        (g_declaration_group_to_list group)
-
+  let module G (M : Collections.HashMap) = struct
     let create_map (groups : M.key g_declaration_group list) :
         M.key g_declaration_group M.t =
-      List.fold_left add_group M.empty groups
+      M.of_list
+        (List.concat_map
+           (fun group ->
+             List.map
+               (fun id -> (id, group))
+               (g_declaration_group_to_list group))
+           groups)
   end in
   let types, funs, globals, trait_decls, trait_impls, mixed_groups =
     split_declarations decls
@@ -296,18 +295,6 @@ let split_declarations_to_group_maps (decls : declaration_group list) :
   let module TIG = G (TraitImplId.Map) in
   let trait_impls = TIG.create_map trait_impls in
   (types, funs, globals, trait_decls, trait_impls, mixed_groups)
-
-module OrderedAnyDeclId : Collections.OrderedType with type t = item_id = struct
-  type t = item_id
-
-  let compare = compare_item_id
-  let to_string = show_item_id
-  let pp_t fmt x = Format.pp_print_string fmt (show_item_id x)
-  let show_t = show_item_id
-end
-
-module AnyDeclIdSet = Collections.MakeSet (OrderedAnyDeclId)
-module AnyDeclIdMap = Collections.MakeMap (OrderedAnyDeclId)
 
 let item_id_to_kind_name (id : item_id) : string =
   match id with
