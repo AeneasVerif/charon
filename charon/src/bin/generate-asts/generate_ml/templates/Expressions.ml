@@ -10,7 +10,7 @@
 open Identifiers
 open Generated_Types
 open Generated_Values
-module LocalId = IdGen ()
+module LocalId = OrdIdGen ()
 module GlobalDeclId = Types.GlobalDeclId
 module FunDeclId = Types.FunDeclId
 

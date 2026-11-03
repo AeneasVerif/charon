@@ -8,14 +8,14 @@
     code-generation code is in `charon/src/bin/generate-asts`. *)
 
 open Identifiers
-module TypeDeclId = IdGen ()
-module GlobalDeclId = IdGen ()
-module TraitDeclId = IdGen ()
-module TraitImplId = IdGen ()
-module FunDeclId = IdGen ()
-module TraitMethodId = IdGen ()
-module AssocTypeId = IdGen ()
-module AssocConstId = IdGen ()
+module TypeDeclId = HashedIdGen ()
+module GlobalDeclId = HashedIdGen ()
+module TraitDeclId = HashedIdGen ()
+module TraitImplId = HashedIdGen ()
+module FunDeclId = HashedIdGen ()
+module TraitMethodId = OrdIdGen ()
+module AssocTypeId = OrdIdGen ()
+module AssocConstId = OrdIdGen ()
 
 type path_buf = string [@@deriving show, ord, eq, hash]
 

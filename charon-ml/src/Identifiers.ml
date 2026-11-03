@@ -1,19 +1,53 @@
 module C = Collections
 
+(** The tree-based immutable set used by ids, see {!OrdId} and {!HashedId}. *)
+module type TreeSet = sig
+  include C.Set
+
+  val add_in_place : elt -> t ref -> unit
+end
+
+(** The tree-based immutable map used by ids, see {!OrdId} and {!HashedId}. *)
+module type TreeMap = sig
+  include C.Map
+
+  val add_in_place : key -> 'a -> 'a t ref -> unit
+  val to_list : 'a t -> (key * 'a) list
+  val values : 'a t -> 'a list
+  val hash : ('a -> int) -> 'a t -> int
+
+  (** Visitor helpers for the [visitors] ppx. *)
+
+  val visit_iter : ('env -> 'a -> unit) -> 'env -> 'a t -> unit
+  val visit_map : ('env -> 'a -> 'b) -> 'env -> 'a t -> 'b t
+
+  val visit_reduce :
+    zero:'z -> plus:('z -> 'z -> 'z) -> ('env -> 'a -> 'z) -> 'env -> 'a t -> 'z
+
+  val visit_mapreduce :
+    zero:'z ->
+    plus:('z -> 'z -> 'z) ->
+    ('env -> 'a -> 'b * 'z) ->
+    'env ->
+    'a t ->
+    'b t * 'z
+end
+
 (** Signature for a module describing an identifier.
 
     We often need identifiers (for definitions, variables, etc.) and in order to
-    make sure we don't mix them, we use a generative functor (see {!IdGen}).
+    make sure we don't mix them, we use a generative functor (see {!OrdIdGen}
+    and {!HashedIdGen}).
 
     Because {!Id.id} is an opaque type, even though it is [int] in practice it
     is not possible to mix ids coming from two different instances of the
-    {!IdGen} functor.
+    functor.
 
     For instance, if we do:
     {[
-      module TypeDeclId = IdGen ()
-      module VariantId = IdGen ()
-      module FieldId = IdGen ()
+      module TypeDeclId = HashedIdGen ()
+      module VariantId = OrdIdGen ()
+      module FieldId = OrdIdGen ()
     ]}
 
     the types [TypeDeclId.id], [VariantId.id] and [FieldId.id] will be
@@ -28,7 +62,10 @@ module C = Collections
     integers), and we provide functions for doing so: they should of course be
     manipulated with care. In this regard, the point of {!Id} is not so much to
     have opaque types but rather to provide a way of manipulating ids in a
-    disciplined manner, to prevent bugs by leveraging the typechecker. *)
+    disciplined manner, to prevent bugs by leveraging the typechecker.
+
+    The ids come in two flavours, which only differ in what [Map] and [Set] are:
+    see {!OrdId} and {!HashedId}. *)
 module type Id = sig
   type id
 
@@ -36,48 +73,7 @@ module type Id = sig
   type generator
 
   module Ord : C.HashedType with type t = id
-
-  module Set : sig
-    include C.Set
-
-    val add_in_place : id -> t ref -> unit
-  end
-  with type elt = id
-
-  module Map : sig
-    include C.Map
-
-    val add_in_place : id -> 'a -> 'a t ref -> unit
-    val to_list : 'a t -> (id * 'a) list
-    val values : 'a t -> 'a list
-    val hash : ('a -> int) -> 'a t -> int
-
-    (** Visitor helpers for the [visitors] ppx. *)
-
-    val visit_iter : ('env -> 'a -> unit) -> 'env -> 'a t -> unit
-    val visit_map : ('env -> 'a -> 'b) -> 'env -> 'a t -> 'b t
-
-    val visit_reduce :
-      zero:'z ->
-      plus:('z -> 'z -> 'z) ->
-      ('env -> 'a -> 'z) ->
-      'env ->
-      'a t ->
-      'z
-
-    val visit_mapreduce :
-      zero:'z ->
-      plus:('z -> 'z -> 'z) ->
-      ('env -> 'a -> 'b * 'z) ->
-      'env ->
-      'a t ->
-      'b t * 'z
-  end
-  with type key = id
-
   module InjSubst : C.InjMap with type key = id and type elem = id
-  module HashMap : C.HashMap with type key = id
-  module HashSet : C.HashSet with type elt = id
 
   val zero : id
   val generator_zero : generator
@@ -86,21 +82,6 @@ module type Id = sig
   val fresh_stateful_generator : unit -> generator ref * (unit -> id)
 
   exception FoundMarked of id
-
-  (** A stateful generator with "marked" ids throws a [FoundMarked] exception
-      when it generates an id belonging to a set which is controled by the user.
-      This is useful for debugging (it allows to insert the equivalent of
-      breakpoints in the program).
-
-      We also return a function to insert marked identifiers, by converting them
-      from integers. *)
-  val fresh_marked_stateful_generator :
-    unit -> generator ref * Set.t ref * (int -> unit) * (unit -> id)
-
-  (** Similar to [fresh_marked_stateful_generator], but initializes the set of
-      marked ids with the provided set of ids *)
-  val fresh_stateful_generator_with_marked :
-    Set.t -> generator ref * Set.t ref * (int -> unit) * (unit -> id)
 
   val mk_stateful_generator : generator -> generator ref * (unit -> id)
   val mk_stateful_generator_starting_at_id : id -> generator ref * (unit -> id)
@@ -166,19 +147,62 @@ module type Id = sig
 
   (** See the comments for {!nth} *)
   val iteri : (id -> 'a -> unit) -> 'a list -> unit
+end
+
+(** Ids whose [Map] and [Set] are the usual (tree-based) immutable ones. *)
+module type OrdId = sig
+  include Id
+  module Map : TreeMap with type key = id
+  module Set : TreeSet with type elt = id
+  module HashMap : C.HashMap with type key = id
+  module HashSet : C.HashSet with type elt = id
+
+  (** A stateful generator with "marked" ids throws a [FoundMarked] exception
+      when it generates an id belonging to a set which is controled by the user.
+      This is useful for debugging (it allows to insert the equivalent of
+      breakpoints in the program).
+
+      We also return a function to insert marked identifiers, by converting them
+      from integers. *)
+  val fresh_marked_stateful_generator :
+    unit -> generator ref * Set.t ref * (int -> unit) * (unit -> id)
+
+  (** Similar to [fresh_marked_stateful_generator], but initializes the set of
+      marked ids with the provided set of ids *)
+  val fresh_stateful_generator_with_marked :
+    Set.t -> generator ref * Set.t ref * (int -> unit) * (unit -> id)
 
   (** Transforms a list into a map, where each map key is he index that the
       element had in the list. *)
   val map_of_indexed_list : 'a option list -> 'a Map.t
-
-  (** See {!map_of_indexed_list} *)
-  val hash_map_of_indexed_list : 'a option list -> 'a HashMap.t
 end
 
-(** Generative functor for identifiers.
+(** Ids whose [Map] and [Set] are immutable hash tables (see {!C.HashMap}).
+    Those are much faster for lookups, but must be built in one go: use
+    [TreeMap] and [TreeSet] to build them incrementally. *)
+module type HashedId = sig
+  include Id
+  module Map : C.HashMap with type key = id
+  module Set : C.HashSet with type elt = id
+  module TreeMap : TreeMap with type key = id
+  module TreeSet : TreeSet with type elt = id
 
-    See {!Id}. *)
-module IdGen () : Id = struct
+  (** See {!OrdId.fresh_marked_stateful_generator} *)
+  val fresh_marked_stateful_generator :
+    unit -> generator ref * TreeSet.t ref * (int -> unit) * (unit -> id)
+
+  (** See {!OrdId.fresh_stateful_generator_with_marked} *)
+  val fresh_stateful_generator_with_marked :
+    TreeSet.t -> generator ref * TreeSet.t ref * (int -> unit) * (unit -> id)
+
+  (** See {!OrdId.map_of_indexed_list} *)
+  val map_of_indexed_list : 'a option list -> 'a Map.t
+end
+
+(** Shared implementation of {!OrdIdGen} and {!HashedIdGen}. Not exposed: it is
+    only through the signatures {!OrdId} and {!HashedId} that the [id] types
+    become abstract. *)
+module IdImpl () = struct
   (* TODO: use Z.t *)
   type id = int [@@deriving show, hash]
   type generator = id [@@deriving show]
@@ -196,13 +220,13 @@ module IdGen () : Id = struct
     let show_t = show_id
   end
 
-  module Set = struct
+  module TreeSet = struct
     include C.MakeSet (Ord)
 
     let add_in_place id s = s := add id !s
   end
 
-  module Map = struct
+  module TreeMap = struct
     include C.MakeMap (Ord)
 
     let add_in_place id x m = m := add id x !m
@@ -254,18 +278,18 @@ module IdGen () : Id = struct
 
   exception FoundMarked of id
 
-  let fresh_stateful_generator_with_marked (marked : Set.t) =
+  let fresh_stateful_generator_with_marked (marked : TreeSet.t) =
     let counter, fresh = fresh_stateful_generator () in
     let marked = ref marked in
     let fresh () =
       let id = fresh () in
-      if Set.mem id !marked then raise (FoundMarked id) else id
+      if TreeSet.mem id !marked then raise (FoundMarked id) else id
     in
-    let insert_from_int i = marked := Set.add i !marked in
+    let insert_from_int i = marked := TreeSet.add i !marked in
     (counter, marked, insert_from_int, fresh)
 
   let fresh_marked_stateful_generator () =
-    fresh_stateful_generator_with_marked Set.empty
+    fresh_stateful_generator_with_marked TreeSet.empty
 
   let fresh gen = (gen, incr gen)
   let to_int x = x
@@ -297,25 +321,35 @@ module IdGen () : Id = struct
 
   let iteri = List.iteri
 
-  let map_of_indexed_list (list : 'a option list) : 'a Map.t =
-    Map.of_list
-      (List.filter_map
-         (fun x -> x)
-         (mapi
-            (fun i x ->
-              match x with
-              | None -> None
-              | Some x -> Some (i, x))
-            list))
+  let indexed_bindings (list : 'a option list) : (id * 'a) list =
+    List.filter_map
+      (fun x -> x)
+      (mapi
+         (fun i x ->
+           match x with
+           | None -> None
+           | Some x -> Some (i, x))
+         list)
+end
 
-  let hash_map_of_indexed_list (list : 'a option list) : 'a HashMap.t =
-    HashMap.of_list
-      (List.filter_map
-         (fun x -> x)
-         (mapi
-            (fun i x ->
-              match x with
-              | None -> None
-              | Some x -> Some (i, x))
-            list))
+(** Generative functor for identifiers whose [Map] and [Set] are tree-based.
+
+    See {!Id} and {!OrdId}. *)
+module OrdIdGen () : OrdId = struct
+  include IdImpl ()
+  module Map = TreeMap
+  module Set = TreeSet
+
+  let map_of_indexed_list l = Map.of_list (indexed_bindings l)
+end
+
+(** Generative functor for identifiers whose [Map] and [Set] are hash tables.
+
+    See {!Id} and {!HashedId}. *)
+module HashedIdGen () : HashedId = struct
+  include IdImpl ()
+  module Map = HashMap
+  module Set = HashSet
+
+  let map_of_indexed_list l = Map.of_list (indexed_bindings l)
 end

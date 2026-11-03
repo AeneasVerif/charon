@@ -22,7 +22,7 @@ let option_none_id = VariantId.of_int 0
 (** The variant id for [Option::Some] *)
 let option_some_id = VariantId.of_int 1
 
-module RegionGroupId = IdGen ()
+module RegionGroupId = OrdIdGen ()
 
 type region_group_id = RegionGroupId.id [@@deriving show, eq, ord]
 

@@ -440,7 +440,7 @@ let abi_prefix (abi : abi) : string =
 let adt_field_to_string (env : fmt_env) (def_id : TypeDeclId.id)
     (opt_variant_id : VariantId.id option) (field_id : FieldId.id) :
     string option =
-  match TypeDeclId.HashMap.find_opt def_id env.crate.type_decls with
+  match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
   | None -> None
   | Some { kind = Opaque; _ } -> None
   | Some def ->
@@ -592,7 +592,7 @@ and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
       let variant_name =
         match opt_variant_id with
         | Some variant_id -> (
-            match TypeDeclId.HashMap.find_opt ty.id env.crate.type_decls with
+            match TypeDeclId.Map.find_opt ty.id env.crate.type_decls with
             | Some { kind = Enum variants; _ } ->
                 (VariantId.nth variants variant_id).variant_name ^ "."
             | _ -> VariantId.to_string variant_id ^ ".")
@@ -1044,7 +1044,7 @@ and pp_impl_elem (env : fmt_env) (fmt : Format.formatter) (elem : impl_elem) :
       let env = fmt_env_push_generics_and_preds env bound_ty.binder_params in
       pp_ty env fmt bound_ty.binder_value
   | ImplElemTrait impl_id -> begin
-      match TraitImplId.HashMap.find_opt impl_id env.crate.trait_impls with
+      match TraitImplId.Map.find_opt impl_id env.crate.trait_impls with
       | None -> Format.fprintf fmt "impl#%s" (TraitImplId.to_string impl_id)
       | Some impl ->
           (* Locally replace the generics and the predicates *)
@@ -1162,7 +1162,7 @@ and generic_params_to_strings (env : fmt_env) (generics : generic_params) :
 
 and pp_adt_variant (env : fmt_env) (def_id : TypeDeclId.id)
     (fmt : Format.formatter) (variant_id : VariantId.id) : unit =
-  match TypeDeclId.HashMap.find_opt def_id env.crate.type_decls with
+  match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
   | None ->
       Format.fprintf fmt "%s::%s"
         (type_decl_id_to_pretty_string def_id)
@@ -1178,7 +1178,7 @@ and pp_adt_variant (env : fmt_env) (def_id : TypeDeclId.id)
 
 and adt_field_names (env : fmt_env) (def_id : TypeDeclId.id)
     (opt_variant_id : VariantId.id option) : string list option =
-  match TypeDeclId.HashMap.find_opt def_id env.crate.type_decls with
+  match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
   | None -> None
   | Some { kind = Opaque; _ } -> None
   | Some def ->
@@ -2655,31 +2655,31 @@ let pp_crate (fmt : Format.formatter) (m : crate) : unit =
   let format_item (id : item_id) : unit =
     match id with
     | IdType id -> (
-        match TypeDeclId.HashMap.find_opt id m.type_decls with
+        match TypeDeclId.Map.find_opt id m.type_decls with
         | Some d -> emit (fun fmt -> pp_type_decl env fmt d)
         | None ->
             emit_string ("Missing decl: " ^ item_id_to_pretty_string (IdType id))
         )
     | IdGlobal id -> (
-        match GlobalDeclId.HashMap.find_opt id m.global_decls with
+        match GlobalDeclId.Map.find_opt id m.global_decls with
         | Some d -> emit (fun fmt -> pp_global_decl env "" tab_incr fmt d)
         | None ->
             emit_string
               ("Missing decl: " ^ item_id_to_pretty_string (IdGlobal id)))
     | IdTraitDecl id -> (
-        match TraitDeclId.HashMap.find_opt id m.trait_decls with
+        match TraitDeclId.Map.find_opt id m.trait_decls with
         | Some d -> emit (fun fmt -> pp_trait_decl env "" tab_incr fmt d)
         | None ->
             emit_string
               ("Missing decl: " ^ item_id_to_pretty_string (IdTraitDecl id)))
     | IdTraitImpl id -> (
-        match TraitImplId.HashMap.find_opt id m.trait_impls with
+        match TraitImplId.Map.find_opt id m.trait_impls with
         | Some d -> emit (fun fmt -> pp_trait_impl env "" tab_incr fmt d)
         | None ->
             emit_string
               ("Missing decl: " ^ item_id_to_pretty_string (IdTraitImpl id)))
     | IdFun id -> (
-        match FunDeclId.HashMap.find_opt id m.fun_decls with
+        match FunDeclId.Map.find_opt id m.fun_decls with
         | Some d -> emit (fun fmt -> pp_fun_decl env "" tab_incr fmt d)
         | None ->
             emit_string ("Missing decl: " ^ item_id_to_pretty_string (IdFun id))
@@ -2693,19 +2693,19 @@ let pp_crate (fmt : Format.formatter) (m : crate) : unit =
   | None ->
       List.iter
         (fun d -> emit (fun fmt -> pp_type_decl env fmt d))
-        (TypeDeclId.HashMap.values m.type_decls);
+        (TypeDeclId.Map.values m.type_decls);
       List.iter
         (fun d -> emit (fun fmt -> pp_global_decl env "" tab_incr fmt d))
-        (GlobalDeclId.HashMap.values m.global_decls);
+        (GlobalDeclId.Map.values m.global_decls);
       List.iter
         (fun d -> emit (fun fmt -> pp_trait_decl env "" tab_incr fmt d))
-        (TraitDeclId.HashMap.values m.trait_decls);
+        (TraitDeclId.Map.values m.trait_decls);
       List.iter
         (fun d -> emit (fun fmt -> pp_trait_impl env "" tab_incr fmt d))
-        (TraitImplId.HashMap.values m.trait_impls);
+        (TraitImplId.Map.values m.trait_impls);
       List.iter
         (fun d -> emit (fun fmt -> pp_fun_decl env "" tab_incr fmt d))
-        (FunDeclId.HashMap.values m.fun_decls)
+        (FunDeclId.Map.values m.fun_decls)
   | Some declarations ->
       declarations
       |> List.iter (function

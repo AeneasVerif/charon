@@ -144,7 +144,7 @@ let lookup_trait_impl_method (timpl : trait_impl) (id : trait_method_id) :
 (** Resolve an [assoc_item_id] to a name. *)
 let get_assoc_item_name (crate : crate) (trait_id : trait_decl_id)
     (id : assoc_item_id) : trait_item_name =
-  let names = TraitDeclId.HashMap.find trait_id crate.assoc_item_names in
+  let names = TraitDeclId.Map.find trait_id crate.assoc_item_names in
   match id with
   | AssocIdMethod id -> TraitMethodId.nth names.methods id
   | AssocIdConst id -> AssocConstId.nth names.consts id
@@ -153,19 +153,19 @@ let get_assoc_item_name (crate : crate) (trait_id : trait_decl_id)
 (** Resolve a [trait_method_id] to a name. *)
 let get_method_name (crate : crate) (trait_id : trait_decl_id)
     (id : trait_method_id) : trait_item_name =
-  let names = TraitDeclId.HashMap.find trait_id crate.assoc_item_names in
+  let names = TraitDeclId.Map.find trait_id crate.assoc_item_names in
   TraitMethodId.nth names.methods id
 
 (** Resolve a [assoc_type_id] to a name. *)
 let get_assoc_type_name (crate : crate) (trait_id : trait_decl_id)
     (id : assoc_type_id) : trait_item_name =
-  let names = TraitDeclId.HashMap.find trait_id crate.assoc_item_names in
+  let names = TraitDeclId.Map.find trait_id crate.assoc_item_names in
   AssocTypeId.nth names.types id
 
 (** Resolve a [assoc_const_id] to a name. *)
 let get_assoc_const_name (crate : crate) (trait_id : trait_decl_id)
     (id : assoc_const_id) : trait_item_name =
-  let names = TraitDeclId.HashMap.find trait_id crate.assoc_item_names in
+  let names = TraitDeclId.Map.find trait_id crate.assoc_item_names in
   AssocConstId.nth names.consts id
 
 let g_declaration_group_to_list (g : 'a g_declaration_group) : 'a list =
@@ -270,17 +270,16 @@ let split_declarations_to_group_maps (decls : declaration_group list) :
     * trait_declaration_group TraitDeclId.Map.t
     * trait_impl_group TraitImplId.Map.t
     * mixed_declaration_group list =
-  let module G (M : Map.S) = struct
-    let add_group (map : M.key g_declaration_group M.t)
-        (group : M.key g_declaration_group) : M.key g_declaration_group M.t =
-      List.fold_left
-        (fun map id -> M.add id group map)
-        map
-        (g_declaration_group_to_list group)
-
+  let module G (M : Collections.HashMap) = struct
     let create_map (groups : M.key g_declaration_group list) :
         M.key g_declaration_group M.t =
-      List.fold_left add_group M.empty groups
+      M.of_list
+        (List.concat_map
+           (fun group ->
+             List.map
+               (fun id -> (id, group))
+               (g_declaration_group_to_list group))
+           groups)
   end in
   let types, funs, globals, trait_decls, trait_impls, mixed_groups =
     split_declarations decls

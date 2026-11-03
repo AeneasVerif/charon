@@ -5,7 +5,7 @@ open Generated_Meta
 open Generated_GAst
 open Identifiers
 
-module BlockId = IdGen ()
+module BlockId = OrdIdGen ()
 
 (* __REPLACE0__ *)
 
