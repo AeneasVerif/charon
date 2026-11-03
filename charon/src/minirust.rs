@@ -574,7 +574,9 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             },
             T::Return => mini::Terminator::Return,
             T::UnwindResume => mini::Terminator::ResumeUnwind,
-            T::Drop { .. } => raise!(span, "MiniRust requires drops to be desugared"),
+            T::Drop { .. } | T::DropEmptyBox { .. } => {
+                raise!(span, "MiniRust requires drops to be desugared")
+            }
             T::InlineAsm { .. } => raise!(span, "MiniRust does not support inline assembly"),
             T::Panic { .. } => raise!(
                 span,

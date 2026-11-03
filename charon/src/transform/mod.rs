@@ -39,6 +39,7 @@ pub mod resugar {
     pub mod move_asserts_to_statements;
     pub mod reconstruct_asserts;
     pub mod reconstruct_box_derefs;
+    pub mod reconstruct_box_drops;
     pub mod reconstruct_copy_for_deref;
     pub mod reconstruct_fallible_operations;
     pub mod reconstruct_intrinsics;
@@ -126,6 +127,10 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
     let pass = Pass::FusedUnstructuredBody(Box::new([
         // Detect which locals are drop flags.
         CowBox::Borrowed(&add_missing_info::detect_drop_flags::Transform),
+        // Elaborated MIR lowers the deallocation of a `Box` whose pointee was moved out to a
+        // direct call to `Box::drop`. We reconstruct that into a primitive operation, for
+        // borrow-checking purposes.
+        CowBox::Borrowed(&resugar::reconstruct_box_drops::Transform),
         // Reconstruct conditional drops. Needs to be done before any pass changes the shape of the
         // CFG.
         CowBox::Borrowed(&resugar::resugar_drops::Transform),

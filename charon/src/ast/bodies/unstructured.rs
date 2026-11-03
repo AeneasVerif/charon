@@ -123,6 +123,15 @@ pub enum TerminatorKind {
         target: BlockId,
         on_unwind: BlockId,
     },
+    /// Deallocate a `Box` whose pointee has already been moved out/dropped.
+    ///
+    /// Resugared when it appears in elaborated/optimized MIR, if `--treat-box-as-builtin` is set
+    /// and `--desugar-drops` isn't.
+    DropEmptyBox {
+        place: Place,
+        target: BlockId,
+        on_unwind: BlockId,
+    },
     /// An inline assembly block.
     InlineAsm {
         asm: InlineAsm,
@@ -405,6 +414,7 @@ impl Terminator {
             | Return
             | Call { .. }
             | Drop { .. }
+            | DropEmptyBox { .. }
             | UnwindResume
             | Assert { .. } => false,
         }
@@ -441,6 +451,9 @@ impl Terminator {
             | TerminatorKind::Drop {
                 target, on_unwind, ..
             }
+            | TerminatorKind::DropEmptyBox {
+                target, on_unwind, ..
+            }
             | TerminatorKind::Assert {
                 target, on_unwind, ..
             } => smallvec![*target, *on_unwind],
@@ -475,6 +488,9 @@ impl Terminator {
             | TerminatorKind::Drop {
                 target, on_unwind, ..
             }
+            | TerminatorKind::DropEmptyBox {
+                target, on_unwind, ..
+            }
             | TerminatorKind::Assert {
                 target, on_unwind, ..
             } => smallvec![target, on_unwind],
@@ -505,6 +521,7 @@ impl Terminator {
                 .collect(),
             TerminatorKind::Call { target, .. }
             | TerminatorKind::Drop { target, .. }
+            | TerminatorKind::DropEmptyBox { target, .. }
             | TerminatorKind::Assert { target, .. } => {
                 smallvec![*target]
             }

@@ -80,6 +80,14 @@ pub enum StatementKind {
         kind: DropKind,
         on_unwind: Block,
     },
+    /// Deallocate a `Box` whose pointee has already been moved out/dropped.
+    ///
+    /// Resugared when it appears in elaborated/optimized MIR, if `--treat-box-as-builtin` is set
+    /// and `--desugar-drops` isn't.
+    DropEmptyBox {
+        place: Place,
+        on_unwind: Block,
+    },
     Assert {
         assert: Assert,
         on_failure: AbortKind,

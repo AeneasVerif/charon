@@ -217,6 +217,26 @@ impl FnPtr {
             FnPtrKind::Trait(..) => &self.generics,
         }
     }
+
+    pub fn as_method_call<'a>(
+        &'a self,
+        krate: &'a TranslatedCrate,
+    ) -> Option<(&'a TraitDeclRef, TraitMethodId)> {
+        match self.kind.as_ref() {
+            FnPtrKind::Fun(id)
+                if let Some(decl) = krate.fun_decls.get(*id)
+                    && let FunSource::TraitImpl {
+                        trait_ref: pred,
+                        item_id,
+                        ..
+                    } = &decl.src =>
+            {
+                Some((pred, *item_id))
+            }
+            FnPtrKind::Fun(..) => None,
+            FnPtrKind::Trait(trait_ref, method) => Some((&trait_ref.trait_decl_ref, *method)),
+        }
+    }
 }
 
 /// A generic `*DeclRef`-shaped struct, used when we're generic over the type of item.

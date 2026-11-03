@@ -2037,6 +2037,18 @@ module Ullbc = struct
           Ok (Drop (kind, place, fn_ptr, target, on_unwind))
       | `Assoc
           [
+            ( "DropEmptyBox",
+              `Assoc
+                [
+                  ("place", place); ("target", target); ("on_unwind", on_unwind);
+                ] );
+          ] ->
+          let* place = place_of_json ctx place in
+          let* target = block_id_of_json ctx target in
+          let* on_unwind = block_id_of_json ctx on_unwind in
+          Ok (DropEmptyBox (place, target, on_unwind))
+      | `Assoc
+          [
             ( "InlineAsm",
               `Assoc
                 [
@@ -2180,6 +2192,14 @@ module Llbc = struct
           let* kind = drop_kind_of_json ctx kind in
           let* on_unwind = block_of_json ctx on_unwind in
           Ok (Drop (place, fn_ptr, kind, on_unwind))
+      | `Assoc
+          [
+            ( "DropEmptyBox",
+              `Assoc [ ("place", place); ("on_unwind", on_unwind) ] );
+          ] ->
+          let* place = place_of_json ctx place in
+          let* on_unwind = block_of_json ctx on_unwind in
+          Ok (DropEmptyBox (place, on_unwind))
       | `Assoc
           [
             ( "Assert",

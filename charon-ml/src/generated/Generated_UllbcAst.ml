@@ -98,6 +98,16 @@ and terminator_kind =
           - [fn_ptr]: Reference to the [drop_glue] code to call on drop.
           - [target]
           - [on_unwind] *)
+  | DropEmptyBox of place * block_id * block_id
+      (** Deallocate a [Box] whose pointee has already been moved out/dropped.
+
+          Resugared when it appears in elaborated/optimized MIR, if
+          [--treat-box-as-builtin] is set and [--desugar-drops] isn't.
+
+          Fields:
+          - [place]
+          - [target]
+          - [on_unwind] *)
   | InlineAsm of inline_asm * block_id option * block_id list * block_id
       (** An inline assembly block.
 
