@@ -44,7 +44,7 @@ impl Transform {
 
     fn reconstruct_match(&self, ctx: &mut TransformCtx, block: &mut BlockData) {
         let span = block.terminator.span;
-        let TerminatorKind::Switch { data, .. } = &mut block.terminator.kind else {
+        let TerminatorKind::Switch { data, branches } = &mut block.terminator.kind else {
             return;
         };
         let SwitchScrutinee::Value(Operand::Move(op_p)) = &data.scrutinee else {
@@ -123,9 +123,15 @@ impl Transform {
             }
         }
 
-        // Remove the fallback if the explicit cases cover every variant.
         if covered_discriminants.len() == discr_to_id.len() {
-            data.fallback.take();
+            // Remove the fallback if the explicit cases cover every variant.
+            let fallback = data.fallback.take();
+            // Remove the fallback branch entirely if unused.
+            if let Some(fallback) = fallback
+                && !data.branches.iter().any(|(_, branch)| *branch == fallback)
+            {
+                branches.pop();
+            }
         }
     }
 }
