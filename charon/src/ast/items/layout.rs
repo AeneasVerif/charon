@@ -31,6 +31,11 @@ pub struct Layout {
     /// meaningful layout due to being uninhabited (though an uninhabited variant may have a
     /// layout). Structs and unions are modeled as having exactly one variant.
     pub variant_layouts: IndexVec<VariantId, Option<VariantLayout>>,
+    /// For unions: the `(offset, size)` ranges of bytes that aren't padding, i.e. that are data in
+    /// at least one field. The other bytes are lost on a typed copy. `None` for non-unions and when
+    /// the layout isn't known.
+    #[serde_state(stateless)]
+    pub union_chunks: Option<Vec<(ByteCount, ByteCount)>>,
     /// The representation options of this type declaration as annotated by the user.
     #[serde_state(stateless)]
     pub repr: ReprOptions,
@@ -137,6 +142,7 @@ impl Layout {
             discriminator: None,
             inhabited,
             variant_layouts,
+            union_chunks: None,
             repr,
         })
     }

@@ -116,12 +116,19 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                         Ok((mini_size(offset), ty))
                     })
                     .try_collect()?;
+                let chunks = layout
+                    .union_chunks
+                    .as_ref()
+                    .ok_or("missing chunks in union layout")
+                    .context(span)?
+                    .iter()
+                    .map(|(offset, size)| (mini_size(*offset), mini_size(*size)))
+                    .collect();
                 let size = mini_size(self.size(span, &layout.size)?);
                 let align = mini_align(span, self.size(span, &layout.align)?)?;
                 mini::Type::Union {
                     fields,
-                    // FIXME(minirust): Some bytes may be padding.
-                    chunks: [(mini::Size::ZERO, size)].into_iter().collect(),
+                    chunks,
                     size,
                     align,
                 }

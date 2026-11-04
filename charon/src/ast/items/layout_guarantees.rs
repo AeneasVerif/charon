@@ -950,6 +950,7 @@ mod tests {
                 discriminator: None,
                 inhabited: InhabitedPredicate::mk_true(),
                 variant_layouts: Default::default(),
+                union_chunks: None,
                 repr: Default::default(),
             },
         );

@@ -3052,9 +3052,22 @@ and layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          (option_of_postcard variant_layout_of_postcard)
          ctx st
      in
+     let* union_chunks =
+       option_of_postcard
+         (list_of_postcard (pair_of_postcard u64_of_postcard u64_of_postcard))
+         ctx st
+     in
      let* repr = repr_options_of_postcard ctx st in
      Ok
-       ({ size; align; discriminator; inhabited; variant_layouts; repr }
+       ({
+          size;
+          align;
+          discriminator;
+          inhabited;
+          variant_layouts;
+          union_chunks;
+          repr;
+        }
          : layout))
 
 and rustc_linkage_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

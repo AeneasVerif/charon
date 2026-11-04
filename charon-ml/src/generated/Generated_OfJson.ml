@@ -3706,6 +3706,7 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
           ("discriminator", discriminator);
           ("inhabited", inhabited);
           ("variant_layouts", variant_layouts);
+          ("union_chunks", union_chunks);
           ("repr", repr);
         ] ->
         let* size = size_of_json ctx size in
@@ -3719,9 +3720,22 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
             (option_of_json variant_layout_of_json)
             ctx variant_layouts
         in
+        let* union_chunks =
+          option_of_json
+            (list_of_json (pair_of_json int_of_json int_of_json))
+            ctx union_chunks
+        in
         let* repr = repr_options_of_json ctx repr in
         Ok
-          ({ size; align; discriminator; inhabited; variant_layouts; repr }
+          ({
+             size;
+             align;
+             discriminator;
+             inhabited;
+             variant_layouts;
+             union_chunks;
+             repr;
+           }
             : layout)
     | _ -> Error "")
 

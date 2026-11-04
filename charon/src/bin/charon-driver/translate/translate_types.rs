@@ -819,6 +819,46 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
         }
 
+        /// Marks the bytes of `layout` that aren't padding, i.e. that are part of a primitive in
+        /// at least one field of one variant. This mirrors MiniRust's `calc_chunks`:
+        /// <https://github.com/minirust/minirust/blob/master/tooling/minimize/src/chunks.rs>.
+        fn mark_data_bytes<'tcx>(
+            cx: &ty::layout::LayoutCx<'tcx>,
+            layout: ty::layout::TyAndLayout<'tcx>,
+            markers: &mut [bool],
+        ) {
+            // The tag of a multi-variant layout is handled as one of its fields below.
+            if let r_abi::Variants::Multiple { variants, .. } = &layout.variants {
+                for id in variants.indices() {
+                    mark_data_bytes(cx, layout.for_variant(cx, id), markers);
+                }
+            }
+            match layout.fields {
+                r_abi::FieldsShape::Primitive => markers[..layout.size.bytes_usize()].fill(true),
+                r_abi::FieldsShape::Array { stride, count } => {
+                    let elem = layout.field(cx, 0);
+                    // Skip ZSTs which may have huge counts ([(); isize::MAX] & co.)
+                    if elem.is_zst() {
+                        return;
+                    }
+                    let mut elem_markers = vec![false; elem.size.bytes_usize()];
+                    mark_data_bytes(cx, elem, &mut elem_markers);
+                    for i in 0..count {
+                        let offset = (stride * i).bytes_usize();
+                        for (m, e) in markers[offset..].iter_mut().zip(&elem_markers) {
+                            *m |= e;
+                        }
+                    }
+                }
+                r_abi::FieldsShape::Union(_) | r_abi::FieldsShape::Arbitrary { .. } => {
+                    for i in 0..layout.fields.count() {
+                        let offset = layout.fields.offset(i).bytes_usize();
+                        mark_data_bytes(cx, layout.field(cx, i), &mut markers[offset..]);
+                    }
+                }
+            }
+        }
+
         let tcx = self.t_ctx.tcx;
         let hax_state = self.hax_state_with_id();
         assert_eq!(hax_state.owner(), item.def_id);
@@ -1064,12 +1104,27 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             r_abi::Variants::Empty => None,
         };
 
+        let union_chunks = kind.is_union().then(|| {
+            let mut markers = vec![false; ty_layout.size.bytes_usize()];
+            mark_data_bytes(&layout_cx, ty_layout, &mut markers);
+            let mut chunks = vec![];
+            let mut offset = 0;
+            for run in markers.chunk_by(|a, b| a == b) {
+                if run[0] {
+                    chunks.push((offset, run.len() as ByteCount));
+                }
+                offset += run.len() as ByteCount;
+            }
+            chunks
+        });
+
         Some(Layout {
             size,
             align,
             discriminator,
             inhabited,
             variant_layouts,
+            union_chunks,
             repr,
         })
     }
@@ -1106,6 +1161,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         tagger: vec![],
                         inhabited: InhabitedPredicate::mk_true(),
                     })]),
+                    union_chunks: None,
                     repr: ReprOptions::default(),
                 })
             }

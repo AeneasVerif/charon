@@ -1405,6 +1405,11 @@ and layout = {
           don't have a meaningful layout due to being uninhabited (though an
           uninhabited variant may have a layout). Structs and unions are modeled
           as having exactly one variant. *)
+  union_chunks : (int * int) list option;
+      (** For unions: the [(offset, size)] ranges of bytes that aren't padding,
+          i.e. that are data in at least one field. The other bytes are lost on
+          a typed copy. [None] for non-unions and when the layout isn't known.
+      *)
   repr : repr_options;
       (** The representation options of this type declaration as annotated by
           the user. *)
