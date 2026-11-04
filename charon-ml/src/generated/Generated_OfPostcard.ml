@@ -3379,6 +3379,7 @@ and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* os = rustc_os_of_postcard ctx st in
      let* env = rustc_env_of_postcard ctx st in
      let* cfg_abi = rustc_cfg_abi_of_postcard ctx st in
+     let* families = list_of_postcard string_of_postcard ctx st in
      let* binary_format = rustc_binary_format_of_postcard ctx st in
      let* target_pointer_size = u64_of_postcard ctx st in
      let* is_little_endian = bool_of_postcard ctx st in
@@ -3394,6 +3395,7 @@ and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           os;
           env;
           cfg_abi;
+          families;
           binary_format;
           target_pointer_size;
           is_little_endian;

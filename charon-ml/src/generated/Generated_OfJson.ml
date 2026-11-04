@@ -4089,6 +4089,7 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
           ("os", os);
           ("env", env);
           ("cfg_abi", cfg_abi);
+          ("families", families);
           ("binary_format", binary_format);
           ("target_pointer_size", target_pointer_size);
           ("is_little_endian", is_little_endian);
@@ -4100,6 +4101,7 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
         let* os = rustc_os_of_json ctx os in
         let* env = rustc_env_of_json ctx env in
         let* cfg_abi = rustc_cfg_abi_of_json ctx cfg_abi in
+        let* families = list_of_json string_of_json ctx families in
         let* binary_format = rustc_binary_format_of_json ctx binary_format in
         let* target_pointer_size = int_of_json ctx target_pointer_size in
         let* is_little_endian = bool_of_json ctx is_little_endian in
@@ -4117,6 +4119,7 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
              os;
              env;
              cfg_abi;
+             families;
              binary_format;
              target_pointer_size;
              is_little_endian;
