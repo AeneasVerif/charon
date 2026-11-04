@@ -30,9 +30,7 @@ The translation to MiniRust currently has these limitations:
 ### Translated unsoundly
 
 - The `rust-call` ABI is treated as the normal Rust ABI;
-- Pointers to statics that aren't at offset 0;
-- `#[track_caller]`: we don't pass the called information;
-- Precise union padding: we preserve every byte of a union, including bytes Rust may treat as padding.
+- `#[track_caller]`: we don't pass the called information.
 
 ### Rejected with an error, but supported by MiniRust
 

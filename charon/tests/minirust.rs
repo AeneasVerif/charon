@@ -40,8 +40,6 @@ const FAILURES: &[(&str, &[&str])] = &[
             "ub/slice_dangling.rs",
         ],
     ),
-    // FIXME: union padding
-    ("got exit status: 0", &["ub/enum_mark_used_bytes.rs"]),
     // FIXME: respect panic=abort
     (
         "MiniRust UB: reached unreachable code",

@@ -124,6 +124,11 @@ union PackIntsUnion {
     y: u64,
 }
 
+union PaddedUnion {
+    x: std::mem::ManuallyDrop<NotReordered>,
+    y: u16,
+}
+
 enum NonZeroNiche {
     A(char),
     B,

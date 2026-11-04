@@ -1419,6 +1419,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for Layout {
             }
         }
         writeln!(f, "{tab}],")?;
+        if let Some(chunks) = &self.union_chunks {
+            let chunks = chunks
+                .iter()
+                .map(|(offset, size)| format!("{offset}..{}", offset + size));
+            writeln!(f, "{tab}union chunks: [{}],", chunks.format(", "))?;
+        }
         write!(f, "{tab}{},", self.repr)
     }
 }

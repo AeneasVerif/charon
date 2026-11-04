@@ -206,6 +206,13 @@ impl "impl_Copy_for_i32" Copy for i32 {
     non-dyn-compatible
 }
 
+// Full name: core::mem::manually_drop::ManuallyDrop
+#[lang_item(ManuallyDrop)]
+pub opaque type ManuallyDrop<T>
+where
+    TraitClause0: (T: MetaSized),
+// layout: none
+
 // Full name: core::num::niche_types::NonZeroU32Inner
 pub opaque type NonZeroU32Inner
 // layout:
@@ -897,6 +904,7 @@ union MaybeUninitInt {
 //             tagger: [],
 //         },
 //     ],
+//     union chunks: [0..4],
 //     repr(Rust),
 
 // Full name: test_crate::PackIntsUnion
@@ -917,6 +925,28 @@ union PackIntsUnion {
 //             tagger: [],
 //         },
 //     ],
+//     union chunks: [0..8],
+//     repr(Rust),
+
+// Full name: test_crate::PaddedUnion
+union PaddedUnion {
+  x: ManuallyDrop<NotReordered>[{built_in impl MetaSized for NotReordered}],
+  y: u16,
+}
+// layout:
+//     size: 12usize (guaranteed: at_least(align_to(max((offset_of(PaddedUnion.x) + size_of::<ManuallyDrop<NotReordered>[{built_in impl MetaSized for NotReordered}]>()), (offset_of(PaddedUnion.y) + size_of::<u16>())), max(align_of::<ManuallyDrop<NotReordered>[{built_in impl MetaSized for NotReordered}]>(), align_of::<u16>())))),
+//     align: 4usize (guaranteed: at_least(max(align_of::<ManuallyDrop<NotReordered>[{built_in impl MetaSized for NotReordered}]>(), align_of::<u16>()))),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             offset of x: 0 (guaranteed: aligned(align_of::<ManuallyDrop<NotReordered>[{built_in impl MetaSized for NotReordered}]>())),
+//             offset of y: 0 (guaranteed: aligned(align_of::<u16>())),
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     union chunks: [0..2, 4..9],
 //     repr(Rust),
 
 // Full name: test_crate::NonZeroNiche
@@ -1412,6 +1442,7 @@ union ReprCUnion {
 //             tagger: [],
 //         },
 //     ],
+//     union chunks: [0..4],
 //     repr(C),
 
 // Full name: test_crate::ReprCEnum
