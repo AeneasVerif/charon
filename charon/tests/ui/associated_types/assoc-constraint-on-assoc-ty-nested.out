@@ -43,11 +43,11 @@ trait IntoIntoIterator<Self, Self_IntoIntoIter, Self_Clause2_IntoIter>
 }
 
 // Full name: test_crate::foo
-fn foo<I, Clause1_IntoIntoIter, Clause1_Clause2_IntoIter, Clause2_Assoc>()
+fn foo<I, Clause1_IntoIntoIter, Clause1_Clause2_IntoIter>()
 where
     TraitClause0: (I: Sized),
     TraitClause1: (I: IntoIntoIterator<Clause1_IntoIntoIter, Clause1_Clause2_IntoIter>),
-    TraitClause2: (Clause1_Clause2_IntoIter: Trait<Clause2_Assoc>),
+    TraitClause2: (Clause1_Clause2_IntoIter: Trait<()>),
 {
     let _0: (); // return
 

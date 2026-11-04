@@ -27,15 +27,15 @@ pub trait Trait<Self, Self_Assoc>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self_Assoc: Sized)
-    fn method<'_0_1, Clause0_Assoc, TraitClause0_1: (Self: Trait<Clause0_Assoc>), TypeConstraint0: Self::Assoc = B> = method<'_0_1, Self, Clause0_Assoc>[Self, TraitClause0_1]
+    fn method<'_0_1, Clause0_Assoc, TraitClause0_1: (Self: Trait<Clause0_Assoc>), TypeConstraint0: Self::Assoc = B> = method<'_0_1, Self>[Self, TraitClause0_1]
     non-dyn-compatible
 }
 
 // Full name: test_crate::Trait::method
-pub fn method<'_0, Self, Clause1_Assoc>(self: &'_0 Self)
+pub fn method<'_0, Self>(self: &'_0 Self)
 where
     TraitClause0: (Self: Trait<B>),
-    TraitClause1: (Self: Trait<Clause1_Assoc>),
+    TraitClause1: (Self: Trait<B>),
     Outlives0: (Self: '_0),
 {
     let _0: (); // return
@@ -51,7 +51,7 @@ where
 impl "impl_Trait_for_unit" Trait<A> for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: (A: Sized) = {built_in impl Sized for A}
-    fn method<'_0_1, Clause0_Assoc, TraitClause0_1: ((): Trait<Clause0_Assoc>), TypeConstraint0: impl_Trait_for_unit::Assoc = B> = method<'_0_1, (), Clause0_Assoc>[impl_Trait_for_unit, TraitClause0_1]
+    fn method<'_0_1, Clause0_Assoc, TraitClause0_1: ((): Trait<Clause0_Assoc>), TypeConstraint0: impl_Trait_for_unit::Assoc = B> = method<'_0_1, ()>[impl_Trait_for_unit, TraitClause0_1]
     non-dyn-compatible
 }
 
