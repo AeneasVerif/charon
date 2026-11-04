@@ -156,9 +156,21 @@ impl Place {
         std::iter::successors(Some(self), |place| Some(place.as_projection()?.0))
     }
 
+    /// Compare places without comparing their types, which may differ due to e.g. body lifetimes.
+    pub fn same_place(&self, other: &Self) -> bool {
+        match (&self.kind, &other.kind) {
+            (PlaceKind::Local(left), PlaceKind::Local(right)) => left == right,
+            (PlaceKind::Global(left), PlaceKind::Global(right)) => left == right,
+            (PlaceKind::Projection(left, left_proj), PlaceKind::Projection(right, right_proj)) => {
+                left_proj == right_proj && left.same_place(right)
+            }
+            _ => false,
+        }
+    }
+
     /// Whether `self` is the same place as, or a projection of, `parent`.
     pub fn is_subplace(&self, parent: &Self) -> bool {
-        self.subplaces().any(|place| place == parent)
+        self.subplaces().any(|place| place.same_place(parent))
     }
 
     pub fn projections(&self) -> impl Iterator<Item = &ProjectionElem> {

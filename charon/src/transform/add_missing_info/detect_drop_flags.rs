@@ -70,7 +70,7 @@ impl GatherCandidates<'_> {
                 place,
                 ..
             } = &terminator.kind
-                && !dropped_places.contains(place)
+                && !dropped_places.iter().any(|p: &Place| p.same_place(place))
             {
                 dropped_places.push(place.clone());
             }
@@ -120,7 +120,7 @@ impl VisitBody for GatherCandidates<'_> {
                 FlagStatus::Candidate {
                     dropped_places: candidates,
                 } => {
-                    candidates.retain(|place| dropped_places.contains(place));
+                    candidates.retain(|place| dropped_places.iter().any(|p| p.same_place(place)));
                     if dropped_places.is_empty() {
                         *status = FlagStatus::Discarded;
                     }
