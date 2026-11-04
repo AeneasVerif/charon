@@ -653,56 +653,49 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let ty = hax::normalize(tcx, ty_env, ty);
 
         // Get the tail type, which determines the metadata of `ty`.
-        let tail_ty = tcx.struct_tail_raw(
-            ty,
-            &rustc_middle::traits::ObligationCause::dummy(),
-            |ty| hax::normalize(tcx, ty_env, ty),
-            || {},
-        );
-        let hax_ty: hax::Ty<'tcx> = self.t_ctx.catch_sinto(hax_state, span, &tail_ty)?;
-
-        let ret = match tail_ty.kind() {
-            _ if tail_ty.is_sized(tcx, ty_env) => PtrMetadata::None,
-            ty::Str | ty::Slice(..) => PtrMetadata::Length,
-            ty::Dynamic(..) => match hax_ty.kind() {
-                hax::TyKind::DynTrait(dyn_trait) => {
-                    let principal_clause = dyn_trait
-                        .principal_trait_clause()
-                        .expect("expected a principal trait for vtable metadata");
-                    let vtable =
-                        self.translate_dyn_binder(span, &dyn_trait.binder, |ctx, _, _| {
-                            ctx.translate_region_binder(
-                                span,
-                                principal_clause,
-                                |ctx, kind: &hax::ClauseKind| {
-                                    let hax::ClauseKind::Trait(trait_predicate) = kind else {
-                                        unreachable!()
-                                    };
-                                    ctx.translate_vtable_struct_ref(
-                                        span,
-                                        &trait_predicate.trait_ref,
-                                    )
-                                },
-                            )
-                        })?;
-                    let vtable = vtable
-                        .skip_binder
-                        .try_substitute(&GenericArgs::empty())
-                        .expect("vtable struct should not depend on self type");
-                    let vtable = self.erase_region_binder(vtable);
-                    PtrMetadata::VTable(vtable)
-                }
-                _ => unreachable!("Unexpected hax type {hax_ty:?} for dynamic type: {ty:?}"),
-            },
-            // If we're hiding `Sized`, let's consider every param to be sized.
-            ty::Param(..) if self.t_ctx.options.hide_marker_traits => PtrMetadata::None,
-            ty::Param(..) => PtrMetadata::InheritFrom(self.translate_ty(span, &hax_ty)?),
-            ty::Placeholder(..) | ty::Infer(..) | ty::Bound(..) => {
-                panic!(
-                    "We should never encounter a placeholder, infer, or bound type from ptr_metadata translation. Got: {tail_ty:?}"
-                )
+        let tail_ty = ty.ptr_metadata_ty_or_tail(tcx, |ty| hax::normalize(tcx, ty_env, ty));
+        let ret = match tail_ty {
+            Ok(ty) if ty.is_unit() => PtrMetadata::None,
+            Ok(ty) if ty.is_usize() => PtrMetadata::Length,
+            Ok(ty)
+                if let ty::Adt(def, args) = ty.kind()
+                    && tcx.is_lang_item(def.did(), rustc_hir::attrs::LangItem::DynMetadata) =>
+            {
+                let rustc_dyn_ty = args.type_at(0);
+                let hax_ty = self.t_ctx.catch_sinto(hax_state, span, &rustc_dyn_ty)?;
+                let dyn_trait = match hax_ty.kind() {
+                    hax::TyKind::DynTrait(dyn_trait) => dyn_trait,
+                    _ => unreachable!("DynMetadata without dyn generic"),
+                };
+                let principal_clause = dyn_trait
+                    .principal_trait_clause()
+                    .expect("expected a principal trait for vtable metadata");
+                let vtable = self.translate_dyn_binder(span, &dyn_trait.binder, |ctx, _, _| {
+                    ctx.translate_region_binder(
+                        span,
+                        principal_clause,
+                        |ctx, kind: &hax::ClauseKind| {
+                            let hax::ClauseKind::Trait(trait_predicate) = kind else {
+                                unreachable!()
+                            };
+                            ctx.translate_vtable_struct_ref(span, &trait_predicate.trait_ref)
+                        },
+                    )
+                })?;
+                let vtable = vtable
+                    .skip_binder
+                    .try_substitute(&GenericArgs::empty())
+                    .expect("vtable struct should not depend on self type");
+                let vtable = self.erase_region_binder(vtable);
+                PtrMetadata::VTable(vtable)
             }
-            _ => PtrMetadata::None,
+            Ok(_) => unreachable!("unexpected unsized tail type"),
+            // extra check, as `ptr_metadata_ty_or_tail` ignores `Sized` bounds
+            Err(ty) if ty.is_sized(tcx, ty_env) => PtrMetadata::None,
+            Err(ty) => {
+                let hax_ty = self.t_ctx.catch_sinto(hax_state, span, &ty)?;
+                PtrMetadata::InheritFrom(self.translate_ty(span, &hax_ty)?)
+            }
         };
 
         Ok(ret)
