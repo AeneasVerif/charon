@@ -736,6 +736,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             cfg_abi: self
                 .translate_rustc_cfg_abi(&target.cfg_abi)
                 .expect("all rustc CfgAbi variants should be translated"),
+            families: target.families.iter().map(|f| f.to_string()).collect(),
             binary_format: self
                 .translate_rustc_binary_format(&target.binary_format)
                 .expect("all rustc BinaryFormat variants should be translated"),

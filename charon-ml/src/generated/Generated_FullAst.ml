@@ -577,6 +577,9 @@ and target_info = {
   os : rustc_os;  (** The target OS, as seen by [cfg(target_os)]. *)
   env : rustc_env;  (** The target environment, as seen by [cfg(target_env)]. *)
   cfg_abi : rustc_cfg_abi;  (** The target ABI, as seen by [cfg(target_abi)]. *)
+  families : string list;
+      (** The target families, as seen by [cfg(target_family)] (e.g. [unix], or
+          both [unix] and [wasm]), as rustc spells them. *)
   binary_format : rustc_binary_format;
       (** The binary format of the target's object files. *)
   target_pointer_size : int;  (** The pointer size of the target in bytes. *)

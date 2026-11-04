@@ -505,6 +505,9 @@ pub struct TargetInfo {
     pub env: from_rustc::Env,
     /// The target ABI, as seen by `cfg(target_abi)`.
     pub cfg_abi: from_rustc::CfgAbi,
+    /// The target families, as seen by `cfg(target_family)` (e.g. `unix`, or both `unix` and
+    /// `wasm`), as rustc spells them.
+    pub families: Vec<String>,
     /// The binary format of the target's object files.
     pub binary_format: from_rustc::BinaryFormat,
     /// The pointer size of the target in bytes.
