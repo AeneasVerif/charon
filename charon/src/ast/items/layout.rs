@@ -41,6 +41,24 @@ pub struct Layout {
     pub repr: ReprOptions,
 }
 
+/// The layouts of a type, for each target.
+#[derive(Debug, Default, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[serde_state(state_implements = DedupSerializerState)]
+pub struct TargetLayouts(#[serde(with = "SeqHashMapToArray")] pub SeqHashMap<TargetTriple, Layout>);
+
+impl std::ops::Deref for TargetLayouts {
+    type Target = SeqHashMap<TargetTriple, Layout>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl std::ops::DerefMut for TargetLayouts {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 /// Simplified layout of a single variant.
 ///
 /// Maps fields to their offset within the layout.

@@ -4164,6 +4164,13 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
             : target_info)
     | _ -> Error "")
 
+and target_layouts_of_json (ctx : of_json_ctx) (js : json) :
+    (target_layouts, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | x -> index_map_of_json string_of_json layout_of_json int_of_json ctx x
+    | _ -> Error "")
+
 and trait_assoc_const_of_json (ctx : of_json_ctx) (js : json) :
     (trait_assoc_const, string) result =
   combine_error_msgs js __FUNCTION__
@@ -4510,9 +4517,7 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* generics = generic_params_of_json ctx generics in
         let* src = type_source_of_json ctx src in
         let* kind = type_decl_kind_of_json ctx kind in
-        let* layout =
-          index_map_of_json string_of_json layout_of_json int_of_json ctx layout
-        in
+        let* layout = target_layouts_of_json ctx layout in
         let* ptr_metadata = ptr_metadata_of_json ctx ptr_metadata in
         let* marker_traits =
           option_of_json

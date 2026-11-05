@@ -967,7 +967,7 @@ mod tests {
                 generics,
                 src: TypeSource::Normal,
                 kind: TypeDeclKind::Opaque,
-                layout: layouts,
+                layout: TargetLayouts(layouts),
                 ptr_metadata: PtrMetadata::None,
                 marker_traits: None,
             },

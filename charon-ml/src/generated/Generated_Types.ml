@@ -1583,6 +1583,9 @@ and size_expr_kind =
           - [then_size]
           - [else_size] *)
 
+(** The layouts of a type, for each target. *)
+and target_layouts = (string * layout) list
+
 (** A type declaration.
 
     Types can be opaque or transparent.
@@ -1604,7 +1607,7 @@ and type_decl = {
       (** The context of the type: distinguishes top-level items from
           closure-related items etc. *)
   kind : type_decl_kind;  (** The type kind: enum, struct, or opaque. *)
-  layout : (string * layout) list;
+  layout : target_layouts;
       (** The layout of the type for each target. Information may be partial
           because of generics or dynamically-sized types. If we cannot compute a
           layout, the target has no entry. *)

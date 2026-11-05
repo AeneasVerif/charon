@@ -3366,7 +3366,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
                 }
                 _ => {
                     let mut separator = "\n";
-                    for (target, layout) in &self.layout {
+                    for (target, layout) in self.layout.iter() {
                         write!(f, "{separator}")?;
                         fmt_layout(f, &format!("layout for target `{target}`"), layout)?;
                         separator = "\n\n";

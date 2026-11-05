@@ -242,6 +242,7 @@ use derive_generic_visitor::*;
         SizeExpr,
         SizeExprKind,
         Span,
+        TargetLayouts,
         TraitAssocConst,
         TraitAssocTy,
         TraitAssocTyImpl,
