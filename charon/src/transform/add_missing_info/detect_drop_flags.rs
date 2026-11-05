@@ -356,7 +356,7 @@ impl<'a, 'b> CheckFlagCorrectness<'a, 'b> {
         block: &BlockData,
         flag: LocalId,
         place: &Place,
-        mut state: AnalysisState,
+        state: AnalysisState,
     ) -> Option<Vec<(BlockId, AnalysisState)>> {
         if let TerminatorKind::Switch { data, branches } = &block.terminator.kind
             && let SwitchScrutinee::Value(Operand::Copy(flag_place, _) | Operand::Move(flag_place)) =
@@ -388,17 +388,8 @@ impl<'a, 'b> CheckFlagCorrectness<'a, 'b> {
                     }
                     vec![(*target, after_return), (*on_unwind, state)]
                 }
-                TerminatorKind::Drop {
-                    place: dropped,
-                    target,
-                    on_unwind,
-                    ..
-                } => {
-                    if place.is_subplace(dropped) {
-                        state.place_is_initialized = false;
-                    }
-                    vec![(*target, state), (*on_unwind, state)]
-                }
+                // We don't count `Drop` as deinitializing the place because the drop flags aren't
+                // changed consistently there. Anyway, worst case we miss a drop flag.
                 _ => block
                     .terminator
                     .targets()
