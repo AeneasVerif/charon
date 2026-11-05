@@ -583,7 +583,7 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 mut MayDangle<T>[TraitClause0]; // arg #1
 
     storage_live(_0)
@@ -608,7 +608,7 @@ where
 // unsafe to call
 unsafe fn unsafe_fn()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -649,7 +649,7 @@ extern static SAFE_EXTERN_STATIC: u32 = SAFE_EXTERN_STATIC()
 #[no_mangle]
 fn no_mangle()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -662,7 +662,7 @@ fn no_mangle()
 #[export_name = "exported"]
 fn export_name()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -675,7 +675,7 @@ fn export_name()
 #[link_section = ".text.custom"]
 fn link_section()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -688,7 +688,7 @@ fn link_section()
 #[naked]
 extern "C" fn naked()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -702,7 +702,7 @@ extern "C" fn naked()
 #[target_feature(force = "avx")]
 fn force_target_feature()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -713,7 +713,7 @@ fn force_target_feature()
 // Full name: test_crate::safe_fn
 fn safe_fn()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -724,7 +724,7 @@ fn safe_fn()
 // Full name: test_crate::COUNTER
 fn COUNTER() -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const 0usize
@@ -745,7 +745,7 @@ union Foo {
 #[inline(hint)]
 pub fn impl_Clone_for_Foo::clone<'_0>(self: &'_0 Foo) -> Foo
 {
-    let _0: Foo; // return
+    let mut _0: Foo; // return
     let self: &'1 Foo; // arg #1
 
     storage_live(_0)
@@ -785,7 +785,7 @@ union Bar {
 // unsafe to call
 unsafe fn dangerous()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -823,7 +823,7 @@ trait DynTrait<Self>
 // Full name: test_crate::unsafe_deref_raw_ptr
 fn unsafe_deref_raw_ptr(x: *const u32) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let x: *const u32; // arg #1
 
     storage_live(_0)
@@ -836,7 +836,7 @@ fn unsafe_deref_raw_ptr(x: *const u32) -> u32
 // Full name: test_crate::unsafe_call_fn
 fn unsafe_call_fn()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -852,7 +852,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -865,9 +865,9 @@ where
 // Full name: test_crate::unsafe_call_fn_ptr
 fn unsafe_call_fn_ptr(f: unsafe fn())
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let f: unsafe fn(); // arg #1
-    let _2: unsafe fn(); // anonymous local
+    let mut _2: unsafe fn(); // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -885,7 +885,7 @@ fn unsafe_call_fn_ptr(f: unsafe fn())
 // Full name: test_crate::unsafe_read_mutable_static
 fn unsafe_read_mutable_static() -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     // unsafe
@@ -896,7 +896,7 @@ fn unsafe_read_mutable_static() -> usize
 // Full name: test_crate::unsafe_write_mutable_static
 fn unsafe_write_mutable_static()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -909,7 +909,7 @@ fn unsafe_write_mutable_static()
 // Full name: test_crate::unsafe_read_extern_static
 fn unsafe_read_extern_static() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     // unsafe
@@ -920,7 +920,7 @@ fn unsafe_read_extern_static() -> u32
 // Full name: test_crate::PAIR
 fn PAIR() -> (u32, u32)
 {
-    let _0: (u32, u32); // return
+    let mut _0: (u32, u32); // return
 
     storage_live(_0)
     _0 = (const 0u32, const 0u32)
@@ -934,7 +934,7 @@ static mut PAIR: (u32, u32) = PAIR()
 // Full name: test_crate::unsafe_raw_borrow_of_mutable_static_field
 fn unsafe_raw_borrow_of_mutable_static_field() -> *const u32
 {
-    let _0: *const u32; // return
+    let mut _0: *const u32; // return
 
     storage_live(_0)
     // unsafe
@@ -945,7 +945,7 @@ fn unsafe_raw_borrow_of_mutable_static_field() -> *const u32
 // Full name: test_crate::PTR
 fn PTR() -> *const u32
 {
-    let _0: *const u32; // return
+    let mut _0: *const u32; // return
 
     storage_live(_0)
     _0 = null<u32>[impl_Thin_for_T<u32>[{built_in impl Pointee for u32 where Metadata  = ()}]]()
@@ -960,7 +960,7 @@ static mut PTR: *const u32 = PTR()
 // Full name: test_crate::unsafe_raw_borrow_through_mutable_static
 fn unsafe_raw_borrow_through_mutable_static() -> *const u32
 {
-    let _0: *const u32; // return
+    let mut _0: *const u32; // return
 
     storage_live(_0)
     // unsafe
@@ -971,7 +971,7 @@ fn unsafe_raw_borrow_through_mutable_static() -> *const u32
 // Full name: test_crate::unsafe_read_union_field
 fn unsafe_read_union_field(foo: Foo) -> u64
 {
-    let _0: u64; // return
+    let mut _0: u64; // return
     let foo: Foo; // arg #1
 
     storage_live(_0)
@@ -984,7 +984,7 @@ fn unsafe_read_union_field(foo: Foo) -> u64
 // Full name: test_crate::unsafe_asm
 fn unsafe_asm()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -1002,9 +1002,9 @@ fn unsafe_asm()
 // Full name: test_crate::unsafe_call_unsafe_dyn_method
 fn unsafe_call_unsafe_dyn_method<'_0>(s: &'_0 (dyn DynTrait + '_0))
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let s: &'3 (dyn DynTrait + '4); // arg #1
-    let _2: &'5 (dyn DynTrait + '6); // anonymous local
+    let mut _2: &'5 (dyn DynTrait + '6); // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1022,11 +1022,11 @@ fn unsafe_call_unsafe_dyn_method<'_0>(s: &'_0 (dyn DynTrait + '_0))
 // Full name: test_crate::unsafe_raw_borrow_of_indexed_union_field
 fn unsafe_raw_borrow_of_indexed_union_field(foo: Foo) -> *const u32
 {
-    let _0: *const u32; // return
+    let mut _0: *const u32; // return
     let foo: Foo; // arg #1
     let _2: usize; // anonymous local
-    let _3: &'_ [u32; 2usize]; // anonymous local
-    let _4: &'_ u32; // anonymous local
+    let mut _3: &'_ [u32; 2usize]; // anonymous local
+    let mut _4: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -1051,7 +1051,7 @@ fn unsafe_raw_borrow_of_indexed_union_field(foo: Foo) -> *const u32
 // Full name: test_crate::STATIC_FOO
 fn STATIC_FOO() -> Foo
 {
-    let _0: Foo; // return
+    let mut _0: Foo; // return
 
     storage_live(_0)
     _0 = Foo { one: const 0u64 }
@@ -1065,7 +1065,7 @@ static mut STATIC_FOO: Foo = STATIC_FOO()
 // Full name: test_crate::unsafe_raw_borrow_of_mutable_static_union_field
 fn unsafe_raw_borrow_of_mutable_static_union_field() -> *const u64
 {
-    let _0: *const u64; // return
+    let mut _0: *const u64; // return
 
     storage_live(_0)
     // unsafe
@@ -1076,20 +1076,20 @@ fn unsafe_raw_borrow_of_mutable_static_union_field() -> *const u64
 // Full name: test_crate::unsafe_builtins
 fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: u32; // arg #1
     let p: *const u32; // arg #2
     let s: &'1 [u32]; // arg #3
     let i: usize; // arg #4
-    let _5: i32; // anonymous local
-    let _6: u32; // anonymous local
-    let _7: &'3 u32; // anonymous local
-    let _8: &'4 [u32]; // anonymous local
-    let _9: usize; // anonymous local
-    let _10: u32; // anonymous local
-    let _11: u32; // anonymous local
-    let _12: *const u32; // anonymous local
-    let _13: *const u32; // anonymous local
+    let mut _5: i32; // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: &'3 u32; // anonymous local
+    let mut _8: &'4 [u32]; // anonymous local
+    let mut _9: usize; // anonymous local
+    let mut _10: u32; // anonymous local
+    let mut _11: u32; // anonymous local
+    let mut _12: *const u32; // anonymous local
+    let mut _13: *const u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1157,10 +1157,10 @@ fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
 // Full name: test_crate::safe_raw_ptrs
 fn safe_raw_ptrs(x: u32) -> (*const u32, *mut usize)
 {
-    let _0: (*const u32, *mut usize); // return
+    let mut _0: (*const u32, *mut usize); // return
     let x: u32; // arg #1
-    let _2: *const u32; // anonymous local
-    let _3: *mut usize; // anonymous local
+    let mut _2: *const u32; // anonymous local
+    let mut _3: *mut usize; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -1177,10 +1177,10 @@ fn safe_raw_ptrs(x: u32) -> (*const u32, *mut usize)
 // Full name: test_crate::safe_call
 fn safe_call(f: fn())
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let f: fn(); // arg #1
     let _2: (); // anonymous local
-    let _3: fn(); // anonymous local
+    let mut _3: fn(); // anonymous local
     let _4: (*const u32, *mut usize); // anonymous local
 
     storage_live(_0)
@@ -1209,7 +1209,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: (); // anonymous local
 
     storage_live(_0)
@@ -1225,7 +1225,7 @@ where
 // Full name: test_crate::safe_build_union
 fn safe_build_union() -> Foo
 {
-    let _0: Foo; // return
+    let mut _0: Foo; // return
 
     storage_live(_0)
     _0 = Foo { one: const 0u64 }
@@ -1235,8 +1235,8 @@ fn safe_build_union() -> Foo
 // Full name: test_crate::safe_write_union_field
 fn safe_write_union_field(foo: Foo)
 {
-    let _0: (); // return
-    let foo: Foo; // arg #1
+    let mut _0: (); // return
+    let mut foo: Foo; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -1249,8 +1249,8 @@ fn safe_write_union_field(foo: Foo)
 // Full name: test_crate::safe_write_nested_union_field
 fn safe_write_nested_union_field(bar: Bar)
 {
-    let _0: (); // return
-    let bar: Bar; // arg #1
+    let mut _0: (); // return
+    let mut bar: Bar; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -1263,7 +1263,7 @@ fn safe_write_nested_union_field(bar: Bar)
 // Full name: test_crate::safe_read_safe_extern_static
 fn safe_read_safe_extern_static() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = copy SAFE_EXTERN_STATIC
@@ -1273,7 +1273,7 @@ fn safe_read_safe_extern_static() -> u32
 // Full name: test_crate::safe_raw_borrow_of_extern_static
 fn safe_raw_borrow_of_extern_static() -> *const u32
 {
-    let _0: *const u32; // return
+    let mut _0: *const u32; // return
 
     storage_live(_0)
     _0 = &raw const EXTERN_STATIC
@@ -1283,7 +1283,7 @@ fn safe_raw_borrow_of_extern_static() -> *const u32
 // Full name: test_crate::safe_raw_borrow_of_deref
 fn safe_raw_borrow_of_deref(p: *const u32) -> *const u32
 {
-    let _0: *const u32; // return
+    let mut _0: *const u32; // return
     let p: *const u32; // arg #1
 
     storage_live(_0)
@@ -1295,10 +1295,10 @@ fn safe_raw_borrow_of_deref(p: *const u32) -> *const u32
 // Full name: test_crate::safe_raw_borrow_of_union_field
 fn safe_raw_borrow_of_union_field(foo: Foo) -> (*const u64, *mut [u32; 2usize])
 {
-    let _0: (*const u64, *mut [u32; 2usize]); // return
-    let foo: Foo; // arg #1
-    let _2: *const u64; // anonymous local
-    let _3: *mut [u32; 2usize]; // anonymous local
+    let mut _0: (*const u64, *mut [u32; 2usize]); // return
+    let mut foo: Foo; // arg #1
+    let mut _2: *const u64; // anonymous local
+    let mut _3: *mut [u32; 2usize]; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -1315,7 +1315,7 @@ fn safe_raw_borrow_of_union_field(foo: Foo) -> (*const u64, *mut [u32; 2usize])
 // Full name: test_crate::safe_raw_borrow_of_nested_union_field
 fn safe_raw_borrow_of_nested_union_field<'_0>(bar: &'_0 Bar) -> *const u64
 {
-    let _0: *const u64; // return
+    let mut _0: *const u64; // return
     let bar: &'1 Bar; // arg #1
 
     storage_live(_0)
@@ -1329,7 +1329,7 @@ fn safe_raw_borrow_of_nested_union_field<'_0>(bar: &'_0 Bar) -> *const u64
 #[naked]
 extern "C" fn safe_naked_asm()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -1341,9 +1341,9 @@ extern "C" fn safe_naked_asm()
 // Full name: test_crate::safe_call_dyn_method
 fn safe_call_dyn_method<'_0>(s: &'_0 (dyn DynTrait + '_0))
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let s: &'3 (dyn DynTrait + '4); // arg #1
-    let _2: &'5 (dyn DynTrait + '6); // anonymous local
+    let mut _2: &'5 (dyn DynTrait + '6); // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1360,7 +1360,7 @@ fn safe_call_dyn_method<'_0>(s: &'_0 (dyn DynTrait + '_0))
 // Full name: test_crate::safe_drop_dyn
 fn safe_drop_dyn(_s: Box<(dyn DynTrait + 'static)>[{built_in impl MetaSized for (dyn DynTrait + 'static)}, {built_in impl Sized for Global}])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _s: Box<(dyn DynTrait + '6)>[{built_in impl MetaSized for (dyn DynTrait + '8)}, {built_in impl Sized for Global}]; // arg #1
 
     storage_live(_0)
@@ -1378,7 +1378,7 @@ fn safe_drop_dyn(_s: Box<(dyn DynTrait + 'static)>[{built_in impl MetaSized for 
 #[target_feature(enable = "avx")]
 unsafe fn with_feature()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -1391,7 +1391,7 @@ unsafe fn with_feature()
 #[target_feature(enable = "avx")]
 unsafe fn with_feature_unsafe()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -1402,7 +1402,7 @@ unsafe fn with_feature_unsafe()
 // Full name: test_crate::unsafe_call_target_feature_fn
 fn unsafe_call_target_feature_fn()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -1417,7 +1417,7 @@ fn unsafe_call_target_feature_fn()
 #[target_feature(enable = "avx")]
 unsafe fn safe_call_target_feature_fn_with_feature()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -1431,7 +1431,7 @@ unsafe fn safe_call_target_feature_fn_with_feature()
 #[target_feature(enable = "avx2")]
 unsafe fn safe_call_target_feature_fn_with_implied_feature()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -1445,9 +1445,9 @@ struct test_crate::safe_call_target_feature_fn_in_closure::{closure} {}
 // Full name: test_crate::safe_call_target_feature_fn_in_closure::{impl Fn<()> for test_crate::safe_call_target_feature_fn_in_closure::{closure}}::call
 extern "rust-call" fn {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_closure::{closure}}::call<'_0>(_1: &'_0 test_crate::safe_call_target_feature_fn_in_closure::{closure}, tupled_args: ())
 {
-    let _0: (); // return
-    let _1: &'1 test_crate::safe_call_target_feature_fn_in_closure::{closure}; // arg #1
-    let tupled_args: (); // arg #2
+    let mut _0: (); // return
+    let mut _1: &'1 test_crate::safe_call_target_feature_fn_in_closure::{closure}; // arg #1
+    let mut tupled_args: (); // arg #2
 
     storage_live(_0)
     _0 = ()
@@ -1465,13 +1465,13 @@ extern "rust-call" fn {impl Fn<()> for test_crate::safe_call_target_feature_fn_i
 #[target_feature(enable = "avx")]
 unsafe fn safe_call_target_feature_fn_in_closure()
 {
-    let _0: (); // return
-    let _1: &'1 test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
-    let _2: (); // anonymous local
-    let _3: &'2 test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
-    let _4: &'3 test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
-    let _5: &'5 test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
-    let _6: test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
+    let mut _0: (); // return
+    let mut _1: &'1 test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
+    let mut _2: (); // anonymous local
+    let mut _3: &'2 test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
+    let mut _4: &'3 test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
+    let mut _5: &'5 test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
+    let mut _6: test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
 
     storage_live(_4)
     storage_live(_5)
@@ -1506,9 +1506,9 @@ struct test_crate::safe_call_target_feature_fn_in_inline_closure::{closure} {}
 #[inline(always)]
 extern "rust-call" fn {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}}::call<'_0>(_1: &'_0 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}, tupled_args: ())
 {
-    let _0: (); // return
-    let _1: &'1 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // arg #1
-    let tupled_args: (); // arg #2
+    let mut _0: (); // return
+    let mut _1: &'1 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // arg #1
+    let mut tupled_args: (); // arg #2
 
     storage_live(_0)
     _0 = ()
@@ -1526,13 +1526,13 @@ extern "rust-call" fn {impl Fn<()> for test_crate::safe_call_target_feature_fn_i
 #[target_feature(enable = "avx")]
 unsafe fn safe_call_target_feature_fn_in_inline_closure()
 {
-    let _0: (); // return
-    let _1: &'1 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
-    let _2: (); // anonymous local
-    let _3: &'2 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
-    let _4: &'3 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
-    let _5: &'5 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
-    let _6: test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
+    let mut _0: (); // return
+    let mut _1: &'1 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
+    let mut _2: (); // anonymous local
+    let mut _3: &'2 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
+    let mut _4: &'3 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
+    let mut _5: &'5 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
+    let mut _6: test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
 
     storage_live(_4)
     storage_live(_5)
@@ -1565,7 +1565,7 @@ unsafe fn safe_call_target_feature_fn_in_inline_closure()
 #[target_feature(enable = "avx")]
 unsafe fn unsafe_call_unsafe_target_feature_fn()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -1580,7 +1580,7 @@ unsafe fn unsafe_call_unsafe_target_feature_fn()
 #[target_feature(force = "avx")]
 fn with_forced_feature()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -1591,7 +1591,7 @@ fn with_forced_feature()
 // Full name: test_crate::unsafe_call_forced_target_feature_fn
 fn unsafe_call_forced_target_feature_fn()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -1606,7 +1606,7 @@ fn unsafe_call_forced_target_feature_fn()
 #[target_feature(enable = "avx")]
 unsafe fn safe_call_forced_target_feature_fn_with_feature()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -1621,7 +1621,7 @@ opaque type Opaque
 // Full name: test_crate::unknown_read_opaque_field
 fn unknown_read_opaque_field(u: Opaque) -> u64
 {
-    let _0: u64; // return
+    let mut _0: u64; // return
     let u: Opaque; // arg #1
 
     storage_live(_0)
@@ -1634,7 +1634,7 @@ fn unknown_read_opaque_field(u: Opaque) -> u64
 // Full name: test_crate::unknown_call_excluded
 fn unknown_call_excluded()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

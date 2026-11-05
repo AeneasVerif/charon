@@ -3,7 +3,7 @@
 #[pattern::fail("test_crate::x86_only::x86_64-apple-darwin")]
 fn test_crate::x86_only() -> u64
 {
-    let _0: u64; // return
+    let mut _0: u64; // return
 
     storage_live(_0)
     _0 = const 42u64
@@ -15,7 +15,7 @@ fn test_crate::x86_only() -> u64
 #[pattern::fail("test_crate::arm_only::x86_64-apple-darwin")]
 fn test_crate::arm_only() -> u64
 {
-    let _0: u64; // return
+    let mut _0: u64; // return
 
     storage_live(_0)
     _0 = const 99u64
@@ -25,7 +25,7 @@ fn test_crate::arm_only() -> u64
 #[pattern::pass("test_crate::shared_fn")]
 fn test_crate::shared_fn() -> u64
 {
-    let _0: u64; // return
+    let mut _0: u64; // return
 
     storage_live(_0)
     _0 = const 0u64

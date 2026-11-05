@@ -30,7 +30,7 @@ extern unsafe static STATIC: u8 = STATIC()
 // Full name: test_crate::use_type
 fn use_type<'_0>(_x: &'_0 Type)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _x: &'1 Type; // arg #1
 
     storage_live(_0)

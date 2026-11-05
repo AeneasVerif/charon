@@ -215,18 +215,18 @@ where
 // Full name: test_crate::f
 pub fn f()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _x: i32; // local
-    let _2: bool; // anonymous local
-    let _3: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _4: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let iter: Range<i32>[{built_in impl Sized for i32}]; // local
-    let _6: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _7: &'1 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _8: &'2 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _2: bool; // anonymous local
+    let mut _3: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _4: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut iter: Range<i32>[{built_in impl Sized for i32}]; // local
+    let mut _6: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _7: &'1 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _8: &'2 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
     let v: i32; // local
-    let _10: bool; // anonymous local
-    let _11: i32; // anonymous local
+    let mut _10: bool; // anonymous local
+    let mut _11: i32; // anonymous local
 
     storage_live(_0)
     _0 = ()

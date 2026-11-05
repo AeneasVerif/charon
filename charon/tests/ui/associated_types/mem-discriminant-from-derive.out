@@ -77,23 +77,23 @@ impl "impl_StructuralPartialEq_for_Enum" StructuralPartialEq for Enum {
 #[inline(hint)]
 pub fn impl_PartialEq_Enum_for_Enum::eq<'_0, '_1>(self: &'_0 Enum, other: &'_1 Enum) -> bool
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
     let self: &'1 Enum; // arg #1
     let other: &'2 Enum; // arg #2
     let __self_discr: isize; // local
-    let _4: &'3 Enum; // anonymous local
+    let mut _4: &'3 Enum; // anonymous local
     let __arg1_discr: isize; // local
-    let _6: &'4 Enum; // anonymous local
-    let _7: bool; // anonymous local
-    let _8: isize; // anonymous local
-    let _9: isize; // anonymous local
-    let _10: (&'13 Enum, &'14 Enum); // anonymous local
-    let _11: &'18 Enum; // anonymous local
-    let _12: &'19 Enum; // anonymous local
+    let mut _6: &'4 Enum; // anonymous local
+    let mut _7: bool; // anonymous local
+    let mut _8: isize; // anonymous local
+    let mut _9: isize; // anonymous local
+    let mut _10: (&'13 Enum, &'14 Enum); // anonymous local
+    let mut _11: &'18 Enum; // anonymous local
+    let mut _12: &'19 Enum; // anonymous local
     let __self_0: &'21 u8; // local
     let __arg1_0: &'22 u8; // local
-    let _15: &'25 &'26 u8; // anonymous local
-    let _16: &'27 &'28 u8; // anonymous local
+    let mut _15: &'25 &'26 u8; // anonymous local
+    let mut _16: &'27 &'28 u8; // anonymous local
 
     storage_live(_0)
     storage_live(__self_discr)

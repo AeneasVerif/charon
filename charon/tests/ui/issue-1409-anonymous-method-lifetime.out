@@ -81,8 +81,8 @@ pub struct S {}
 // Full name: test_crate::{impl From<&'_0 u64> for S}::from
 pub fn from<'_0>(_1: &'_0 u64) -> S
 {
-    let _0: S; // return
-    let _1: &'1 u64; // arg #1
+    let mut _0: S; // return
+    let mut _1: &'1 u64; // arg #1
 
     storage_live(_0)
     _0 = S {  }
@@ -103,9 +103,9 @@ pub extern "rust-call" fn call_mut<'_0, '_1>(state: &'_1 mut from<'_0>, args: (&
 where
     Outlives0: ('_0: '_1),
 {
-    let _0: S; // return
-    let state: &'_1 mut from<'_0>; // arg #1
-    let args: (&'_0 u64,); // arg #2
+    let mut _0: S; // return
+    let mut state: &'_1 mut from<'_0>; // arg #1
+    let mut args: (&'_0 u64,); // arg #2
 
     storage_live(_0)
     _0 = from<'_0>(move args._0)
@@ -120,9 +120,9 @@ where
 // Full name: test_crate::{impl From<&'_0 u64> for S}::{impl FnOnce<(&'_0 u64,)> for from<'_0>}::call_once
 pub extern "rust-call" fn call_once<'_0>(state: from<'_0>, args: (&'_0 u64,)) -> S
 {
-    let _0: S; // return
-    let state: from<'_0>; // arg #1
-    let args: (&'_0 u64,); // arg #2
+    let mut _0: S; // return
+    let mut state: from<'_0>; // arg #1
+    let mut args: (&'_0 u64,); // arg #2
 
     storage_live(_0)
     _0 = from<'_0>(move args._0)
@@ -162,9 +162,9 @@ where
     TraitClause1: (F: FnMut<(&'a u64,)>),
     TypeConstraint0: TraitClause1::ImpliedClause1::Output = S,
 {
-    let _0: (); // return
-    let _1: &'1 u64; // arg #1
-    let _2: F; // arg #2
+    let mut _0: (); // return
+    let mut _1: &'1 u64; // arg #1
+    let mut _2: F; // arg #2
 
     storage_live(_0)
     _0 = ()
@@ -181,10 +181,10 @@ where
 // Full name: test_crate::test
 pub fn test<'a>(x: &'a u64)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: &'1 u64; // arg #1
     let _2: (); // anonymous local
-    let _3: &'2 u64; // anonymous local
+    let mut _3: &'2 u64; // anonymous local
 
     storage_live(_0)
     _0 = ()

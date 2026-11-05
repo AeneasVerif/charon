@@ -129,9 +129,9 @@ where
 // Full name: test_crate::destruct
 fn destruct<'_0>(x: &'_0 (dyn Display + '_0)) -> String
 {
-    let _0: String; // return
+    let mut _0: String; // return
     let x: &'3 (dyn Display + '4); // arg #1
-    let _2: &'5 (dyn Display + '6); // anonymous local
+    let mut _2: &'5 (dyn Display + '6); // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -156,9 +156,9 @@ where
     Outlives0: (T: '_0),
     Outlives1: (T: '_1),
 {
-    let _0: (); // return
-    let _1: &'10 (dyn for<'a> Fn<(&'a T,), ImpliedClause1::ImpliedClause1::Output = T> + '11); // arg #1
-    let _2: &'19 (dyn PartialEq<Option<T>[TraitClause0]> + '20); // arg #2
+    let mut _0: (); // return
+    let mut _1: &'10 (dyn for<'a> Fn<(&'a T,), ImpliedClause1::ImpliedClause1::Output = T> + '11); // arg #1
+    let mut _2: &'19 (dyn PartialEq<Option<T>[TraitClause0]> + '20); // arg #2
 
     storage_live(_0)
     _0 = ()
@@ -171,8 +171,8 @@ where
 // Full name: test_crate::bar
 fn bar<'_0>(_1: &'_0 (dyn for<'_0_2> Fn<(&'_0_2 (dyn Display + '_0_2),), ImpliedClause1::ImpliedClause1::Output = ()> + '_0))
 {
-    let _0: (); // return
-    let _1: &'17 (dyn for<'_0_2> Fn<(&'_0_2 (dyn Display + '_0_2),), ImpliedClause1::ImpliedClause1::Output = ()> + '18); // arg #1
+    let mut _0: (); // return
+    let mut _1: &'17 (dyn for<'_0_2> Fn<(&'_0_2 (dyn Display + '_0_2),), ImpliedClause1::ImpliedClause1::Output = ()> + '18); // arg #1
 
     storage_live(_0)
     _0 = ()

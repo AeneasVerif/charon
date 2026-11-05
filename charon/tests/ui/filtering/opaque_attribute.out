@@ -40,7 +40,7 @@ pub trait BoolTrait<Self>
 // Full name: test_crate::{impl BoolTrait for bool}::get_bool
 pub fn impl_BoolTrait_for_bool::get_bool<'_0>(self: &'_0 bool) -> bool
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
     let self: &'1 bool; // arg #1
 
     storage_live(_0)
@@ -63,10 +63,10 @@ where
     TraitClause1: (T: BoolTrait),
     Outlives0: (T: '_0),
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
     let self: &'1 Option<T>[TraitClause0]; // arg #1
     let x: &'3 T; // local
-    let _3: &'4 T; // anonymous local
+    let mut _3: &'4 T; // anonymous local
 
     storage_live(_0)
     match (*self) {
@@ -134,7 +134,7 @@ opaque type Test3
 // Full name: test_crate::opaque::fn_in_opaque_module
 pub fn fn_in_opaque_module() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 42u32
@@ -144,8 +144,8 @@ pub fn fn_in_opaque_module() -> u32
 // Full name: test_crate::call_fn_in_opaque_module
 fn call_fn_in_opaque_module()
 {
-    let _0: (); // return
-    let _1: u32; // anonymous local
+    let mut _0: (); // return
+    let mut _1: u32; // anonymous local
 
     storage_live(_0)
     _0 = ()

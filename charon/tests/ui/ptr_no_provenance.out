@@ -235,9 +235,9 @@ pub fn null<T>() -> *const T
 where
     TraitClause0: (T: Thin),
 {
-    let _0: *const T; // return
-    let _1: *const (); // anonymous local
-    let _2: (); // anonymous local
+    let mut _0: *const T; // return
+    let mut _1: *const (); // anonymous local
+    let mut _2: (); // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -255,7 +255,7 @@ where
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let ptr: *const (); // local
 
     storage_live(_0)

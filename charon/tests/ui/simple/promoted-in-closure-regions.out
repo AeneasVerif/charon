@@ -32,7 +32,7 @@ struct {closure}<'_0, '_1, '_2> {
 // Full name: test_crate::foo
 pub fn foo<'a>(x: &'a u8) -> {closure}<'a, 'static, 'a>
 {
-    let _0: {closure}<'33, '34, '35>; // return
+    let mut _0: {closure}<'33, '34, '35>; // return
     let x: &'36 u8; // arg #1
 
     storage_live(_0)
@@ -43,8 +43,8 @@ pub fn foo<'a>(x: &'a u8) -> {closure}<'a, 'static, 'a>
 // Full name: test_crate::foo::{closure}::{promoted_const}
 fn {promoted_const}<'_0, '_1, '_2>() -> &'_ u8
 {
-    let _0: &'0 u8; // return
-    let _1: u8; // anonymous local
+    let mut _0: &'0 u8; // return
+    let mut _1: u8; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -63,13 +63,13 @@ where
     Outlives1: ('_1: '_3),
     Outlives2: ('_2: '_3),
 {
-    let _0: (&'9 u8, &'10 u8); // return
-    let _1: &'47 {closure}<'_0, '_1, '_2>; // arg #1
-    let tupled_args: (); // arg #2
-    let _3: &'48 u8; // anonymous local
-    let _4: &'49 u8; // anonymous local
+    let mut _0: (&'9 u8, &'10 u8); // return
+    let mut _1: &'47 {closure}<'_0, '_1, '_2>; // arg #1
+    let mut tupled_args: (); // arg #2
+    let mut _3: &'48 u8; // anonymous local
+    let mut _4: &'49 u8; // anonymous local
     let _5: &'50 u8; // anonymous local
-    let _6: &'51 u8; // anonymous local
+    let mut _6: &'51 u8; // anonymous local
 
     storage_live(_0)
     storage_live(_6)

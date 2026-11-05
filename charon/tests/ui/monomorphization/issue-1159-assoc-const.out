@@ -28,7 +28,7 @@ pub struct Concrete {}
 // Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER::ARR
 fn ARR() -> [u64; 1usize]
 {
-    let _0: [u64; 1usize]; // return
+    let mut _0: [u64; 1usize]; // return
 
     storage_live(_0)
     _0 = [const 7u64]
@@ -41,14 +41,14 @@ const ARR: [u64; 1usize] = ARR()
 // Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER
 pub fn SLICE_HOLDER() -> Option::<&'_ [u64]>
 {
-    let _0: Option::<&'_ [u64]>; // return
-    let _1: &'1 [u64]; // anonymous local
-    let _2: &'3 [u64; 1usize]; // anonymous local
+    let mut _0: Option::<&'_ [u64]>; // return
+    let mut _1: &'1 [u64]; // anonymous local
+    let mut _2: &'3 [u64; 1usize]; // anonymous local
     let _3: &'4 [u64; 1usize]; // anonymous local
-    let _4: &'5 [u64; 1usize]; // anonymous local
-    let _5: &'6 [u64; 1usize]; // anonymous local
-    let _6: &'8 [u64; 1usize]; // anonymous local
-    let _7: [u64; 1usize]; // anonymous local
+    let mut _4: &'5 [u64; 1usize]; // anonymous local
+    let mut _5: &'6 [u64; 1usize]; // anonymous local
+    let mut _6: &'8 [u64; 1usize]; // anonymous local
+    let mut _7: [u64; 1usize]; // anonymous local
 
     storage_live(_5)
     storage_live(_6)
@@ -78,10 +78,10 @@ pub const SLICE_HOLDER: Option::<&'_ [u64]> = SLICE_HOLDER()
 // Full name: test_crate::{impl MyConfig for Concrete}::op
 pub fn op(x: u64) -> u64
 {
-    let _0: u64; // return
+    let mut _0: u64; // return
     let x: u64; // arg #1
-    let _2: u64; // anonymous local
-    let _3: u64; // anonymous local
+    let mut _2: u64; // anonymous local
+    let mut _3: u64; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -98,9 +98,9 @@ pub fn op(x: u64) -> u64
 // Full name: test_crate::entry
 pub fn entry(x: u64) -> u64
 {
-    let _0: u64; // return
+    let mut _0: u64; // return
     let x: u64; // arg #1
-    let _2: u64; // anonymous local
+    let mut _2: u64; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

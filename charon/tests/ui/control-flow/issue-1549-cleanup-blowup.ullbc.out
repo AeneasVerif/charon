@@ -30,7 +30,7 @@ pub struct Ticket {
 // Full name: test_crate::{impl Drop for Ticket}::drop
 pub fn impl_Drop_for_Ticket::drop<'_0>(self: &'_0 mut Ticket)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 mut Ticket; // arg #1
 
     bb0: {
@@ -45,10 +45,10 @@ pub fn impl_Drop_for_Ticket::drop<'_0>(self: &'_0 mut Ticket)
 // Full name: test_crate::Ticket::{impl Destruct for Ticket}::drop_glue
 unsafe fn drop_glue<'_0>(_1: &'_0 mut Ticket)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut Ticket; // arg #1
-    let _2: &'2 mut Ticket; // anonymous local
-    let _3: (); // anonymous local
+    let mut _2: &'2 mut Ticket; // anonymous local
+    let mut _3: (); // anonymous local
 
     bb0: {
         storage_live(_0);
@@ -84,7 +84,7 @@ impl "impl_Drop_for_Ticket" Drop for Ticket {
 // Full name: test_crate::adds_an_unwind_edge
 fn adds_an_unwind_edge()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     bb0: {
         storage_live(_0);
@@ -97,17 +97,17 @@ fn adds_an_unwind_edge()
 // Full name: test_crate::cleanup_dag
 pub fn cleanup_dag(fail: bool, tag: u8) -> u8
 {
-    let _0: u8; // return
+    let mut _0: u8; // return
     let fail: bool; // arg #1
     let tag: u8; // arg #2
     let _a: Ticket; // local
-    let _4: u8; // anonymous local
+    let mut _4: u8; // anonymous local
     let _b: Ticket; // local
-    let _6: u8; // anonymous local
+    let mut _6: u8; // anonymous local
     let _c: Ticket; // local
-    let _8: u8; // anonymous local
+    let mut _8: u8; // anonymous local
     let _d: Ticket; // local
-    let _10: u8; // anonymous local
+    let mut _10: u8; // anonymous local
     let _11: (); // anonymous local
     let _12: (); // anonymous local
     let _13: (); // anonymous local

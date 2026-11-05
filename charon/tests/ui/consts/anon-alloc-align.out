@@ -74,7 +74,7 @@ static INNER: &'static u64 = cast<&'_ u64>(&raw const test_crate::{promoted_cons
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

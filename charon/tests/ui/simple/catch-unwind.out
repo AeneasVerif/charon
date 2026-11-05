@@ -112,9 +112,9 @@ struct {closure} {}
 // Full name: test_crate::main::{impl FnOnce<()> for {closure}}::call_once
 extern "rust-call" fn call_once(_1: {closure}, tupled_args: ())
 {
-    let _0: (); // return
-    let _1: {closure}; // arg #1
-    let tupled_args: (); // arg #2
+    let mut _0: (); // return
+    let mut _1: {closure}; // arg #1
+    let mut tupled_args: (); // arg #2
 
     storage_live(_0)
     _0 = ()
@@ -138,9 +138,9 @@ impl "impl_FnOnce_unit_for_closure" FnOnce<()> for {closure} {
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let _1: Result<(), Box<(dyn Any + Send + '36)>[{built_in impl MetaSized for (dyn Any + Send + '38)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for Box<(dyn Any + Send + '45)>[{built_in impl MetaSized for (dyn Any + Send + '47)}, {built_in impl Sized for Global}]}]; // anonymous local
-    let _2: {closure}; // anonymous local
+    let mut _0: (); // return
+    let mut _1: Result<(), Box<(dyn Any + Send + '36)>[{built_in impl MetaSized for (dyn Any + Send + '38)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for Box<(dyn Any + Send + '45)>[{built_in impl MetaSized for (dyn Any + Send + '47)}, {built_in impl Sized for Global}]}]; // anonymous local
+    let mut _2: {closure}; // anonymous local
 
     storage_live(_0)
     _0 = ()

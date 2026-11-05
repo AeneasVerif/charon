@@ -41,7 +41,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Accept<'a>),
 {
-    let _0: {closure}<'9, '10, '11, T>[TraitClause0, TraitClause1]; // return
+    let mut _0: {closure}<'9, '10, '11, T>[TraitClause0, TraitClause1]; // return
 
     storage_live(_0)
     _0 = {closure} {  }
@@ -58,11 +58,11 @@ where
     Outlives2: ('_2: '_3),
     Outlives3: (T: '_3),
 {
-    let _0: (); // return
-    let _1: &'11 {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1
-    let tupled_args: (&'_2 u8,); // arg #2
+    let mut _0: (); // return
+    let mut _1: &'11 {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1
+    let mut tupled_args: (&'_2 u8,); // arg #2
     let x: &'14 u8; // local
-    let _4: &'15 u8; // anonymous local
+    let mut _4: &'15 u8; // anonymous local
 
     storage_live(_0)
     storage_live(x)

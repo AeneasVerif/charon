@@ -43,11 +43,11 @@ trait Convert<Self, T>
 // Full name: test_crate::{impl Convert<&'a [u8; 4usize]> for &'a u32}::method
 fn method<'a>(self: &'a u32) -> &'a [u8; 4usize]
 {
-    let _0: &'1 [u8; 4usize]; // return
+    let mut _0: &'1 [u8; 4usize]; // return
     let self: &'3 u32; // arg #1
     let _2: &'4 [u8; 4usize]; // anonymous local
     let _3: *const [u8; 4usize]; // anonymous local
-    let _4: *const u32; // anonymous local
+    let mut _4: *const u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -81,9 +81,9 @@ where
     TraitClause1: (U: Sized),
     TraitClause2: (T: Convert<U>),
 {
-    let _0: U; // return
+    let mut _0: U; // return
     let x: T; // arg #1
-    let _2: T; // anonymous local
+    let mut _2: T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -108,10 +108,10 @@ where
 // Full name: test_crate::to_bytes_by_ref
 pub fn to_bytes_by_ref<'b>(s: &'b u32) -> &'b [u8; 4usize]
 {
-    let _0: &'1 [u8; 4usize]; // return
+    let mut _0: &'1 [u8; 4usize]; // return
     let s: &'3 u32; // arg #1
     let _2: &'4 [u8; 4usize]; // anonymous local
-    let _3: &'5 u32; // anonymous local
+    let mut _3: &'5 u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

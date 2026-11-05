@@ -51,9 +51,9 @@ where
     TraitClause1: (Self: Copy),
     Outlives0: (Self: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 Self; // arg #1
-    let _2: &'2 Self; // anonymous local
+    let mut _2: &'2 Self; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -70,7 +70,7 @@ where
 // Full name: test_crate::{impl Trait for ()}::fold
 fn fold<'_0>(self: &'_0 ())
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 (); // arg #1
 
     storage_live(_0)
@@ -85,9 +85,9 @@ fn impl_Trait_for_unit::method<'_0>(self: &'_0 ())
 where
     TraitClause0: ((): Copy),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 (); // arg #1
-    let _2: &'2 (); // anonymous local
+    let mut _2: &'2 (); // anonymous local
 
     storage_live(_0)
     _0 = ()

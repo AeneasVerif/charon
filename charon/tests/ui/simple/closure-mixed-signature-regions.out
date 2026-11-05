@@ -106,7 +106,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Provide<'a>),
 {
-    let _0: {closure}<'25, '26, '27, T>[TraitClause0, TraitClause1]; // return
+    let mut _0: {closure}<'25, '26, '27, T>[TraitClause0, TraitClause1]; // return
 
     storage_live(_0)
     _0 = {closure} {  }
@@ -123,12 +123,12 @@ where
     Outlives2: ('_2: '_4),
     Outlives3: (T: '_4),
 {
-    let _0: (&'9 u8, &'10 u8); // return
-    let _1: &'41 {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1
-    let tupled_args: (&'_3 u8,); // arg #2
+    let mut _0: (&'9 u8, &'10 u8); // return
+    let mut _1: &'41 {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1
+    let mut tupled_args: (&'_3 u8,); // arg #2
     let x: &'43 u8; // local
-    let _4: &'44 u8; // anonymous local
-    let _5: &'45 u8; // anonymous local
+    let mut _4: &'44 u8; // anonymous local
+    let mut _5: &'45 u8; // anonymous local
     let _6: &'46 u8; // anonymous local
 
     storage_live(_0)
@@ -164,10 +164,10 @@ where
     Outlives2: ('_2: '_4),
     Outlives3: (T: '_4),
 {
-    let _0: (&'_3 u8, &'_2 u8); // return
-    let state: &'_4 mut {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1
-    let args: (&'_3 u8,); // arg #2
-    let _3: &'2 {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // anonymous local
+    let mut _0: (&'_3 u8, &'_2 u8); // return
+    let mut state: &'_4 mut {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1
+    let mut args: (&'_3 u8,); // arg #2
+    let mut _3: &'2 {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -189,7 +189,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Provide<'a>),
 {
-    let _0: (&'9 u8, &'10 u8); // return
+    let mut _0: (&'9 u8, &'10 u8); // return
     let _1: {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1
     let _2: (&'41 u8,); // arg #2
     let _3: &'44 mut {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // anonymous local
@@ -258,12 +258,12 @@ where
     TraitClause1: for<'c> (F: Fn<(&'c u8,)>),
     TypeConstraint0: for<'c> TraitClause1<'_>::ImpliedClause1::ImpliedClause1::Output = (&'c u8, &'a u8),
 {
-    let _0: (&'9 u8, &'10 u8); // return
+    let mut _0: (&'9 u8, &'10 u8); // return
     let f: F; // arg #1
     let x: &'14 u8; // arg #2
-    let _3: &'16 F; // anonymous local
-    let _4: (&'18 u8,); // anonymous local
-    let _5: &'19 u8; // anonymous local
+    let mut _3: &'16 F; // anonymous local
+    let mut _4: (&'18 u8,); // anonymous local
+    let mut _5: &'19 u8; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -297,10 +297,10 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Provide<'a>),
 {
-    let _0: (&'9 u8, &'10 u8); // return
+    let mut _0: (&'9 u8, &'10 u8); // return
     let x: &'14 u8; // arg #1
-    let _2: {closure}<'40, '41, '42, T>[TraitClause0, TraitClause1]; // anonymous local
-    let _3: &'44 u8; // anonymous local
+    let mut _2: {closure}<'40, '41, '42, T>[TraitClause0, TraitClause1]; // anonymous local
+    let mut _3: &'44 u8; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

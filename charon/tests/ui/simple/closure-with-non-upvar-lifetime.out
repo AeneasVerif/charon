@@ -42,14 +42,14 @@ where
     Outlives1: ('_0: '_2),
     Outlives2: ('_1: '_2),
 {
-    let _0: u8; // return
-    let _1: &'10 {closure}<'_0, '_1>; // arg #1
-    let tupled_args: (usize,); // arg #2
+    let mut _0: u8; // return
+    let mut _1: &'10 {closure}<'_0, '_1>; // arg #1
+    let mut tupled_args: (usize,); // arg #2
     let i: usize; // local
-    let _4: &'11 &'12 [u8]; // anonymous local
+    let mut _4: &'11 &'12 [u8]; // anonymous local
     let _5: usize; // anonymous local
-    let _6: &'_ [u8]; // anonymous local
-    let _7: &'_ u8; // anonymous local
+    let mut _6: &'_ [u8]; // anonymous local
+    let mut _7: &'_ u8; // anonymous local
 
     storage_live(_0)
     storage_live(i)
@@ -77,14 +77,14 @@ where
 // Full name: test_crate::call_fn
 fn call_fn<'_0>(a: &'_0 [u8], i: usize) -> u8
 {
-    let _0: u8; // return
+    let mut _0: u8; // return
     let a: &'1 [u8]; // arg #1
     let i: usize; // arg #2
     let read: {closure}<'10, '11>; // local
-    let _4: &'12 &'13 [u8]; // anonymous local
-    let _5: &'17 {closure}<'18, '19>; // anonymous local
-    let _6: (usize,); // anonymous local
-    let _7: usize; // anonymous local
+    let mut _4: &'12 &'13 [u8]; // anonymous local
+    let mut _5: &'17 {closure}<'18, '19>; // anonymous local
+    let mut _6: (usize,); // anonymous local
+    let mut _7: usize; // anonymous local
 
     storage_live(_0)
     storage_live(read)

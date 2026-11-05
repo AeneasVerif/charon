@@ -32,7 +32,7 @@ struct Bar {}
 // Full name: test_crate::{impl Foo for Bar}::foo
 fn foo<'_0>(self: &'_0 Bar)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 Bar; // arg #1
 
     bb0: {
@@ -47,9 +47,9 @@ fn foo<'_0>(self: &'_0 Bar)
 // Full name: test_crate::{impl Foo for Bar}::foo::{vtable_method}
 fn {vtable_method}<'_0>(_1: &'_0 (dyn Foo))
 {
-    let _0: (); // return
-    let _1: &'_0 (dyn Foo + '0); // arg #1
-    let _2: &'_0 Bar; // anonymous local
+    let mut _0: (); // return
+    let mut _1: &'_0 (dyn Foo + '0); // arg #1
+    let mut _2: &'_0 Bar; // anonymous local
 
     bb0: {
         storage_live(_0);
@@ -75,9 +75,9 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn Foo))
 // Full name: test_crate::{impl Foo for Bar}::{vtable_drop_shim}
 unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Foo))
 {
-    let ret: (); // return
-    let dyn_self: &'_0 mut (dyn Foo + '0); // arg #1
-    let target_self: &'_0 mut Bar; // local
+    let mut ret: (); // return
+    let mut dyn_self: &'_0 mut (dyn Foo + '0); // arg #1
+    let mut target_self: &'_0 mut Bar; // local
 
     bb0: {
         storage_live(ret);
@@ -102,14 +102,14 @@ impl "impl_Foo_for_Bar" Foo for Bar {
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let bar: Bar; // local
     let some_foo: &'3 (dyn Foo + '4); // local
-    let _3: &'6 Bar; // anonymous local
+    let mut _3: &'6 Bar; // anonymous local
     let _4: &'7 Bar; // anonymous local
     let _5: (); // anonymous local
-    let _6: &'8 (dyn Foo + '9); // anonymous local
-    let _7: fn(&'8 (dyn Foo + '9)); // anonymous local
+    let mut _6: &'8 (dyn Foo + '9); // anonymous local
+    let mut _7: fn(&'8 (dyn Foo + '9)); // anonymous local
 
     bb0: {
         storage_live(_0);

@@ -49,7 +49,7 @@ where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _closure: {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]; // local
 
     storage_live(_0)
@@ -69,9 +69,9 @@ where
     TraitClause1: (F: PrimeField<Clause1_Repr>),
     Outlives0: (F: '_0),
 {
-    let _0: (); // return
-    let _1: &'1 {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]; // arg #1
-    let tupled_args: ((),); // arg #2
+    let mut _0: (); // return
+    let mut _1: &'1 {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]; // arg #1
+    let mut tupled_args: ((),); // arg #2
     let _x: (); // local
 
     storage_live(_0)

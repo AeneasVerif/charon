@@ -36,8 +36,8 @@ struct () {}
 // Full name: test_crate::SLICE
 fn SLICE() -> [(); 4usize]
 {
-    let _0: [(); 4usize]; // return
-    let _1: (); // anonymous local
+    let mut _0: [(); 4usize]; // return
+    let mut _1: (); // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -54,8 +54,8 @@ static SLICE: [(); 4usize] = SLICE()
 // Full name: test_crate::four
 fn four() -> usize
 {
-    let _0: usize; // return
-    let _1: usize; // anonymous local
+    let mut _0: usize; // return
+    let mut _1: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -68,8 +68,8 @@ fn four() -> usize
 // Full name: test_crate::BAR
 fn BAR() -> [(); 42usize]
 {
-    let _0: [(); 42usize]; // return
-    let _1: (); // anonymous local
+    let mut _0: [(); 42usize]; // return
+    let mut _1: (); // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -86,7 +86,7 @@ const BAR: [(); 42usize] = BAR()
 // Full name: test_crate::FOO
 fn FOO() -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const 42usize

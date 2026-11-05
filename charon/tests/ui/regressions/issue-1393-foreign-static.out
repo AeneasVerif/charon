@@ -17,7 +17,7 @@ pub trait Sized<Self>
 // Full name: issue_1393_foreign_static_aux::MUTABLE
 pub fn MUTABLE() -> u8
 {
-    let _0: u8; // return
+    let mut _0: u8; // return
 
     storage_live(_0)
     _0 = noretag const 42u8
@@ -35,8 +35,8 @@ pub struct Wrapper {
 // Full name: issue_1393_foreign_static_aux::DANGLING
 pub fn DANGLING() -> Wrapper
 {
-    let _0: Wrapper; // return
-    let _1: *const u8; // anonymous local
+    let mut _0: Wrapper; // return
+    let mut _1: *const u8; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -53,7 +53,7 @@ pub fn TRIVIAL<T, const N : usize>() -> u8
 where
     TraitClause0: (T: Sized),
 {
-    let _0: u8; // return
+    let mut _0: u8; // return
 
     storage_live(_0)
     _0 = noretag const 128u8
@@ -79,9 +79,9 @@ where
 // Full name: test_crate::foo
 fn foo() -> (u8, *const u8, u8)
 {
-    let _0: (u8, *const u8, u8); // return
-    let _1: u8; // anonymous local
-    let _2: *const u8; // anonymous local
+    let mut _0: (u8, *const u8, u8); // return
+    let mut _1: u8; // anonymous local
+    let mut _2: *const u8; // anonymous local
 
     storage_live(_0)
     storage_live(_1)

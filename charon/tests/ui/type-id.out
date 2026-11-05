@@ -27,7 +27,7 @@ fn {fallback}<T>() -> TypeId
 where
     TraitClause0: (T: MetaSized),
 {
-    let ret: TypeId; // return
+    let mut ret: TypeId; // return
 
     storage_live(ret)
     ret = noretag const TypeId(T)
@@ -47,9 +47,9 @@ where
     TraitClause0: (T: MetaSized),
     Outlives0: (T: 'static),
 {
-    let _0: TypeId; // return
-    let _1: TypeId; // anonymous local
-    let _2: TypeId; // anonymous local
+    let mut _0: TypeId; // return
+    let mut _1: TypeId; // anonymous local
+    let mut _2: TypeId; // anonymous local
 
     storage_live(_1)
     storage_live(_2)
@@ -66,7 +66,7 @@ where
 // Full name: test_crate::type_id_u32
 fn type_id_u32() -> TypeId
 {
-    let _0: TypeId; // return
+    let mut _0: TypeId; // return
 
     storage_live(_0)
     _0 = of<u32>[{built_in impl MetaSized for u32}]()
@@ -80,7 +80,7 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: 'static),
 {
-    let _0: TypeId; // return
+    let mut _0: TypeId; // return
 
     storage_live(_0)
     _0 = of<T>[TraitClause0::ImpliedClause0]()

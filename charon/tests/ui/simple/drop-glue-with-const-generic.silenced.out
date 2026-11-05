@@ -54,8 +54,8 @@ unsafe fn impl_Destruct_for_PortableHash::drop_glue<'_0, const K : usize>(_1: &'
 // Full name: test_crate::foo
 fn foo(_1: PortableHash<42usize>)
 {
-    let _0: (); // return
-    let _1: PortableHash<42usize>; // arg #1
+    let mut _0: (); // return
+    let mut _1: PortableHash<42usize>; // arg #1
 
     storage_live(_0)
     _0 = ()

@@ -11,7 +11,7 @@ struct () {}
 #[charon::contract(kind = "pre", for = "call")]
 fn closure_precondition() -> bool
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
 
     storage_live(_0)
     _0 = const true
@@ -25,9 +25,9 @@ struct {closure} {}
 #[charon::has_contract(kind = "pre", contract = closure_precondition)]
 extern "rust-call" fn call<'_0>(_1: &'_0 {closure}, tupled_args: ())
 {
-    let _0: (); // return
-    let _1: &'1 {closure}; // arg #1
-    let tupled_args: (); // arg #2
+    let mut _0: (); // return
+    let mut _1: &'1 {closure}; // arg #1
+    let mut tupled_args: (); // arg #2
 
     storage_live(_0)
     _0 = ()
@@ -41,7 +41,7 @@ extern "rust-call" fn call<'_0>(_1: &'_0 {closure}, tupled_args: ())
 #[charon::contract(kind = "post", for = "function")]
 fn postcondition() -> bool
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
 
     storage_live(_0)
     _0 = const true
@@ -52,7 +52,7 @@ fn postcondition() -> bool
 #[charon::contract(kind = "pre", for = "function")]
 fn precondition() -> bool
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
 
     storage_live(_0)
     _0 = const true
@@ -64,11 +64,11 @@ fn precondition() -> bool
 #[charon::has_contract(kind = "post", contract = postcondition)]
 fn function()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let closure: {closure}; // local
     let _2: (); // anonymous local
-    let _3: &'1 {closure}; // anonymous local
-    let _4: (); // anonymous local
+    let mut _3: &'1 {closure}; // anonymous local
+    let mut _4: (); // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -94,7 +94,7 @@ fn function()
 #[charon::contract(kind = "pre", for = "sibling")]
 fn sibling_precondition() -> bool
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
 
     storage_live(_0)
     _0 = const true
@@ -105,7 +105,7 @@ fn sibling_precondition() -> bool
 #[charon::has_contract(kind = "pre", contract = sibling_precondition)]
 fn sibling()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -117,7 +117,7 @@ fn sibling()
 #[charon::contract(kind = "post", for = "path_target")]
 fn path_postcondition() -> bool
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
 
     storage_live(_0)
     _0 = const true
@@ -128,7 +128,7 @@ fn path_postcondition() -> bool
 #[charon::has_contract(kind = "post", contract = path_postcondition)]
 pub fn path_target()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -140,7 +140,7 @@ pub fn path_target()
 #[charon::contract(kind = "invariant", for = "Trait")]
 fn trait_contract() -> bool
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
 
     storage_live(_0)
     _0 = const true
@@ -165,7 +165,7 @@ fn method_precondition<Self>() -> bool
 where
     TraitClause0: (Self: Trait),
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
 
     storage_live(_0)
     _0 = const true
@@ -176,7 +176,7 @@ where
 #[charon::contract(kind = "invariant", for = "MyType")]
 fn type_invariant() -> bool
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
 
     storage_live(_0)
     _0 = const true

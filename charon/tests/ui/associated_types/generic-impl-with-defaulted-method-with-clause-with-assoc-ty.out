@@ -48,7 +48,7 @@ where
     TraitClause0: (Self: HasMethod),
     TraitClause1: (Self: HasType<Clause1_Type>),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -62,7 +62,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (Option<T>[TraitClause0]: HasType<Clause1_Type>),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

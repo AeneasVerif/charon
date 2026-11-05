@@ -28,7 +28,7 @@ struct Guard {}
 // Full name: test_crate::{impl Drop for Guard}::drop
 pub fn impl_Drop_for_Guard::drop<'_0>(self: &'_0 mut Guard)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 mut Guard; // arg #1
 
     storage_live(_0)
@@ -41,10 +41,10 @@ pub fn impl_Drop_for_Guard::drop<'_0>(self: &'_0 mut Guard)
 // Full name: test_crate::Guard::{impl Destruct for Guard}::drop_glue
 unsafe fn drop_glue<'_0>(_1: &'_0 mut Guard)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut Guard; // arg #1
-    let _2: &'2 mut Guard; // anonymous local
-    let _3: (); // anonymous local
+    let mut _2: &'2 mut Guard; // anonymous local
+    let mut _3: (); // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -72,7 +72,7 @@ impl "impl_Drop_for_Guard" Drop for Guard {
 // Full name: test_crate::may_panic
 fn may_panic()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -83,9 +83,9 @@ fn may_panic()
 // Full name: test_crate::infinite_loop
 pub fn infinite_loop()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _g: Guard; // local
-    let _2: (); // anonymous local
+    let mut _2: (); // anonymous local
 
     storage_live(_0)
     storage_live(_2)

@@ -88,18 +88,18 @@ struct () {}
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let _1: bool; // anonymous local
-    let _2: &'1 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _3: &'2 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _4: &'3 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _5: &'4 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _6: &'5 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _7: &'6 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _8: &'11 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _9: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _10: &'12 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _11: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _0: (); // return
+    let mut _1: bool; // anonymous local
+    let mut _2: &'1 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _3: &'2 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _4: &'3 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _5: &'4 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _6: &'5 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _7: &'6 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _8: &'11 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _9: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _10: &'12 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _11: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
 
     storage_live(_7)
     storage_live(_10)
@@ -158,11 +158,11 @@ impl "impl_StructuralPartialEq_for_Foo" StructuralPartialEq for Foo {
 #[inline(hint)]
 pub fn impl_PartialEq_Foo_for_Foo::eq<'_0, '_1>(self: &'_0 Foo, other: &'_1 Foo) -> bool
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
     let self: &'1 Foo; // arg #1
     let other: &'2 Foo; // arg #2
-    let _3: u32; // anonymous local
-    let _4: u32; // anonymous local
+    let mut _3: u32; // anonymous local
+    let mut _4: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -187,12 +187,12 @@ impl "impl_PartialEq_Foo_for_Foo" PartialEq<Foo> for Foo {
 #[inline(hint)]
 pub fn impl_PartialOrd_Foo_for_Foo::partial_cmp<'_0, '_1>(self: &'_0 Foo, other: &'_1 Foo) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 {
-    let _0: Option<Ordering>[{built_in impl Sized for Ordering}]; // return
+    let mut _0: Option<Ordering>[{built_in impl Sized for Ordering}]; // return
     let self: &'1 Foo; // arg #1
     let other: &'2 Foo; // arg #2
-    let _3: &'4 u32; // anonymous local
+    let mut _3: &'4 u32; // anonymous local
     let _4: &'5 u32; // anonymous local
-    let _5: &'6 u32; // anonymous local
+    let mut _5: &'6 u32; // anonymous local
     let _6: &'7 u32; // anonymous local
 
     storage_live(_0)

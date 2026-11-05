@@ -9,12 +9,12 @@ struct () {}
 // Full name: test_crate::do_test::<bool>
 fn do_test::<bool>(init: bool, expected: bool)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let init: bool; // arg #1
     let expected: bool; // arg #2
-    let _3: bool; // anonymous local
-    let _4: &'1 bool; // anonymous local
-    let _5: &'2 bool; // anonymous local
+    let mut _3: bool; // anonymous local
+    let mut _4: &'1 bool; // anonymous local
+    let mut _5: &'2 bool; // anonymous local
 
     bb0: {
         storage_live(_0);
@@ -48,7 +48,7 @@ fn do_test::<bool>(init: bool, expected: bool)
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: (); // anonymous local
 
     bb0: {

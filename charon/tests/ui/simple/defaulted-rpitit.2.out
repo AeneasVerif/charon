@@ -33,7 +33,7 @@ where
     TraitClause0: (Self: MyTrait),
     TraitClause1: (Self: Sized),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -49,7 +49,7 @@ pub fn impl_MyTrait_for_S::foo()
 where
     TraitClause0: (S: Sized),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

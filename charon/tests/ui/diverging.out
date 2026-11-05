@@ -5,7 +5,7 @@ struct () {}
 // Full name: test_crate::my_panic
 fn my_panic(_x: u32) -> !
 {
-    let _0: !; // return
+    let mut _0: !; // return
     let _x: u32; // arg #1
 
     storage_live(_0)
@@ -17,7 +17,7 @@ fn my_panic(_x: u32) -> !
 // Full name: test_crate::do_something_else
 fn do_something_else()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -28,7 +28,7 @@ fn do_something_else()
 // Full name: test_crate::call_my_panic
 fn call_my_panic()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: !; // anonymous local
 
     storage_live(_0)

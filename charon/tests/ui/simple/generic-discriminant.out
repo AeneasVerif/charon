@@ -115,10 +115,10 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
-    let _0: Discriminant<T>[TraitClause0]; // return
+    let mut _0: Discriminant<T>[TraitClause0]; // return
     let v: &'1 T; // arg #1
-    let _2: {built_in impl DiscriminantKind for T}::Discriminant; // anonymous local
-    let _3: &'2 T; // anonymous local
+    let mut _2: {built_in impl DiscriminantKind for T}::Discriminant; // anonymous local
+    let mut _3: &'2 T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -138,9 +138,9 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
-    let _0: Discriminant<T>[TraitClause0]; // return
+    let mut _0: Discriminant<T>[TraitClause0]; // return
     let x: &'1 T; // arg #1
-    let _2: &'2 T; // anonymous local
+    let mut _2: &'2 T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

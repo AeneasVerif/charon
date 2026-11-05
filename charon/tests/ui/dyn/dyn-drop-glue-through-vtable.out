@@ -131,10 +131,10 @@ struct A {
 // Full name: test_crate::A::{impl Destruct for A}::drop_glue
 unsafe fn impl_Destruct_for_A::drop_glue<'_0>(_1: &'_0 mut A)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut A; // arg #1
-    let drop_arg: &'_ mut (dyn T + '6); // local
-    let drop_ret: (); // local
+    let mut drop_arg: &'_ mut (dyn T + '6); // local
+    let mut drop_ret: (); // local
 
     storage_live(_0)
     _0 = ()
@@ -155,10 +155,10 @@ impl "impl_Destruct_for_A" Destruct for A {
 // Full name: test_crate::f
 fn f(_1: Box<A, Global>[{built_in impl MetaSized for A}, {built_in impl Sized for Global}, impl_Allocator_for_Global, impl_Destruct_for_A, {built_in impl Destruct for Global}])
 {
-    let _0: (); // return
-    let _1: Box<A, Global>[{built_in impl MetaSized for A}, {built_in impl Sized for Global}, impl_Allocator_for_Global, impl_Destruct_for_A, {built_in impl Destruct for Global}]; // arg #1
-    let drop_arg: &'_ mut Box<A, Global>[{built_in impl MetaSized for A}, {built_in impl Sized for Global}, impl_Allocator_for_Global, impl_Destruct_for_A, {built_in impl Destruct for Global}]; // local
-    let drop_ret: (); // local
+    let mut _0: (); // return
+    let mut _1: Box<A, Global>[{built_in impl MetaSized for A}, {built_in impl Sized for Global}, impl_Allocator_for_Global, impl_Destruct_for_A, {built_in impl Destruct for Global}]; // arg #1
+    let mut drop_arg: &'_ mut Box<A, Global>[{built_in impl MetaSized for A}, {built_in impl Sized for Global}, impl_Allocator_for_Global, impl_Destruct_for_A, {built_in impl Destruct for Global}]; // local
+    let mut drop_ret: (); // local
 
     storage_live(_0)
     _0 = ()

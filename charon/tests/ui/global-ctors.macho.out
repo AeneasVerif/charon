@@ -2,7 +2,7 @@ struct () {}
 
 extern "C" fn test_crate::macho_ctor()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

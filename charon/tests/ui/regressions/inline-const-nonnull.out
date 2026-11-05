@@ -9,9 +9,9 @@ struct () {}
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: NonNull<u8>; // anonymous local
-    let _2: *const u8 is !null; // anonymous local
+    let mut _2: *const u8 is !null; // anonymous local
 
     storage_live(_0)
     _0 = ()

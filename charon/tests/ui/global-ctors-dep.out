@@ -5,7 +5,7 @@ struct () {}
 // Full name: global_ctors_dep_aux::dep_ctor
 extern "C" fn dep_ctor()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

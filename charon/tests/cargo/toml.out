@@ -31,9 +31,9 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
     let self: &'1 Option<T>[TraitClause0]; // arg #1
-    let _2: isize; // anonymous local
+    let mut _2: isize; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -56,8 +56,8 @@ struct () {}
 // Full name: test_cargo_toml::included::run::{promoted_const}
 fn {promoted_const}() -> &'_ Option<bool>[{built_in impl Sized for bool}]
 {
-    let _0: &'0 Option<bool>[{built_in impl Sized for bool}]; // return
-    let _1: Option<bool>[{built_in impl Sized for bool}]; // anonymous local
+    let mut _0: &'0 Option<bool>[{built_in impl Sized for bool}]; // return
+    let mut _1: Option<bool>[{built_in impl Sized for bool}]; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -72,10 +72,10 @@ const {promoted_const}: &'_ Option<bool>[{built_in impl Sized for bool}] = {prom
 // Full name: test_cargo_toml::included::run
 pub fn run()
 {
-    let _0: (); // return
-    let _1: bool; // anonymous local
-    let _2: &'1 Option<bool>[{built_in impl Sized for bool}]; // anonymous local
-    let _3: &'2 Option<bool>[{built_in impl Sized for bool}]; // anonymous local
+    let mut _0: (); // return
+    let mut _1: bool; // anonymous local
+    let mut _2: &'1 Option<bool>[{built_in impl Sized for bool}]; // anonymous local
+    let mut _3: &'2 Option<bool>[{built_in impl Sized for bool}]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)

@@ -77,11 +77,11 @@ where
 // Full name: test_crate::use_consts
 pub fn use_consts() -> u32
 {
-    let _0: u32; // return
-    let _1: u32; // anonymous local
-    let _2: u32; // anonymous local
-    let _3: u32; // anonymous local
-    let _4: u32; // anonymous local
+    let mut _0: u32; // return
+    let mut _1: u32; // anonymous local
+    let mut _2: u32; // anonymous local
+    let mut _3: u32; // anonymous local
+    let mut _4: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

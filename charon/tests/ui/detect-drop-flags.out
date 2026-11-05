@@ -45,7 +45,7 @@ struct NeedsDrop {}
 // Full name: test_crate::{impl Drop for NeedsDrop}::drop
 pub fn impl_Drop_for_NeedsDrop::drop<'_0>(self: &'_0 mut NeedsDrop)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 mut NeedsDrop; // arg #1
 
     storage_live(_0)
@@ -57,10 +57,10 @@ pub fn impl_Drop_for_NeedsDrop::drop<'_0>(self: &'_0 mut NeedsDrop)
 // Full name: test_crate::NeedsDrop::{impl Destruct for NeedsDrop}::drop_glue
 unsafe fn drop_glue<'_0>(_1: &'_0 mut NeedsDrop)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut NeedsDrop; // arg #1
-    let _2: &'2 mut NeedsDrop; // anonymous local
-    let _3: (); // anonymous local
+    let mut _2: &'2 mut NeedsDrop; // anonymous local
+    let mut _3: (); // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -84,7 +84,7 @@ fn consume<T>(_x: T)
 where
     TraitClause0: (T: Sized),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _x: T; // arg #1
 
     storage_live(_0)
@@ -98,13 +98,13 @@ where
 // Full name: test_crate::conditional
 pub fn conditional(x: NeedsDrop, move_x: bool)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: NeedsDrop; // arg #1
     let move_x: bool; // arg #2
-    let _3: bool; // anonymous local
+    let mut _3: bool; // anonymous local
     let _4: (); // anonymous local
-    let _5: NeedsDrop; // anonymous local
-    let _6: bool; // anonymous local; drop flag for x
+    let mut _5: NeedsDrop; // anonymous local
+    let mut _6: bool; // anonymous local; drop flag for x
 
     storage_live(_0)
     storage_live(_6)

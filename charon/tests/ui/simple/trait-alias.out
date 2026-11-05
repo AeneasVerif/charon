@@ -61,7 +61,7 @@ struct Struct {}
 #[inline(hint)]
 pub fn clone<'_0>(self: &'_0 Struct) -> Struct
 {
-    let _0: Struct; // return
+    let mut _0: Struct; // return
     let self: &'1 Struct; // arg #1
 
     storage_live(_0)
@@ -151,7 +151,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: HrtbAlias),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -162,7 +162,7 @@ where
 // Full name: test_crate::use_hrtb_alias
 fn use_hrtb_alias()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: (); // anonymous local
 
     storage_live(_0)
@@ -181,10 +181,10 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Alias<()>),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: T; // arg #1
-    let _2: T; // anonymous local
-    let _3: &'1 T; // anonymous local
+    let mut _2: T; // anonymous local
+    let mut _3: &'1 T; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -216,9 +216,9 @@ where
 // Full name: test_crate::use_alias
 fn use_alias()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: (); // anonymous local
-    let _2: Struct; // anonymous local
+    let mut _2: Struct; // anonymous local
 
     storage_live(_0)
     _0 = ()

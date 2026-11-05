@@ -34,7 +34,7 @@ where
     TraitClause0: (M: Sized),
     TraitClause1: (M: Send),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _msg: M; // arg #1
 
     storage_live(_0)
@@ -50,9 +50,9 @@ where
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: (); // anonymous local
-    let _2: (); // anonymous local
+    let mut _2: (); // anonymous local
 
     storage_live(_0)
     _0 = ()

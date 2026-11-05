@@ -50,10 +50,10 @@ where
     TraitClause1: (T: Copy),
     Outlives0: (T: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: &'1 T; // arg #1
     let _c: test_crate::f::{closure}<'5, T>; // local
-    let _3: &'6 T; // anonymous local
+    let mut _3: &'6 T; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -78,9 +78,9 @@ where
     Outlives1: ('_0: '_1),
     Outlives2: (T: '_1),
 {
-    let _0: T; // return
-    let _1: &'5 test_crate::f::{closure}<'_0, T>; // arg #1
-    let tupled_args: (); // arg #2
+    let mut _0: T; // return
+    let mut _1: &'5 test_crate::f::{closure}<'_0, T>; // arg #1
+    let mut tupled_args: (); // arg #2
 
     storage_live(_0)
     _0 = copy (*(*_1)._0)
@@ -102,10 +102,10 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: T; // arg #1
     let _c: test_crate::g::{closure}<'4, T>; // local
-    let _3: &'5 T; // anonymous local
+    let mut _3: &'5 T; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -130,9 +130,9 @@ where
     Outlives1: ('_0: '_1),
     Outlives2: (T: '_1),
 {
-    let _0: T; // return
-    let _1: &'5 test_crate::g::{closure}<'_0, T>; // arg #1
-    let tupled_args: (); // arg #2
+    let mut _0: T; // return
+    let mut _1: &'5 test_crate::g::{closure}<'_0, T>; // arg #1
+    let mut tupled_args: (); // arg #2
 
     storage_live(_0)
     _0 = copy (*(*_1)._0)

@@ -15,9 +15,9 @@ pub fn wrap_shared_in_option<'a, T>(x: &'a T) -> Option<&'a T>
 where
     Outlives0: (T: 'a),
 {
-    let _0: Option<&'2 T>; // return
+    let mut _0: Option<&'2 T>; // return
     let x: &'3 T; // arg #1
-    let _2: &'4 T; // anonymous local
+    let mut _2: &'4 T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

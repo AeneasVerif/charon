@@ -5,7 +5,7 @@ struct () {}
 // Full name: test_crate::foo
 fn foo() -> foo
 {
-    let _0: foo; // return
+    let mut _0: foo; // return
 
     storage_live(_0)
     _0 = const foo
@@ -15,7 +15,7 @@ fn foo() -> foo
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: foo; // anonymous local
 
     storage_live(_0)

@@ -59,10 +59,10 @@ struct Foo {
 // Full name: test_crate::foo
 fn foo(f: Foo)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let f: Foo; // arg #1
     let _2: (); // anonymous local
-    let _3: Box<u32>[{built_in impl Destruct for u32}, {built_in impl Destruct for Global}]; // anonymous local
+    let mut _3: Box<u32>[{built_in impl Destruct for u32}, {built_in impl Destruct for Global}]; // anonymous local
 
     storage_live(_0)
     _0 = ()

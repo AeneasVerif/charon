@@ -219,15 +219,15 @@ struct () {}
 
 fn test_crate::f<'_0>(blocks: &'_0 mut [u8])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let blocks: &'1 mut [u8]; // arg #1
-    let _2: core::slice::iter::IterMut<'3, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
-    let _3: core::slice::iter::IterMut<'4, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
-    let _4: &'5 mut [u8]; // anonymous local
-    let iter: core::slice::iter::IterMut<'6, u8>[{built_in impl core::marker::Sized for u8}]; // local
-    let _6: core::option::Option<&'15 mut u8>[{built_in impl core::marker::Sized for &'15 mut u8}]; // anonymous local
-    let _7: &'21 mut core::slice::iter::IterMut<'22, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
-    let _8: &'23 mut core::slice::iter::IterMut<'24, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
+    let mut _2: core::slice::iter::IterMut<'3, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
+    let mut _3: core::slice::iter::IterMut<'4, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
+    let mut _4: &'5 mut [u8]; // anonymous local
+    let mut iter: core::slice::iter::IterMut<'6, u8>[{built_in impl core::marker::Sized for u8}]; // local
+    let mut _6: core::option::Option<&'15 mut u8>[{built_in impl core::marker::Sized for &'15 mut u8}]; // anonymous local
+    let mut _7: &'21 mut core::slice::iter::IterMut<'22, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
+    let mut _8: &'23 mut core::slice::iter::IterMut<'24, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -277,19 +277,19 @@ fn test_crate::f<'_0>(blocks: &'_0 mut [u8])
 
 fn test_crate::g<'_0, '_1>(s0: &'_0 [u8], s1: &'_1 [u8])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let s0: &'1 [u8]; // arg #1
     let s1: &'2 [u8]; // arg #2
-    let _3: core::iter::adapters::zip::Zip<core::slice::iter::Iter<'18, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'19, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'18, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'19, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
-    let _4: core::iter::adapters::zip::Zip<core::slice::iter::Iter<'26, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'27, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'26, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'27, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
-    let _5: core::slice::iter::Iter<'34, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
-    let _6: &'35 [u8]; // anonymous local
-    let _7: core::slice::iter::Iter<'36, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
-    let _8: &'37 [u8]; // anonymous local
-    let iter: core::iter::adapters::zip::Zip<core::slice::iter::Iter<'38, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'39, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'38, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'39, u8>[{built_in impl core::marker::Sized for u8}]}]; // local
-    let _10: core::option::Option<(&'102 u8, &'103 u8)>[{built_in impl core::marker::Sized for (&'102 u8, &'103 u8)}]; // anonymous local
-    let _11: &'131 mut core::iter::adapters::zip::Zip<core::slice::iter::Iter<'132, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'133, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'132, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'133, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
-    let _12: &'140 mut core::iter::adapters::zip::Zip<core::slice::iter::Iter<'141, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'142, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'141, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'142, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
+    let mut _3: core::iter::adapters::zip::Zip<core::slice::iter::Iter<'18, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'19, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'18, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'19, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
+    let mut _4: core::iter::adapters::zip::Zip<core::slice::iter::Iter<'26, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'27, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'26, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'27, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
+    let mut _5: core::slice::iter::Iter<'34, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
+    let mut _6: &'35 [u8]; // anonymous local
+    let mut _7: core::slice::iter::Iter<'36, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
+    let mut _8: &'37 [u8]; // anonymous local
+    let mut iter: core::iter::adapters::zip::Zip<core::slice::iter::Iter<'38, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'39, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'38, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'39, u8>[{built_in impl core::marker::Sized for u8}]}]; // local
+    let mut _10: core::option::Option<(&'102 u8, &'103 u8)>[{built_in impl core::marker::Sized for (&'102 u8, &'103 u8)}]; // anonymous local
+    let mut _11: &'131 mut core::iter::adapters::zip::Zip<core::slice::iter::Iter<'132, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'133, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'132, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'133, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
+    let mut _12: &'140 mut core::iter::adapters::zip::Zip<core::slice::iter::Iter<'141, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'142, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'141, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'142, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
 
     storage_live(_0)
     _0 = ()

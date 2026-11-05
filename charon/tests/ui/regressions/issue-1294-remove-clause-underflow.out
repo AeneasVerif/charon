@@ -44,7 +44,7 @@ where
     TraitClause0: (Self: Trait),
     TraitClause1: (TraitClause0::Assoc<u8>[{built_in impl Sized for u8}]: Clone),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

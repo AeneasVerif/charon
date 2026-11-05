@@ -23,7 +23,7 @@ struct str {
 // Full name: test_crate::panic1
 fn panic1()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -36,9 +36,9 @@ pub const test_crate::panic2::{promoted_const}: str = "O no!" with_metadata(5usi
 // Full name: test_crate::panic2
 fn panic2()
 {
-    let _0: (); // return
-    let _1: Arguments<'1>; // anonymous local
-    let _2: &'4 str; // anonymous local
+    let mut _0: (); // return
+    let mut _1: Arguments<'1>; // anonymous local
+    let mut _2: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -59,9 +59,9 @@ pub const test_crate::panic3::{promoted_const}: str = "O no!" with_metadata(5usi
 // Full name: test_crate::panic3
 fn panic3()
 {
-    let _0: (); // return
-    let _1: Arguments<'1>; // anonymous local
-    let _2: &'4 str; // anonymous local
+    let mut _0: (); // return
+    let mut _1: Arguments<'1>; // anonymous local
+    let mut _2: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -80,8 +80,8 @@ fn panic3()
 // Full name: test_crate::panic4
 fn panic4()
 {
-    let _0: (); // return
-    let _1: bool; // anonymous local
+    let mut _0: (); // return
+    let mut _1: bool; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -99,10 +99,10 @@ pub const test_crate::panic5::{promoted_const}: str = "assert failed" with_metad
 // Full name: test_crate::panic5
 fn panic5()
 {
-    let _0: (); // return
-    let _1: bool; // anonymous local
-    let _2: Arguments<'1>; // anonymous local
-    let _3: &'4 str; // anonymous local
+    let mut _0: (); // return
+    let mut _1: bool; // anonymous local
+    let mut _2: Arguments<'1>; // anonymous local
+    let mut _3: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -131,7 +131,7 @@ fn panic5()
 // Full name: test_crate::panic6
 fn panic6()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -144,9 +144,9 @@ pub const test_crate::panic7::{promoted_const}: str = "internal error: entered u
 // Full name: test_crate::panic7
 fn panic7()
 {
-    let _0: (); // return
-    let _1: Arguments<'1>; // anonymous local
-    let _2: &'4 str; // anonymous local
+    let mut _0: (); // return
+    let mut _1: Arguments<'1>; // anonymous local
+    let mut _2: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -165,7 +165,7 @@ fn panic7()
 // Full name: test_crate::panic8
 fn panic8()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -176,7 +176,7 @@ fn panic8()
 // Full name: test_crate::panic9
 fn panic9()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

@@ -149,7 +149,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -162,7 +162,7 @@ fn foo<T>()
 where
     TraitClause0: (T: MetaSized),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

@@ -9,7 +9,7 @@ pub const test_crate::ret_str::{promoted_const}: str = "hello" with_metadata(5us
 // Full name: test_crate::ret_str
 fn ret_str() -> &'static str
 {
-    let _0: &'1 str; // return
+    let mut _0: &'1 str; // return
 
     storage_live(_0)
     _0 = &test_crate::ret_str::{promoted_const} with_metadata(const 5usize)

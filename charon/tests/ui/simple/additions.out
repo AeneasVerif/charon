@@ -42,11 +42,11 @@ where
     Outlives0: (Self: '_0),
     Outlives1: (Self: '_1),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 mut Self; // arg #1
     let source: &'3 Self; // arg #2
-    let _3: Self; // anonymous local
-    let _4: &'4 Self; // anonymous local
+    let mut _3: Self; // anonymous local
+    let mut _4: &'4 Self; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -74,7 +74,7 @@ where
 // Full name: core::clone::impls::{impl Clone for u8}::clone
 pub fn clone<'_0>(self: &'_0 u8) -> u8
 {
-    let _0: u8; // return
+    let mut _0: u8; // return
     let self: &'1 u8; // arg #1
 
     storage_live(_0)
@@ -88,11 +88,11 @@ pub fn impl_Clone_for_u8::clone_from<'_0, '_1>(self: &'_0 mut u8, source: &'_1 u
 where
     TraitClause0: (u8: Destruct),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 mut u8; // arg #1
     let source: &'3 u8; // arg #2
-    let _3: u8; // anonymous local
-    let _4: &'4 u8; // anonymous local
+    let mut _3: u8; // anonymous local
+    let mut _4: &'4 u8; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -168,11 +168,11 @@ impl "impl_Copy_for_u8" Copy for u8 {
 // Full name: core::num::{u8}::wrapping_add
 pub fn wrapping_add(self: u8, rhs: u8) -> u8
 {
-    let _0: u8; // return
+    let mut _0: u8; // return
     let self: u8; // arg #1
     let rhs: u8; // arg #2
-    let _3: u8; // anonymous local
-    let _4: u8; // anonymous local
+    let mut _3: u8; // anonymous local
+    let mut _4: u8; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -190,16 +190,16 @@ pub fn wrapping_add(self: u8, rhs: u8) -> u8
 // Full name: core::num::{u8}::overflowing_add
 pub fn overflowing_add(self: u8, rhs: u8) -> (u8, bool)
 {
-    let _0: (u8, bool); // return
+    let mut _0: (u8, bool); // return
     let self: u8; // arg #1
     let rhs: u8; // arg #2
     let a: u8; // local
     let b: bool; // local
-    let _5: (u8, bool); // anonymous local
-    let _6: u8; // anonymous local
-    let _7: u8; // anonymous local
-    let _8: u8; // anonymous local
-    let _9: bool; // anonymous local
+    let mut _5: (u8, bool); // anonymous local
+    let mut _6: u8; // anonymous local
+    let mut _7: u8; // anonymous local
+    let mut _8: u8; // anonymous local
+    let mut _9: bool; // anonymous local
 
     storage_live(_0)
     storage_live(_5)
@@ -232,11 +232,11 @@ pub fn overflowing_add(self: u8, rhs: u8) -> (u8, bool)
 
 pub fn core::num::{u8}::saturating_add(self: u8, rhs: u8) -> u8
 {
-    let _0: u8; // return
+    let mut _0: u8; // return
     let self: u8; // arg #1
     let rhs: u8; // arg #2
-    let _3: u8; // anonymous local
-    let _4: u8; // anonymous local
+    let mut _3: u8; // anonymous local
+    let mut _4: u8; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -255,10 +255,10 @@ pub fn core::num::{u8}::saturating_add(self: u8, rhs: u8) -> u8
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let _1: u8; // anonymous local
-    let _2: (u8, bool); // anonymous local
-    let _3: u8; // anonymous local
+    let mut _0: (); // return
+    let mut _1: u8; // anonymous local
+    let mut _2: (u8, bool); // anonymous local
+    let mut _3: u8; // anonymous local
 
     storage_live(_0)
     _0 = ()

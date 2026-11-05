@@ -8,7 +8,7 @@ struct Rng {}
 // Full name: test_crate::{Rng}::next_u64
 fn next_u64<'_0>(self: &'_0 mut Rng)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 mut Rng; // arg #1
 
     storage_live(_0)
@@ -26,10 +26,10 @@ struct {closure}<'_0> {
 // Full name: test_crate::new
 fn new<'_0>(rng: &'_0 mut Rng)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let rng: &'1 mut Rng; // arg #1
-    let _2: {closure}<'5>; // anonymous local
-    let _3: &'6 mut Rng; // anonymous local
+    let mut _2: {closure}<'5>; // anonymous local
+    let mut _3: &'6 mut Rng; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -49,11 +49,11 @@ extern "rust-call" fn call_mut<'_0, '_1>(_1: &'_1 mut {closure}<'_0>, tupled_arg
 where
     Outlives0: ('_0: '_1),
 {
-    let _0: (); // return
-    let _1: &'5 mut {closure}<'_0>; // arg #1
-    let tupled_args: (); // arg #2
+    let mut _0: (); // return
+    let mut _1: &'5 mut {closure}<'_0>; // arg #1
+    let mut tupled_args: (); // arg #2
     let _3: (); // anonymous local
-    let _4: &'6 mut Rng; // anonymous local
+    let mut _4: &'6 mut Rng; // anonymous local
 
     storage_live(_0)
     _0 = ()

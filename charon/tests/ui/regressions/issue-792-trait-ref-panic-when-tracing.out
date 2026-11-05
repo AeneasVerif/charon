@@ -29,10 +29,10 @@ trait Internal<Self>
 // Full name: test_crate::{impl Internal for i32}::internal_method
 fn internal_method<'_0>(self: &'_0 i32) -> i32
 {
-    let _0: i32; // return
+    let mut _0: i32; // return
     let self: &'1 i32; // arg #1
-    let _2: i32; // anonymous local
-    let _3: i32; // anonymous local
+    let mut _2: i32; // anonymous local
+    let mut _3: i32; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -58,7 +58,7 @@ impl "impl_Internal_for_i32" Internal for i32 {
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

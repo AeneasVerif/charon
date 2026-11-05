@@ -58,7 +58,7 @@ fn method2<T>(self: (), _other: T)
 where
     TraitClause0: (T: Sized),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: (); // arg #1
     let _other: T; // arg #2
 
@@ -77,7 +77,7 @@ where
 // Full name: test_crate::{impl Trait for ()}::method1
 fn method1(self: (), _other: &'static u32) -> bool
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
     let self: (); // arg #1
     let _other: &'1 u32; // arg #2
 
@@ -108,7 +108,7 @@ trait MyCompare<Self, Other>
 // Full name: test_crate::{impl MyCompare<&'a ()> for &'a ()}::compare
 fn compare<'a>(self: &'a (), _other: &'a ()) -> bool
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
     let self: &'1 (); // arg #1
     let _other: &'2 (); // arg #2
 
@@ -130,29 +130,29 @@ impl<'a> MyCompare<&'a ()> for &'a () {
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let _1: bool; // anonymous local
-    let _2: (); // anonymous local
-    let _3: &'1 u32; // anonymous local
+    let mut _0: (); // return
+    let mut _1: bool; // anonymous local
+    let mut _2: (); // anonymous local
+    let mut _3: &'1 u32; // anonymous local
     let _4: &'2 u32; // anonymous local
-    let _5: (); // anonymous local
-    let _6: (); // anonymous local
-    let _7: bool; // anonymous local
-    let _8: &'4 (); // anonymous local
-    let _9: &'5 (); // anonymous local
+    let mut _5: (); // anonymous local
+    let mut _6: (); // anonymous local
+    let mut _7: bool; // anonymous local
+    let mut _8: &'4 (); // anonymous local
+    let mut _9: &'5 (); // anonymous local
     let _10: &'6 (); // anonymous local
-    let _11: &'7 (); // anonymous local
-    let _12: &'8 (); // anonymous local
-    let _13: &'9 u32; // anonymous local
-    let _14: &'10 u32; // anonymous local
-    let _15: &'11 (); // anonymous local
-    let _16: &'12 (); // anonymous local
-    let _17: &'14 u32; // anonymous local
-    let _18: u32; // anonymous local
-    let _19: &'15 (); // anonymous local
-    let _20: (); // anonymous local
-    let _21: &'16 (); // anonymous local
-    let _22: (); // anonymous local
+    let mut _11: &'7 (); // anonymous local
+    let mut _12: &'8 (); // anonymous local
+    let mut _13: &'9 u32; // anonymous local
+    let mut _14: &'10 u32; // anonymous local
+    let mut _15: &'11 (); // anonymous local
+    let mut _16: &'12 (); // anonymous local
+    let mut _17: &'14 u32; // anonymous local
+    let mut _18: u32; // anonymous local
+    let mut _19: &'15 (); // anonymous local
+    let mut _20: (); // anonymous local
+    let mut _21: &'16 (); // anonymous local
+    let mut _22: (); // anonymous local
 
     storage_live(_14)
     storage_live(_17)
@@ -251,7 +251,7 @@ trait Foo<Self>
 // Full name: test_crate::{impl Foo for ()}::foo
 fn foo<'a, 'b>(x: &'a (), y: &'b ()) -> &'a ()
 {
-    let _0: &'1 (); // return
+    let mut _0: &'1 (); // return
     let x: &'2 (); // arg #1
     let y: &'3 (); // arg #2
 
@@ -272,16 +272,16 @@ impl "impl_Foo_for_unit" Foo for () {
 // Full name: test_crate::call_foo
 fn call_foo<'e>(x: &'e ()) -> &'e ()
 {
-    let _0: &'1 (); // return
+    let mut _0: &'1 (); // return
     let x: &'2 (); // arg #1
     let _2: &'3 (); // anonymous local
-    let _3: &'4 (); // anonymous local
-    let _4: &'5 (); // anonymous local
+    let mut _3: &'4 (); // anonymous local
+    let mut _4: &'5 (); // anonymous local
     let _5: &'6 (); // anonymous local
-    let _6: &'7 (); // anonymous local
-    let _7: &'8 (); // anonymous local
-    let _8: &'13 (); // anonymous local
-    let _9: (); // anonymous local
+    let mut _6: &'7 (); // anonymous local
+    let mut _7: &'8 (); // anonymous local
+    let mut _8: &'13 (); // anonymous local
+    let mut _9: (); // anonymous local
 
     storage_live(_7)
     storage_live(_8)

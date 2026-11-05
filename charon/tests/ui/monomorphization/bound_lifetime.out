@@ -13,9 +13,9 @@ struct () {}
 // Full name: test_crate::foo
 fn foo<'_0>(x: &'_0 u32) -> Option::<&'_ u32>
 {
-    let _0: Option::<&'_ u32>; // return
+    let mut _0: Option::<&'_ u32>; // return
     let x: &'1 u32; // arg #1
-    let _2: &'2 u32; // anonymous local
+    let mut _2: &'2 u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -29,14 +29,14 @@ fn foo<'_0>(x: &'_0 u32) -> Option::<&'_ u32>
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let _1: Option::<&'_ u32>; // anonymous local
-    let _2: &'1 u32; // anonymous local
+    let mut _0: (); // return
+    let mut _1: Option::<&'_ u32>; // anonymous local
+    let mut _2: &'1 u32; // anonymous local
     let _3: &'2 u32; // anonymous local
-    let _4: &'3 u32; // anonymous local
-    let _5: &'4 u32; // anonymous local
-    let _6: &'7 u32; // anonymous local
-    let _7: u32; // anonymous local
+    let mut _4: &'3 u32; // anonymous local
+    let mut _5: &'4 u32; // anonymous local
+    let mut _6: &'7 u32; // anonymous local
+    let mut _7: u32; // anonymous local
 
     storage_live(_5)
     storage_live(_6)

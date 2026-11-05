@@ -41,11 +41,11 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Destruct),
 {
-    let _0: Option<T>[TraitClause0]; // return
+    let mut _0: Option<T>[TraitClause0]; // return
     let self: bool; // arg #1
     let t: T; // arg #2
-    let _3: bool; // anonymous local
-    let _4: T; // anonymous local
+    let mut _3: bool; // anonymous local
+    let mut _4: T; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -86,12 +86,12 @@ where
     Outlives0: (Self: '_0),
     Outlives1: (Rhs: '_1),
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
     let self: &'1 Self; // arg #1
     let other: &'3 Rhs; // arg #2
-    let _3: bool; // anonymous local
-    let _4: &'4 Self; // anonymous local
-    let _5: &'5 Rhs; // anonymous local
+    let mut _3: bool; // anonymous local
+    let mut _4: &'4 Self; // anonymous local
+    let mut _5: &'5 Rhs; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -114,7 +114,7 @@ where
 
 pub fn core::num::{u64}::MAX() -> u64
 {
-    let _0: u64; // return
+    let mut _0: u64; // return
 
     storage_live(_0)
     _0 = ~(const 0u64)
@@ -125,8 +125,8 @@ pub const core::num::{u64}::MAX: u64 = core::num::{u64}::MAX()
 
 pub fn core::num::{i64}::MAX() -> i64
 {
-    let _0: i64; // return
-    let _1: u64; // anonymous local
+    let mut _0: i64; // return
+    let mut _1: u64; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -140,7 +140,7 @@ pub const core::num::{i64}::MAX: i64 = core::num::{i64}::MAX()
 
 pub fn core::num::{i64}::MIN() -> i64
 {
-    let _0: i64; // return
+    let mut _0: i64; // return
 
     storage_live(_0)
     _0 = ~(copy core::num::{i64}::MAX)
@@ -151,7 +151,7 @@ pub const core::num::{i64}::MIN: i64 = core::num::{i64}::MIN()
 
 pub fn core::num::{u32}::MAX() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = ~(const 0u32)
@@ -162,8 +162,8 @@ pub const core::num::{u32}::MAX: u32 = core::num::{u32}::MAX()
 
 pub fn core::num::{i32}::MAX() -> i32
 {
-    let _0: i32; // return
-    let _1: u32; // anonymous local
+    let mut _0: i32; // return
+    let mut _1: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -177,7 +177,7 @@ pub const core::num::{i32}::MAX: i32 = core::num::{i32}::MAX()
 
 pub fn core::num::{i32}::MIN() -> i32
 {
-    let _0: i32; // return
+    let mut _0: i32; // return
 
     storage_live(_0)
     _0 = ~(copy core::num::{i32}::MAX)
@@ -189,17 +189,17 @@ pub const core::num::{i32}::MIN: i32 = core::num::{i32}::MIN()
 // Full name: core::convert::num::{impl From<i32> for i64}::from
 pub fn from(small: i32) -> i64
 {
-    let _0: i64; // return
+    let mut _0: i64; // return
     let small: i32; // arg #1
-    let _2: bool; // anonymous local
-    let _3: bool; // anonymous local
-    let _4: i128; // anonymous local
-    let _5: i128; // anonymous local
-    let _6: bool; // anonymous local
-    let _7: bool; // anonymous local
-    let _8: u128; // anonymous local
-    let _9: u128; // anonymous local
-    let _10: i32; // anonymous local
+    let mut _2: bool; // anonymous local
+    let mut _3: bool; // anonymous local
+    let mut _4: i128; // anonymous local
+    let mut _5: i128; // anonymous local
+    let mut _6: bool; // anonymous local
+    let mut _7: bool; // anonymous local
+    let mut _8: u128; // anonymous local
+    let mut _9: u128; // anonymous local
+    let mut _10: i32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -250,7 +250,7 @@ pub struct PhantomData<T> {}
 
 pub fn core::num::{usize}::MAX() -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = ~(const 0usize)
@@ -323,7 +323,7 @@ where
 // Full name: issue_114_opaque_bodies_aux::inline_always
 pub fn inline_always() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 42u32
@@ -333,7 +333,7 @@ pub fn inline_always() -> u32
 // Full name: issue_114_opaque_bodies_aux::inline_sometimes
 pub fn inline_sometimes() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 42u32
@@ -343,7 +343,7 @@ pub fn inline_sometimes() -> u32
 // Full name: issue_114_opaque_bodies_aux::inline_never
 pub fn inline_never() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 42u32
@@ -355,7 +355,7 @@ pub fn inline_generic<T>() -> u32
 where
     TraitClause0: (T: Sized),
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 42u32
@@ -365,16 +365,16 @@ where
 // Full name: test_crate::use_inlines
 fn use_inlines() -> u32
 {
-    let _0: u32; // return
-    let _1: u32; // anonymous local
-    let _2: u32; // anonymous local
-    let _3: u32; // anonymous local
-    let _4: u32; // anonymous local
-    let _5: u32; // anonymous local
-    let _6: u32; // anonymous local
-    let _7: u32; // anonymous local
-    let _8: u32; // anonymous local
-    let _9: u32; // anonymous local
+    let mut _0: u32; // return
+    let mut _1: u32; // anonymous local
+    let mut _2: u32; // anonymous local
+    let mut _3: u32; // anonymous local
+    let mut _4: u32; // anonymous local
+    let mut _5: u32; // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: u32; // anonymous local
+    let mut _8: u32; // anonymous local
+    let mut _9: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_5)
@@ -427,10 +427,10 @@ fn use_inlines() -> u32
 // Full name: test_crate::bool_to_opt
 fn bool_to_opt(b: bool) -> Option<()>[{built_in impl Sized for ()}]
 {
-    let _0: Option<()>[{built_in impl Sized for ()}]; // return
+    let mut _0: Option<()>[{built_in impl Sized for ()}]; // return
     let b: bool; // arg #1
-    let _2: bool; // anonymous local
-    let _3: (); // anonymous local
+    let mut _2: bool; // anonymous local
+    let mut _3: (); // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -449,9 +449,9 @@ fn bool_to_opt(b: bool) -> Option<()>[{built_in impl Sized for ()}]
 // Full name: test_crate::convert
 fn convert(x: i32) -> i64
 {
-    let _0: i64; // return
+    let mut _0: i64; // return
     let x: i32; // arg #1
-    let _2: i32; // anonymous local
+    let mut _2: i32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -467,7 +467,7 @@ fn convert(x: i32) -> i64
 // Full name: test_crate::vec
 fn vec(_x: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _x: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1
 
     storage_live(_0)
@@ -483,7 +483,7 @@ fn vec(_x: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Glob
 // Full name: test_crate::max
 fn max() -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = copy core::num::{usize}::MAX
@@ -496,7 +496,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: PartialEq<T>),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _x: T; // arg #1
 
     storage_live(_0)

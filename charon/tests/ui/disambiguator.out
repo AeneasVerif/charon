@@ -4,7 +4,7 @@ struct () {}
 
 fn test_crate::nonzero_disambiguator::my_function#1()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -14,7 +14,7 @@ fn test_crate::nonzero_disambiguator::my_function#1()
 
 fn test_crate::nonzero_disambiguator::my_function()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -25,8 +25,8 @@ fn test_crate::nonzero_disambiguator::my_function()
 // Full name: test_crate::nonzero_disambiguator
 fn nonzero_disambiguator()
 {
-    let _0: (); // return
-    let _1: bool; // anonymous local
+    let mut _0: (); // return
+    let mut _1: bool; // anonymous local
 
     storage_live(_0)
     _0 = ()

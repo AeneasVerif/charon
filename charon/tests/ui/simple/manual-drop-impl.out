@@ -65,7 +65,7 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 mut Foo<T>[TraitClause0]; // arg #1
 
     storage_live(_0)
@@ -81,10 +81,10 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut Foo<T>[TraitClause0]; // arg #1
-    let _2: &'2 mut Foo<T>[TraitClause0]; // anonymous local
-    let _3: (); // anonymous local
+    let mut _2: &'2 mut Foo<T>[TraitClause0]; // anonymous local
+    let mut _3: (); // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -125,8 +125,8 @@ where
 // Full name: test_crate::drop_foo
 fn drop_foo(_1: Foo<u32>[{built_in impl Sized for u32}])
 {
-    let _0: (); // return
-    let _1: Foo<u32>[{built_in impl Sized for u32}]; // arg #1
+    let mut _0: (); // return
+    let mut _1: Foo<u32>[{built_in impl Sized for u32}]; // arg #1
 
     storage_live(_0)
     _0 = ()

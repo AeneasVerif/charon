@@ -20,7 +20,7 @@ pub fn alloc::boxed::{alloc::boxed::Box<T>}::new<T>(_1: T) -> alloc::boxed::Box<
 
 pub fn test_crate::mono() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let _b: alloc::boxed::Box<u32>; // local
 
     storage_live(_0)

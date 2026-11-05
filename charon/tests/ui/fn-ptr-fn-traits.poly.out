@@ -144,9 +144,9 @@ where
     Outlives0: (A: '_0),
     Outlives1: (B: '_0),
 {
-    let _0: Adt<'_0, B>[TraitClause4, TraitClause5]; // return
-    let fn_ptr: fn<'_0_1>(Adt<'_0_1, A>[TraitClause2, TraitClause3]) -> Adt<'_0_1, B>[TraitClause4, TraitClause5]; // arg #1
-    let args: (Adt<'_0, A>[TraitClause2, TraitClause3],); // arg #2
+    let mut _0: Adt<'_0, B>[TraitClause4, TraitClause5]; // return
+    let mut fn_ptr: fn<'_0_1>(Adt<'_0_1, A>[TraitClause2, TraitClause3]) -> Adt<'_0_1, B>[TraitClause4, TraitClause5]; // arg #1
+    let mut args: (Adt<'_0, A>[TraitClause2, TraitClause3],); // arg #2
 
     storage_live(_0)
     _0 = (copy fn_ptr)<'_0>(move args._0)
@@ -184,9 +184,9 @@ where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
 {
-    let _0: B; // return
-    let fn_ptr: fn(A) -> B; // arg #1
-    let args: (A,); // arg #2
+    let mut _0: B; // return
+    let mut fn_ptr: fn(A) -> B; // arg #1
+    let mut args: (A,); // arg #2
 
     storage_live(_0)
     _0 = (copy fn_ptr)(move args._0)
@@ -204,10 +204,10 @@ where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
 {
-    let _0: B; // return
-    let _1: *mut (dyn FnOnce<(A,), Output = B> + '0); // arg #1
-    let _2: (A,); // arg #2
-    let _3: *mut fn(A) -> B; // anonymous local
+    let mut _0: B; // return
+    let mut _1: *mut (dyn FnOnce<(A,), Output = B> + '0); // arg #1
+    let mut _2: (A,); // arg #2
+    let mut _3: *mut fn(A) -> B; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -231,9 +231,9 @@ where
     Outlives0: (A: '_0),
     Outlives1: (B: '_0),
 {
-    let ret: (); // return
-    let dyn_self: &'_0 mut (dyn FnOnce<(A,), Output = B> + '0); // arg #1
-    let target_self: &'_0 mut fn(A) -> B; // local
+    let mut ret: (); // return
+    let mut dyn_self: &'_0 mut (dyn FnOnce<(A,), Output = B> + '0); // arg #1
+    let mut target_self: &'_0 mut fn(A) -> B; // local
 
     storage_live(ret)
     ret = ()
@@ -275,9 +275,9 @@ where
     Outlives0: (B: '_0),
     Outlives1: (C: '_0),
 {
-    let _0: &'_0 C; // return
-    let fn_ptr: fn<'_0_1>(A, &'_0_1 B) -> &'_0_1 C; // arg #1
-    let args: (A, &'_0 B); // arg #2
+    let mut _0: &'_0 C; // return
+    let mut fn_ptr: fn<'_0_1>(A, &'_0_1 B) -> &'_0_1 C; // arg #1
+    let mut args: (A, &'_0 B); // arg #2
 
     storage_live(_0)
     _0 = (copy fn_ptr)<'_0>(move args._0, move args._1)
@@ -314,9 +314,9 @@ where
     Outlives0: (A: '_0),
     Outlives1: (B: '_0),
 {
-    let _0: [&'_0 B; C3]; // return
-    let fn_ptr: fn<'_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3]; // arg #1
-    let args: ([&'_0 A; C2],); // arg #2
+    let mut _0: [&'_0 B; C3]; // return
+    let mut fn_ptr: fn<'_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3]; // arg #1
+    let mut args: ([&'_0 A; C2],); // arg #2
 
     storage_live(_0)
     _0 = (copy fn_ptr)<'_0>(move args._0)
@@ -355,9 +355,9 @@ where
     Outlives2: (C: '_1),
     Outlives3: (D: '_0),
 {
-    let _0: (&'_1 C, &'_0 D); // return
-    let fn_ptr: fn<'_0_1, '_1_1>(&'_0_1 A, &'_1_1 B) -> (&'_1_1 C, &'_0_1 D); // arg #1
-    let args: (&'_0 A, &'_1 B); // arg #2
+    let mut _0: (&'_1 C, &'_0 D); // return
+    let mut fn_ptr: fn<'_0_1, '_1_1>(&'_0_1 A, &'_1_1 B) -> (&'_1_1 C, &'_0_1 D); // arg #1
+    let mut args: (&'_0 A, &'_1 B); // arg #2
 
     storage_live(_0)
     _0 = (copy fn_ptr)<'_0, '_1>(move args._0, move args._1)
@@ -395,9 +395,9 @@ where
     Outlives0: (A: '_0),
     Outlives1: (B: '_0),
 {
-    let _0: B; // return
-    let fn_ptr: &'_0 mut fn(A) -> B; // arg #1
-    let args: (A,); // arg #2
+    let mut _0: B; // return
+    let mut fn_ptr: &'_0 mut fn(A) -> B; // arg #1
+    let mut args: (A,); // arg #2
 
     storage_live(_0)
     _0 = (copy (*fn_ptr))(move args._0)
@@ -417,10 +417,10 @@ where
     Outlives0: (A: '_0),
     Outlives1: (B: '_0),
 {
-    let _0: B; // return
-    let _1: &'_0 mut (dyn FnMut<(A,), ImpliedClause1::Output = B> + '0); // arg #1
-    let _2: (A,); // arg #2
-    let _3: &'_0 mut fn(A) -> B; // anonymous local
+    let mut _0: B; // return
+    let mut _1: &'_0 mut (dyn FnMut<(A,), ImpliedClause1::Output = B> + '0); // arg #1
+    let mut _2: (A,); // arg #2
+    let mut _3: &'_0 mut fn(A) -> B; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -444,9 +444,9 @@ where
     Outlives0: (A: '_0),
     Outlives1: (B: '_0),
 {
-    let ret: (); // return
-    let dyn_self: &'_0 mut (dyn FnMut<(A,), ImpliedClause1::Output = B> + '0); // arg #1
-    let target_self: &'_0 mut fn(A) -> B; // local
+    let mut ret: (); // return
+    let mut dyn_self: &'_0 mut (dyn FnMut<(A,), ImpliedClause1::Output = B> + '0); // arg #1
+    let mut target_self: &'_0 mut fn(A) -> B; // local
 
     storage_live(ret)
     ret = ()
@@ -472,9 +472,9 @@ where
     Outlives0: (A: '_0),
     Outlives1: (B: '_0),
 {
-    let _0: B; // return
-    let fn_ptr: &'_0 fn(A) -> B; // arg #1
-    let args: (A,); // arg #2
+    let mut _0: B; // return
+    let mut fn_ptr: &'_0 fn(A) -> B; // arg #1
+    let mut args: (A,); // arg #2
 
     storage_live(_0)
     _0 = (copy (*fn_ptr))(move args._0)
@@ -494,10 +494,10 @@ where
     Outlives0: (A: '_0),
     Outlives1: (B: '_0),
 {
-    let _0: B; // return
-    let _1: &'_0 (dyn Fn<(A,), ImpliedClause1::ImpliedClause1::Output = B> + '0); // arg #1
-    let _2: (A,); // arg #2
-    let _3: &'_0 fn(A) -> B; // anonymous local
+    let mut _0: B; // return
+    let mut _1: &'_0 (dyn Fn<(A,), ImpliedClause1::ImpliedClause1::Output = B> + '0); // arg #1
+    let mut _2: (A,); // arg #2
+    let mut _3: &'_0 fn(A) -> B; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -521,9 +521,9 @@ where
     Outlives0: (A: '_0),
     Outlives1: (B: '_0),
 {
-    let ret: (); // return
-    let dyn_self: &'_0 mut (dyn Fn<(A,), ImpliedClause1::ImpliedClause1::Output = B> + '0); // arg #1
-    let target_self: &'_0 mut fn(A) -> B; // local
+    let mut ret: (); // return
+    let mut dyn_self: &'_0 mut (dyn Fn<(A,), ImpliedClause1::ImpliedClause1::Output = B> + '0); // arg #1
+    let mut target_self: &'_0 mut fn(A) -> B; // local
 
     storage_live(ret)
     ret = ()
@@ -574,7 +574,7 @@ unsafe fn {impl Destruct for (A,)}::drop_glue<'_0, A>(_1: &'_0 mut (A,))
 where
     Outlives0: (A: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut (A,); // arg #1
 
     storage_live(_0)
@@ -593,7 +593,7 @@ where
     Outlives0: (A: '_0),
     Outlives1: (B: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut (A, B); // arg #1
 
     storage_live(_0)
@@ -622,7 +622,7 @@ fn identity<'a>(x: Adt<'a, u32>[{built_in impl Sized for u32}, impl_Trait_for_u3
 where
     Outlives0: (u32: 'a),
 {
-    let _0: Adt<'1, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // return
+    let mut _0: Adt<'1, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // return
     let x: Adt<'2, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // arg #1
 
     storage_live(_0)
@@ -638,12 +638,12 @@ where
     Outlives0: (u32: 'a),
     TypeConstraint0: TraitClause1::Output = Adt<'a, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32],
 {
-    let _0: Adt<'1, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // return
+    let mut _0: Adt<'1, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // return
     let f: F; // arg #1
     let x: Adt<'2, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // arg #2
-    let _3: F; // anonymous local
-    let _4: (Adt<'4, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32],); // anonymous local
-    let _5: Adt<'5, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // anonymous local
+    let mut _3: F; // anonymous local
+    let mut _4: (Adt<'4, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32],); // anonymous local
+    let mut _5: Adt<'5, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -685,12 +685,12 @@ where
     TraitClause3: (F: FnOnce<(A,)>),
     TypeConstraint0: TraitClause3::Output = B,
 {
-    let _0: B; // return
+    let mut _0: B; // return
     let f: F; // arg #1
     let x: A; // arg #2
-    let _3: F; // anonymous local
-    let _4: (A,); // anonymous local
-    let _5: A; // anonymous local
+    let mut _3: F; // anonymous local
+    let mut _4: (A,); // anonymous local
+    let mut _5: A; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -769,14 +769,14 @@ where
     TraitClause4: (F: FnOnce<(A, B)>),
     TypeConstraint0: TraitClause4::Output = C,
 {
-    let _0: C; // return
+    let mut _0: C; // return
     let f: F; // arg #1
     let x: A; // arg #2
     let y: B; // arg #3
-    let _4: F; // anonymous local
-    let _5: (A, B); // anonymous local
-    let _6: A; // anonymous local
-    let _7: B; // anonymous local
+    let mut _4: F; // anonymous local
+    let mut _5: (A, B); // anonymous local
+    let mut _6: A; // anonymous local
+    let mut _7: B; // anonymous local
 
     storage_live(_0)
     storage_live(_4)
@@ -925,13 +925,13 @@ where
 // Full name: test_crate::test
 pub fn test<'a>(x: &'a u32) -> &'a u32
 {
-    let _0: &'1 u32; // return
+    let mut _0: &'1 u32; // return
     let x: &'2 u32; // arg #1
     let f: fn<'b>(Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // local
     let _3: Adt<'4, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // anonymous local
-    let _4: fn<'b>(Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // anonymous local
-    let _5: Adt<'5, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // anonymous local
-    let _6: &'6 u32; // anonymous local
+    let mut _4: fn<'b>(Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // anonymous local
+    let mut _5: Adt<'5, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // anonymous local
+    let mut _6: &'6 u32; // anonymous local
 
     storage_live(_0)
     storage_live(f)
@@ -966,7 +966,7 @@ struct ConstAdt<const N : usize> {
 // Full name: test_crate::const_identity
 fn const_identity<const N : usize>(x: ConstAdt<N>) -> ConstAdt<N>
 {
-    let _0: ConstAdt<N>; // return
+    let mut _0: ConstAdt<N>; // return
     let x: ConstAdt<N>; // arg #1
 
     storage_live(_0)
@@ -978,11 +978,11 @@ fn const_identity<const N : usize>(x: ConstAdt<N>) -> ConstAdt<N>
 // Full name: test_crate::test_const
 pub fn test_const(x: ConstAdt<3usize>) -> ConstAdt<3usize>
 {
-    let _0: ConstAdt<3usize>; // return
+    let mut _0: ConstAdt<3usize>; // return
     let x: ConstAdt<3usize>; // arg #1
     let f: fn(ConstAdt<3usize>) -> ConstAdt<3usize>; // local
-    let _3: fn(ConstAdt<3usize>) -> ConstAdt<3usize>; // anonymous local
-    let _4: ConstAdt<3usize>; // anonymous local
+    let mut _3: fn(ConstAdt<3usize>) -> ConstAdt<3usize>; // anonymous local
+    let mut _4: ConstAdt<3usize>; // anonymous local
 
     storage_live(_0)
     storage_live(f)
@@ -1006,7 +1006,7 @@ pub fn test_const(x: ConstAdt<3usize>) -> ConstAdt<3usize>
 // Full name: test_crate::ref_identity
 fn ref_identity<'_0>(x: &'_0 u32) -> &'_0 u32
 {
-    let _0: &'1 u32; // return
+    let mut _0: &'1 u32; // return
     let x: &'2 u32; // arg #1
 
     storage_live(_0)
@@ -1018,12 +1018,12 @@ fn ref_identity<'_0>(x: &'_0 u32) -> &'_0 u32
 // Full name: test_crate::test_free_region
 pub fn test_free_region<'a>(x: &'a u32) -> &'a u32
 {
-    let _0: &'1 u32; // return
+    let mut _0: &'1 u32; // return
     let x: &'2 u32; // arg #1
     let f: fn(&'6 u32) -> &'7 u32; // local
     let _3: &'8 u32; // anonymous local
-    let _4: fn(&'9 u32) -> &'10 u32; // anonymous local
-    let _5: &'11 u32; // anonymous local
+    let mut _4: fn(&'9 u32) -> &'10 u32; // anonymous local
+    let mut _5: &'11 u32; // anonymous local
 
     storage_live(_0)
     storage_live(f)
@@ -1058,8 +1058,8 @@ where
 // Full name: test_crate::ignore_plain
 fn ignore_plain<'a>(_1: Plain<u32>[{built_in impl Sized for u32}], x: &'a u32) -> &'a u32
 {
-    let _0: &'1 u32; // return
-    let _1: Plain<u32>[{built_in impl Sized for u32}]; // arg #1
+    let mut _0: &'1 u32; // return
+    let mut _1: Plain<u32>[{built_in impl Sized for u32}]; // arg #1
     let x: &'2 u32; // arg #2
 
     storage_live(_0)
@@ -1072,14 +1072,14 @@ fn ignore_plain<'a>(_1: Plain<u32>[{built_in impl Sized for u32}], x: &'a u32) -
 // Full name: test_crate::test_freshen_whole_adt
 pub fn test_freshen_whole_adt<'a>(x: Plain<u32>[{built_in impl Sized for u32}], y: &'a u32) -> &'a u32
 {
-    let _0: &'1 u32; // return
+    let mut _0: &'1 u32; // return
     let x: Plain<u32>[{built_in impl Sized for u32}]; // arg #1
     let y: &'2 u32; // arg #2
     let f: fn<'b>(Plain<u32>[{built_in impl Sized for u32}], &'b u32) -> &'b u32; // local
     let _4: &'3 u32; // anonymous local
-    let _5: fn<'b>(Plain<u32>[{built_in impl Sized for u32}], &'b u32) -> &'b u32; // anonymous local
-    let _6: Plain<u32>[{built_in impl Sized for u32}]; // anonymous local
-    let _7: &'4 u32; // anonymous local
+    let mut _5: fn<'b>(Plain<u32>[{built_in impl Sized for u32}], &'b u32) -> &'b u32; // anonymous local
+    let mut _6: Plain<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let mut _7: &'4 u32; // anonymous local
 
     storage_live(_0)
     storage_live(f)
@@ -1111,7 +1111,7 @@ pub fn test_freshen_whole_adt<'a>(x: Plain<u32>[{built_in impl Sized for u32}], 
 // Full name: test_crate::array_identity
 fn array_identity<'a>(x: [&'a u8; 3usize]) -> [&'a u8; 3usize]
 {
-    let _0: [&'8 u8; 3usize]; // return
+    let mut _0: [&'8 u8; 3usize]; // return
     let x: [&'12 u8; 3usize]; // arg #1
 
     storage_live(_0)
@@ -1123,11 +1123,11 @@ fn array_identity<'a>(x: [&'a u8; 3usize]) -> [&'a u8; 3usize]
 // Full name: test_crate::test_const_under_binder
 pub fn test_const_under_binder<'a>(x: [&'a u8; 3usize]) -> [&'a u8; 3usize]
 {
-    let _0: [&'8 u8; 3usize]; // return
+    let mut _0: [&'8 u8; 3usize]; // return
     let x: [&'12 u8; 3usize]; // arg #1
     let f: fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize]; // local
-    let _3: fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize]; // anonymous local
-    let _4: [&'32 u8; 3usize]; // anonymous local
+    let mut _3: fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize]; // anonymous local
+    let mut _4: [&'32 u8; 3usize]; // anonymous local
 
     storage_live(_0)
     storage_live(f)
@@ -1151,11 +1151,11 @@ pub fn test_const_under_binder<'a>(x: [&'a u8; 3usize]) -> [&'a u8; 3usize]
 // Full name: test_crate::swap
 fn swap<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'b u8, &'a u8)
 {
-    let _0: (&'9 u8, &'10 u8); // return
+    let mut _0: (&'9 u8, &'10 u8); // return
     let x: &'14 u8; // arg #1
     let y: &'15 u8; // arg #2
-    let _3: &'16 u8; // anonymous local
-    let _4: &'17 u8; // anonymous local
+    let mut _3: &'16 u8; // anonymous local
+    let mut _4: &'17 u8; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -1173,9 +1173,9 @@ fn swap<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'b u8, &'a u8)
 // Full name: test_crate::{impl FnOnce<(&'a u8, &'b u8)> for for<'a, 'b> swap<'a, 'b>}::call_once
 extern "rust-call" fn {impl FnOnce<(&'a u8, &'b u8)> for for<'a, 'b> swap<'a, 'b>}::call_once<'a, 'b>(state: for<'a, 'b> swap<'a, 'b>, args: (&'a u8, &'b u8)) -> (&'b u8, &'a u8)
 {
-    let _0: (&'b u8, &'a u8); // return
-    let state: for<'a, 'b> swap<'a, 'b>; // arg #1
-    let args: (&'a u8, &'b u8); // arg #2
+    let mut _0: (&'b u8, &'a u8); // return
+    let mut state: for<'a, 'b> swap<'a, 'b>; // arg #1
+    let mut args: (&'a u8, &'b u8); // arg #2
 
     storage_live(_0)
     _0 = swap<'a, 'b>(move args._0, move args._1)
@@ -1201,11 +1201,11 @@ impl<'a, 'b> FnOnce<(&'a u8, &'b u8)> for for<'a, 'b> swap<'a, 'b> {
 // Full name: test_crate::test_fn_def_regions
 pub fn test_fn_def_regions<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'b u8, &'a u8)
 {
-    let _0: (&'9 u8, &'10 u8); // return
+    let mut _0: (&'9 u8, &'10 u8); // return
     let x: &'14 u8; // arg #1
     let y: &'15 u8; // arg #2
-    let _3: &'16 u8; // anonymous local
-    let _4: &'17 u8; // anonymous local
+    let mut _3: &'16 u8; // anonymous local
+    let mut _4: &'17 u8; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -1226,13 +1226,13 @@ pub fn test_fn_def_regions<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'b u8, &'a u8)
 // Full name: test_crate::test_fn_ptr_regions
 pub fn test_fn_ptr_regions<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'b u8, &'a u8)
 {
-    let _0: (&'9 u8, &'10 u8); // return
+    let mut _0: (&'9 u8, &'10 u8); // return
     let x: &'14 u8; // arg #1
     let y: &'15 u8; // arg #2
     let f: fn<'c, 'd>(&'c u8, &'d u8) -> (&'d u8, &'c u8); // local
-    let _4: fn<'c, 'd>(&'c u8, &'d u8) -> (&'d u8, &'c u8); // anonymous local
-    let _5: &'26 u8; // anonymous local
-    let _6: &'27 u8; // anonymous local
+    let mut _4: fn<'c, 'd>(&'c u8, &'d u8) -> (&'d u8, &'c u8); // anonymous local
+    let mut _5: &'26 u8; // anonymous local
+    let mut _6: &'27 u8; // anonymous local
 
     storage_live(_0)
     storage_live(f)
@@ -1261,10 +1261,10 @@ pub fn test_fn_ptr_regions<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'b u8, &'a u8)
 // Full name: test_crate::increment
 fn increment(x: u32) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let x: u32; // arg #1
-    let _2: u32; // anonymous local
-    let _3: u32; // anonymous local
+    let mut _2: u32; // anonymous local
+    let mut _3: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -1281,15 +1281,15 @@ fn increment(x: u32) -> u32
 // Full name: test_crate::test_dyn_fn
 pub fn test_dyn_fn(x: u32) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let x: u32; // arg #1
     let fn_ptr: fn(u32) -> u32; // local
     let dyn_fn: &'3 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '4); // local
-    let _4: &'6 fn(u32) -> u32; // anonymous local
+    let mut _4: &'6 fn(u32) -> u32; // anonymous local
     let _5: &'7 fn(u32) -> u32; // anonymous local
-    let _6: &'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9); // anonymous local
-    let _7: (u32,); // anonymous local
-    let _8: u32; // anonymous local
+    let mut _6: &'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9); // anonymous local
+    let mut _7: (u32,); // anonymous local
+    let mut _8: u32; // anonymous local
 
     storage_live(_0)
     storage_live(fn_ptr)

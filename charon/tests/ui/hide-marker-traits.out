@@ -32,7 +32,7 @@ where
 // Full name: test_crate::foo
 fn foo<T>(_x: T)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _x: T; // arg #1
 
     storage_live(_0)

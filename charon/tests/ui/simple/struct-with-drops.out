@@ -80,7 +80,7 @@ struct A {
 // Full name: test_crate::{impl Drop for B}::drop
 pub fn impl_Drop_for_B::drop<'_0>(self: &'_0 mut B)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 mut B; // arg #1
 
     storage_live(_0)
@@ -93,10 +93,10 @@ pub fn impl_Drop_for_B::drop<'_0>(self: &'_0 mut B)
 // Full name: test_crate::B::{impl Destruct for B}::drop_glue
 unsafe fn impl_Destruct_for_B::drop_glue<'_0>(_1: &'_0 mut B)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut B; // arg #1
-    let _2: &'2 mut B; // anonymous local
-    let _3: (); // anonymous local
+    let mut _2: &'2 mut B; // anonymous local
+    let mut _3: (); // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -142,7 +142,7 @@ unsafe fn impl_Destruct_for_B::drop_glue<'_0>(_1: &'_0 mut B)
 // Full name: test_crate::A::{impl Destruct for A}::drop_glue
 unsafe fn impl_Destruct_for_A::drop_glue<'_0>(_1: &'_0 mut A)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut A; // arg #1
 
     storage_live(_0)
@@ -169,8 +169,8 @@ impl "impl_Destruct_for_B" Destruct for B {
 // Full name: test_crate::takes_a
 fn takes_a(_1: A)
 {
-    let _0: (); // return
-    let _1: A; // arg #1
+    let mut _0: (); // return
+    let mut _1: A; // arg #1
 
     storage_live(_0)
     _0 = ()

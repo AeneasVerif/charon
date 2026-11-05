@@ -26,7 +26,7 @@ trait Trait<Self>
 // Full name: test_crate::callee
 fn callee<T>()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -37,7 +37,7 @@ fn callee<T>()
 // Full name: test_crate::caller
 pub fn caller<T>()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: (); // anonymous local
 
     storage_live(_0)
@@ -53,8 +53,8 @@ pub fn caller<T>()
 // Full name: test_crate::recursive
 pub fn recursive<T>()
 {
-    let _0: (); // return
-    let _1: bool; // anonymous local
+    let mut _0: (); // return
+    let mut _1: bool; // anonymous local
     let _2: (); // anonymous local
 
     storage_live(_0)
@@ -79,8 +79,8 @@ pub fn recursive<T>()
 // Full name: test_crate::swap_recursive
 pub fn swap_recursive<T, U>()
 {
-    let _0: (); // return
-    let _1: bool; // anonymous local
+    let mut _0: (); // return
+    let mut _1: bool; // anonymous local
     let _2: (); // anonymous local
 
     storage_live(_0)
@@ -114,8 +114,8 @@ trait HasAssoc<Self>
 // Full name: test_crate::clause_dep
 pub fn clause_dep<T>()
 {
-    let _0: (); // return
-    let _1: bool; // anonymous local
+    let mut _0: (); // return
+    let mut _1: bool; // anonymous local
 
     storage_live(_0)
     _0 = ()

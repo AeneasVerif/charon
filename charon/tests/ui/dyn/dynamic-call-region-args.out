@@ -30,12 +30,12 @@ pub fn call<'a, 'x, '_2>(processor: &'_2 (dyn Processor<'x> + '_2), input: &'a u
 where
     Outlives0: ('x: '_2),
 {
-    let _0: &'1 u32; // return
+    let mut _0: &'1 u32; // return
     let processor: &'7 (dyn Processor<'8> + '9); // arg #1
     let input: &'10 u32; // arg #2
     let _3: &'11 u32; // anonymous local
-    let _4: &'12 (dyn Processor<'13> + '14); // anonymous local
-    let _5: &'15 u32; // anonymous local
+    let mut _4: &'12 (dyn Processor<'13> + '14); // anonymous local
+    let mut _5: &'15 u32; // anonymous local
 
     storage_live(_0)
     storage_live(_3)

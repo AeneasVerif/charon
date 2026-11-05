@@ -99,8 +99,8 @@ where
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let _1: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // anonymous local
+    let mut _0: (); // return
+    let mut _1: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // anonymous local
 
     storage_live(_0)
     _0 = ()

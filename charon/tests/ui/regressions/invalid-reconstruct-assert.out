@@ -122,57 +122,57 @@ where
     Outlives0: (T: 'a),
     TypeConstraint0: TraitClause2::ImpliedClause1::Output = Ordering,
 {
-    let _0: Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]; // return
+    let mut _0: Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]; // return
     let self: &'1 [T]; // arg #1
-    let f: F; // arg #2
-    let size: usize; // local
-    let _4: usize; // anonymous local
-    let base: usize; // local
-    let _6: bool; // anonymous local
-    let _7: usize; // anonymous local
+    let mut f: F; // arg #2
+    let mut size: usize; // local
+    let mut _4: usize; // anonymous local
+    let mut base: usize; // local
+    let mut _6: bool; // anonymous local
+    let mut _7: usize; // anonymous local
     let half: usize; // local
-    let _9: usize; // anonymous local
+    let mut _9: usize; // anonymous local
     let mid: usize; // local
-    let _11: usize; // anonymous local
+    let mut _11: usize; // anonymous local
     let cmp_12: Ordering; // local
-    let _13: &'3 mut F; // anonymous local
-    let _14: (&'6 T,); // anonymous local
+    let mut _13: &'3 mut F; // anonymous local
+    let mut _14: (&'6 T,); // anonymous local
     let _15: &'7 T; // anonymous local
-    let _16: usize; // anonymous local
-    let _17: bool; // anonymous local
+    let mut _16: usize; // anonymous local
+    let mut _17: bool; // anonymous local
     let cmp_18: Ordering; // local
-    let _19: &'10 mut F; // anonymous local
-    let _20: (&'11 T,); // anonymous local
+    let mut _19: &'10 mut F; // anonymous local
+    let mut _20: (&'11 T,); // anonymous local
     let _21: &'12 T; // anonymous local
-    let index: usize; // local
-    let cond_23: bool; // local
-    let _24: usize; // anonymous local
+    let mut index: usize; // local
+    let mut cond_23: bool; // local
+    let mut _24: usize; // anonymous local
     let result: usize; // local
-    let _26: usize; // anonymous local
-    let _27: bool; // anonymous local
-    let cond_28: bool; // local
+    let mut _26: usize; // anonymous local
+    let mut _27: bool; // anonymous local
+    let mut cond_28: bool; // local
     let _29: *const T; // anonymous local
     let _30: (); // anonymous local
-    let _31: usize; // anonymous local
-    let _32: bool; // anonymous local
-    let _33: usize; // anonymous local
+    let mut _31: usize; // anonymous local
+    let mut _32: bool; // anonymous local
+    let mut _33: usize; // anonymous local
     let _34: i8; // anonymous local
     let _35: *const T; // anonymous local
     let _36: (); // anonymous local
-    let _37: usize; // anonymous local
-    let _38: bool; // anonymous local
-    let _39: usize; // anonymous local
+    let mut _37: usize; // anonymous local
+    let mut _38: bool; // anonymous local
+    let mut _39: usize; // anonymous local
     let _40: i8; // anonymous local
     let _41: (); // anonymous local
     let _42: (); // anonymous local
-    let _43: bool; // anonymous local
-    let _44: bool; // anonymous local
-    let _45: (); // anonymous local
-    let _46: (); // anonymous local
-    let _47: bool; // anonymous local
-    let _48: bool; // anonymous local
-    let _49: (); // anonymous local
-    let _50: (); // anonymous local
+    let mut _43: bool; // anonymous local
+    let mut _44: bool; // anonymous local
+    let mut _45: (); // anonymous local
+    let mut _46: (); // anonymous local
+    let mut _47: bool; // anonymous local
+    let mut _48: bool; // anonymous local
+    let mut _49: (); // anonymous local
+    let mut _50: (); // anonymous local
 
     bb0: {
         storage_live(_0);
@@ -564,17 +564,17 @@ extern "rust-call" fn call_mut<'_0, '_1>(_1: &'_1 mut {closure}<'_0>, tupled_arg
 where
     Outlives0: ('_0: '_1),
 {
-    let _0: Ordering; // return
-    let _1: &'6 mut {closure}<'_0>; // arg #1
-    let tupled_args: (&'_0 u32,); // arg #2
+    let mut _0: Ordering; // return
+    let mut _1: &'6 mut {closure}<'_0>; // arg #1
+    let mut tupled_args: (&'_0 u32,); // arg #2
     let x: &'8 u32; // local
-    let _4: &'9 u32; // anonymous local
-    let _5: &'10 u32; // anonymous local
+    let mut _4: &'9 u32; // anonymous local
+    let mut _5: &'10 u32; // anonymous local
     let _6: &'11 u32; // anonymous local
-    let _7: &'12 u32; // anonymous local
-    let _8: &'13 u32; // anonymous local
-    let _9: &'18 u32; // anonymous local
-    let _10: u32; // anonymous local
+    let mut _7: &'12 u32; // anonymous local
+    let mut _8: &'13 u32; // anonymous local
+    let mut _9: &'18 u32; // anonymous local
+    let mut _10: u32; // anonymous local
 
     bb0: {
         storage_live(_8);
@@ -626,7 +626,7 @@ where
 // Full name: test_crate::main::{impl FnOnce<(&'_0 u32,)> for {closure}<'_0>}::call_once
 extern "rust-call" fn call_once<'_0>(_1: {closure}<'_0>, _2: (&'_0 u32,)) -> Ordering
 {
-    let _0: Ordering; // return
+    let mut _0: Ordering; // return
     let _1: {closure}<'_0>; // arg #1
     let _2: (&'7 u32,); // arg #2
     let _3: &'9 mut {closure}<'_0>; // anonymous local
@@ -677,15 +677,15 @@ impl<'_0> "impl_FnMut_tuple_for_closure" FnMut<(&'_0 u32,)> for {closure}<'_0> {
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let a: [u32; 5usize]; // local
     let b: &'1 [u32]; // local
-    let _3: &'3 [u32; 5usize]; // anonymous local
+    let mut _3: &'3 [u32; 5usize]; // anonymous local
     let _4: &'4 [u32; 5usize]; // anonymous local
     let res: Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]; // local
-    let _6: &'5 [u32]; // anonymous local
-    let _7: &'6 [u32; 5usize]; // anonymous local
-    let _8: {closure}<'12>; // anonymous local
+    let mut _6: &'5 [u32]; // anonymous local
+    let mut _7: &'6 [u32; 5usize]; // anonymous local
+    let mut _8: {closure}<'12>; // anonymous local
 
     bb0: {
         storage_live(_0);

@@ -5,7 +5,7 @@ struct () {}
 // Full name: test_crate::constant::CONST
 fn CONST() -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const 0usize
@@ -18,15 +18,15 @@ const CONST: usize = CONST()
 // Full name: test_crate::constant
 fn constant()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _val: usize; // local
     let _ref: &'1 usize; // local
     let _ref_mut: &'3 mut usize; // local
-    let _4: usize; // anonymous local
-    let _5: &'4 usize; // anonymous local
-    let _6: &'5 usize; // anonymous local
-    let _7: &'6 usize; // anonymous local
-    let _8: usize; // anonymous local
+    let mut _4: usize; // anonymous local
+    let mut _5: &'4 usize; // anonymous local
+    let mut _6: &'5 usize; // anonymous local
+    let mut _7: &'6 usize; // anonymous local
+    let mut _8: usize; // anonymous local
 
     storage_live(_6)
     storage_live(_7)
@@ -64,7 +64,7 @@ fn constant()
 // Full name: test_crate::shared_static::SHARED_STATIC
 fn SHARED_STATIC() -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const 0usize
@@ -77,7 +77,7 @@ static SHARED_STATIC: usize = SHARED_STATIC()
 // Full name: test_crate::shared_static
 fn shared_static()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _val: usize; // local
     let _ref: &'2 usize; // local
     let _ptr: *const usize; // local
@@ -103,7 +103,7 @@ fn shared_static()
 // Full name: test_crate::mut_static::MUT_STATIC
 fn MUT_STATIC() -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const 0usize
@@ -116,7 +116,7 @@ static mut MUT_STATIC: usize = MUT_STATIC()
 // Full name: test_crate::mut_static
 fn mut_static()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _val: usize; // local
     let _ref: &'1 usize; // local
     let _ref_mut: &'3 mut usize; // local
@@ -155,7 +155,7 @@ struct Foo {}
 // Full name: test_crate::non_copy_static::FOO
 fn FOO() -> Foo
 {
-    let _0: Foo; // return
+    let mut _0: Foo; // return
 
     storage_live(_0)
     _0 = Foo {  }
@@ -168,7 +168,7 @@ static FOO: Foo = FOO()
 // Full name: test_crate::non_copy_static::{Foo}::method
 fn method<'_0>(self: &'_0 Foo)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 Foo; // arg #1
 
     storage_live(_0)
@@ -181,8 +181,8 @@ fn method<'_0>(self: &'_0 Foo)
 // Full name: test_crate::non_copy_static
 fn non_copy_static()
 {
-    let _0: (); // return
-    let _1: &'1 Foo; // anonymous local
+    let mut _0: (); // return
+    let mut _1: &'1 Foo; // anonymous local
 
     storage_live(_0)
     _0 = ()

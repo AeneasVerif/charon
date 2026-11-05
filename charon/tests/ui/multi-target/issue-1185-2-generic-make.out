@@ -15,7 +15,7 @@ unsafe fn test_crate::State::{impl core::marker::Destruct for test_crate::State<
 where
     Outlives0: (H: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut test_crate::State<H>; // arg #1
 
     storage_live(_0)
@@ -29,10 +29,10 @@ where
 
 pub fn test_crate::caller<H>(h: H)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let h: H; // arg #1
-    let _2: test_crate::State<H>; // anonymous local
-    let _3: H; // anonymous local
+    let mut _2: test_crate::State<H>; // anonymous local
+    let mut _3: H; // anonymous local
 
     storage_live(_0)
     _0 = ()

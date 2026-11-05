@@ -107,12 +107,12 @@ where
     Outlives1: (TraitClause2::Output: '_0),
     Outlives2: (I: '_0),
 {
-    let _0: &'1 TraitClause2::Output; // return
+    let mut _0: &'1 TraitClause2::Output; // return
     let self: &'3 [T]; // arg #1
     let index: I; // arg #2
     let _3: &'4 TraitClause2::Output; // anonymous local
-    let _4: I; // anonymous local
-    let _5: &'5 [T]; // anonymous local
+    let mut _4: I; // anonymous local
+    let mut _5: &'5 [T]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -161,23 +161,23 @@ struct () {}
 #[track_caller]
 fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: usize) -> !
 {
-    let _0: !; // return
+    let mut _0: !; // return
     let end: usize; // arg #1
     let len: usize; // arg #2
-    let _3: Arguments<'1>; // anonymous local
+    let mut _3: Arguments<'1>; // anonymous local
     let args_4: (&'11 usize, &'12 usize); // local
-    let _5: &'16 usize; // anonymous local
-    let _6: &'17 usize; // anonymous local
+    let mut _5: &'16 usize; // anonymous local
+    let mut _6: &'17 usize; // anonymous local
     let args_7: [Argument<'26>; 2usize]; // local
-    let _8: Argument<'30>; // anonymous local
-    let _9: &'31 usize; // anonymous local
-    let _10: Argument<'32>; // anonymous local
-    let _11: &'33 usize; // anonymous local
-    let _12: &'35 [u8; 55usize]; // anonymous local
+    let mut _8: Argument<'30>; // anonymous local
+    let mut _9: &'31 usize; // anonymous local
+    let mut _10: Argument<'32>; // anonymous local
+    let mut _11: &'33 usize; // anonymous local
+    let mut _12: &'35 [u8; 55usize]; // anonymous local
     let _13: &'36 [u8; 55usize]; // anonymous local
-    let _14: &'42 [Argument<'43>; 2usize]; // anonymous local
+    let mut _14: &'42 [Argument<'43>; 2usize]; // anonymous local
     let _15: &'47 [Argument<'48>; 2usize]; // anonymous local
-    let _16: [u8; 55usize]; // anonymous local
+    let mut _16: [u8; 55usize]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -249,12 +249,12 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
 #[track_caller]
 fn core::slice::index::slice_index_fail::do_panic#3(end: usize, len: usize) -> !
 {
-    let _0: !; // return
+    let mut _0: !; // return
     let end: usize; // arg #1
     let len: usize; // arg #2
-    let _3: (usize, usize); // anonymous local
-    let _4: usize; // anonymous local
-    let _5: usize; // anonymous local
+    let mut _3: (usize, usize); // anonymous local
+    let mut _4: usize; // anonymous local
+    let mut _5: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -275,23 +275,23 @@ fn core::slice::index::slice_index_fail::do_panic#3(end: usize, len: usize) -> !
 #[track_caller]
 fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: usize) -> !
 {
-    let _0: !; // return
+    let mut _0: !; // return
     let start: usize; // arg #1
     let end: usize; // arg #2
-    let _3: Arguments<'1>; // anonymous local
+    let mut _3: Arguments<'1>; // anonymous local
     let args_4: (&'11 usize, &'12 usize); // local
-    let _5: &'16 usize; // anonymous local
-    let _6: &'17 usize; // anonymous local
+    let mut _5: &'16 usize; // anonymous local
+    let mut _6: &'17 usize; // anonymous local
     let args_7: [Argument<'26>; 2usize]; // local
-    let _8: Argument<'30>; // anonymous local
-    let _9: &'31 usize; // anonymous local
-    let _10: Argument<'32>; // anonymous local
-    let _11: &'33 usize; // anonymous local
-    let _12: &'35 [u8; 40usize]; // anonymous local
+    let mut _8: Argument<'30>; // anonymous local
+    let mut _9: &'31 usize; // anonymous local
+    let mut _10: Argument<'32>; // anonymous local
+    let mut _11: &'33 usize; // anonymous local
+    let mut _12: &'35 [u8; 40usize]; // anonymous local
     let _13: &'36 [u8; 40usize]; // anonymous local
-    let _14: &'42 [Argument<'43>; 2usize]; // anonymous local
+    let mut _14: &'42 [Argument<'43>; 2usize]; // anonymous local
     let _15: &'47 [Argument<'48>; 2usize]; // anonymous local
-    let _16: [u8; 40usize]; // anonymous local
+    let mut _16: [u8; 40usize]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -363,12 +363,12 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
 #[track_caller]
 fn core::slice::index::slice_index_fail::do_panic#2(start: usize, end: usize) -> !
 {
-    let _0: !; // return
+    let mut _0: !; // return
     let start: usize; // arg #1
     let end: usize; // arg #2
-    let _3: (usize, usize); // anonymous local
-    let _4: usize; // anonymous local
-    let _5: usize; // anonymous local
+    let mut _3: (usize, usize); // anonymous local
+    let mut _4: usize; // anonymous local
+    let mut _5: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -389,23 +389,23 @@ fn core::slice::index::slice_index_fail::do_panic#2(start: usize, end: usize) ->
 #[track_caller]
 fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: usize) -> !
 {
-    let _0: !; // return
+    let mut _0: !; // return
     let end: usize; // arg #1
     let len: usize; // arg #2
-    let _3: Arguments<'1>; // anonymous local
+    let mut _3: Arguments<'1>; // anonymous local
     let args_4: (&'11 usize, &'12 usize); // local
-    let _5: &'16 usize; // anonymous local
-    let _6: &'17 usize; // anonymous local
+    let mut _5: &'16 usize; // anonymous local
+    let mut _6: &'17 usize; // anonymous local
     let args_7: [Argument<'26>; 2usize]; // local
-    let _8: Argument<'30>; // anonymous local
-    let _9: &'31 usize; // anonymous local
-    let _10: Argument<'32>; // anonymous local
-    let _11: &'33 usize; // anonymous local
-    let _12: &'35 [u8; 55usize]; // anonymous local
+    let mut _8: Argument<'30>; // anonymous local
+    let mut _9: &'31 usize; // anonymous local
+    let mut _10: Argument<'32>; // anonymous local
+    let mut _11: &'33 usize; // anonymous local
+    let mut _12: &'35 [u8; 55usize]; // anonymous local
     let _13: &'36 [u8; 55usize]; // anonymous local
-    let _14: &'42 [Argument<'43>; 2usize]; // anonymous local
+    let mut _14: &'42 [Argument<'43>; 2usize]; // anonymous local
     let _15: &'47 [Argument<'48>; 2usize]; // anonymous local
-    let _16: [u8; 55usize]; // anonymous local
+    let mut _16: [u8; 55usize]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -477,12 +477,12 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
 #[track_caller]
 fn core::slice::index::slice_index_fail::do_panic#1(end: usize, len: usize) -> !
 {
-    let _0: !; // return
+    let mut _0: !; // return
     let end: usize; // arg #1
     let len: usize; // arg #2
-    let _3: (usize, usize); // anonymous local
-    let _4: usize; // anonymous local
-    let _5: usize; // anonymous local
+    let mut _3: (usize, usize); // anonymous local
+    let mut _4: usize; // anonymous local
+    let mut _5: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -503,23 +503,23 @@ fn core::slice::index::slice_index_fail::do_panic#1(end: usize, len: usize) -> !
 #[track_caller]
 fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: usize) -> !
 {
-    let _0: !; // return
+    let mut _0: !; // return
     let start: usize; // arg #1
     let len: usize; // arg #2
-    let _3: Arguments<'1>; // anonymous local
+    let mut _3: Arguments<'1>; // anonymous local
     let args_4: (&'11 usize, &'12 usize); // local
-    let _5: &'16 usize; // anonymous local
-    let _6: &'17 usize; // anonymous local
+    let mut _5: &'16 usize; // anonymous local
+    let mut _6: &'17 usize; // anonymous local
     let args_7: [Argument<'26>; 2usize]; // local
-    let _8: Argument<'30>; // anonymous local
-    let _9: &'31 usize; // anonymous local
-    let _10: Argument<'32>; // anonymous local
-    let _11: &'33 usize; // anonymous local
-    let _12: &'35 [u8; 57usize]; // anonymous local
+    let mut _8: Argument<'30>; // anonymous local
+    let mut _9: &'31 usize; // anonymous local
+    let mut _10: Argument<'32>; // anonymous local
+    let mut _11: &'33 usize; // anonymous local
+    let mut _12: &'35 [u8; 57usize]; // anonymous local
     let _13: &'36 [u8; 57usize]; // anonymous local
-    let _14: &'42 [Argument<'43>; 2usize]; // anonymous local
+    let mut _14: &'42 [Argument<'43>; 2usize]; // anonymous local
     let _15: &'47 [Argument<'48>; 2usize]; // anonymous local
-    let _16: [u8; 57usize]; // anonymous local
+    let mut _16: [u8; 57usize]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -591,12 +591,12 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
 #[track_caller]
 fn core::slice::index::slice_index_fail::do_panic(start: usize, len: usize) -> !
 {
-    let _0: !; // return
+    let mut _0: !; // return
     let start: usize; // arg #1
     let len: usize; // arg #2
-    let _3: (usize, usize); // anonymous local
-    let _4: usize; // anonymous local
-    let _5: usize; // anonymous local
+    let mut _3: (usize, usize); // anonymous local
+    let mut _4: usize; // anonymous local
+    let mut _5: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -618,30 +618,30 @@ fn core::slice::index::slice_index_fail::do_panic(start: usize, len: usize) -> !
 #[track_caller]
 fn slice_index_fail(start: usize, end: usize, len: usize) -> !
 {
-    let _0: !; // return
+    let mut _0: !; // return
     let start: usize; // arg #1
     let end: usize; // arg #2
     let len: usize; // arg #3
-    let _4: bool; // anonymous local
-    let _5: usize; // anonymous local
-    let _6: usize; // anonymous local
-    let _7: !; // anonymous local
-    let _8: usize; // anonymous local
-    let _9: usize; // anonymous local
-    let _10: bool; // anonymous local
-    let _11: usize; // anonymous local
-    let _12: usize; // anonymous local
-    let _13: !; // anonymous local
-    let _14: usize; // anonymous local
-    let _15: usize; // anonymous local
-    let _16: bool; // anonymous local
-    let _17: usize; // anonymous local
-    let _18: usize; // anonymous local
-    let _19: !; // anonymous local
-    let _20: usize; // anonymous local
-    let _21: usize; // anonymous local
-    let _22: usize; // anonymous local
-    let _23: usize; // anonymous local
+    let mut _4: bool; // anonymous local
+    let mut _5: usize; // anonymous local
+    let mut _6: usize; // anonymous local
+    let mut _7: !; // anonymous local
+    let mut _8: usize; // anonymous local
+    let mut _9: usize; // anonymous local
+    let mut _10: bool; // anonymous local
+    let mut _11: usize; // anonymous local
+    let mut _12: usize; // anonymous local
+    let mut _13: !; // anonymous local
+    let mut _14: usize; // anonymous local
+    let mut _15: usize; // anonymous local
+    let mut _16: bool; // anonymous local
+    let mut _17: usize; // anonymous local
+    let mut _18: usize; // anonymous local
+    let mut _19: !; // anonymous local
+    let mut _20: usize; // anonymous local
+    let mut _21: usize; // anonymous local
+    let mut _22: usize; // anonymous local
+    let mut _23: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_4)
@@ -776,19 +776,19 @@ unsafe fn get_offset_len_noubcheck<T>(ptr_1: *const [T], offset: usize, len: usi
 where
     TraitClause0: (T: Sized),
 {
-    let _0: *const [T]; // return
+    let mut _0: *const [T]; // return
     let ptr_1: *const [T]; // arg #1
     let offset: usize; // arg #2
     let len: usize; // arg #3
     let ptr_4: *const T; // local
-    let _5: *const T; // anonymous local
-    let _6: *const [T]; // anonymous local
+    let mut _5: *const T; // anonymous local
+    let mut _6: *const [T]; // anonymous local
     let ptr_7: *const T; // local
-    let _8: *const T; // anonymous local
-    let _9: usize; // anonymous local
-    let _10: *const T; // anonymous local
-    let _11: usize; // anonymous local
-    let _12: usize; // anonymous local
+    let mut _8: *const T; // anonymous local
+    let mut _9: usize; // anonymous local
+    let mut _10: *const T; // anonymous local
+    let mut _11: usize; // anonymous local
+    let mut _12: usize; // anonymous local
 
     storage_live(_0)
     storage_live(ptr_4)
@@ -830,19 +830,19 @@ unsafe fn get_offset_len_mut_noubcheck<T>(ptr_1: *mut [T], offset: usize, len: u
 where
     TraitClause0: (T: Sized),
 {
-    let _0: *mut [T]; // return
+    let mut _0: *mut [T]; // return
     let ptr_1: *mut [T]; // arg #1
     let offset: usize; // arg #2
     let len: usize; // arg #3
     let ptr_4: *mut T; // local
-    let _5: *mut T; // anonymous local
-    let _6: *mut [T]; // anonymous local
+    let mut _5: *mut T; // anonymous local
+    let mut _6: *mut [T]; // anonymous local
     let ptr_7: *mut T; // local
-    let _8: *mut T; // anonymous local
-    let _9: usize; // anonymous local
-    let _10: *mut T; // anonymous local
-    let _11: usize; // anonymous local
-    let _12: usize; // anonymous local
+    let mut _8: *mut T; // anonymous local
+    let mut _9: usize; // anonymous local
+    let mut _10: *mut T; // anonymous local
+    let mut _11: usize; // anonymous local
+    let mut _12: usize; // anonymous local
 
     storage_live(_0)
     storage_live(ptr_4)
@@ -885,7 +885,7 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
-    let _0: &'1 T; // return
+    let mut _0: &'1 T; // return
     let self: usize; // arg #1
     let slice: &'3 [T]; // arg #2
     let _3: &'4 T; // anonymous local
@@ -917,31 +917,31 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
-    let _0: &'1 mut [T]; // return
+    let mut _0: &'1 mut [T]; // return
     let self: Range<usize>[{built_in impl Sized for usize}]; // arg #1
     let slice: &'2 mut [T]; // arg #2
-    let _3: &'3 mut [T]; // anonymous local
-    let _4: &'4 mut [T]; // anonymous local
-    let _5: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _6: usize; // anonymous local
-    let _7: usize; // anonymous local
+    let mut _3: &'3 mut [T]; // anonymous local
+    let mut _4: &'4 mut [T]; // anonymous local
+    let mut _5: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _6: usize; // anonymous local
+    let mut _7: usize; // anonymous local
     let new_len: usize; // local
-    let _9: bool; // anonymous local
-    let _10: usize; // anonymous local
-    let _11: usize; // anonymous local
-    let _12: &'6 [T]; // anonymous local
-    let _13: &'7 mut [T]; // anonymous local
-    let _14: &'8 mut [T]; // anonymous local
-    let _15: &'9 mut [T]; // anonymous local
-    let _16: *mut [T]; // anonymous local
-    let _17: *mut [T]; // anonymous local
-    let _18: usize; // anonymous local
-    let _19: usize; // anonymous local
-    let _20: !; // anonymous local
-    let _21: usize; // anonymous local
-    let _22: usize; // anonymous local
-    let _23: usize; // anonymous local
-    let _24: &'10 [T]; // anonymous local
+    let mut _9: bool; // anonymous local
+    let mut _10: usize; // anonymous local
+    let mut _11: usize; // anonymous local
+    let mut _12: &'6 [T]; // anonymous local
+    let mut _13: &'7 mut [T]; // anonymous local
+    let mut _14: &'8 mut [T]; // anonymous local
+    let mut _15: &'9 mut [T]; // anonymous local
+    let mut _16: *mut [T]; // anonymous local
+    let mut _17: *mut [T]; // anonymous local
+    let mut _18: usize; // anonymous local
+    let mut _19: usize; // anonymous local
+    let mut _20: !; // anonymous local
+    let mut _21: usize; // anonymous local
+    let mut _22: usize; // anonymous local
+    let mut _23: usize; // anonymous local
+    let mut _24: &'10 [T]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -1070,27 +1070,27 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
-    let _0: &'1 [T]; // return
+    let mut _0: &'1 [T]; // return
     let self: Range<usize>[{built_in impl Sized for usize}]; // arg #1
     let slice: &'2 [T]; // arg #2
-    let _3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _4: usize; // anonymous local
-    let _5: usize; // anonymous local
+    let mut _3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _4: usize; // anonymous local
+    let mut _5: usize; // anonymous local
     let new_len: usize; // local
-    let _7: bool; // anonymous local
-    let _8: usize; // anonymous local
-    let _9: usize; // anonymous local
-    let _10: &'3 [T]; // anonymous local
+    let mut _7: bool; // anonymous local
+    let mut _8: usize; // anonymous local
+    let mut _9: usize; // anonymous local
+    let mut _10: &'3 [T]; // anonymous local
     let _11: &'4 [T]; // anonymous local
     let _12: *const [T]; // anonymous local
-    let _13: *const [T]; // anonymous local
-    let _14: usize; // anonymous local
-    let _15: usize; // anonymous local
-    let _16: !; // anonymous local
-    let _17: usize; // anonymous local
-    let _18: usize; // anonymous local
-    let _19: usize; // anonymous local
-    let _20: &'5 [T]; // anonymous local
+    let mut _13: *const [T]; // anonymous local
+    let mut _14: usize; // anonymous local
+    let mut _15: usize; // anonymous local
+    let mut _16: !; // anonymous local
+    let mut _17: usize; // anonymous local
+    let mut _18: usize; // anonymous local
+    let mut _19: usize; // anonymous local
+    let mut _20: &'5 [T]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -1212,20 +1212,20 @@ pub const core::slice::index::impl_SliceIndex_slice_for_Range_usize::get_uncheck
 #[track_caller]
 fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(start: usize, end: usize, len: usize)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let start: usize; // arg #1
     let end: usize; // arg #2
     let len: usize; // arg #3
-    let _4: bool; // anonymous local
-    let _5: usize; // anonymous local
-    let _6: usize; // anonymous local
-    let _7: bool; // anonymous local
-    let _8: usize; // anonymous local
-    let _9: usize; // anonymous local
+    let mut _4: bool; // anonymous local
+    let mut _5: usize; // anonymous local
+    let mut _6: usize; // anonymous local
+    let mut _7: bool; // anonymous local
+    let mut _8: usize; // anonymous local
+    let mut _9: usize; // anonymous local
     let msg: &'1 str; // local
     let _11: !; // anonymous local
-    let _12: Arguments<'3>; // anonymous local
-    let _13: &'4 str; // anonymous local
+    let mut _12: Arguments<'3>; // anonymous local
+    let mut _13: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1290,22 +1290,22 @@ pub unsafe fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut<T>(self: 
 where
     TraitClause0: (T: Sized),
 {
-    let _0: *mut [T]; // return
+    let mut _0: *mut [T]; // return
     let self: Range<usize>[{built_in impl Sized for usize}]; // arg #1
     let slice: *mut [T]; // arg #2
-    let _3: bool; // anonymous local
+    let mut _3: bool; // anonymous local
     let _4: (); // anonymous local
-    let _5: usize; // anonymous local
-    let _6: usize; // anonymous local
-    let _7: usize; // anonymous local
-    let _8: *mut [T]; // anonymous local
+    let mut _5: usize; // anonymous local
+    let mut _6: usize; // anonymous local
+    let mut _7: usize; // anonymous local
+    let mut _8: *mut [T]; // anonymous local
     let new_len: usize; // local
-    let _10: usize; // anonymous local
-    let _11: usize; // anonymous local
-    let _12: *mut [T]; // anonymous local
-    let _13: usize; // anonymous local
-    let _14: usize; // anonymous local
-    let _15: bool; // anonymous local
+    let mut _10: usize; // anonymous local
+    let mut _11: usize; // anonymous local
+    let mut _12: *mut [T]; // anonymous local
+    let mut _13: usize; // anonymous local
+    let mut _14: usize; // anonymous local
+    let mut _15: bool; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -1372,20 +1372,20 @@ pub const core::slice::index::impl_SliceIndex_slice_for_Range_usize::get_uncheck
 #[track_caller]
 fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(start: usize, end: usize, len: usize)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let start: usize; // arg #1
     let end: usize; // arg #2
     let len: usize; // arg #3
-    let _4: bool; // anonymous local
-    let _5: usize; // anonymous local
-    let _6: usize; // anonymous local
-    let _7: bool; // anonymous local
-    let _8: usize; // anonymous local
-    let _9: usize; // anonymous local
+    let mut _4: bool; // anonymous local
+    let mut _5: usize; // anonymous local
+    let mut _6: usize; // anonymous local
+    let mut _7: bool; // anonymous local
+    let mut _8: usize; // anonymous local
+    let mut _9: usize; // anonymous local
     let msg: &'1 str; // local
     let _11: !; // anonymous local
-    let _12: Arguments<'3>; // anonymous local
-    let _13: &'4 str; // anonymous local
+    let mut _12: Arguments<'3>; // anonymous local
+    let mut _13: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1450,22 +1450,22 @@ pub unsafe fn impl_SliceIndex_slice_for_Range_usize::get_unchecked<T>(self: Rang
 where
     TraitClause0: (T: Sized),
 {
-    let _0: *const [T]; // return
+    let mut _0: *const [T]; // return
     let self: Range<usize>[{built_in impl Sized for usize}]; // arg #1
     let slice: *const [T]; // arg #2
-    let _3: bool; // anonymous local
+    let mut _3: bool; // anonymous local
     let _4: (); // anonymous local
-    let _5: usize; // anonymous local
-    let _6: usize; // anonymous local
-    let _7: usize; // anonymous local
-    let _8: *const [T]; // anonymous local
+    let mut _5: usize; // anonymous local
+    let mut _6: usize; // anonymous local
+    let mut _7: usize; // anonymous local
+    let mut _8: *const [T]; // anonymous local
     let new_len: usize; // local
-    let _10: usize; // anonymous local
-    let _11: usize; // anonymous local
-    let _12: *const [T]; // anonymous local
-    let _13: usize; // anonymous local
-    let _14: usize; // anonymous local
-    let _15: bool; // anonymous local
+    let mut _10: usize; // anonymous local
+    let mut _11: usize; // anonymous local
+    let mut _12: *const [T]; // anonymous local
+    let mut _13: usize; // anonymous local
+    let mut _14: usize; // anonymous local
+    let mut _15: bool; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -1531,23 +1531,23 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
-    let _0: Option<&'8 mut [T]>[{built_in impl Sized for &'8 mut [T]}]; // return
+    let mut _0: Option<&'8 mut [T]>[{built_in impl Sized for &'8 mut [T]}]; // return
     let self: Range<usize>[{built_in impl Sized for usize}]; // arg #1
     let slice: &'12 mut [T]; // arg #2
-    let _3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _4: usize; // anonymous local
-    let _5: usize; // anonymous local
+    let mut _3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _4: usize; // anonymous local
+    let mut _5: usize; // anonymous local
     let new_len: usize; // local
-    let _7: bool; // anonymous local
-    let _8: usize; // anonymous local
-    let _9: usize; // anonymous local
-    let _10: &'14 [T]; // anonymous local
-    let _11: &'15 mut [T]; // anonymous local
-    let _12: &'16 mut [T]; // anonymous local
-    let _13: *mut [T]; // anonymous local
-    let _14: *mut [T]; // anonymous local
-    let _15: usize; // anonymous local
-    let _16: usize; // anonymous local
+    let mut _7: bool; // anonymous local
+    let mut _8: usize; // anonymous local
+    let mut _9: usize; // anonymous local
+    let mut _10: &'14 [T]; // anonymous local
+    let mut _11: &'15 mut [T]; // anonymous local
+    let mut _12: &'16 mut [T]; // anonymous local
+    let mut _13: *mut [T]; // anonymous local
+    let mut _14: *mut [T]; // anonymous local
+    let mut _15: usize; // anonymous local
+    let mut _16: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -1631,23 +1631,23 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
-    let _0: Option<&'8 [T]>[{built_in impl Sized for &'8 [T]}]; // return
+    let mut _0: Option<&'8 [T]>[{built_in impl Sized for &'8 [T]}]; // return
     let self: Range<usize>[{built_in impl Sized for usize}]; // arg #1
     let slice: &'12 [T]; // arg #2
-    let _3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _4: usize; // anonymous local
-    let _5: usize; // anonymous local
+    let mut _3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _4: usize; // anonymous local
+    let mut _5: usize; // anonymous local
     let new_len: usize; // local
-    let _7: bool; // anonymous local
-    let _8: usize; // anonymous local
-    let _9: usize; // anonymous local
-    let _10: &'13 [T]; // anonymous local
-    let _11: &'14 [T]; // anonymous local
+    let mut _7: bool; // anonymous local
+    let mut _8: usize; // anonymous local
+    let mut _9: usize; // anonymous local
+    let mut _10: &'13 [T]; // anonymous local
+    let mut _11: &'14 [T]; // anonymous local
     let _12: &'15 [T]; // anonymous local
     let _13: *const [T]; // anonymous local
-    let _14: *const [T]; // anonymous local
-    let _15: usize; // anonymous local
-    let _16: usize; // anonymous local
+    let mut _14: *const [T]; // anonymous local
+    let mut _15: usize; // anonymous local
+    let mut _16: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -1746,17 +1746,17 @@ where
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let array: [i32; 6usize]; // local
     let slice: &'1 [i32]; // local
     let _3: &'2 [i32]; // anonymous local
-    let _4: &'4 [i32; 6usize]; // anonymous local
-    let _5: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _6: bool; // anonymous local
-    let _7: i32; // anonymous local
+    let mut _4: &'4 [i32; 6usize]; // anonymous local
+    let mut _5: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _6: bool; // anonymous local
+    let mut _7: i32; // anonymous local
     let _8: usize; // anonymous local
-    let _9: &'_ [i32]; // anonymous local
-    let _10: &'_ i32; // anonymous local
+    let mut _9: &'_ [i32]; // anonymous local
+    let mut _10: &'_ i32; // anonymous local
 
     storage_live(_0)
     _0 = ()

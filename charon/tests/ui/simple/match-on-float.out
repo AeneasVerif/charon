@@ -5,10 +5,10 @@ struct () {}
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let _1: f64; // anonymous local
-    let _2: bool; // anonymous local
-    let _3: bool; // anonymous local
+    let mut _0: (); // return
+    let mut _1: f64; // anonymous local
+    let mut _2: bool; // anonymous local
+    let mut _3: bool; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

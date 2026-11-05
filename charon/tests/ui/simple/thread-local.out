@@ -163,7 +163,7 @@ struct {closure} {}
 #[inline(hint)]
 fn __rust_std_internal_init_fn() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 0u32
@@ -174,9 +174,9 @@ fn __rust_std_internal_init_fn() -> u32
 #[inline(hint)]
 extern "rust-call" fn {impl FnOnce<()> for __rust_std_internal_init_fn}::call_once(state: __rust_std_internal_init_fn, args: ()) -> u32
 {
-    let _0: u32; // return
-    let state: __rust_std_internal_init_fn; // arg #1
-    let args: (); // arg #2
+    let mut _0: u32; // return
+    let mut state: __rust_std_internal_init_fn; // arg #1
+    let mut args: (); // arg #2
 
     storage_live(_0)
     _0 = __rust_std_internal_init_fn()
@@ -202,7 +202,7 @@ impl FnOnce<()> for __rust_std_internal_init_fn {
 // Full name: test_crate::FOO::{const}::{closure#1}::__RUST_STD_INTERNAL_VAL
 fn __RUST_STD_INTERNAL_VAL() -> Storage<u32, !>[{built_in impl Sized for u32}, {built_in impl Sized for !}]
 {
-    let _0: Storage<u32, !>[{built_in impl Sized for u32}, {built_in impl Sized for !}]; // return
+    let mut _0: Storage<u32, !>[{built_in impl Sized for u32}, {built_in impl Sized for !}]; // return
 
     storage_live(_0)
     _0 = std::sys::thread_local::native::lazy::{Storage<T, D>[TraitClause0, TraitClause1]}::new<u32, !>[{built_in impl Sized for u32}, {built_in impl Sized for !}, {impl DestroyedState for !}]()
@@ -216,12 +216,12 @@ thread_local __RUST_STD_INTERNAL_VAL: Storage<u32, !>[{built_in impl Sized for u
 // Full name: test_crate::FOO::{const}::{impl Fn<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for {closure}}::call
 extern "rust-call" fn call<'_0, '_1>(_1: &'_1 {closure}, tupled_args: (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)) -> *const u32
 {
-    let _0: *const u32; // return
-    let _1: &'1 {closure}; // arg #1
-    let tupled_args: (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],); // arg #2
+    let mut _0: *const u32; // return
+    let mut _1: &'1 {closure}; // arg #1
+    let mut tupled_args: (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],); // arg #2
     let __rust_std_internal_init: Option<&'10 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'10 mut Option<u32>[{built_in impl Sized for u32}]}]; // local
-    let _4: &'15 Storage<u32, !>[{built_in impl Sized for u32}, {built_in impl Sized for !}]; // anonymous local
-    let _5: Option<&'17 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'17 mut Option<u32>[{built_in impl Sized for u32}]}]; // anonymous local
+    let mut _4: &'15 Storage<u32, !>[{built_in impl Sized for u32}, {built_in impl Sized for !}]; // anonymous local
+    let mut _5: Option<&'17 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'17 mut Option<u32>[{built_in impl Sized for u32}]}]; // anonymous local
 
     storage_live(_0)
     storage_live(__rust_std_internal_init)
@@ -246,10 +246,10 @@ extern "rust-call" fn call<'_0, '_1>(_1: &'_1 {closure}, tupled_args: (Option<&'
 // Full name: test_crate::FOO::{const}::{impl FnMut<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for {closure}}::call_mut
 extern "rust-call" fn call_mut<'_0, '_1>(state: &'_1 mut {closure}, args: (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)) -> *const u32
 {
-    let _0: *const u32; // return
-    let state: &'_1 mut {closure}; // arg #1
-    let args: (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],); // arg #2
-    let _3: &'2 {closure}; // anonymous local
+    let mut _0: *const u32; // return
+    let mut state: &'_1 mut {closure}; // arg #1
+    let mut args: (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],); // arg #2
+    let mut _3: &'2 {closure}; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -268,7 +268,7 @@ extern "rust-call" fn call_mut<'_0, '_1>(state: &'_1 mut {closure}, args: (Optio
 // Full name: test_crate::FOO::{const}::{impl FnOnce<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for {closure}}::call_once
 extern "rust-call" fn impl_FnOnce_tuple_for_closure::call_once<'_0>(_1: {closure}, _2: (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)) -> *const u32
 {
-    let _0: *const u32; // return
+    let mut _0: *const u32; // return
     let _1: {closure}; // arg #1
     let _2: (Option<&'12 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'12 mut Option<u32>[{built_in impl Sized for u32}]}],); // arg #2
     let _3: &'17 mut {closure}; // anonymous local
@@ -290,10 +290,10 @@ extern "rust-call" fn impl_FnOnce_tuple_for_closure::call_once<'_0>(_1: {closure
 // Full name: test_crate::FOO::{const}::{closure#1}::{as_fn}
 fn {as_fn}<'_0>(arg1: Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}]) -> *const u32
 {
-    let _0: *const u32; // return
-    let arg1: Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}]; // arg #1
-    let args: (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],); // local
-    let state: {closure}; // local
+    let mut _0: *const u32; // return
+    let mut arg1: Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}]; // arg #1
+    let mut args: (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],); // local
+    let mut state: {closure}; // local
 
     storage_live(_0)
     storage_live(args)
@@ -316,8 +316,8 @@ fn FOO() -> LocalKey<u32>[{built_in impl Sized for u32}]
 where
     Outlives0: (u32: 'static),
 {
-    let _0: LocalKey<u32>[{built_in impl Sized for u32}]; // return
-    let _1: fn<'_0_1>(Option<&'_0_1 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0_1 mut Option<u32>[{built_in impl Sized for u32}]}]) -> *const u32; // anonymous local
+    let mut _0: LocalKey<u32>[{built_in impl Sized for u32}]; // return
+    let mut _1: fn<'_0_1>(Option<&'_0_1 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0_1 mut Option<u32>[{built_in impl Sized for u32}]}]) -> *const u32; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -333,7 +333,7 @@ const FOO: LocalKey<u32>[{built_in impl Sized for u32}] = FOO()
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

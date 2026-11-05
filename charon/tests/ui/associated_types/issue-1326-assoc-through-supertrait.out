@@ -58,9 +58,9 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (F: T2<O>),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let f: F; // arg #1
-    let _2: &'1 F; // anonymous local
+    let mut _2: &'1 F; // anonymous local
 
     storage_live(_0)
     _0 = ()

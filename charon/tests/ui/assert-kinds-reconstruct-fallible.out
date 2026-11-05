@@ -19,16 +19,16 @@ struct () {}
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let _1: [i32; 3usize]; // anonymous local
+    let mut _0: (); // return
+    let mut _1: [i32; 3usize]; // anonymous local
     let _2: usize; // anonymous local
-    let _3: i32; // anonymous local
-    let _4: i32; // anonymous local
+    let mut _3: i32; // anonymous local
+    let mut _4: i32; // anonymous local
     let x: i8; // local
-    let _6: i8; // anonymous local
-    let _7: i8; // anonymous local
-    let _8: i32; // anonymous local
-    let _9: i32; // anonymous local
+    let mut _6: i8; // anonymous local
+    let mut _7: i8; // anonymous local
+    let mut _8: i32; // anonymous local
+    let mut _9: i32; // anonymous local
 
     bb0: {
         storage_live(_0);

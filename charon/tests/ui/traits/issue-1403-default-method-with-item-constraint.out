@@ -38,7 +38,7 @@ where
     TraitClause1: (Self: Trait<Clause1_Assoc>),
     Outlives0: (Self: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 Self; // arg #1
 
     storage_live(_0)

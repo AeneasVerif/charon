@@ -33,7 +33,7 @@ fn test_crate::Trait::CONST1<Self>() -> usize
 where
     TraitClause0: (Self: Trait),
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const 0usize
@@ -49,7 +49,7 @@ fn test_crate::Trait::CONST2<Self>() -> usize
 where
     TraitClause0: (Self: Trait),
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const 0usize
@@ -65,7 +65,7 @@ fn test_crate::Trait::CONST3<Self>() -> usize
 where
     TraitClause0: (Self: Trait),
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const 0usize
@@ -81,7 +81,7 @@ fn test_crate::Trait::method1<Self>()
 where
     TraitClause0: (Self: Trait),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -93,7 +93,7 @@ fn test_crate::Trait::method2<Self>()
 where
     TraitClause0: (Self: Trait),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -104,7 +104,7 @@ where
 // Full name: test_crate::{impl Trait for ()}::method2
 fn impl_Trait_for_unit::method2()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -115,7 +115,7 @@ fn impl_Trait_for_unit::method2()
 // Full name: test_crate::{impl Trait for ()}::method1
 fn impl_Trait_for_unit::method1()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -126,7 +126,7 @@ fn impl_Trait_for_unit::method1()
 // Full name: test_crate::{impl Trait for ()}::CONST3
 fn impl_Trait_for_unit::CONST3() -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const 1usize
@@ -139,7 +139,7 @@ const impl_Trait_for_unit::CONST3: usize = impl_Trait_for_unit::CONST3()
 // Full name: test_crate::{impl Trait for ()}::CONST2
 fn impl_Trait_for_unit::CONST2() -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const 1usize
@@ -152,7 +152,7 @@ const impl_Trait_for_unit::CONST2: usize = impl_Trait_for_unit::CONST2()
 // Full name: test_crate::{impl Trait for ()}::CONST1
 fn impl_Trait_for_unit::CONST1() -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const 1usize
@@ -176,7 +176,7 @@ impl "impl_Trait_for_unit" Trait for () {
 // Full name: test_crate::{impl Trait for u8}::method2
 fn impl_Trait_for_u8::method2()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -187,7 +187,7 @@ fn impl_Trait_for_u8::method2()
 // Full name: test_crate::{impl Trait for u8}::CONST2
 fn impl_Trait_for_u8::CONST2() -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const 2usize
@@ -200,7 +200,7 @@ const impl_Trait_for_u8::CONST2: usize = impl_Trait_for_u8::CONST2()
 // Full name: test_crate::{impl Trait for u8}::method1
 fn impl_Trait_for_u8::method1()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -225,7 +225,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: (); // anonymous local
     let _2: usize; // anonymous local
 

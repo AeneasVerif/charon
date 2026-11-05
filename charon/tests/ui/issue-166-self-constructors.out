@@ -9,7 +9,7 @@ enum Foo {
 // Full name: test_crate::{Foo}::b
 pub fn b() -> Foo
 {
-    let _0: Foo; // return
+    let mut _0: Foo; // return
 
     storage_live(_0)
     _0 = Foo::B { _0: const 0usize }
@@ -24,9 +24,9 @@ struct Bar<'a> {
 // Full name: test_crate::{Bar<'a>}::new
 fn new<'a>(r: &'a i32) -> Bar<'a>
 {
-    let _0: Bar<'1>; // return
+    let mut _0: Bar<'1>; // return
     let r: &'3 i32; // arg #1
-    let _2: &'4 i32; // anonymous local
+    let mut _2: &'4 i32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

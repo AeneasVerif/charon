@@ -57,7 +57,7 @@ where
     TraitClause1: (T: Clone),
     Outlives0: (T: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut test_crate::foo::{closure}<T>[TraitClause0, TraitClause1]; // arg #1
 
     storage_live(_0)
@@ -75,9 +75,9 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
 {
-    let _0: test_crate::foo::{closure}::{closure}<T>[TraitClause0, TraitClause1]; // return
-    let _1: test_crate::foo::{closure}<T>[TraitClause0, TraitClause1]; // arg #1
-    let tupled_args: (); // arg #2
+    let mut _0: test_crate::foo::{closure}::{closure}<T>[TraitClause0, TraitClause1]; // return
+    let mut _1: test_crate::foo::{closure}<T>[TraitClause0, TraitClause1]; // arg #1
+    let mut tupled_args: (); // arg #2
 
     storage_live(_0)
     _0 = test_crate::foo::{closure}::{closure} { _0: move _1._0 }
@@ -96,11 +96,11 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
 {
-    let _0: test_crate::foo::{closure}::{closure}<T>[TraitClause0, TraitClause1]; // return
+    let mut _0: test_crate::foo::{closure}::{closure}<T>[TraitClause0, TraitClause1]; // return
     let x: T; // arg #1
     let f: test_crate::foo::{closure}<T>[TraitClause0, TraitClause1]; // local
-    let _3: test_crate::foo::{closure}<T>[TraitClause0, TraitClause1]; // anonymous local
-    let _4: (); // anonymous local
+    let mut _3: test_crate::foo::{closure}<T>[TraitClause0, TraitClause1]; // anonymous local
+    let mut _4: (); // anonymous local
 
     storage_live(_0)
     storage_live(f)
@@ -145,10 +145,10 @@ where
     TraitClause1: (T: Clone),
     Outlives0: (T: '_0),
 {
-    let _0: T; // return
-    let _1: &'1 test_crate::foo::{closure}::{closure}<T>[TraitClause0, TraitClause1]; // arg #1
-    let tupled_args: (); // arg #2
-    let _3: &'3 T; // anonymous local
+    let mut _0: T; // return
+    let mut _1: &'1 test_crate::foo::{closure}::{closure}<T>[TraitClause0, TraitClause1]; // arg #1
+    let mut tupled_args: (); // arg #2
+    let mut _3: &'3 T; // anonymous local
 
     storage_live(_0)
     storage_live(_3)

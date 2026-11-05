@@ -97,15 +97,15 @@ where
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let buf: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
+    let mut _0: (); // return
+    let mut buf: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
     let _2: (); // anonymous local
-    let _3: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
-    let _4: &'1 mut Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // anonymous local
-    let _5: &'3 [u8]; // anonymous local
-    let _6: &'5 [u8; 5usize]; // anonymous local
+    let mut _3: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
+    let mut _4: &'1 mut Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _5: &'3 [u8]; // anonymous local
+    let mut _6: &'5 [u8; 5usize]; // anonymous local
     let _7: &'6 [u8; 5usize]; // anonymous local
-    let _8: [u8; 5usize]; // anonymous local
+    let mut _8: [u8; 5usize]; // anonymous local
 
     storage_live(_0)
     _0 = ()

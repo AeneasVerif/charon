@@ -76,8 +76,8 @@ pub fn f<'a, '_1>(_1: &'_1 (dyn Fn<(&'a (),), ImpliedClause1::ImpliedClause1::Ou
 where
     Outlives0: ('a: '_1),
 {
-    let _0: (); // return
-    let _1: &'19 (dyn Fn<(&'20 (),), ImpliedClause1::ImpliedClause1::Output = ()> + '21); // arg #1
+    let mut _0: (); // return
+    let mut _1: &'19 (dyn Fn<(&'20 (),), ImpliedClause1::ImpliedClause1::Output = ()> + '21); // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -89,7 +89,7 @@ where
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

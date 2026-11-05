@@ -37,7 +37,7 @@ struct () {}
 // Full name: test_crate::do_something
 fn do_something()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -48,7 +48,7 @@ fn do_something()
 // Full name: test_crate::do_something_else
 fn do_something_else()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -59,7 +59,7 @@ fn do_something_else()
 // Full name: test_crate::do_something_at_the_end
 fn do_something_at_the_end()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -70,21 +70,21 @@ fn do_something_at_the_end()
 // Full name: test_crate::shared_tail
 fn shared_tail<'_0>(a: &'_0 [u8]) -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
     let a: &'1 [u8]; // arg #1
-    let sampled: usize; // local
-    let _3: bool; // anonymous local
-    let _4: u8; // anonymous local
+    let mut sampled: usize; // local
+    let mut _3: bool; // anonymous local
+    let mut _4: u8; // anonymous local
     let _5: usize; // anonymous local
-    let _6: bool; // anonymous local
-    let _7: u8; // anonymous local
+    let mut _6: bool; // anonymous local
+    let mut _7: u8; // anonymous local
     let _8: usize; // anonymous local
-    let _9: usize; // anonymous local
-    let _10: usize; // anonymous local
-    let _11: &'_ [u8]; // anonymous local
-    let _12: &'_ u8; // anonymous local
-    let _13: &'_ [u8]; // anonymous local
-    let _14: &'_ u8; // anonymous local
+    let mut _9: usize; // anonymous local
+    let mut _10: usize; // anonymous local
+    let mut _11: &'_ [u8]; // anonymous local
+    let mut _12: &'_ u8; // anonymous local
+    let mut _13: &'_ [u8]; // anonymous local
+    let mut _14: &'_ u8; // anonymous local
 
     loop {
         storage_live(_0)
@@ -153,14 +153,14 @@ fn shared_tail<'_0>(a: &'_0 [u8]) -> usize
 // Full name: test_crate::diamond_with_diagonal
 fn diamond_with_diagonal(opt: Option<u32>[{built_in impl Sized for u32}])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let opt: Option<u32>[{built_in impl Sized for u32}]; // arg #1
     let _2: (); // anonymous local
-    let _3: &'1 Option<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let mut _3: &'1 Option<u32>[{built_in impl Sized for u32}]; // anonymous local
     let x_4: u32; // local
     let x_5: &'3 u32; // local
-    let _6: bool; // anonymous local
-    let _7: u32; // anonymous local
+    let mut _6: bool; // anonymous local
+    let mut _7: u32; // anonymous local
 
     loop {
         storage_live(_0)

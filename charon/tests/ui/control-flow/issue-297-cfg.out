@@ -100,21 +100,21 @@ struct () {}
 // Full name: test_crate::f1
 fn f1<'_0>(a: &'_0 [u8]) -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
     let a: &'1 [u8]; // arg #1
-    let sampled: usize; // local
-    let _3: bool; // anonymous local
-    let _4: u8; // anonymous local
+    let mut sampled: usize; // local
+    let mut _3: bool; // anonymous local
+    let mut _4: u8; // anonymous local
     let _5: usize; // anonymous local
-    let _6: bool; // anonymous local
-    let _7: u8; // anonymous local
+    let mut _6: bool; // anonymous local
+    let mut _7: u8; // anonymous local
     let _8: usize; // anonymous local
-    let _9: usize; // anonymous local
-    let _10: usize; // anonymous local
-    let _11: &'_ [u8]; // anonymous local
-    let _12: &'_ u8; // anonymous local
-    let _13: &'_ [u8]; // anonymous local
-    let _14: &'_ u8; // anonymous local
+    let mut _9: usize; // anonymous local
+    let mut _10: usize; // anonymous local
+    let mut _11: &'_ [u8]; // anonymous local
+    let mut _12: &'_ u8; // anonymous local
+    let mut _13: &'_ [u8]; // anonymous local
+    let mut _14: &'_ u8; // anonymous local
 
     storage_live(_0)
     storage_live(_9)
@@ -179,7 +179,7 @@ fn f1<'_0>(a: &'_0 [u8]) -> usize
 // Full name: test_crate::FIELD_MODULUS
 fn FIELD_MODULUS() -> i16
 {
-    let _0: i16; // return
+    let mut _0: i16; // return
 
     storage_live(_0)
     _0 = const 8i16
@@ -192,61 +192,61 @@ const FIELD_MODULUS: i16 = FIELD_MODULUS()
 // Full name: test_crate::f2
 fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
     let a: &'1 [u8]; // arg #1
     let result: &'3 mut [i16]; // arg #2
-    let sampled: usize; // local
-    let _4: Chunks<'5, u8>[{built_in impl Sized for u8}]; // anonymous local
-    let _5: Chunks<'6, u8>[{built_in impl Sized for u8}]; // anonymous local
-    let _6: &'7 [u8]; // anonymous local
-    let iter: Chunks<'8, u8>[{built_in impl Sized for u8}]; // local
-    let _8: Option<&'16 [u8]>[{built_in impl Sized for &'16 [u8]}]; // anonymous local
-    let _9: &'22 mut Chunks<'23, u8>[{built_in impl Sized for u8}]; // anonymous local
-    let _10: &'24 mut Chunks<'25, u8>[{built_in impl Sized for u8}]; // anonymous local
+    let mut sampled: usize; // local
+    let mut _4: Chunks<'5, u8>[{built_in impl Sized for u8}]; // anonymous local
+    let mut _5: Chunks<'6, u8>[{built_in impl Sized for u8}]; // anonymous local
+    let mut _6: &'7 [u8]; // anonymous local
+    let mut iter: Chunks<'8, u8>[{built_in impl Sized for u8}]; // local
+    let mut _8: Option<&'16 [u8]>[{built_in impl Sized for &'16 [u8]}]; // anonymous local
+    let mut _9: &'22 mut Chunks<'23, u8>[{built_in impl Sized for u8}]; // anonymous local
+    let mut _10: &'24 mut Chunks<'25, u8>[{built_in impl Sized for u8}]; // anonymous local
     let bytes: &'26 [u8]; // local
     let b1: i16; // local
-    let _13: u8; // anonymous local
+    let mut _13: u8; // anonymous local
     let _14: usize; // anonymous local
     let b2: i16; // local
-    let _16: u8; // anonymous local
+    let mut _16: u8; // anonymous local
     let _17: usize; // anonymous local
     let b3: i16; // local
-    let _19: u8; // anonymous local
+    let mut _19: u8; // anonymous local
     let _20: usize; // anonymous local
     let d1: i16; // local
-    let _22: i16; // anonymous local
-    let _23: i16; // anonymous local
-    let _24: i16; // anonymous local
-    let _25: i16; // anonymous local
+    let mut _22: i16; // anonymous local
+    let mut _23: i16; // anonymous local
+    let mut _24: i16; // anonymous local
+    let mut _25: i16; // anonymous local
     let d2: i16; // local
-    let _27: i16; // anonymous local
-    let _28: i16; // anonymous local
-    let _29: i16; // anonymous local
-    let _30: i16; // anonymous local
-    let _31: bool; // anonymous local
-    let _32: i16; // anonymous local
-    let _33: bool; // anonymous local
-    let _34: usize; // anonymous local
-    let _35: i16; // anonymous local
+    let mut _27: i16; // anonymous local
+    let mut _28: i16; // anonymous local
+    let mut _29: i16; // anonymous local
+    let mut _30: i16; // anonymous local
+    let mut _31: bool; // anonymous local
+    let mut _32: i16; // anonymous local
+    let mut _33: bool; // anonymous local
+    let mut _34: usize; // anonymous local
+    let mut _35: i16; // anonymous local
     let _36: usize; // anonymous local
-    let _37: usize; // anonymous local
-    let _38: bool; // anonymous local
-    let _39: i16; // anonymous local
-    let _40: bool; // anonymous local
-    let _41: usize; // anonymous local
-    let _42: i16; // anonymous local
+    let mut _37: usize; // anonymous local
+    let mut _38: bool; // anonymous local
+    let mut _39: i16; // anonymous local
+    let mut _40: bool; // anonymous local
+    let mut _41: usize; // anonymous local
+    let mut _42: i16; // anonymous local
     let _43: usize; // anonymous local
-    let _44: usize; // anonymous local
-    let _45: &'_ mut [i16]; // anonymous local
-    let _46: &'_ mut i16; // anonymous local
-    let _47: &'_ mut [i16]; // anonymous local
-    let _48: &'_ mut i16; // anonymous local
-    let _49: &'_ [u8]; // anonymous local
-    let _50: &'_ u8; // anonymous local
-    let _51: &'_ [u8]; // anonymous local
-    let _52: &'_ u8; // anonymous local
-    let _53: &'_ [u8]; // anonymous local
-    let _54: &'_ u8; // anonymous local
+    let mut _44: usize; // anonymous local
+    let mut _45: &'_ mut [i16]; // anonymous local
+    let mut _46: &'_ mut i16; // anonymous local
+    let mut _47: &'_ mut [i16]; // anonymous local
+    let mut _48: &'_ mut i16; // anonymous local
+    let mut _49: &'_ [u8]; // anonymous local
+    let mut _50: &'_ u8; // anonymous local
+    let mut _51: &'_ [u8]; // anonymous local
+    let mut _52: &'_ u8; // anonymous local
+    let mut _53: &'_ [u8]; // anonymous local
+    let mut _54: &'_ u8; // anonymous local
 
     storage_live(_0)
     storage_live(_37)

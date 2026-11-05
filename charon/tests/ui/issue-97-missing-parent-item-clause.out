@@ -38,7 +38,7 @@ where
     TraitClause1: (T: Ord),
     Outlives0: (T: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 mut AVLTree<T>[TraitClause0]; // arg #1
 
     storage_live(_0)
@@ -57,10 +57,10 @@ impl "impl_Ord_for_u32" Ord for u32 {
 // Full name: test_crate::test
 pub fn test(tree: AVLTree<u32>[{built_in impl Sized for u32}])
 {
-    let _0: (); // return
-    let tree: AVLTree<u32>[{built_in impl Sized for u32}]; // arg #1
+    let mut _0: (); // return
+    let mut tree: AVLTree<u32>[{built_in impl Sized for u32}]; // arg #1
     let _2: (); // anonymous local
-    let _3: &'1 mut AVLTree<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let mut _3: &'1 mut AVLTree<u32>[{built_in impl Sized for u32}]; // anonymous local
 
     storage_live(_0)
     _0 = ()

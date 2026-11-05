@@ -31,7 +31,7 @@ struct () {}
 #[export_name = "exported"]
 fn export_name()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -43,7 +43,7 @@ fn export_name()
 #[link_section = "__TEXT,__custom"]
 fn link_section()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -55,7 +55,7 @@ fn link_section()
 #[target_feature(enable = "avx")]
 unsafe fn target_feature()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -67,7 +67,7 @@ unsafe fn target_feature()
 #[target_feature(force = "avx")]
 fn force_target_feature()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

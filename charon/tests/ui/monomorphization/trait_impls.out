@@ -5,7 +5,7 @@ struct () {}
 // Full name: test_crate::{impl Trait for bool}::method
 pub fn method<'_0>(self: &'_0 bool)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 bool; // arg #1
 
     storage_live(_0)
@@ -18,9 +18,9 @@ pub fn method<'_0>(self: &'_0 bool)
 // Full name: test_crate::do_test::<bool>
 fn do_test::<bool>(x: bool)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: bool; // arg #1
-    let _2: &'1 bool; // anonymous local
+    let mut _2: &'1 bool; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -37,7 +37,7 @@ fn do_test::<bool>(x: bool)
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: (); // anonymous local
 
     storage_live(_0)

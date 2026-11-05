@@ -5,9 +5,9 @@ fn core::ascii::{core::ascii::EscapeDefault}::new(_1: u8) -> core::ascii::Escape
 
 pub fn core::ascii::escape_default(c: u8) -> core::ascii::EscapeDefault
 {
-    let _0: core::ascii::EscapeDefault; // return
+    let mut _0: core::ascii::EscapeDefault; // return
     let c: u8; // arg #1
-    let _2: u8; // anonymous local
+    let mut _2: u8; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

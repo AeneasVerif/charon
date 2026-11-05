@@ -83,7 +83,7 @@ where
     Outlives0: (&'_1 mut T0: '_0),
     Outlives1: (T1: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut (&'_1 mut T0, T1); // arg #1
 
     storage_live(_0)
@@ -106,7 +106,7 @@ fn id<T>(x: T) -> T
 where
     TraitClause0: (T: Sized),
 {
-    let _0: T; // return
+    let mut _0: T; // return
     let x: T; // arg #1
 
     storage_live(_0)
@@ -123,7 +123,7 @@ where
     TraitClause0: (T0: core::marker::Sized::<(&_ mut _, _)><'_0, T1>[TraitClause1]),
     TraitClause1: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
-    let _0: (&'_0 mut T0, T1); // return
+    let mut _0: (&'_0 mut T0, T1); // return
     let x: (&'_0 mut T0, T1); // arg #1
 
     storage_live(_0)
@@ -140,9 +140,9 @@ fn call<'a, T>(x: (&'a mut u32, T)) -> (&'a mut u32, T)
 where
     TraitClause0: (T: Sized),
 {
-    let _0: (&'8 mut u32, T); // return
+    let mut _0: (&'8 mut u32, T); // return
     let x: (&'12 mut u32, T); // arg #1
-    let _2: (&'16 mut u32, T); // anonymous local
+    let mut _2: (&'16 mut u32, T); // anonymous local
 
     storage_live(_0)
     storage_live(_2)

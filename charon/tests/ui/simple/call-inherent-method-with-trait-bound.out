@@ -53,7 +53,7 @@ where
     TraitClause0: (S: Sized),
     Outlives0: (S: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut HashMap<S>[TraitClause0]; // arg #1
 
     storage_live(_0)
@@ -71,7 +71,7 @@ where
     TraitClause1: (Q: Sized),
     TraitClause2: (Q: Trait<Clause2_Type>),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _x: HashMap<S>[TraitClause0]; // arg #1
     let _k: Q; // arg #2
 
@@ -102,7 +102,7 @@ where
     TraitClause1: (Q: Sized),
     TraitClause2: (Q: Trait<Clause2_Type>),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _x: HashMap<S>[TraitClause0]; // arg #1
     let _k: Q; // arg #2
 
@@ -129,11 +129,11 @@ where
 // Full name: test_crate::test1
 pub fn test1(map: HashMap<()>[{built_in impl Sized for ()}])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let map: HashMap<()>[{built_in impl Sized for ()}]; // arg #1
     let _2: (); // anonymous local
-    let _3: HashMap<()>[{built_in impl Sized for ()}]; // anonymous local
-    let _4: (); // anonymous local
+    let mut _3: HashMap<()>[{built_in impl Sized for ()}]; // anonymous local
+    let mut _4: (); // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -156,11 +156,11 @@ pub fn test1(map: HashMap<()>[{built_in impl Sized for ()}])
 // Full name: test_crate::test2
 pub fn test2(map: HashMap<()>[{built_in impl Sized for ()}])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let map: HashMap<()>[{built_in impl Sized for ()}]; // arg #1
     let _2: (); // anonymous local
-    let _3: HashMap<()>[{built_in impl Sized for ()}]; // anonymous local
-    let _4: (); // anonymous local
+    let mut _3: HashMap<()>[{built_in impl Sized for ()}]; // anonymous local
+    let mut _4: (); // anonymous local
 
     storage_live(_0)
     _0 = ()

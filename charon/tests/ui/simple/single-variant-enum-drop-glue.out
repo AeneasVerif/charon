@@ -45,7 +45,7 @@ pub enum Thing {
 // Full name: test_crate::Thing::{impl Destruct for Thing}::drop_glue
 unsafe fn impl_Destruct_for_Thing::drop_glue<'_0>(_1: &'_0 mut Thing)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut Thing; // arg #1
 
     storage_live(_0)
@@ -60,8 +60,8 @@ unsafe fn impl_Destruct_for_Thing::drop_glue<'_0>(_1: &'_0 mut Thing)
 // Full name: test_crate::foo
 fn foo(_1: Thing)
 {
-    let _0: (); // return
-    let _1: Thing; // arg #1
+    let mut _0: (); // return
+    let mut _1: Thing; // arg #1
 
     storage_live(_0)
     _0 = ()

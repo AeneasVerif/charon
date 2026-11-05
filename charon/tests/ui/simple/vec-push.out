@@ -190,20 +190,20 @@ where
     Outlives0: (T: '_0),
     Outlives1: (A: '_0),
 {
-    let _0: &'1 mut T; // return
+    let mut _0: &'1 mut T; // return
     let self_1: &'3 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
     let value: T; // arg #2
     let len: usize; // local
-    let _4: bool; // anonymous local
-    let _5: usize; // anonymous local
+    let mut _4: bool; // anonymous local
+    let mut _5: usize; // anonymous local
     let _6: (); // anonymous local
-    let _7: &'7 mut RawVec<T, A>[TraitClause0, TraitClause1]; // anonymous local
+    let mut _7: &'7 mut RawVec<T, A>[TraitClause0, TraitClause1]; // anonymous local
     let end: *mut T; // local
-    let self_9: *mut T; // local
-    let src: T; // local
-    let self_11: UsizeNoHighBit; // local
-    let _12: NonNull<u8>; // anonymous local
-    let _13: usize; // anonymous local
+    let mut self_9: *mut T; // local
+    let mut src: T; // local
+    let mut self_11: UsizeNoHighBit; // local
+    let mut _12: NonNull<u8>; // anonymous local
+    let mut _13: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_6)
@@ -280,10 +280,10 @@ where
     Outlives0: (T: '_0),
     Outlives1: (A: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
     let value: T; // arg #2
-    let _3: &'3 mut T; // anonymous local
+    let mut _3: &'3 mut T; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -301,9 +301,9 @@ where
 // Full name: test_crate::vec
 fn vec<'_0>(x: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: &'1 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1
-    let _2: &'2 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _2: &'2 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
 
     storage_live(_0)
     _0 = ()

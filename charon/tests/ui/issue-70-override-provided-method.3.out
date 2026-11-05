@@ -102,12 +102,12 @@ where
     TraitClause1: (U: Sized),
     TraitClause2: (U: PartialEq<T>),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: T; // arg #1
     let y: U; // arg #2
-    let _3: bool; // anonymous local
-    let _4: &'1 U; // anonymous local
-    let _5: &'3 T; // anonymous local
+    let mut _3: bool; // anonymous local
+    let mut _4: &'1 U; // anonymous local
+    let mut _5: &'3 T; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -180,7 +180,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -196,12 +196,12 @@ where
     TraitClause2: (U: Sized),
     TraitClause3: (U: PartialEq<Option<T>[TraitClause0]>),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: Option<T>[TraitClause0]; // arg #1
     let y: U; // arg #2
-    let _3: bool; // anonymous local
-    let _4: &'1 U; // anonymous local
-    let _5: &'3 Option<T>[TraitClause0]; // anonymous local
+    let mut _3: bool; // anonymous local
+    let mut _4: &'1 U; // anonymous local
+    let mut _5: &'3 Option<T>[TraitClause0]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -272,7 +272,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -288,12 +288,12 @@ where
     TraitClause2: (U: Sized),
     TraitClause3: (U: PartialEq<Option<T>[TraitClause0]>),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: Option<T>[TraitClause0]; // arg #1
     let y: U; // arg #2
-    let _3: bool; // anonymous local
-    let _4: &'1 U; // anonymous local
-    let _5: &'3 Option<T>[TraitClause0]; // anonymous local
+    let mut _3: bool; // anonymous local
+    let mut _4: &'1 U; // anonymous local
+    let mut _5: &'3 Option<T>[TraitClause0]; // anonymous local
 
     storage_live(_0)
     _0 = ()

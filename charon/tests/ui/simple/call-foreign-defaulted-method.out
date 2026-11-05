@@ -19,7 +19,7 @@ struct () {}
 // Full name: test_crate::foo::{impl Trait for ()}::defaulted
 pub fn impl_Trait_for_unit::defaulted<'_0>(self: &'_0 ())
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 (); // arg #1
 
     storage_live(_0)
@@ -51,9 +51,9 @@ where
     TraitClause1: (T: Trait),
     Outlives0: (T: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: &'1 T; // arg #1
-    let _2: &'2 T; // anonymous local
+    let mut _2: &'2 T; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -70,20 +70,20 @@ where
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let _1: (); // anonymous local
-    let _2: &'1 (); // anonymous local
+    let mut _0: (); // return
+    let mut _1: (); // anonymous local
+    let mut _2: &'1 (); // anonymous local
     let _3: &'2 (); // anonymous local
-    let _4: (); // anonymous local
-    let _5: &'3 (); // anonymous local
-    let _6: &'4 (); // anonymous local
-    let _7: &'5 (); // anonymous local
-    let _8: &'6 (); // anonymous local
-    let _9: &'9 (); // anonymous local
-    let _10: &'12 (); // anonymous local
-    let _11: (); // anonymous local
-    let _12: &'13 (); // anonymous local
-    let _13: (); // anonymous local
+    let mut _4: (); // anonymous local
+    let mut _5: &'3 (); // anonymous local
+    let mut _6: &'4 (); // anonymous local
+    let mut _7: &'5 (); // anonymous local
+    let mut _8: &'6 (); // anonymous local
+    let mut _9: &'9 (); // anonymous local
+    let mut _10: &'12 (); // anonymous local
+    let mut _11: (); // anonymous local
+    let mut _12: &'13 (); // anonymous local
+    let mut _13: (); // anonymous local
 
     storage_live(_8)
     storage_live(_10)
@@ -141,7 +141,7 @@ where
     TraitClause0: (Self: Trait),
     Outlives0: (Self: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 Self; // arg #1
 
     storage_live(_0)

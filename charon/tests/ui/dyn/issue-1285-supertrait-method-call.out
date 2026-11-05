@@ -44,9 +44,9 @@ pub trait Subtrait<Self>
 // Full name: test_crate::call_super
 pub fn call_super<'_0>(obj: &'_0 (dyn Subtrait + '_0)) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let obj: &'3 (dyn Subtrait + '4); // arg #1
-    let _2: &'5 (dyn Subtrait + '6); // anonymous local
+    let mut _2: &'5 (dyn Subtrait + '6); // anonymous local
 
     storage_live(_0)
     storage_live(_2)

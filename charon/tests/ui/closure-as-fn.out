@@ -8,10 +8,10 @@ struct {closure} {}
 // Full name: test_crate::main::{impl Fn<()> for {closure}}::call
 extern "rust-call" fn call<'_0>(_1: &'_0 {closure}, tupled_args: ())
 {
-    let _0: (); // return
-    let _1: &'1 {closure}; // arg #1
-    let tupled_args: (); // arg #2
-    let _3: i32; // anonymous local
+    let mut _0: (); // return
+    let mut _1: &'1 {closure}; // arg #1
+    let mut tupled_args: (); // arg #2
+    let mut _3: i32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -27,10 +27,10 @@ extern "rust-call" fn call<'_0>(_1: &'_0 {closure}, tupled_args: ())
 // Full name: test_crate::main::{impl FnMut<()> for {closure}}::call_mut
 extern "rust-call" fn call_mut<'_0>(state: &'_0 mut {closure}, args: ())
 {
-    let _0: (); // return
-    let state: &'_0 mut {closure}; // arg #1
-    let args: (); // arg #2
-    let _3: &'0 {closure}; // anonymous local
+    let mut _0: (); // return
+    let mut state: &'_0 mut {closure}; // arg #1
+    let mut args: (); // arg #2
+    let mut _3: &'0 {closure}; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -50,7 +50,7 @@ extern "rust-call" fn call_mut<'_0>(state: &'_0 mut {closure}, args: ())
 // Full name: test_crate::main::{impl FnOnce<()> for {closure}}::call_once
 extern "rust-call" fn call_once(_1: {closure}, _2: ())
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: {closure}; // arg #1
     let _2: (); // arg #2
     let _3: &'1 mut {closure}; // anonymous local
@@ -73,9 +73,9 @@ extern "rust-call" fn call_once(_1: {closure}, _2: ())
 // Full name: test_crate::main::{closure}::{as_fn}
 fn {as_fn}()
 {
-    let _0: (); // return
-    let args: (); // local
-    let state: {closure}; // local
+    let mut _0: (); // return
+    let mut args: (); // local
+    let mut state: {closure}; // local
 
     storage_live(_0)
     _0 = ()
@@ -95,11 +95,11 @@ fn {as_fn}()
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let f: fn(); // local
-    let _2: {closure}; // anonymous local
+    let mut _2: {closure}; // anonymous local
     let _3: (); // anonymous local
-    let _4: fn(); // anonymous local
+    let mut _4: fn(); // anonymous local
 
     storage_live(_0)
     _0 = ()

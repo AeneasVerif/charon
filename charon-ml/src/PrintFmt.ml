@@ -1904,7 +1904,8 @@ let pp_locals (env : fmt_env) (indent : string) (fmt : Format.formatter)
       | None -> ""
       | Some place -> "; drop flag for " ^ place_to_string env place
     in
-    Format.fprintf fmt "%slet %s: %s; // %s%s" indent
+    Format.fprintf fmt "%slet %s%s: %s; // %s%s" indent
+      (if var.is_mutable then "mut " else "")
       (local_id_to_string env var.index)
       (ty_to_string env var.local_ty)
       kind drop_flag_for

@@ -19,9 +19,9 @@ extern unsafe static LOCAL: i32 = LOCAL()
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let _1: i32; // anonymous local
-    let _2: i32; // anonymous local
+    let mut _0: (); // return
+    let mut _1: i32; // anonymous local
+    let mut _2: i32; // anonymous local
 
     storage_live(_0)
     _0 = ()

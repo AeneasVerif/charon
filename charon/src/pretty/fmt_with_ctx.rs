@@ -1061,8 +1061,11 @@ impl<T> GExprBody<T> {
 
         // Format the local variables
         for v in &self.locals.locals {
-            write!(f, "{tab}")?;
-            write!(f, "let {}: {};", v.index.with_ctx(ctx), v.ty.with_ctx(ctx))?;
+            write!(f, "{tab}let ")?;
+            if v.mutable {
+                write!(f, "mut ")?;
+            }
+            write!(f, "{}: {};", v.index.with_ctx(ctx), v.ty.with_ctx(ctx))?;
 
             write!(f, " // ")?;
             if v.index.is_zero() {

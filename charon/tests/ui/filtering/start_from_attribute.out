@@ -11,7 +11,7 @@ struct () {}
 #[verify::start_from]
 fn do_translate()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -23,7 +23,7 @@ fn do_translate()
 #[foobar::haha]
 fn also_translate()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -38,7 +38,7 @@ struct Type1 {}
 #[verify::start_from]
 fn method()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

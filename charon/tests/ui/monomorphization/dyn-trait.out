@@ -47,9 +47,9 @@ pub fn {impl ToString for (dyn Display)}::to_string::<(dyn Display)><'_0>(_1: &'
 // Full name: test_crate::dyn_to_string
 fn dyn_to_string<'_0>(x: &'_0 (dyn Display + '_0)) -> String
 {
-    let _0: String; // return
+    let mut _0: String; // return
     let x: &'3 (dyn Display + '4); // arg #1
-    let _2: &'5 (dyn Display + '6); // anonymous local
+    let mut _2: &'5 (dyn Display + '6); // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -67,13 +67,13 @@ pub const test_crate::main::{promoted_const}: str = "hello" with_metadata(5usize
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let str: String; // local
-    let _2: &'1 str; // anonymous local
+    let mut _2: &'1 str; // anonymous local
     let _3: &'2 str; // anonymous local
-    let _4: String; // anonymous local
-    let _5: &'6 (dyn Display + '7); // anonymous local
-    let _6: &'9 String; // anonymous local
+    let mut _4: String; // anonymous local
+    let mut _5: &'6 (dyn Display + '7); // anonymous local
+    let mut _6: &'9 String; // anonymous local
     let _7: &'10 String; // anonymous local
 
     storage_live(_0)

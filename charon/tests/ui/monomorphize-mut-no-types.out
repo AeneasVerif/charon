@@ -94,7 +94,7 @@ fn identity<T>(x: T) -> T
 where
     TraitClause0: (T: Sized),
 {
-    let _0: T; // return
+    let mut _0: T; // return
     let x: T; // arg #1
 
     storage_live(_0)
@@ -110,7 +110,7 @@ fn test_crate::identity::<&_ mut _><'_0, T0>(x: &'_0 mut T0) -> &'_0 mut T0
 where
     TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
-    let _0: &'_0 mut T0; // return
+    let mut _0: &'_0 mut T0; // return
     let x: &'_0 mut T0; // arg #1
 
     storage_live(_0)
@@ -126,7 +126,7 @@ fn test_crate::identity::<Option<&_ mut _>><'_0, T0>(x: Option<&'_0 mut T0>) -> 
 where
     TraitClause0: (T0: core::marker::Sized::<Option<&_ mut _>><'_0>),
 {
-    let _0: Option<&'_0 mut T0>; // return
+    let mut _0: Option<&'_0 mut T0>; // return
     let x: Option<&'_0 mut T0>; // arg #1
 
     storage_live(_0)
@@ -142,7 +142,7 @@ fn test_crate::identity::<Option<Option<&_ mut _>>><'_0, T0>(x: Option<Option<&'
 where
     TraitClause0: (T0: core::marker::Sized::<Option<Option<&_ mut _>>><'_0>),
 {
-    let _0: Option<Option<&'_0 mut T0>>; // return
+    let mut _0: Option<Option<&'_0 mut T0>>; // return
     let x: Option<Option<&'_0 mut T0>>; // arg #1
 
     storage_live(_0)
@@ -160,25 +160,25 @@ where
     TraitClause0: (X: Sized),
     TraitClause1: (A: Sized),
 {
-    let _0: (); // return
-    let x: A; // arg #1
-    let _2: &'1 u32; // anonymous local
-    let _3: &'2 u32; // anonymous local
-    let _4: &'4 mut u32; // anonymous local
-    let _5: &'5 mut u32; // anonymous local
-    let _6: u32; // anonymous local
-    let _7: Option<&'13 mut u32>; // anonymous local
-    let _8: Option<&'17 mut u32>; // anonymous local
-    let _9: &'21 mut u32; // anonymous local
-    let _10: u32; // anonymous local
-    let _11: Option<Option<&'70 mut A>>; // anonymous local
-    let _12: Option<Option<&'86 mut A>>; // anonymous local
-    let _13: Option<&'102 mut A>; // anonymous local
-    let _14: &'106 mut A; // anonymous local
-    let _15: &'107 u32; // anonymous local
-    let _16: &'108 u32; // anonymous local
-    let _17: &'485 u32; // anonymous local
-    let _18: u32; // anonymous local
+    let mut _0: (); // return
+    let mut x: A; // arg #1
+    let mut _2: &'1 u32; // anonymous local
+    let mut _3: &'2 u32; // anonymous local
+    let mut _4: &'4 mut u32; // anonymous local
+    let mut _5: &'5 mut u32; // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: Option<&'13 mut u32>; // anonymous local
+    let mut _8: Option<&'17 mut u32>; // anonymous local
+    let mut _9: &'21 mut u32; // anonymous local
+    let mut _10: u32; // anonymous local
+    let mut _11: Option<Option<&'70 mut A>>; // anonymous local
+    let mut _12: Option<Option<&'86 mut A>>; // anonymous local
+    let mut _13: Option<&'102 mut A>; // anonymous local
+    let mut _14: &'106 mut A; // anonymous local
+    let mut _15: &'107 u32; // anonymous local
+    let mut _16: &'108 u32; // anonymous local
+    let mut _17: &'485 u32; // anonymous local
+    let mut _18: u32; // anonymous local
 
     storage_live(_16)
     storage_live(_17)

@@ -26,7 +26,7 @@ struct str {
 
 pub fn test_crate::module1::do_translate()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -36,7 +36,7 @@ pub fn test_crate::module1::do_translate()
 
 pub fn test_crate::module2::do_translate()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -58,7 +58,7 @@ pub trait Trait1<Self>
 // Full name: test_crate::module2::{impl Trait1 for Type1}::method
 pub fn impl_Trait1_for_Type1::method()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -72,10 +72,10 @@ pub const test_crate::module2::impl_Trait1_for_Type2::method::{promoted_const}: 
 // Full name: test_crate::module2::{impl Trait1 for Type2}::method
 pub fn impl_Trait1_for_Type2::method()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: (); // anonymous local
-    let _2: Arguments<'1>; // anonymous local
-    let _3: &'4 str; // anonymous local
+    let mut _2: Arguments<'1>; // anonymous local
+    let mut _3: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()

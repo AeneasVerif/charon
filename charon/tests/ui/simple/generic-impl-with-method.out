@@ -30,7 +30,7 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 T; // arg #1
 
     storage_live(_0)

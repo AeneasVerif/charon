@@ -89,7 +89,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Iterator<Clause1_Item>),
 {
-    let _0: Clause1_Item; // return
+    let mut _0: Clause1_Item; // return
     let t: Clause1_Item; // arg #1
 
     storage_live(_0)
@@ -108,9 +108,9 @@ where
     TraitClause1: (T: Iterator<Clause1_Item>),
     TraitClause2: (T: IntoIterator<Clause2_Item, Clause2_IntoIter>),
 {
-    let _0: Clause2_Item; // return
+    let mut _0: Clause2_Item; // return
     let t: Clause1_Item; // arg #1
-    let _2: Clause1_Item; // anonymous local
+    let mut _2: Clause1_Item; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -163,9 +163,9 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: A<Clause1_Clause1_Assoc>),
 {
-    let _0: Clause1_Clause1_Assoc; // return
+    let mut _0: Clause1_Clause1_Assoc; // return
     let x: T; // arg #1
-    let _2: &'1 T; // anonymous local
+    let mut _2: &'1 T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -190,9 +190,9 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: B<Clause1_Clause1_Assoc>),
 {
-    let _0: Clause1_Clause1_Assoc; // return
+    let mut _0: Clause1_Clause1_Assoc; // return
     let x: T; // arg #1
-    let _2: &'1 T; // anonymous local
+    let mut _2: &'1 T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -219,12 +219,12 @@ where
     TraitClause2: (T: B<Clause2_Clause1_Assoc>),
     TraitClause3: (T: Copy),
 {
-    let _0: (Clause1_Clause1_Assoc, Clause1_Clause1_Assoc); // return
+    let mut _0: (Clause1_Clause1_Assoc, Clause1_Clause1_Assoc); // return
     let x: T; // arg #1
-    let _2: Clause1_Clause1_Assoc; // anonymous local
-    let _3: T; // anonymous local
-    let _4: Clause1_Clause1_Assoc; // anonymous local
-    let _5: T; // anonymous local
+    let mut _2: Clause1_Clause1_Assoc; // anonymous local
+    let mut _3: T; // anonymous local
+    let mut _4: Clause1_Clause1_Assoc; // anonymous local
+    let mut _5: T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

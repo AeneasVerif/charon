@@ -5,7 +5,7 @@ struct () {}
 // Full name: test_crate::callee::<'_>
 fn callee::<'_>()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -16,7 +16,7 @@ fn callee::<'_>()
 // Full name: test_crate::caller::<'_>
 fn caller::<'_>()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: (); // anonymous local
 
     storage_live(_0)
@@ -32,7 +32,7 @@ fn caller::<'_>()
 // Full name: test_crate::f
 pub fn f()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

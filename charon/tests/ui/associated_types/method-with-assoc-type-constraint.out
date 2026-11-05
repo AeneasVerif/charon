@@ -47,7 +47,7 @@ where
     TraitClause0: (I: Sized),
     TraitClause1: (I: IntoIterator<()>),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let iter: I; // arg #1
 
     storage_live(_0)

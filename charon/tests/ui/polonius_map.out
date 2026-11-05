@@ -242,28 +242,28 @@ pub struct Global {}
 // Full name: test_crate::get_or_insert
 pub fn get_or_insert<'_0>(map: &'_0 mut HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]) -> &'_0 u32
 {
-    let _0: &'1 u32; // return
+    let mut _0: &'1 u32; // return
     let map: &'3 mut HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]; // arg #1
-    let _2: Option<&'11 u32>[{built_in impl Sized for &'11 u32}]; // anonymous local
-    let _3: &'16 HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]; // anonymous local
-    let _4: &'17 u32; // anonymous local
+    let mut _2: Option<&'11 u32>[{built_in impl Sized for &'11 u32}]; // anonymous local
+    let mut _3: &'16 HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _4: &'17 u32; // anonymous local
     let _5: &'18 u32; // anonymous local
     let v: &'19 u32; // local
     let _7: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
-    let _8: &'20 mut HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _8: &'20 mut HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]; // anonymous local
     let _9: &'21 u32; // anonymous local
     let _10: &'22 u32; // anonymous local
-    let _11: &'23 HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]; // anonymous local
-    let _12: &'24 u32; // anonymous local
+    let mut _11: &'23 HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _12: &'24 u32; // anonymous local
     let _13: &'25 u32; // anonymous local
-    let _14: &'26 u32; // anonymous local
-    let _15: &'27 u32; // anonymous local
-    let _16: &'28 u32; // anonymous local
-    let _17: &'35 u32; // anonymous local
-    let _18: &'44 u32; // anonymous local
-    let _19: u32; // anonymous local
-    let _20: &'45 u32; // anonymous local
-    let _21: u32; // anonymous local
+    let mut _14: &'26 u32; // anonymous local
+    let mut _15: &'27 u32; // anonymous local
+    let mut _16: &'28 u32; // anonymous local
+    let mut _17: &'35 u32; // anonymous local
+    let mut _18: &'44 u32; // anonymous local
+    let mut _19: u32; // anonymous local
+    let mut _20: &'45 u32; // anonymous local
+    let mut _21: u32; // anonymous local
 
     storage_live(_16)
     storage_live(_18)

@@ -67,7 +67,7 @@ where
     TraitClause1: (Self: Copy),
     Outlives0: (Self: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 Self; // arg #1
 
     storage_live(_0)
@@ -84,7 +84,7 @@ where
     TraitClause1: (Option<T>[TraitClause0]: Copy),
     Outlives0: (T: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 Option<T>[TraitClause0]; // arg #1
 
     storage_live(_0)
@@ -111,7 +111,7 @@ pub fn impl_Trait_for_String::defaulted<'_0>(self: &'_0 String)
 where
     TraitClause0: (String: Copy),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 String; // arg #1
 
     storage_live(_0)

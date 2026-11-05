@@ -29,7 +29,7 @@ fn FOO<Self>() -> usize
 where
     TraitClause0: (Self: Trait),
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const 42usize
@@ -57,7 +57,7 @@ pub fn foo<T>() -> usize
 where
     TraitClause0: (T: Sized),
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = copy FOO<T>[impl_Trait_for_T<T>[TraitClause0]]

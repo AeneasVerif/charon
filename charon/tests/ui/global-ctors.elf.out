@@ -14,7 +14,7 @@ struct () {}
 
 extern "C" fn test_crate::elf_ctor()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -24,7 +24,7 @@ extern "C" fn test_crate::elf_ctor()
 
 extern "C" fn test_crate::elf_ctor_a()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -34,7 +34,7 @@ extern "C" fn test_crate::elf_ctor_a()
 
 extern "C" fn test_crate::elf_ctor_b()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

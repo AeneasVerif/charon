@@ -12,7 +12,7 @@ pub const CONSTANT: u8 = CONSTANT()
 // Full name: test_crate::foo
 fn foo() -> u8
 {
-    let _0: u8; // return
+    let mut _0: u8; // return
 
     storage_live(_0)
     _0 = copy CONSTANT

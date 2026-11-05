@@ -27,7 +27,7 @@ trait Trait<Self>
 // Full name: test_crate::{impl Trait for ()}::method
 fn method()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -45,7 +45,7 @@ impl "impl_Trait_for_unit" Trait for () {
 // Full name: test_crate::main
 pub fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

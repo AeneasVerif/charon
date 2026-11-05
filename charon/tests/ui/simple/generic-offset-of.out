@@ -38,13 +38,13 @@ fn foo<T>()
 where
     TraitClause0: (T: Sized),
 {
-    let _0: (); // return
-    let _1: usize; // anonymous local
-    let _2: usize; // anonymous local
-    let _3: usize; // anonymous local
-    let _4: usize; // anonymous local
-    let _5: usize; // anonymous local
-    let _6: usize; // anonymous local
+    let mut _0: (); // return
+    let mut _1: usize; // anonymous local
+    let mut _2: usize; // anonymous local
+    let mut _3: usize; // anonymous local
+    let mut _4: usize; // anonymous local
+    let mut _5: usize; // anonymous local
+    let mut _6: usize; // anonymous local
 
     storage_live(_2)
     storage_live(_3)

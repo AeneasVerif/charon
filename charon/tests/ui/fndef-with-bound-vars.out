@@ -21,7 +21,7 @@ fn bar<T>()
 where
     TraitClause0: (T: Sized),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -34,8 +34,8 @@ struct test_crate::main::{closure}<'_0, '_1> {}
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let _1: test_crate::main::{closure}<'88, '89>; // anonymous local
+    let mut _0: (); // return
+    let mut _1: test_crate::main::{closure}<'88, '89>; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -56,9 +56,9 @@ where
     Outlives0: ('_0: '_2),
     Outlives1: ('_1: '_2),
 {
-    let _0: test_crate::main::{closure}::{closure}<'50, '51>; // return
-    let _1: &'141 test_crate::main::{closure}<'_0, '_1>; // arg #1
-    let tupled_args: (); // arg #2
+    let mut _0: test_crate::main::{closure}::{closure}<'50, '51>; // return
+    let mut _1: &'141 test_crate::main::{closure}<'_0, '_1>; // arg #1
+    let mut tupled_args: (); // arg #2
     let i: bar<&'142 ()>[{built_in impl Sized for &'142 ()}]; // local
 
     storage_live(_0)
@@ -78,9 +78,9 @@ where
     Outlives0: ('_0: '_2),
     Outlives1: ('_1: '_2),
 {
-    let _0: bar<&'8 ()>[{built_in impl Sized for &'8 ()}]; // return
-    let _1: &'55 test_crate::main::{closure}::{closure}<'_0, '_1>; // arg #1
-    let tupled_args: (); // arg #2
+    let mut _0: bar<&'8 ()>[{built_in impl Sized for &'8 ()}]; // return
+    let mut _1: &'55 test_crate::main::{closure}::{closure}<'_0, '_1>; // arg #1
+    let mut tupled_args: (); // arg #2
 
     storage_live(_0)
     _0 = copy (*_1)._0

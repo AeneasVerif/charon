@@ -3763,14 +3763,16 @@ and local_of_json (ctx : of_json_ctx) (js : json) : (local, string) result =
           ("name", name);
           ("span", span);
           ("ty", ty);
+          ("mutable", mutable_);
           ("drop_flag_for", drop_flag_for);
         ] ->
         let* index = local_id_of_json ctx index in
         let* name = option_of_json string_of_json ctx name in
         let* span = span_of_json ctx span in
         let* local_ty = ty_of_json ctx ty in
+        let* is_mutable = bool_of_json ctx mutable_ in
         let* drop_flag_for = option_of_json place_of_json ctx drop_flag_for in
-        Ok ({ index; name; span; local_ty; drop_flag_for } : local)
+        Ok ({ index; name; span; local_ty; is_mutable; drop_flag_for } : local)
     | _ -> Error "")
 
 and locals_of_json (ctx : of_json_ctx) (js : json) : (locals, string) result =

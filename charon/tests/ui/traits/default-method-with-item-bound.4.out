@@ -59,7 +59,7 @@ where
     TraitClause3: (Empty<T>[TraitClause0]: Exact),
     Outlives0: (T: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 mut Empty<T>[TraitClause0]; // arg #1
 
     storage_live(_0)

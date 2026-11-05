@@ -33,14 +33,14 @@ struct () {}
 // Full name: test_crate::incr
 pub fn incr<'_0>(s: &'_0 mut [u32])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let s: &'1 mut [u32]; // arg #1
     let _2: usize; // anonymous local
-    let _3: u32; // anonymous local
-    let _4: &'_ [u32]; // anonymous local
-    let _5: &'_ u32; // anonymous local
-    let _6: &'_ mut [u32]; // anonymous local
-    let _7: &'_ mut u32; // anonymous local
+    let mut _3: u32; // anonymous local
+    let mut _4: &'_ [u32]; // anonymous local
+    let mut _5: &'_ u32; // anonymous local
+    let mut _6: &'_ mut [u32]; // anonymous local
+    let mut _7: &'_ mut u32; // anonymous local
 
     storage_live(_0)
     storage_live(_3)

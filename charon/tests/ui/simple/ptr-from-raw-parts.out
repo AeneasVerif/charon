@@ -203,11 +203,11 @@ where
     TraitClause0: (T1: Sized),
     TraitClause1: (T1: Thin),
 {
-    let _0: *const T; // return
+    let mut _0: *const T; // return
     let data_pointer: *const T1; // arg #1
     let metadata: {built_in impl Pointee for T}::Metadata; // arg #2
-    let _3: *const T1; // anonymous local
-    let _4: {built_in impl Pointee for T}::Metadata; // anonymous local
+    let mut _3: *const T1; // anonymous local
+    let mut _4: {built_in impl Pointee for T}::Metadata; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -225,10 +225,10 @@ where
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let a: [u32; 2usize]; // local
-    let _2: *const [u32]; // anonymous local
-    let _3: *const [u32; 2usize]; // anonymous local
+    let mut _2: *const [u32]; // anonymous local
+    let mut _3: *const [u32; 2usize]; // anonymous local
 
     storage_live(_0)
     _0 = ()

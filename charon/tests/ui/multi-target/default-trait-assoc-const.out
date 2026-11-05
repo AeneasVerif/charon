@@ -15,7 +15,7 @@ fn test_crate::Trait::VALUE<Self>() -> usize
 where
     TraitClause0: (Self: test_crate::Trait),
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const 1usize

@@ -15,8 +15,8 @@ fn drop<T>(_1: T)
 where
     TraitClause0: (T: Destruct),
 {
-    let _0: (); // return
-    let _1: T; // arg #1
+    let mut _0: (); // return
+    let mut _1: T; // arg #1
 
     storage_live(_0)
     _0 = ()

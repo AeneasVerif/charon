@@ -108,13 +108,13 @@ pub opaque type String
 // Full name: test_crate::example
 pub fn example(x: Result<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]) -> Result<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]
 {
-    let _0: Result<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]; // return
+    let mut _0: Result<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]; // return
     let x: Result<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]; // arg #1
-    let _2: u32; // anonymous local
-    let _3: ControlFlow<Result<!, String>[{built_in impl Sized for !}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<!, String>[{built_in impl Sized for !}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]; // anonymous local
-    let _4: Result<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]; // anonymous local
+    let mut _2: u32; // anonymous local
+    let mut _3: ControlFlow<Result<!, String>[{built_in impl Sized for !}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<!, String>[{built_in impl Sized for !}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]; // anonymous local
+    let mut _4: Result<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]; // anonymous local
     let residual: Result<!, String>[{built_in impl Sized for !}, {built_in impl Sized for String}]; // local
-    let _6: Result<!, String>[{built_in impl Sized for !}, {built_in impl Sized for String}]; // anonymous local
+    let mut _6: Result<!, String>[{built_in impl Sized for !}, {built_in impl Sized for String}]; // anonymous local
     let val: u32; // local
 
     storage_live(_0)

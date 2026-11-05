@@ -27,11 +27,11 @@ where
     Outlives0: (Self: '_0),
     Outlives1: (Self: '_1),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 mut Self; // arg #1
     let source: &'3 Self; // arg #2
-    let _3: Self; // anonymous local
-    let _4: &'4 Self; // anonymous local
+    let mut _3: Self; // anonymous local
+    let mut _4: &'4 Self; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -59,7 +59,7 @@ where
 // Full name: core::clone::impls::{impl Clone for u128}::clone
 pub fn clone<'_0>(self: &'_0 u128) -> u128
 {
-    let _0: u128; // return
+    let mut _0: u128; // return
     let self: &'1 u128; // arg #1
 
     storage_live(_0)
@@ -73,11 +73,11 @@ pub fn impl_Clone_for_u128::clone_from<'_0, '_1>(self: &'_0 mut u128, source: &'
 where
     TraitClause0: (u128: Destruct),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 mut u128; // arg #1
     let source: &'3 u128; // arg #2
-    let _3: u128; // anonymous local
-    let _4: &'4 u128; // anonymous local
+    let mut _3: u128; // anonymous local
+    let mut _4: &'4 u128; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -117,7 +117,7 @@ struct (_, _)<A, B> {
 // Full name: core::num::{u64}::MAX
 pub fn MAX() -> u64
 {
-    let _0: u64; // return
+    let mut _0: u64; // return
 
     storage_live(_0)
     _0 = ~(const 0u64)
@@ -130,8 +130,8 @@ pub const MAX: u64 = MAX()
 // Full name: core::intrinsics::fallback::wide_mul_u128::to_low_high::MASK
 fn MASK() -> u128
 {
-    let _0: u128; // return
-    let _1: u128; // anonymous local
+    let mut _0: u128; // return
+    let mut _1: u128; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -147,12 +147,12 @@ const MASK: u128 = MASK()
 // Full name: core::intrinsics::fallback::wide_mul_u128::to_low_high
 fn to_low_high(x: u128) -> [u128; 2usize]
 {
-    let _0: [u128; 2usize]; // return
+    let mut _0: [u128; 2usize]; // return
     let x: u128; // arg #1
-    let _2: u128; // anonymous local
-    let _3: u128; // anonymous local
-    let _4: u128; // anonymous local
-    let _5: u128; // anonymous local
+    let mut _2: u128; // anonymous local
+    let mut _3: u128; // anonymous local
+    let mut _4: u128; // anonymous local
+    let mut _5: u128; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -175,31 +175,31 @@ fn to_low_high(x: u128) -> [u128; 2usize]
 // Full name: core::intrinsics::fallback::wide_mul_u128::scalar_mul
 fn scalar_mul(low_high: [u128; 2usize], k: u128) -> [u128; 3usize]
 {
-    let _0: [u128; 3usize]; // return
+    let mut _0: [u128; 3usize]; // return
     let low_high: [u128; 2usize]; // arg #1
     let k: u128; // arg #2
     let x: u128; // local
     let c: u128; // local
-    let _5: [u128; 2usize]; // anonymous local
-    let _6: u128; // anonymous local
-    let _7: u128; // anonymous local
-    let _8: u128; // anonymous local
+    let mut _5: [u128; 2usize]; // anonymous local
+    let mut _6: u128; // anonymous local
+    let mut _7: u128; // anonymous local
+    let mut _8: u128; // anonymous local
     let _9: usize; // anonymous local
-    let _10: u128; // anonymous local
+    let mut _10: u128; // anonymous local
     let y: u128; // local
     let z: u128; // local
-    let _13: [u128; 2usize]; // anonymous local
-    let _14: u128; // anonymous local
-    let _15: u128; // anonymous local
-    let _16: u128; // anonymous local
-    let _17: u128; // anonymous local
+    let mut _13: [u128; 2usize]; // anonymous local
+    let mut _14: u128; // anonymous local
+    let mut _15: u128; // anonymous local
+    let mut _16: u128; // anonymous local
+    let mut _17: u128; // anonymous local
     let _18: usize; // anonymous local
-    let _19: u128; // anonymous local
-    let _20: u128; // anonymous local
-    let _21: u128; // anonymous local
-    let _22: u128; // anonymous local
-    let _23: u128; // anonymous local
-    let _24: u128; // anonymous local
+    let mut _19: u128; // anonymous local
+    let mut _20: u128; // anonymous local
+    let mut _21: u128; // anonymous local
+    let mut _22: u128; // anonymous local
+    let mut _23: u128; // anonymous local
+    let mut _24: u128; // anonymous local
 
     storage_live(_0)
     storage_live(_10)
@@ -289,12 +289,12 @@ fn scalar_mul(low_high: [u128; 2usize], k: u128) -> [u128; 3usize]
 // Full name: core::intrinsics::fallback::wide_mul_u128::from_low_high
 fn from_low_high(x: [u128; 2usize]) -> u128
 {
-    let _0: u128; // return
+    let mut _0: u128; // return
     let x: [u128; 2usize]; // arg #1
-    let _2: u128; // anonymous local
+    let mut _2: u128; // anonymous local
     let _3: usize; // anonymous local
-    let _4: u128; // anonymous local
-    let _5: u128; // anonymous local
+    let mut _4: u128; // anonymous local
+    let mut _5: u128; // anonymous local
     let _6: usize; // anonymous local
 
     storage_live(_0)
@@ -321,57 +321,57 @@ fn from_low_high(x: [u128; 2usize]) -> u128
 // Full name: core::intrinsics::fallback::wide_mul_u128
 fn wide_mul_u128(a_1: u128, b_2: u128) -> (u128, u128)
 {
-    let _0: (u128, u128); // return
+    let mut _0: (u128, u128); // return
     let a_1: u128; // arg #1
     let b_2: u128; // arg #2
     let a_3: [u128; 2usize]; // local
-    let _4: u128; // anonymous local
+    let mut _4: u128; // anonymous local
     let b_5: [u128; 2usize]; // local
-    let _6: u128; // anonymous local
+    let mut _6: u128; // anonymous local
     let low: [u128; 3usize]; // local
-    let _8: [u128; 2usize]; // anonymous local
-    let _9: u128; // anonymous local
+    let mut _8: [u128; 2usize]; // anonymous local
+    let mut _9: u128; // anonymous local
     let _10: usize; // anonymous local
     let high: [u128; 3usize]; // local
-    let _12: [u128; 2usize]; // anonymous local
-    let _13: u128; // anonymous local
+    let mut _12: [u128; 2usize]; // anonymous local
+    let mut _13: u128; // anonymous local
     let _14: usize; // anonymous local
     let r0: u128; // local
     let _16: usize; // anonymous local
     let r1: u128; // local
     let c_18: u128; // local
-    let _19: [u128; 2usize]; // anonymous local
-    let _20: u128; // anonymous local
-    let _21: u128; // anonymous local
+    let mut _19: [u128; 2usize]; // anonymous local
+    let mut _20: u128; // anonymous local
+    let mut _21: u128; // anonymous local
     let _22: usize; // anonymous local
-    let _23: u128; // anonymous local
+    let mut _23: u128; // anonymous local
     let _24: usize; // anonymous local
-    let _25: u128; // anonymous local
+    let mut _25: u128; // anonymous local
     let r2: u128; // local
     let c_27: u128; // local
-    let _28: [u128; 2usize]; // anonymous local
-    let _29: u128; // anonymous local
-    let _30: u128; // anonymous local
-    let _31: u128; // anonymous local
+    let mut _28: [u128; 2usize]; // anonymous local
+    let mut _29: u128; // anonymous local
+    let mut _30: u128; // anonymous local
+    let mut _31: u128; // anonymous local
     let _32: usize; // anonymous local
-    let _33: u128; // anonymous local
+    let mut _33: u128; // anonymous local
     let _34: usize; // anonymous local
-    let _35: u128; // anonymous local
-    let _36: u128; // anonymous local
-    let _37: u128; // anonymous local
+    let mut _35: u128; // anonymous local
+    let mut _36: u128; // anonymous local
+    let mut _37: u128; // anonymous local
     let r3: u128; // local
-    let _39: u128; // anonymous local
+    let mut _39: u128; // anonymous local
     let _40: usize; // anonymous local
-    let _41: u128; // anonymous local
-    let _42: u128; // anonymous local
-    let _43: u128; // anonymous local
-    let _44: [u128; 2usize]; // anonymous local
-    let _45: u128; // anonymous local
-    let _46: u128; // anonymous local
-    let _47: u128; // anonymous local
-    let _48: [u128; 2usize]; // anonymous local
-    let _49: u128; // anonymous local
-    let _50: u128; // anonymous local
+    let mut _41: u128; // anonymous local
+    let mut _42: u128; // anonymous local
+    let mut _43: u128; // anonymous local
+    let mut _44: [u128; 2usize]; // anonymous local
+    let mut _45: u128; // anonymous local
+    let mut _46: u128; // anonymous local
+    let mut _47: u128; // anonymous local
+    let mut _48: [u128; 2usize]; // anonymous local
+    let mut _49: u128; // anonymous local
+    let mut _50: u128; // anonymous local
 
     storage_live(_0)
     storage_live(_25)
@@ -605,16 +605,16 @@ where
 // Full name: core::num::{u128}::overflowing_add
 pub fn overflowing_add(self: u128, rhs: u128) -> (u128, bool)
 {
-    let _0: (u128, bool); // return
+    let mut _0: (u128, bool); // return
     let self: u128; // arg #1
     let rhs: u128; // arg #2
     let a: u128; // local
     let b: bool; // local
-    let _5: (u128, bool); // anonymous local
-    let _6: u128; // anonymous local
-    let _7: u128; // anonymous local
-    let _8: u128; // anonymous local
-    let _9: bool; // anonymous local
+    let mut _5: (u128, bool); // anonymous local
+    let mut _6: u128; // anonymous local
+    let mut _7: u128; // anonymous local
+    let mut _8: u128; // anonymous local
+    let mut _9: bool; // anonymous local
 
     storage_live(_0)
     storage_live(_5)
@@ -648,34 +648,34 @@ pub fn overflowing_add(self: u128, rhs: u128) -> (u128, bool)
 // Full name: core::intrinsics::fallback::{impl CarryingMulAdd for u128}::carrying_mul_add
 pub fn carrying_mul_add(self: u128, b: u128, c: u128, d: u128) -> (u128, u128)
 {
-    let _0: (u128, u128); // return
+    let mut _0: (u128, u128); // return
     let self: u128; // arg #1
     let b: u128; // arg #2
     let c: u128; // arg #3
     let d: u128; // arg #4
     let low_5: u128; // local
-    let high: u128; // local
-    let _7: (u128, u128); // anonymous local
-    let _8: u128; // anonymous local
-    let _9: u128; // anonymous local
+    let mut high: u128; // local
+    let mut _7: (u128, u128); // anonymous local
+    let mut _8: u128; // anonymous local
+    let mut _9: u128; // anonymous local
     let low_10: u128; // local
     let carry_11: bool; // local
-    let _12: (u128, bool); // anonymous local
-    let _13: u128; // anonymous local
-    let _14: u128; // anonymous local
-    let _15: u128; // anonymous local
-    let _16: bool; // anonymous local
-    let _17: u128; // anonymous local
+    let mut _12: (u128, bool); // anonymous local
+    let mut _13: u128; // anonymous local
+    let mut _14: u128; // anonymous local
+    let mut _15: u128; // anonymous local
+    let mut _16: bool; // anonymous local
+    let mut _17: u128; // anonymous local
     let low_18: u128; // local
     let carry_19: bool; // local
-    let _20: (u128, bool); // anonymous local
-    let _21: u128; // anonymous local
-    let _22: u128; // anonymous local
-    let _23: u128; // anonymous local
-    let _24: bool; // anonymous local
-    let _25: u128; // anonymous local
-    let _26: u128; // anonymous local
-    let _27: u128; // anonymous local
+    let mut _20: (u128, bool); // anonymous local
+    let mut _21: u128; // anonymous local
+    let mut _22: u128; // anonymous local
+    let mut _23: u128; // anonymous local
+    let mut _24: bool; // anonymous local
+    let mut _25: u128; // anonymous local
+    let mut _26: u128; // anonymous local
+    let mut _27: u128; // anonymous local
 
     storage_live(_0)
     storage_live(_17)
@@ -781,12 +781,12 @@ pub fn carrying_mul_add(self: u128, b: u128, c: u128, d: u128) -> (u128, u128)
 // Full name: test_crate::mult_u128
 pub fn mult_u128(a: u128, b: u128) -> u128
 {
-    let _0: u128; // return
+    let mut _0: u128; // return
     let a: u128; // arg #1
     let b: u128; // arg #2
-    let _3: (u128, u128); // anonymous local
-    let _4: u128; // anonymous local
-    let _5: u128; // anonymous local
+    let mut _3: (u128, u128); // anonymous local
+    let mut _4: u128; // anonymous local
+    let mut _5: u128; // anonymous local
 
     storage_live(_0)
     storage_live(_3)

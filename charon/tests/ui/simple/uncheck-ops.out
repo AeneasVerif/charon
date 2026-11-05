@@ -5,12 +5,12 @@ struct () {}
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let _1: u8; // anonymous local
-    let _2: u8; // anonymous local
-    let _3: u8; // anonymous local
-    let _4: u8; // anonymous local
-    let _5: u8; // anonymous local
+    let mut _0: (); // return
+    let mut _1: u8; // anonymous local
+    let mut _2: u8; // anonymous local
+    let mut _3: u8; // anonymous local
+    let mut _4: u8; // anonymous local
+    let mut _5: u8; // anonymous local
 
     storage_live(_0)
     _0 = ()

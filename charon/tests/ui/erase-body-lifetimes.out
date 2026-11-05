@@ -28,14 +28,14 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
 {
-    let _0: &'_ mut T; // return
+    let mut _0: &'_ mut T; // return
     let b: bool; // arg #1
     let x: &'_ mut T; // arg #2
     let y: &'_ mut T; // arg #3
-    let _4: &'_ mut T; // anonymous local
-    let _5: &'_ mut T; // anonymous local
-    let _6: bool; // anonymous local
-    let _7: &'_ mut T; // anonymous local
+    let mut _4: &'_ mut T; // anonymous local
+    let mut _5: &'_ mut T; // anonymous local
+    let mut _6: bool; // anonymous local
+    let mut _7: &'_ mut T; // anonymous local
 
     storage_live(_0)
     storage_live(_4)
@@ -64,19 +64,19 @@ where
 // Full name: test_crate::test
 fn test<'_0, '_1>(x: &'_0 mut u32, y: &'_1 u32) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let x: &'_ mut u32; // arg #1
     let y: &'_ u32; // arg #2
-    let z: u32; // local
+    let mut z: u32; // local
     let a: A<'_, '_>; // local
-    let _5: &'_ mut u32; // anonymous local
-    let _6: &'_ u32; // anonymous local
+    let mut _5: &'_ mut u32; // anonymous local
+    let mut _6: &'_ u32; // anonymous local
     let r: &'_ mut u32; // local
-    let _8: &'_ mut u32; // anonymous local
-    let _9: &'_ mut u32; // anonymous local
-    let _10: &'_ mut u32; // anonymous local
-    let _11: u32; // anonymous local
-    let _12: u32; // anonymous local
+    let mut _8: &'_ mut u32; // anonymous local
+    let mut _9: &'_ mut u32; // anonymous local
+    let mut _10: &'_ mut u32; // anonymous local
+    let mut _11: u32; // anonymous local
+    let mut _12: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_12)

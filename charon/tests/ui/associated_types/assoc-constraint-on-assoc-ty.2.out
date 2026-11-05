@@ -40,7 +40,7 @@ where
     TraitClause1: (I: IntoIterator<Clause1_IntoIter>),
     TraitClause2: (Clause1_IntoIter: Trait<Clause2_Assoc>),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

@@ -96,18 +96,18 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut [T]; // arg #1
-    let _2: usize; // anonymous local
-    let _3: usize; // anonymous local
-    let _4: *mut T; // anonymous local
-    let _5: bool; // anonymous local
-    let _6: *mut T; // anonymous local
-    let _7: bool; // anonymous local
-    let _8: &'_ mut [T]; // anonymous local
-    let _9: &'_ mut T; // anonymous local
-    let _10: &'_ mut [T]; // anonymous local
-    let _11: &'_ mut T; // anonymous local
+    let mut _2: usize; // anonymous local
+    let mut _3: usize; // anonymous local
+    let mut _4: *mut T; // anonymous local
+    let mut _5: bool; // anonymous local
+    let mut _6: *mut T; // anonymous local
+    let mut _7: bool; // anonymous local
+    let mut _8: &'_ mut [T]; // anonymous local
+    let mut _9: &'_ mut T; // anonymous local
+    let mut _10: &'_ mut [T]; // anonymous local
+    let mut _11: &'_ mut T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -202,9 +202,9 @@ where
     Outlives0: (T: '_0),
     Outlives1: (A: '_0),
 {
-    let _0: *mut T; // return
+    let mut _0: *mut T; // return
     let self: &'1 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
-    let _2: &'3 RawVec<T, A>[TraitClause0, TraitClause1]; // anonymous local
+    let mut _2: &'3 RawVec<T, A>[TraitClause0, TraitClause1]; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -227,12 +227,12 @@ where
     Outlives0: (T: '_0),
     Outlives1: (A: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
-    let _2: *mut [T]; // anonymous local
-    let _3: *mut T; // anonymous local
-    let _4: &'2 mut Vec<T>[TraitClause0, TraitClause1]; // anonymous local
-    let _5: usize; // anonymous local
+    let mut _2: *mut [T]; // anonymous local
+    let mut _3: *mut T; // anonymous local
+    let mut _4: &'2 mut Vec<T>[TraitClause0, TraitClause1]; // anonymous local
+    let mut _5: usize; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -267,10 +267,10 @@ where
     Outlives0: (T: '_0),
     Outlives1: (A: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
-    let _2: &'2 mut Vec<T>[TraitClause0, TraitClause1]; // anonymous local
-    let _3: (); // anonymous local
+    let mut _2: &'2 mut Vec<T>[TraitClause0, TraitClause1]; // anonymous local
+    let mut _3: (); // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -304,12 +304,12 @@ where
     TraitClause1: (A: Sized),
     TraitClause2: (A: Destruct),
 {
-    let _0: Vec<T>[TraitClause0, TraitClause1]; // return
+    let mut _0: Vec<T>[TraitClause0, TraitClause1]; // return
     let capacity: usize; // arg #1
     let alloc: A; // arg #2
-    let _3: RawVec<T, A>[TraitClause0, TraitClause1]; // anonymous local
-    let _4: usize; // anonymous local
-    let _5: A; // anonymous local
+    let mut _3: RawVec<T, A>[TraitClause0, TraitClause1]; // anonymous local
+    let mut _4: usize; // anonymous local
+    let mut _5: A; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -336,10 +336,10 @@ pub fn with_capacity<T>(capacity: usize) -> Vec<T>[TraitClause0, {built_in impl 
 where
     TraitClause0: (T: Sized),
 {
-    let _0: Vec<T>[TraitClause0, {built_in impl Sized for Global}]; // return
+    let mut _0: Vec<T>[TraitClause0, {built_in impl Sized for Global}]; // return
     let capacity: usize; // arg #1
-    let _2: usize; // anonymous local
-    let _3: Global; // anonymous local
+    let mut _2: usize; // anonymous local
+    let mut _3: Global; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -358,8 +358,8 @@ where
 // Full name: test_crate::vec
 fn vec()
 {
-    let _0: (); // return
-    let _1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _0: (); // return
+    let mut _1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
 
     storage_live(_0)
     _0 = ()

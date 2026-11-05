@@ -54,7 +54,7 @@ where
     TraitClause1: (T: OtherTrait),
     Outlives0: (T: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 T; // arg #1
 
     storage_live(_0)
@@ -81,10 +81,10 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: ImpliesOtherTrait),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: T; // arg #1
-    let _2: (); // anonymous local
-    let _3: &'1 T; // anonymous local
+    let mut _2: (); // anonymous local
+    let mut _3: &'1 T; // anonymous local
 
     storage_live(_0)
     _0 = ()

@@ -49,10 +49,10 @@ where
     Outlives0: (Self: '_0),
     TypeConstraint0: TraitClause0::Item = bool,
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 Self; // arg #1
     let _2: (); // anonymous local
-    let _3: &'2 Self; // anonymous local
+    let mut _3: &'2 Self; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -75,7 +75,7 @@ where
     TraitClause0: (P: Sized),
     TraitClause1: (P: Takes<u32>),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 (); // arg #1
 
     storage_live(_0)
@@ -91,10 +91,10 @@ where
     TraitClause0: ((): Trait),
     TypeConstraint0: impl_Trait_for_unit::Item = bool,
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 (); // arg #1
     let _2: (); // anonymous local
-    let _3: &'2 (); // anonymous local
+    let mut _3: &'2 (); // anonymous local
 
     storage_live(_0)
     _0 = ()

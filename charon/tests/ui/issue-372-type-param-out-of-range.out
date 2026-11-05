@@ -73,7 +73,7 @@ where
     Outlives0: (K: 'a),
     TypeConstraint0: for<'_0_1> TraitClause2<'_>::ImpliedClause1::Output = (),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -90,7 +90,7 @@ where
     Outlives0: (K: 'a),
     TypeConstraint0: for<'b> TraitClause2<'_>::ImpliedClause1::Output = (),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -107,7 +107,7 @@ where
     TraitClause1: for<'_0_1> (F: FnMut<(&'_0_1 u32,)>),
     TypeConstraint0: for<'_0_1> TraitClause1<'_>::ImpliedClause1::Output = (),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

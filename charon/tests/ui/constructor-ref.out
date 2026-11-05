@@ -64,8 +64,8 @@ fn Value<T>(_1: T) -> Wrapper<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
-    let _0: Wrapper<T>[TraitClause0]; // return
-    let _1: T; // arg #1
+    let mut _0: Wrapper<T>[TraitClause0]; // return
+    let mut _1: T; // arg #1
 
     storage_live(_0)
     _0 = Wrapper::Value { _0: move _1 }
@@ -78,9 +78,9 @@ extern "rust-call" fn call_once<T>(state: Value<T>[TraitClause0], args: (T,)) ->
 where
     TraitClause0: (T: Sized),
 {
-    let _0: Wrapper<T>[TraitClause0]; // return
-    let state: Value<T>[TraitClause0]; // arg #1
-    let args: (T,); // arg #2
+    let mut _0: Wrapper<T>[TraitClause0]; // return
+    let mut state: Value<T>[TraitClause0]; // arg #1
+    let mut args: (T,); // arg #2
 
     storage_live(_0)
     _0 = Value<T>[TraitClause0](move args._0)
@@ -114,8 +114,8 @@ where
     TraitClause2: (F: FnOnce<(T,)>),
     TypeConstraint0: TraitClause2::Output = Wrapper<T>[TraitClause0],
 {
-    let _0: (); // return
-    let _1: F; // arg #1
+    let mut _0: (); // return
+    let mut _1: F; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -132,7 +132,7 @@ fn constructor_ref<T>()
 where
     TraitClause0: (T: Sized),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: (); // anonymous local
 
     storage_live(_0)

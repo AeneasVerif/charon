@@ -281,7 +281,7 @@ where
     Outlives0: (A: '_0),
     Outlives1: (B: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut (A, B); // arg #1
 
     storage_live(_0)
@@ -311,10 +311,10 @@ where
 // Full name: test_crate::destructure
 pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]) -> &'a u32
 {
-    let _0: &'1 u32; // return
+    let mut _0: &'1 u32; // return
     let input: &'3 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // arg #1
     let x: &'4 u32; // local
-    let _3: &'5 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // anonymous local
+    let mut _3: &'5 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -341,12 +341,12 @@ pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u
 
 pub fn test_crate::index<'_0>(xs: &'_0 [u32; 4usize], i: usize) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let xs: &'1 [u32; 4usize]; // arg #1
     let i: usize; // arg #2
     let _3: usize; // anonymous local
-    let _4: &'_ [u32; 4usize]; // anonymous local
-    let _5: &'_ u32; // anonymous local
+    let mut _4: &'_ [u32; 4usize]; // anonymous local
+    let mut _5: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -379,7 +379,7 @@ pub fn identity<Self>(value_1: Self) -> Self
 where
     TraitClause0: (Self: UsesSelf),
 {
-    let _0: Self; // return
+    let mut _0: Self; // return
     let value_1: Self; // arg #1
     let value_2: Self; // local
 
@@ -406,7 +406,7 @@ where
 // Full name: test_crate::impl_trait_binding
 pub fn impl_trait_binding(value_1: u32) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let value_1: u32; // arg #1
     let value_2: u32; // local
 
@@ -426,7 +426,7 @@ pub fn impl_trait_binding(value_1: u32) -> u32
 // Full name: test_crate::nested_impl_trait
 pub fn nested_impl_trait(value_1: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let value_1: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}]; // arg #1
     let value_2: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}]; // local
 
@@ -456,7 +456,7 @@ pub fn nested_impl_trait(value_1: Box<u32>[{built_in impl MetaSized for u32}, {b
 // Full name: test_crate::multiple_impl_traits
 pub fn multiple_impl_traits(value_1: (u32, String))
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let value_1: (u32, String); // arg #1
     let value_2: (u32, String); // local
 
@@ -490,7 +490,7 @@ pub fn impl_trait_outlives<'a, 'b>(value_1: &'a u32)
 where
     Outlives0: ('a: 'b),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let value_1: &'1 u32; // arg #1
     let value_2: &'2 u32; // local
 
@@ -517,7 +517,7 @@ pub struct Foo<'a> {
 // Full name: test_crate::{Foo<'_0>}::set_type_self
 pub fn set_type_self<'_0>(self: Foo<'_0>)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: Foo<'1>; // arg #1
     let x: Foo<'2>; // local
 

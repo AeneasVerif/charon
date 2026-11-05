@@ -37,17 +37,17 @@ unsafe fn intrinsic_statements<T>(condition: bool, src: *const T, dst: *mut T, c
 where
     TraitClause0: (T: Sized),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let condition: bool; // arg #1
     let src: *const T; // arg #2
     let dst: *mut T; // arg #3
     let count: usize; // arg #4
-    let _5: bool; // anonymous local
-    let _6: *const T; // anonymous local
-    let _7: *mut T; // anonymous local
-    let _8: usize; // anonymous local
-    let _9: (); // anonymous local
-    let _10: (); // anonymous local
+    let mut _5: bool; // anonymous local
+    let mut _6: *const T; // anonymous local
+    let mut _7: *mut T; // anonymous local
+    let mut _8: usize; // anonymous local
+    let mut _9: (); // anonymous local
+    let mut _10: (); // anonymous local
 
     storage_live(_0)
     storage_live(_9)
