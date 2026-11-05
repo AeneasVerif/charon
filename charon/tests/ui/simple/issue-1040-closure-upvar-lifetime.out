@@ -10,10 +10,10 @@ struct {closure}<'_0, '_1> {
 // Full name: test_crate::foo
 pub fn foo<'_0>(s: &'_0 u8)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let s: &'1 u8; // arg #1
-    let _2: {closure}<'9, '10>; // anonymous local
-    let _3: &'11 u8; // anonymous local
+    let mut _2: {closure}<'9, '10>; // anonymous local
+    let mut _3: &'11 u8; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -34,9 +34,9 @@ where
     Outlives0: ('_0: '_2),
     Outlives1: ('_1: '_2),
 {
-    let _0: &'1 u8; // return
-    let _1: &'10 {closure}<'_0, '_1>; // arg #1
-    let tupled_args: (); // arg #2
+    let mut _0: &'1 u8; // return
+    let mut _1: &'10 {closure}<'_0, '_1>; // arg #1
+    let mut tupled_args: (); // arg #2
 
     storage_live(_0)
     _0 = &(*(*_1)._0)

@@ -15,7 +15,7 @@ struct () {}
 // Full name: test_crate::other
 fn other()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -26,7 +26,7 @@ fn other()
 // Full name: test_crate::sink_tuple
 fn sink_tuple(_x: (usize, bool))
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _x: (usize, bool); // arg #1
 
     storage_live(_0)
@@ -39,7 +39,7 @@ fn sink_tuple(_x: (usize, bool))
 // Full name: test_crate::sink_int
 fn sink_int(_x: usize)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _x: usize; // arg #1
 
     storage_live(_0)
@@ -52,7 +52,7 @@ fn sink_int(_x: usize)
 // Full name: test_crate::sink_bool
 fn sink_bool(_x: bool)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _x: bool; // arg #1
 
     storage_live(_0)
@@ -65,11 +65,11 @@ fn sink_bool(_x: bool)
 // Full name: test_crate::must_preserve_tuple
 fn must_preserve_tuple()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let z: (usize, bool); // local
     let _2: (); // anonymous local
     let _3: (); // anonymous local
-    let _4: (usize, bool); // anonymous local
+    let mut _4: (usize, bool); // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -95,11 +95,11 @@ fn must_preserve_tuple()
 // Full name: test_crate::can_erase_check
 fn can_erase_check()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let z: usize; // local
     let _2: (); // anonymous local
     let _3: (); // anonymous local
-    let _4: usize; // anonymous local
+    let mut _4: usize; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -124,11 +124,11 @@ fn can_erase_check()
 // Full name: test_crate::must_preserve_overflow_flag
 fn must_preserve_overflow_flag()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let z: (usize, bool); // local
     let _2: (); // anonymous local
     let _3: (); // anonymous local
-    let _4: bool; // anonymous local
+    let mut _4: bool; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -154,13 +154,13 @@ fn must_preserve_overflow_flag()
 // Full name: test_crate::mixed_field0_and_cross_block_tuple
 fn mixed_field0_and_cross_block_tuple()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let z: (usize, bool); // local
     let _2: (); // anonymous local
-    let _3: usize; // anonymous local
+    let mut _3: usize; // anonymous local
     let _4: (); // anonymous local
     let _5: (); // anonymous local
-    let _6: (usize, bool); // anonymous local
+    let mut _6: (usize, bool); // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -193,14 +193,14 @@ fn mixed_field0_and_cross_block_tuple()
 // Full name: test_crate::can_erase_check_multi_block
 fn can_erase_check_multi_block()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let z: usize; // local
     let _2: (); // anonymous local
     let _3: (); // anonymous local
-    let _4: usize; // anonymous local
+    let mut _4: usize; // anonymous local
     let _5: (); // anonymous local
     let _6: (); // anonymous local
-    let _7: usize; // anonymous local
+    let mut _7: usize; // anonymous local
 
     storage_live(_0)
     _0 = ()

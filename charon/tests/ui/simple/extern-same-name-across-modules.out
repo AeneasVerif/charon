@@ -6,7 +6,7 @@ extern unsafe extern "C" fn test_crate::same_name(_1: i32) -> i32
 // Full name: test_crate::call_root
 unsafe fn call_root() -> i32
 {
-    let _0: i32; // return
+    let mut _0: i32; // return
 
     storage_live(_0)
     _0 = test_crate::same_name(const 0i32)
@@ -19,7 +19,7 @@ extern unsafe extern "C" fn test_crate::first::same_name(_1: i32) -> i32
 
 pub unsafe fn test_crate::first::call() -> i32
 {
-    let _0: i32; // return
+    let mut _0: i32; // return
 
     storage_live(_0)
     _0 = test_crate::first::same_name(const 1i32)
@@ -32,7 +32,7 @@ extern unsafe extern "C" fn test_crate::second::nested::same_name(_1: i32) -> i3
 
 pub unsafe fn test_crate::second::nested::call() -> i32
 {
-    let _0: i32; // return
+    let mut _0: i32; // return
 
     storage_live(_0)
     _0 = test_crate::second::nested::same_name(const 2i32)
@@ -42,7 +42,7 @@ pub unsafe fn test_crate::second::nested::call() -> i32
 
 pub fn test_crate::local_impl::same_name(x: i32) -> i32
 {
-    let _0: i32; // return
+    let mut _0: i32; // return
     let x: i32; // arg #1
 
     storage_live(_0)
@@ -53,7 +53,7 @@ pub fn test_crate::local_impl::same_name(x: i32) -> i32
 
 pub fn test_crate::local_impl::call() -> i32
 {
-    let _0: i32; // return
+    let mut _0: i32; // return
 
     storage_live(_0)
     _0 = test_crate::local_impl::same_name(const 3i32)

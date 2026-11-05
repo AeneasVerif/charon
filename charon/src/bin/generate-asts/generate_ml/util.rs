@@ -20,6 +20,7 @@ pub fn make_ocaml_ident(name: &str) -> String {
             | "include"
             | "let"
             | "method"
+            | "mutable"
             | "open"
             | "rec"
             | "struct"

@@ -60,10 +60,10 @@ where
     TraitClause0: (X: Sized),
     TraitClause1: (X: Trait),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: TraitClause1::LifetimeGat<'1>; // arg #1
-    let _2: TraitClause1::LifetimeGat<'2>; // anonymous local
-    let _3: &'5 TraitClause1::LifetimeGat<'6>; // anonymous local
+    let mut _2: TraitClause1::LifetimeGat<'2>; // anonymous local
+    let mut _3: &'5 TraitClause1::LifetimeGat<'6>; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -98,10 +98,10 @@ where
     TraitClause0: (X: Sized),
     TraitClause1: (X: Trait),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]; // arg #1
-    let _2: TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]; // anonymous local
-    let _3: &'1 TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]; // anonymous local
+    let mut _2: TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]; // anonymous local
+    let mut _3: &'1 TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -136,10 +136,10 @@ where
     TraitClause0: (X: Sized),
     TraitClause1: (X: Trait),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: TraitClause1::ConstGat<4usize>; // arg #1
-    let _2: TraitClause1::ConstGat<4usize>; // anonymous local
-    let _3: &'1 TraitClause1::ConstGat<4usize>; // anonymous local
+    let mut _2: TraitClause1::ConstGat<4usize>; // anonymous local
+    let mut _3: &'1 TraitClause1::ConstGat<4usize>; // anonymous local
 
     storage_live(_0)
     _0 = ()

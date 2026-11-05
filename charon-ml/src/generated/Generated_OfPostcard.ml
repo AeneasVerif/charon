@@ -3093,8 +3093,9 @@ and local_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* name = option_of_postcard string_of_postcard ctx st in
      let* span = span_of_postcard ctx st in
      let* local_ty = ty_of_postcard ctx st in
+     let* is_mutable = bool_of_postcard ctx st in
      let* drop_flag_for = option_of_postcard place_of_postcard ctx st in
-     Ok ({ index; name; span; local_ty; drop_flag_for } : local))
+     Ok ({ index; name; span; local_ty; is_mutable; drop_flag_for } : local))
 
 and locals_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (locals, string) result =

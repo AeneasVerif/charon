@@ -30,7 +30,7 @@ pub const MAX: usize = MAX()
 // Full name: test_crate::S
 fn S() -> [u8; 16usize]
 {
-    let _0: [u8; 16usize]; // return
+    let mut _0: [u8; 16usize]; // return
 
     storage_live(_0)
     _0 = to_ne_bytes(const 24197857199965561741520400062332047378u128)
@@ -50,13 +50,13 @@ enum HasBEDiscr {
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: usize; // local
     let y: usize; // local
     let z: usize; // local
-    let _4: usize; // anonymous local
-    let _5: usize; // anonymous local
-    let _6: usize; // anonymous local
+    let mut _4: usize; // anonymous local
+    let mut _5: usize; // anonymous local
+    let mut _6: usize; // anonymous local
     let a: u128; // local
     let b: HasBEDiscr; // local
 

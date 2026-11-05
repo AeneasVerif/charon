@@ -22,7 +22,7 @@ pub fn defaulted<Self>()
 where
     TraitClause0: (Self: Trait),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -33,7 +33,7 @@ where
 // Full name: test_crate::outer::inner::Trait::defaulted::in_default
 fn in_default()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -46,7 +46,7 @@ pub fn VALUE<Self>()
 where
     TraitClause0: (Self: Trait),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -63,7 +63,7 @@ where
 // Full name: test_crate::outer::inner::Trait::VALUE::in_default_const
 fn in_default_const()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

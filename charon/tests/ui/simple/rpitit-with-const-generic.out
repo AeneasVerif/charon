@@ -59,7 +59,7 @@ pub struct S {}
 // Full name: test_crate::{impl Foo for S}::bar
 pub fn bar<const N : usize>() -> [u8; N]
 {
-    let _0: [u8; N]; // return
+    let mut _0: [u8; N]; // return
 
     storage_live(_0)
     _0 = repeat<u8, N>[{built_in impl Sized for u8}, impl_Clone_for_u8](const 0u8)

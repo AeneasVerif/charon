@@ -37,7 +37,7 @@ pub trait WithConstTy<Self, Self_W, const LEN : usize>
 // Full name: test_crate::WithConstTy::LEN2
 pub fn LEN2<Self, Clause0_W, const LEN : usize>() -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const 32usize

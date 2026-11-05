@@ -5,14 +5,14 @@ struct () {}
 // Full name: test_crate::two
 fn two() -> &'static u32
 {
-    let _0: &'1 u32; // return
+    let mut _0: &'1 u32; // return
     let _1: &'2 u32; // anonymous local
-    let _2: u32; // anonymous local
-    let _3: &'3 u32; // anonymous local
-    let _4: &'4 u32; // anonymous local
-    let _5: &'5 u32; // anonymous local
-    let _6: u32; // anonymous local
-    let _7: u32; // anonymous local
+    let mut _2: u32; // anonymous local
+    let mut _3: &'3 u32; // anonymous local
+    let mut _4: &'4 u32; // anonymous local
+    let mut _5: &'5 u32; // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

@@ -50,7 +50,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -68,7 +68,7 @@ impl "impl_Trait_for_unit" Trait for () {
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

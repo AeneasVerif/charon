@@ -95,7 +95,7 @@ where
     Outlives2: (T: '_1),
     TypeConstraint0: TraitClause2::ImpliedClause1::Output = (),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'3 mut Iter<'4, T>[TraitClause0]; // arg #1
 
     storage_live(_0)

@@ -159,16 +159,16 @@ struct () {}
 // Full name: test_crate::slice_pattern_end
 fn slice_pattern_end<'_0>(x: &'_0 [()])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: &'1 [()]; // arg #1
-    let _2: usize; // anonymous local
-    let _3: usize; // anonymous local
-    let _4: usize; // anonymous local
-    let _5: bool; // anonymous local
+    let mut _2: usize; // anonymous local
+    let mut _3: usize; // anonymous local
+    let mut _4: usize; // anonymous local
+    let mut _5: bool; // anonymous local
     let _named: &'3 (); // local
-    let _7: &'_ [()]; // anonymous local
-    let _8: usize; // anonymous local
-    let _9: &'_ (); // anonymous local
+    let mut _7: &'_ [()]; // anonymous local
+    let mut _8: usize; // anonymous local
+    let mut _9: &'_ (); // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -218,11 +218,11 @@ fn slice_pattern_end<'_0>(x: &'_0 [()])
 // Full name: test_crate::array_pattern_end
 fn array_pattern_end<'_0>(x: &'_0 [u32; 3usize]) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let x: &'1 [u32; 3usize]; // arg #1
     let last: &'3 u32; // local
-    let _3: &'_ [u32; 3usize]; // anonymous local
-    let _4: &'_ u32; // anonymous local
+    let mut _3: &'_ [u32; 3usize]; // anonymous local
+    let mut _4: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(last)
@@ -249,17 +249,17 @@ struct Tail {
 // Full name: test_crate::field_pattern_end
 fn field_pattern_end<'_0>(x: &'_0 Tail) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let x: &'1 Tail; // arg #1
-    let _2: usize; // anonymous local
-    let _3: *const [u32]; // anonymous local
-    let _4: usize; // anonymous local
-    let _5: usize; // anonymous local
-    let _6: bool; // anonymous local
+    let mut _2: usize; // anonymous local
+    let mut _3: *const [u32]; // anonymous local
+    let mut _4: usize; // anonymous local
+    let mut _5: usize; // anonymous local
+    let mut _6: bool; // anonymous local
     let last: u32; // local
-    let _8: &'_ [u32]; // anonymous local
-    let _9: usize; // anonymous local
-    let _10: &'_ u32; // anonymous local
+    let mut _8: &'_ [u32]; // anonymous local
+    let mut _9: usize; // anonymous local
+    let mut _10: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

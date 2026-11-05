@@ -47,7 +47,7 @@ pub struct Pattern::<'_> {
 // Full name: test_crate::{impl Trait for Pattern::<'_>}::method::<'_>
 pub fn method::<'_><'_0>(self: &'_0 Pattern::<'_>)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 Pattern::<'_>; // arg #1
 
     storage_live(_0)
@@ -60,9 +60,9 @@ pub fn method::<'_><'_0>(self: &'_0 Pattern::<'_>)
 // Full name: test_crate::{impl Trait for Pattern::<'_>}::method::{vtable_method}::<'_>
 fn {vtable_method}::<'_><'_0>(_1: &'_0 (dyn Trait))
 {
-    let _0: (); // return
-    let _1: &'_0 (dyn Trait + '0); // arg #1
-    let _2: &'_0 Pattern::<'_>; // anonymous local
+    let mut _0: (); // return
+    let mut _1: &'_0 (dyn Trait + '0); // arg #1
+    let mut _2: &'_0 Pattern::<'_>; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -80,9 +80,9 @@ fn {vtable_method}::<'_><'_0>(_1: &'_0 (dyn Trait))
 // Full name: test_crate::{impl Trait for Pattern::<'_>}::{vtable_drop_shim}::<'_>
 unsafe fn {vtable_drop_shim}::<'_><'_0>(dyn_self: &'_0 mut (dyn Trait))
 {
-    let ret: (); // return
-    let dyn_self: &'_0 mut (dyn Trait + '0); // arg #1
-    let target_self: &'_0 mut Pattern::<'_>; // local
+    let mut ret: (); // return
+    let mut dyn_self: &'_0 mut (dyn Trait + '0); // arg #1
+    let mut target_self: &'_0 mut Pattern::<'_>; // local
 
     storage_live(ret)
     ret = ()
@@ -105,11 +105,11 @@ impl Trait for Pattern::<'_> {
 // Full name: test_crate::f
 pub fn f<'a>(x: &'a Pattern::<'_>) -> &'a (dyn Trait + 'a)
 {
-    let _0: &'3 (dyn Trait + '4); // return
+    let mut _0: &'3 (dyn Trait + '4); // return
     let x: &'6 Pattern::<'_>; // arg #1
-    let _2: &'7 (dyn Trait + '8); // anonymous local
+    let mut _2: &'7 (dyn Trait + '8); // anonymous local
     let _3: &'9 (dyn Trait + '10); // anonymous local
-    let _4: &'11 Pattern::<'_>; // anonymous local
+    let mut _4: &'11 Pattern::<'_>; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

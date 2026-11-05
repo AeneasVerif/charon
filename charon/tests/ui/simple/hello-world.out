@@ -37,9 +37,9 @@ pub const test_crate::main::{promoted_const}: str = "Hello, world!" with_metadat
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let a: String; // local
-    let _2: &'1 str; // anonymous local
+    let mut _2: &'1 str; // anonymous local
     let _3: &'2 str; // anonymous local
 
     storage_live(_0)

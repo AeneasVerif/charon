@@ -47,7 +47,7 @@ where
     TraitClause1: (H: Hasher),
     Outlives0: (H: '_1),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 u32; // arg #1
     let _state: &'3 mut H; // arg #2
 
@@ -69,16 +69,16 @@ impl "impl_Hash_for_u32" Hash for u32 {
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let hasher: DefaultHasher; // local
+    let mut _0: (); // return
+    let mut hasher: DefaultHasher; // local
     let _2: (); // anonymous local
-    let _3: &'1 u32; // anonymous local
-    let _4: &'3 mut DefaultHasher; // anonymous local
-    let _5: &'4 mut DefaultHasher; // anonymous local
-    let _6: &'5 u32; // anonymous local
-    let _7: &'6 u32; // anonymous local
-    let _8: &'11 u32; // anonymous local
-    let _9: u32; // anonymous local
+    let mut _3: &'1 u32; // anonymous local
+    let mut _4: &'3 mut DefaultHasher; // anonymous local
+    let mut _5: &'4 mut DefaultHasher; // anonymous local
+    let mut _6: &'5 u32; // anonymous local
+    let mut _7: &'6 u32; // anonymous local
+    let mut _8: &'11 u32; // anonymous local
+    let mut _9: u32; // anonymous local
 
     storage_live(_7)
     storage_live(_8)

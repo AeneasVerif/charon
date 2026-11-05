@@ -56,7 +56,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Child),
 {
-    let _0: {closure}<T>; // return
+    let mut _0: {closure}<T>; // return
     let x: T; // arg #1
 
     storage_live(_0)
@@ -75,9 +75,9 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Child),
 {
-    let _0: (); // return
-    let _1: {closure}<T>; // arg #1
-    let tupled_args: (); // arg #2
+    let mut _0: (); // return
+    let mut _1: {closure}<T>; // arg #1
+    let mut tupled_args: (); // arg #2
 
     storage_live(_0)
     _0 = ()

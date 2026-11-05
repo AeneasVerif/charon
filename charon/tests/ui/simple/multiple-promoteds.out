@@ -10,23 +10,23 @@ struct () {}
 // Full name: test_crate::six
 fn six() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let x: &'1 u32; // local
-    let _2: u32; // anonymous local
+    let mut _2: u32; // anonymous local
     let y: &'2 u32; // local
-    let _4: u32; // anonymous local
-    let _5: &'3 u32; // anonymous local
-    let _6: &'4 u32; // anonymous local
-    let _7: &'5 u32; // anonymous local
-    let _8: &'6 u32; // anonymous local
-    let _9: &'7 u32; // anonymous local
-    let _10: &'8 u32; // anonymous local
-    let _11: &'11 u32; // anonymous local
-    let _12: u32; // anonymous local
-    let _13: u32; // anonymous local
-    let _14: &'12 u32; // anonymous local
-    let _15: u32; // anonymous local
-    let _16: u32; // anonymous local
+    let mut _4: u32; // anonymous local
+    let mut _5: &'3 u32; // anonymous local
+    let mut _6: &'4 u32; // anonymous local
+    let mut _7: &'5 u32; // anonymous local
+    let mut _8: &'6 u32; // anonymous local
+    let mut _9: &'7 u32; // anonymous local
+    let mut _10: &'8 u32; // anonymous local
+    let mut _11: &'11 u32; // anonymous local
+    let mut _12: u32; // anonymous local
+    let mut _13: u32; // anonymous local
+    let mut _14: &'12 u32; // anonymous local
+    let mut _15: u32; // anonymous local
+    let mut _16: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

@@ -28,15 +28,15 @@ where
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let _1: &'3 Ref<'4, ()>[{built_in impl Sized for ()}]; // anonymous local
-    let _2: &'9 Ref<'10, ()>[{built_in impl Sized for ()}]; // anonymous local
-    let _3: &'11 Ref<'12, ()>[{built_in impl Sized for ()}]; // anonymous local
-    let _4: &'14 Ref<'15, ()>[{built_in impl Sized for ()}]; // anonymous local
-    let _5: Ref<'16, ()>[{built_in impl Sized for ()}]; // anonymous local
-    let _6: &'18 (); // anonymous local
-    let _7: &'19 (); // anonymous local
-    let _8: (); // anonymous local
+    let mut _0: (); // return
+    let mut _1: &'3 Ref<'4, ()>[{built_in impl Sized for ()}]; // anonymous local
+    let mut _2: &'9 Ref<'10, ()>[{built_in impl Sized for ()}]; // anonymous local
+    let mut _3: &'11 Ref<'12, ()>[{built_in impl Sized for ()}]; // anonymous local
+    let mut _4: &'14 Ref<'15, ()>[{built_in impl Sized for ()}]; // anonymous local
+    let mut _5: Ref<'16, ()>[{built_in impl Sized for ()}]; // anonymous local
+    let mut _6: &'18 (); // anonymous local
+    let mut _7: &'19 (); // anonymous local
+    let mut _8: (); // anonymous local
 
     storage_live(_3)
     storage_live(_4)

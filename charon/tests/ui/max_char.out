@@ -4,7 +4,7 @@
 #[deprecated(since = "future", note = "replaced by the `MAX` associated constant on `char`")]
 pub fn MAX() -> char
 {
-    let _0: char; // return
+    let mut _0: char; // return
 
     storage_live(_0)
     _0 = noretag const '\u{10ffff}'
@@ -20,7 +20,7 @@ pub const MAX: char = MAX()
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _max_char: char; // local
 
     storage_live(_0)

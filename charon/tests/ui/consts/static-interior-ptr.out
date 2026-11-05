@@ -50,11 +50,11 @@ static B: &'static u32 = &S0.b
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let _1: (&'16 u32, &'17 u32, &'18 u32); // anonymous local
-    let _2: &'25 u32; // anonymous local
-    let _3: &'30 u32; // anonymous local
-    let _4: &'33 u32; // anonymous local
+    let mut _0: (); // return
+    let mut _1: (&'16 u32, &'17 u32, &'18 u32); // anonymous local
+    let mut _2: &'25 u32; // anonymous local
+    let mut _3: &'30 u32; // anonymous local
+    let mut _4: &'33 u32; // anonymous local
 
     storage_live(_0)
     _0 = ()

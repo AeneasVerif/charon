@@ -75,7 +75,7 @@ fn identity<T>(x: T) -> T
 where
     TraitClause0: (T: Sized),
 {
-    let _0: T; // return
+    let mut _0: T; // return
     let x: T; // arg #1
 
     storage_live(_0)
@@ -89,7 +89,7 @@ fn test_crate::identity::<&_ mut _><'_0, T0>(x: &'_0 mut T0) -> &'_0 mut T0
 where
     TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
-    let _0: &'_0 mut T0; // return
+    let mut _0: &'_0 mut T0; // return
     let x: &'_0 mut T0; // arg #1
 
     storage_live(_0)
@@ -103,7 +103,7 @@ fn test_crate::identity::<Option<&_ mut _>><'_0, T0>(x: Option<&'_0 mut T0>) -> 
 where
     TraitClause0: (T0: core::marker::Sized::<Option<&_ mut _>><'_0>),
 {
-    let _0: Option<&'_0 mut T0>; // return
+    let mut _0: Option<&'_0 mut T0>; // return
     let x: Option<&'_0 mut T0>; // arg #1
 
     storage_live(_0)
@@ -122,13 +122,13 @@ fn use_id_mut<A>(x: A)
 where
     TraitClause0: (A: Sized),
 {
-    let _0: (); // return
-    let x: A; // arg #1
-    let _2: &'1 mut A; // anonymous local
-    let _3: &'2 mut A; // anonymous local
-    let _4: Option<&'10 mut A>; // anonymous local
-    let _5: Option<&'14 mut A>; // anonymous local
-    let _6: &'18 mut A; // anonymous local
+    let mut _0: (); // return
+    let mut x: A; // arg #1
+    let mut _2: &'1 mut A; // anonymous local
+    let mut _3: &'2 mut A; // anonymous local
+    let mut _4: Option<&'10 mut A>; // anonymous local
+    let mut _5: Option<&'14 mut A>; // anonymous local
+    let mut _6: &'18 mut A; // anonymous local
 
     storage_live(_0)
     _0 = ()

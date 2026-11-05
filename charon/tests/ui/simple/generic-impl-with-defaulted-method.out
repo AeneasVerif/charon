@@ -40,7 +40,7 @@ where
     TraitClause0: (Self: BoolTrait),
     Outlives0: (Self: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 Self; // arg #1
 
     storage_live(_0)
@@ -56,7 +56,7 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 Option<T>[TraitClause0]; // arg #1
 
     storage_live(_0)

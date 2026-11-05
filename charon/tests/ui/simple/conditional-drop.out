@@ -61,8 +61,8 @@ where
 // Full name: test_crate::use_box
 fn use_box(_1: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {built_in impl Destruct for Global}])
 {
-    let _0: (); // return
-    let _1: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {built_in impl Destruct for Global}]; // arg #1
+    let mut _0: (); // return
+    let mut _1: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {built_in impl Destruct for Global}]; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -77,11 +77,11 @@ fn use_box(_1: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized 
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let b: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {built_in impl Destruct for Global}]; // local
-    let _2: bool; // anonymous local
+    let mut _2: bool; // anonymous local
     let _3: (); // anonymous local
-    let _4: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {built_in impl Destruct for Global}]; // anonymous local
+    let mut _4: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {built_in impl Destruct for Global}]; // anonymous local
 
     storage_live(_0)
     _0 = ()

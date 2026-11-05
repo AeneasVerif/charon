@@ -158,14 +158,14 @@ pub fn to_raw_parts<T>(_1: *const T) -> (*const (), {built_in impl Pointee for T
 // Full name: test_crate::empty_metadata
 fn empty_metadata()
 {
-    let _0: (); // return
-    let _1: (*const (), ()); // anonymous local
-    let _2: *const u32; // anonymous local
+    let mut _0: (); // return
+    let mut _1: (*const (), ()); // anonymous local
+    let mut _2: *const u32; // anonymous local
     let _3: &'1 u32; // anonymous local
-    let _4: &'2 u32; // anonymous local
-    let _5: &'3 u32; // anonymous local
-    let _6: &'4 u32; // anonymous local
-    let _7: u32; // anonymous local
+    let mut _4: &'2 u32; // anonymous local
+    let mut _5: &'3 u32; // anonymous local
+    let mut _6: &'4 u32; // anonymous local
+    let mut _7: u32; // anonymous local
 
     storage_live(_5)
     storage_live(_6)
@@ -199,15 +199,15 @@ fn empty_metadata()
 // Full name: test_crate::slice_metadata
 fn slice_metadata()
 {
-    let _0: (); // return
-    let _1: (*const (), usize); // anonymous local
-    let _2: *const [u32]; // anonymous local
-    let _3: *const [u32; 2usize]; // anonymous local
+    let mut _0: (); // return
+    let mut _1: (*const (), usize); // anonymous local
+    let mut _2: *const [u32]; // anonymous local
+    let mut _3: *const [u32; 2usize]; // anonymous local
     let _4: &'1 [u32; 2usize]; // anonymous local
-    let _5: &'2 [u32; 2usize]; // anonymous local
-    let _6: &'3 [u32; 2usize]; // anonymous local
-    let _7: &'4 [u32; 2usize]; // anonymous local
-    let _8: [u32; 2usize]; // anonymous local
+    let mut _5: &'2 [u32; 2usize]; // anonymous local
+    let mut _6: &'3 [u32; 2usize]; // anonymous local
+    let mut _7: &'4 [u32; 2usize]; // anonymous local
+    let mut _8: [u32; 2usize]; // anonymous local
 
     storage_live(_6)
     storage_live(_7)

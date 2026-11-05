@@ -23,7 +23,7 @@ impl "impl_Foo_for_u64" Foo for u64 {
 // Full name: test_crate::{impl Foo for u64}::bar::<bool>
 fn bar::<bool>() -> u64
 {
-    let _0: u64; // return
+    let mut _0: u64; // return
 
     storage_live(_0)
     _0 = const 0u64
@@ -33,7 +33,7 @@ fn bar::<bool>() -> u64
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: u64; // anonymous local
 
     storage_live(_0)

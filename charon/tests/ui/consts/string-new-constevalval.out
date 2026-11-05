@@ -28,8 +28,8 @@ pub fn alloc::vec::{Vec<T, Global>[TraitClause0, {built_in impl Sized for Global
 where
     TraitClause0: (T: Sized),
 {
-    let _0: Vec<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#1}]; // return
-    let _1: RawVec<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#1}]; // anonymous local
+    let mut _0: Vec<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#1}]; // return
+    let mut _1: RawVec<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#1}]; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -43,8 +43,8 @@ where
 #[diagnostic_item("string_new")]
 pub fn alloc::string::{String}::new() -> String
 {
-    let _0: String; // return
-    let _1: Vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {impl#1}]; // anonymous local
+    let mut _0: String; // return
+    let mut _1: Vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {impl#1}]; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -60,8 +60,8 @@ struct () {}
 // Full name: test_crate::mk_string
 pub fn mk_string()
 {
-    let _0: (); // return
-    let _1: String; // anonymous local
+    let mut _0: (); // return
+    let mut _1: String; // anonymous local
 
     storage_live(_0)
     _0 = ()

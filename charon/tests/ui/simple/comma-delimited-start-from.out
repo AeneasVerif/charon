@@ -5,7 +5,7 @@ struct () {}
 // Full name: test_crate::a
 fn a()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -16,7 +16,7 @@ fn a()
 // Full name: test_crate::b
 fn b()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

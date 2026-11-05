@@ -113,10 +113,10 @@ struct str {
 // Full name: test_crate::use_string
 fn use_string(_1: String)
 {
-    let _0: (); // return
-    let _1: String; // arg #1
-    let drop_arg: &'_ mut String; // local
-    let drop_ret: (); // local
+    let mut _0: (); // return
+    let mut _1: String; // arg #1
+    let mut drop_arg: &'_ mut String; // local
+    let mut drop_ret: (); // local
 
     storage_live(_0)
     _0 = ()
@@ -136,10 +136,10 @@ fn use_string(_1: String)
 // Full name: test_crate::use_vec
 fn use_vec(_1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}])
 {
-    let _0: (); // return
-    let _1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // arg #1
-    let drop_arg: &'_ mut Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // local
-    let drop_ret: (); // local
+    let mut _0: (); // return
+    let mut _1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // arg #1
+    let mut drop_arg: &'_ mut Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // local
+    let mut drop_ret: (); // local
 
     storage_live(_0)
     _0 = ()
@@ -162,10 +162,10 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Destruct),
 {
-    let _0: (); // return
-    let _1: T; // arg #1
-    let drop_arg: &'_ mut T; // local
-    let drop_ret: (); // local
+    let mut _0: (); // return
+    let mut _1: T; // arg #1
+    let mut drop_arg: &'_ mut T; // local
+    let mut drop_ret: (); // local
 
     storage_live(_0)
     _0 = ()
@@ -185,8 +185,8 @@ where
 // Full name: test_crate::skip_drop_scalar
 fn skip_drop_scalar(_1: i32)
 {
-    let _0: (); // return
-    let _1: i32; // arg #1
+    let mut _0: (); // return
+    let mut _1: i32; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -207,11 +207,11 @@ pub const test_crate::impl_Drop_for_Point::drop::{promoted_const}: str = "Droppi
 // Full name: test_crate::{impl Drop for Point}::drop
 pub fn impl_Drop_for_Point::drop<'_0>(self: &'_0 mut Point)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 mut Point; // arg #1
     let _2: (); // anonymous local
-    let _3: Arguments<'3>; // anonymous local
-    let _4: &'6 str; // anonymous local
+    let mut _3: Arguments<'3>; // anonymous local
+    let mut _4: &'6 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -236,18 +236,18 @@ pub fn impl_Drop_for_Point::drop<'_0>(self: &'_0 mut Point)
 // Full name: test_crate::Point::{impl Destruct for Point}::drop_glue
 unsafe fn impl_Destruct_for_Point::drop_glue<'_0>(_1: &'_0 mut Point)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut Point; // arg #1
-    let _2: &'2 mut Point; // anonymous local
-    let _3: (); // anonymous local
-    let drop_arg_4: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // local
-    let drop_ret_5: (); // local
-    let drop_arg_6: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // local
-    let drop_ret_7: (); // local
-    let drop_arg_8: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // local
-    let drop_ret_9: (); // local
-    let drop_arg_10: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // local
-    let drop_ret_11: (); // local
+    let mut _2: &'2 mut Point; // anonymous local
+    let mut _3: (); // anonymous local
+    let mut drop_arg_4: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // local
+    let mut drop_ret_5: (); // local
+    let mut drop_arg_6: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // local
+    let mut drop_ret_7: (); // local
+    let mut drop_arg_8: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // local
+    let mut drop_ret_9: (); // local
+    let mut drop_arg_10: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // local
+    let mut drop_ret_11: (); // local
 
     storage_live(_0)
     storage_live(_2)
@@ -354,14 +354,14 @@ impl "impl_Drop_for_Point" Drop for Point {
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let p: Point; // local
-    let _2: Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // anonymous local
-    let _3: Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // anonymous local
-    let drop_arg_4: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // local
-    let drop_ret_5: (); // local
-    let drop_arg_6: &'_ mut Point; // local
-    let drop_ret_7: (); // local
+    let mut _0: (); // return
+    let mut p: Point; // local
+    let mut _2: Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // anonymous local
+    let mut _3: Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // anonymous local
+    let mut drop_arg_4: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // local
+    let mut drop_ret_5: (); // local
+    let mut drop_arg_6: &'_ mut Point; // local
+    let mut drop_ret_7: (); // local
 
     storage_live(_0)
     _0 = ()

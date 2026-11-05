@@ -62,12 +62,12 @@ impl core::marker::Copy for u64 {
 
 pub fn multi_targets::no_os(left: u64, right: u64) -> u64
 {
-    let _0: u64; // return
+    let mut _0: u64; // return
     let left: u64; // arg #1
     let right: u64; // arg #2
-    let _3: u64; // anonymous local
-    let _4: u64; // anonymous local
-    let _5: (u64, bool); // anonymous local
+    let mut _3: u64; // anonymous local
+    let mut _4: u64; // anonymous local
+    let mut _5: (u64, bool); // anonymous local
 
     storage_live(_0)
     storage_live(_5)
@@ -87,12 +87,12 @@ pub fn multi_targets::no_os(left: u64, right: u64) -> u64
 
 pub fn multi_targets::on_unix(left: u64, right: u64) -> u64
 {
-    let _0: u64; // return
+    let mut _0: u64; // return
     let left: u64; // arg #1
     let right: u64; // arg #2
-    let _3: u64; // anonymous local
-    let _4: u64; // anonymous local
-    let _5: (u64, bool); // anonymous local
+    let mut _3: u64; // anonymous local
+    let mut _4: u64; // anonymous local
+    let mut _5: (u64, bool); // anonymous local
 
     storage_live(_0)
     storage_live(_5)

@@ -90,9 +90,9 @@ where
 // Full name: test_crate::wrap
 fn wrap<'a>(x: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'a u32}]
 {
-    let _0: Option<&'8 u32>[{built_in impl Sized for &'8 u32}]; // return
+    let mut _0: Option<&'8 u32>[{built_in impl Sized for &'8 u32}]; // return
     let x: &'12 u32; // arg #1
-    let _2: &'13 u32; // anonymous local
+    let mut _2: &'13 u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -108,9 +108,9 @@ fn wrap2<'a>(x: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'a u32}]
 where
     TraitClause0: (&'a (): Clone),
 {
-    let _0: Option<&'8 u32>[{built_in impl Sized for &'8 u32}]; // return
+    let mut _0: Option<&'8 u32>[{built_in impl Sized for &'8 u32}]; // return
     let x: &'12 u32; // arg #1
-    let _2: &'13 u32; // anonymous local
+    let mut _2: &'13 u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -124,10 +124,10 @@ where
 // Full name: test_crate::foo
 fn foo()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let ref_b: RefCell<bool>[{built_in impl MetaSized for bool}]; // local
-    let _2: Result<Ref<'8, bool>[{built_in impl MetaSized for bool}], BorrowError>[{built_in impl Sized for Ref<'8, bool>[{built_in impl MetaSized for bool}]}, {built_in impl Sized for BorrowError}]; // anonymous local
-    let _3: &'13 RefCell<bool>[{built_in impl MetaSized for bool}]; // anonymous local
+    let mut _2: Result<Ref<'8, bool>[{built_in impl MetaSized for bool}], BorrowError>[{built_in impl Sized for Ref<'8, bool>[{built_in impl MetaSized for bool}]}, {built_in impl Sized for BorrowError}]; // anonymous local
+    let mut _3: &'13 RefCell<bool>[{built_in impl MetaSized for bool}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -168,7 +168,7 @@ where
     TraitClause3: (U: Foo),
     TypeConstraint0: TraitClause2::S = TraitClause3::S,
 {
-    let _0: Option<TraitClause3::S>[TraitClause3::ImpliedClause1]; // return
+    let mut _0: Option<TraitClause3::S>[TraitClause3::ImpliedClause1]; // return
 
     storage_live(_0)
     panic(core::panicking::panic)

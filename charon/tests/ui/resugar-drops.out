@@ -54,7 +54,7 @@ where
     Outlives0: (A: '_0),
     Outlives1: (B: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut (A, B); // arg #1
 
     storage_live(_0)
@@ -74,7 +74,7 @@ struct NeedsDrop {}
 // Full name: test_crate::{impl Drop for NeedsDrop}::drop
 pub fn impl_Drop_for_NeedsDrop::drop<'_0>(self: &'_0 mut NeedsDrop)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 mut NeedsDrop; // arg #1
 
     storage_live(_0)
@@ -86,10 +86,10 @@ pub fn impl_Drop_for_NeedsDrop::drop<'_0>(self: &'_0 mut NeedsDrop)
 // Full name: test_crate::NeedsDrop::{impl Destruct for NeedsDrop}::drop_glue
 unsafe fn impl_Destruct_for_NeedsDrop::drop_glue<'_0>(_1: &'_0 mut NeedsDrop)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut NeedsDrop; // arg #1
-    let _2: &'2 mut NeedsDrop; // anonymous local
-    let _3: (); // anonymous local
+    let mut _2: &'2 mut NeedsDrop; // anonymous local
+    let mut _3: (); // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -113,7 +113,7 @@ fn consume<T>(_x: T)
 where
     TraitClause0: (T: Sized),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _x: T; // arg #1
 
     storage_live(_0)
@@ -127,12 +127,12 @@ where
 // Full name: test_crate::conditional
 pub fn conditional(x: NeedsDrop, move_x: bool)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: NeedsDrop; // arg #1
     let move_x: bool; // arg #2
-    let _3: bool; // anonymous local
+    let mut _3: bool; // anonymous local
     let _4: (); // anonymous local
-    let _5: NeedsDrop; // anonymous local
+    let mut _5: NeedsDrop; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -159,9 +159,9 @@ pub fn conditional(x: NeedsDrop, move_x: bool)
 // Full name: test_crate::pair1
 fn pair1(pair: (NeedsDrop, NeedsDrop))
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let pair: (NeedsDrop, NeedsDrop); // arg #1
-    let _2: bool; // anonymous local
+    let mut _2: bool; // anonymous local
     let _x_3: (NeedsDrop, NeedsDrop); // local
     let _x_4: NeedsDrop; // local
 
@@ -197,13 +197,13 @@ fn pair1(pair: (NeedsDrop, NeedsDrop))
 // Full name: test_crate::pair2
 fn pair2(pair: (NeedsDrop, NeedsDrop))
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let pair: (NeedsDrop, NeedsDrop); // arg #1
-    let _2: i32; // anonymous local
+    let mut _2: i32; // anonymous local
     let _x_3: (NeedsDrop, NeedsDrop); // local
     let _x_4: NeedsDrop; // local
     let _x_5: NeedsDrop; // local
-    let _6: bool; // anonymous local
+    let mut _6: bool; // anonymous local
 
     storage_live(_0)
     storage_live(_6)
@@ -268,13 +268,13 @@ fn pair2(pair: (NeedsDrop, NeedsDrop))
 // Full name: test_crate::pair3
 pub fn pair3(pair: (NeedsDrop, NeedsDrop), move_pair: bool, move_first: bool)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let pair: (NeedsDrop, NeedsDrop); // arg #1
     let move_pair: bool; // arg #2
     let move_first: bool; // arg #3
-    let _4: bool; // anonymous local
+    let mut _4: bool; // anonymous local
     let _x_5: (NeedsDrop, NeedsDrop); // local
-    let _6: bool; // anonymous local
+    let mut _6: bool; // anonymous local
     let _x_7: NeedsDrop; // local
 
     storage_live(_0)
@@ -322,13 +322,13 @@ pub fn pair3(pair: (NeedsDrop, NeedsDrop), move_pair: bool, move_first: bool)
 // Full name: test_crate::re_assign
 pub fn re_assign(x: NeedsDrop)
 {
-    let _0: (); // return
-    let x: NeedsDrop; // arg #1
-    let _2: bool; // anonymous local
+    let mut _0: (); // return
+    let mut x: NeedsDrop; // arg #1
+    let mut _2: bool; // anonymous local
     let _3: (); // anonymous local
-    let _4: NeedsDrop; // anonymous local
-    let _5: bool; // anonymous local
-    let _6: NeedsDrop; // anonymous local
+    let mut _4: NeedsDrop; // anonymous local
+    let mut _5: bool; // anonymous local
+    let mut _6: NeedsDrop; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -372,13 +372,13 @@ pub fn re_assign(x: NeedsDrop)
 // Full name: test_crate::in_loop
 pub fn in_loop(x: NeedsDrop)
 {
-    let _0: (); // return
-    let x: NeedsDrop; // arg #1
-    let _2: bool; // anonymous local
-    let _3: bool; // anonymous local
+    let mut _0: (); // return
+    let mut x: NeedsDrop; // arg #1
+    let mut _2: bool; // anonymous local
+    let mut _3: bool; // anonymous local
     let _4: (); // anonymous local
-    let _5: NeedsDrop; // anonymous local
-    let _6: NeedsDrop; // anonymous local
+    let mut _5: NeedsDrop; // anonymous local
+    let mut _6: NeedsDrop; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -432,19 +432,19 @@ enum EnumWithTwoDrops {
 // Full name: test_crate::partial_enum_move
 fn partial_enum_move(value: EnumWithTwoDrops, b: bool)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let value: EnumWithTwoDrops; // arg #1
     let b: bool; // arg #2
-    let _3: bool; // anonymous local
+    let mut _3: bool; // anonymous local
     let _4: (); // anonymous local
-    let _5: EnumWithTwoDrops; // anonymous local
-    let _6: isize; // anonymous local
+    let mut _5: EnumWithTwoDrops; // anonymous local
+    let mut _6: isize; // anonymous local
     let first: NeedsDrop; // local
-    let _8: NeedsDrop; // anonymous local
-    let _9: bool; // anonymous local; drop flag for (value as variant EnumWithTwoDrops::Pair)._1
-    let _10: bool; // anonymous local
-    let _11: isize; // anonymous local
-    let _12: isize; // anonymous local
+    let mut _8: NeedsDrop; // anonymous local
+    let mut _9: bool; // anonymous local; drop flag for (value as variant EnumWithTwoDrops::Pair)._1
+    let mut _10: bool; // anonymous local
+    let mut _11: isize; // anonymous local
+    let mut _12: isize; // anonymous local
 
     storage_live(_0)
     storage_live(_6)

@@ -94,19 +94,19 @@ where
 // Full name: test_crate::next
 pub fn next(b: bool) -> Option<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}]
 {
-    let _0: Option<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}]; // return
+    let mut _0: Option<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}]; // return
     let b: bool; // arg #1
     let vec: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
-    let _3: Box<MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]>[{built_in impl MetaSized for MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]}, {built_in impl Sized for Global}]; // anonymous local
-    let _4: Box<MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]>[{built_in impl MetaSized for MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]}, {built_in impl Sized for Global}]; // anonymous local
-    let _5: u8; // anonymous local
-    let _6: bool; // anonymous local
-    let _7: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // anonymous local
-    let ret: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
-    let x: Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // local
-    let y: Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}]; // local
-    let _11: [u8; 1usize]; // anonymous local
-    let _12: Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _3: Box<MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]>[{built_in impl MetaSized for MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _4: Box<MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]>[{built_in impl MetaSized for MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _5: u8; // anonymous local
+    let mut _6: bool; // anonymous local
+    let mut _7: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // anonymous local
+    let mut ret: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
+    let mut x: Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // local
+    let mut y: Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}]; // local
+    let mut _11: [u8; 1usize]; // anonymous local
+    let mut _12: Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // anonymous local
 
     storage_live(_0)
     storage_live(vec)

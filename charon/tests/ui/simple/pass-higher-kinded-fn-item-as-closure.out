@@ -79,7 +79,7 @@ struct (_,)<A> {
 // Full name: test_crate::flabada
 pub fn flabada<'a>(x: &'a ()) -> &'a ()
 {
-    let _0: &'1 (); // return
+    let mut _0: &'1 (); // return
     let x: &'2 (); // arg #1
 
     storage_live(_0)
@@ -91,9 +91,9 @@ pub fn flabada<'a>(x: &'a ()) -> &'a ()
 // Full name: test_crate::{impl Fn<(&'a (),), &'a ()> for for<'a> flabada<'a>}::call
 pub extern "rust-call" fn {impl Fn<(&'a (),), &'a ()> for for<'a> flabada<'a>}::call<'a, '_1>(state: &'_1 for<'a> flabada<'a>, args: (&'a (),)) -> &'a ()
 {
-    let _0: &'a (); // return
-    let state: &'_1 for<'a> flabada<'a>; // arg #1
-    let args: (&'a (),); // arg #2
+    let mut _0: &'a (); // return
+    let mut state: &'_1 for<'a> flabada<'a>; // arg #1
+    let mut args: (&'a (),); // arg #2
 
     storage_live(_0)
     _0 = flabada<'a>(move args._0)
@@ -108,9 +108,9 @@ pub extern "rust-call" fn {impl Fn<(&'a (),), &'a ()> for for<'a> flabada<'a>}::
 // Full name: test_crate::{impl FnMut<(&'a (),), &'a ()> for for<'a> flabada<'a>}::call_mut
 pub extern "rust-call" fn call_mut<'a, '_1>(state: &'_1 mut for<'a> flabada<'a>, args: (&'a (),)) -> &'a ()
 {
-    let _0: &'a (); // return
-    let state: &'_1 mut for<'a> flabada<'a>; // arg #1
-    let args: (&'a (),); // arg #2
+    let mut _0: &'a (); // return
+    let mut state: &'_1 mut for<'a> flabada<'a>; // arg #1
+    let mut args: (&'a (),); // arg #2
 
     storage_live(_0)
     _0 = flabada<'a>(move args._0)
@@ -125,9 +125,9 @@ pub extern "rust-call" fn call_mut<'a, '_1>(state: &'_1 mut for<'a> flabada<'a>,
 // Full name: test_crate::{impl FnOnce<(&'a (),), &'a ()> for for<'a> flabada<'a>}::call_once
 pub extern "rust-call" fn call_once<'a>(state: for<'a> flabada<'a>, args: (&'a (),)) -> &'a ()
 {
-    let _0: &'a (); // return
-    let state: for<'a> flabada<'a>; // arg #1
-    let args: (&'a (),); // arg #2
+    let mut _0: &'a (); // return
+    let mut state: for<'a> flabada<'a>; // arg #1
+    let mut args: (&'a (),); // arg #2
 
     storage_live(_0)
     _0 = flabada<'a>(move args._0)
@@ -174,8 +174,8 @@ where
     TraitClause0: (F: Sized),
     TraitClause1: (F: Fn<(&'b (),), &'b ()>),
 {
-    let _0: (); // return
-    let _1: F; // arg #1
+    let mut _0: (); // return
+    let mut _1: F; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -190,7 +190,7 @@ where
 // Full name: test_crate::flibidi
 pub fn flibidi()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: (); // anonymous local
 
     storage_live(_0)

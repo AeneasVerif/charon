@@ -146,7 +146,7 @@ where
 
 pub fn mydup::hello() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 1u32
@@ -155,7 +155,7 @@ pub fn mydup::hello() -> u32
 
 pub fn mydup#1::hello() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 2u32
@@ -165,8 +165,8 @@ pub fn mydup#1::hello() -> u32
 // Full name: issue_412_dup_deps::main::{promoted_const}
 fn {promoted_const}() -> &'_ u32
 {
-    let _0: &'0 u32; // return
-    let _1: u32; // anonymous local
+    let mut _0: &'0 u32; // return
+    let mut _1: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -181,30 +181,30 @@ const {promoted_const}: &'_ u32 = {promoted_const}()
 // Full name: issue_412_dup_deps::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let a: u32; // local
     let b: u32; // local
-    let _3: (&'9 u32, &'10 u32); // anonymous local
-    let _4: &'14 u32; // anonymous local
+    let mut _3: (&'9 u32, &'10 u32); // anonymous local
+    let mut _4: &'14 u32; // anonymous local
     let _5: u32; // anonymous local
-    let _6: u32; // anonymous local
-    let _7: u32; // anonymous local
-    let _8: (u32, bool); // anonymous local
-    let _9: &'15 u32; // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: u32; // anonymous local
+    let mut _8: (u32, bool); // anonymous local
+    let mut _9: &'15 u32; // anonymous local
     let left_val: &'16 u32; // local
     let right_val: &'17 u32; // local
-    let _12: bool; // anonymous local
-    let _13: u32; // anonymous local
-    let _14: u32; // anonymous local
+    let mut _12: bool; // anonymous local
+    let mut _13: u32; // anonymous local
+    let mut _14: u32; // anonymous local
     let kind: AssertKind; // local
     let _16: !; // anonymous local
-    let _17: AssertKind; // anonymous local
-    let _18: &'18 u32; // anonymous local
+    let mut _17: AssertKind; // anonymous local
+    let mut _18: &'18 u32; // anonymous local
     let _19: &'19 u32; // anonymous local
-    let _20: &'20 u32; // anonymous local
+    let mut _20: &'20 u32; // anonymous local
     let _21: &'21 u32; // anonymous local
-    let _22: Option<Arguments<'30>>[{built_in impl Sized for Arguments<'30>}]; // anonymous local
-    let _23: &'34 u32; // anonymous local
+    let mut _22: Option<Arguments<'30>>[{built_in impl Sized for Arguments<'30>}]; // anonymous local
+    let mut _23: &'34 u32; // anonymous local
 
     storage_live(_0)
     storage_live(_8)

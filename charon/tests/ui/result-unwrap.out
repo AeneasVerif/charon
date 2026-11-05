@@ -51,13 +51,13 @@ where
     TraitClause1: (E: Sized),
     TraitClause2: (E: Debug),
 {
-    let t: T; // return
+    let mut t: T; // return
     let self: Result<T, E>[TraitClause0, TraitClause1]; // arg #1
     let e: E; // local
-    let _3: !; // anonymous local
-    let _4: &'3 (dyn Debug + '4); // anonymous local
+    let mut _3: !; // anonymous local
+    let mut _4: &'3 (dyn Debug + '4); // anonymous local
     let _5: &'6 E; // anonymous local
-    let _6: &'14 str; // anonymous local
+    let mut _6: &'14 str; // anonymous local
 
     storage_live(t)
     storage_live(_3)
@@ -102,9 +102,9 @@ where
 
 fn test_crate::unwrap(res: Result<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let res: Result<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // arg #1
-    let _2: Result<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // anonymous local
+    let mut _2: Result<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

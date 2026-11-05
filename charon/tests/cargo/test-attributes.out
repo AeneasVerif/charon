@@ -349,7 +349,7 @@ unsafe fn impl_Destruct_for_TestDesc::drop_glue<'_0>(_1: &'_0 mut TestDesc)
 // Full name: test_attributes::foo
 fn foo()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -364,7 +364,7 @@ pub const test_attributes::tests::test_ignore::{promoted_const}: str = "tests::t
 #[ignore]
 fn test_attributes::tests::test_ignore#1()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -377,10 +377,10 @@ struct test_attributes::tests::test_ignore::{closure} {}
 // Full name: test_attributes::tests::test_ignore::{impl Fn<()> for test_attributes::tests::test_ignore::{closure}}::call
 extern "rust-call" fn {impl Fn<()> for test_attributes::tests::test_ignore::{closure}}::call<'_0>(_1: &'_0 test_attributes::tests::test_ignore::{closure}, tupled_args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
-    let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let _1: &'1 test_attributes::tests::test_ignore::{closure}; // arg #1
-    let tupled_args: (); // arg #2
-    let _3: (); // anonymous local
+    let mut _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
+    let mut _1: &'1 test_attributes::tests::test_ignore::{closure}; // arg #1
+    let mut tupled_args: (); // arg #2
+    let mut _3: (); // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -395,10 +395,10 @@ extern "rust-call" fn {impl Fn<()> for test_attributes::tests::test_ignore::{clo
 // Full name: test_attributes::tests::test_ignore::{impl FnMut<()> for test_attributes::tests::test_ignore::{closure}}::call_mut
 extern "rust-call" fn {impl FnMut<()> for test_attributes::tests::test_ignore::{closure}}::call_mut<'_0>(state: &'_0 mut test_attributes::tests::test_ignore::{closure}, args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
-    let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let state: &'_0 mut test_attributes::tests::test_ignore::{closure}; // arg #1
-    let args: (); // arg #2
-    let _3: &'0 test_attributes::tests::test_ignore::{closure}; // anonymous local
+    let mut _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
+    let mut state: &'_0 mut test_attributes::tests::test_ignore::{closure}; // arg #1
+    let mut args: (); // arg #2
+    let mut _3: &'0 test_attributes::tests::test_ignore::{closure}; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -411,7 +411,7 @@ extern "rust-call" fn {impl FnMut<()> for test_attributes::tests::test_ignore::{
 // Full name: test_attributes::tests::test_ignore::{impl FnOnce<()> for test_attributes::tests::test_ignore::{closure}}::call_once
 extern "rust-call" fn {impl FnOnce<()> for test_attributes::tests::test_ignore::{closure}}::call_once(_1: test_attributes::tests::test_ignore::{closure}, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
-    let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
+    let mut _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
     let _1: test_attributes::tests::test_ignore::{closure}; // arg #1
     let _2: (); // arg #2
     let _3: &'1 mut test_attributes::tests::test_ignore::{closure}; // anonymous local
@@ -426,9 +426,9 @@ extern "rust-call" fn {impl FnOnce<()> for test_attributes::tests::test_ignore::
 
 fn test_attributes::tests::test_ignore::{closure}::{as_fn}() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
-    let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let args: (); // local
-    let state: test_attributes::tests::test_ignore::{closure}; // local
+    let mut _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
+    let mut args: (); // local
+    let mut state: test_attributes::tests::test_ignore::{closure}; // local
 
     storage_live(_0)
     storage_live(args)
@@ -442,17 +442,17 @@ fn test_attributes::tests::test_ignore::{closure}::{as_fn}() -> Result<(), Strin
 
 pub fn test_attributes::tests::test_ignore() -> TestDescAndFn
 {
-    let _0: TestDescAndFn; // return
-    let _1: TestDesc; // anonymous local
-    let _2: TestName; // anonymous local
-    let _3: Option<&'8 str>[{built_in impl Sized for &'8 str}]; // anonymous local
-    let _4: ShouldPanic; // anonymous local
-    let _5: TestType; // anonymous local
-    let _6: TestFn; // anonymous local
-    let _7: fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // anonymous local
-    let _8: test_attributes::tests::test_ignore::{closure}; // anonymous local
-    let _9: &'12 str; // anonymous local
-    let _10: &'20 str; // anonymous local
+    let mut _0: TestDescAndFn; // return
+    let mut _1: TestDesc; // anonymous local
+    let mut _2: TestName; // anonymous local
+    let mut _3: Option<&'8 str>[{built_in impl Sized for &'8 str}]; // anonymous local
+    let mut _4: ShouldPanic; // anonymous local
+    let mut _5: TestType; // anonymous local
+    let mut _6: TestFn; // anonymous local
+    let mut _7: fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // anonymous local
+    let mut _8: test_attributes::tests::test_ignore::{closure}; // anonymous local
+    let mut _9: &'12 str; // anonymous local
+    let mut _10: &'20 str; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -508,10 +508,10 @@ pub const test_attributes::tests::test_should_panic#1::{promoted_const}: str = "
 #[should_panic]
 fn test_attributes::tests::test_should_panic#1()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: !; // anonymous local
-    let _2: Arguments<'1>; // anonymous local
-    let _3: &'4 str; // anonymous local
+    let mut _2: Arguments<'1>; // anonymous local
+    let mut _3: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -530,10 +530,10 @@ struct test_attributes::tests::test_should_panic::{closure} {}
 // Full name: test_attributes::tests::test_should_panic::{impl Fn<()> for test_attributes::tests::test_should_panic::{closure}}::call
 extern "rust-call" fn {impl Fn<()> for test_attributes::tests::test_should_panic::{closure}}::call<'_0>(_1: &'_0 test_attributes::tests::test_should_panic::{closure}, tupled_args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
-    let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let _1: &'1 test_attributes::tests::test_should_panic::{closure}; // arg #1
-    let tupled_args: (); // arg #2
-    let _3: (); // anonymous local
+    let mut _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
+    let mut _1: &'1 test_attributes::tests::test_should_panic::{closure}; // arg #1
+    let mut tupled_args: (); // arg #2
+    let mut _3: (); // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -548,10 +548,10 @@ extern "rust-call" fn {impl Fn<()> for test_attributes::tests::test_should_panic
 // Full name: test_attributes::tests::test_should_panic::{impl FnMut<()> for test_attributes::tests::test_should_panic::{closure}}::call_mut
 extern "rust-call" fn {impl FnMut<()> for test_attributes::tests::test_should_panic::{closure}}::call_mut<'_0>(state: &'_0 mut test_attributes::tests::test_should_panic::{closure}, args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
-    let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let state: &'_0 mut test_attributes::tests::test_should_panic::{closure}; // arg #1
-    let args: (); // arg #2
-    let _3: &'0 test_attributes::tests::test_should_panic::{closure}; // anonymous local
+    let mut _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
+    let mut state: &'_0 mut test_attributes::tests::test_should_panic::{closure}; // arg #1
+    let mut args: (); // arg #2
+    let mut _3: &'0 test_attributes::tests::test_should_panic::{closure}; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -564,7 +564,7 @@ extern "rust-call" fn {impl FnMut<()> for test_attributes::tests::test_should_pa
 // Full name: test_attributes::tests::test_should_panic::{impl FnOnce<()> for test_attributes::tests::test_should_panic::{closure}}::call_once
 extern "rust-call" fn {impl FnOnce<()> for test_attributes::tests::test_should_panic::{closure}}::call_once(_1: test_attributes::tests::test_should_panic::{closure}, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
-    let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
+    let mut _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
     let _1: test_attributes::tests::test_should_panic::{closure}; // arg #1
     let _2: (); // arg #2
     let _3: &'1 mut test_attributes::tests::test_should_panic::{closure}; // anonymous local
@@ -579,9 +579,9 @@ extern "rust-call" fn {impl FnOnce<()> for test_attributes::tests::test_should_p
 
 fn test_attributes::tests::test_should_panic::{closure}::{as_fn}() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
-    let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let args: (); // local
-    let state: test_attributes::tests::test_should_panic::{closure}; // local
+    let mut _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
+    let mut args: (); // local
+    let mut state: test_attributes::tests::test_should_panic::{closure}; // local
 
     storage_live(_0)
     storage_live(args)
@@ -595,17 +595,17 @@ fn test_attributes::tests::test_should_panic::{closure}::{as_fn}() -> Result<(),
 
 pub fn test_attributes::tests::test_should_panic() -> TestDescAndFn
 {
-    let _0: TestDescAndFn; // return
-    let _1: TestDesc; // anonymous local
-    let _2: TestName; // anonymous local
-    let _3: Option<&'8 str>[{built_in impl Sized for &'8 str}]; // anonymous local
-    let _4: ShouldPanic; // anonymous local
-    let _5: TestType; // anonymous local
-    let _6: TestFn; // anonymous local
-    let _7: fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // anonymous local
-    let _8: test_attributes::tests::test_should_panic::{closure}; // anonymous local
-    let _9: &'12 str; // anonymous local
-    let _10: &'20 str; // anonymous local
+    let mut _0: TestDescAndFn; // return
+    let mut _1: TestDesc; // anonymous local
+    let mut _2: TestName; // anonymous local
+    let mut _3: Option<&'8 str>[{built_in impl Sized for &'8 str}]; // anonymous local
+    let mut _4: ShouldPanic; // anonymous local
+    let mut _5: TestType; // anonymous local
+    let mut _6: TestFn; // anonymous local
+    let mut _7: fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // anonymous local
+    let mut _8: test_attributes::tests::test_should_panic::{closure}; // anonymous local
+    let mut _9: &'12 str; // anonymous local
+    let mut _10: &'20 str; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -658,7 +658,7 @@ pub const test_attributes::tests::test_foo::{promoted_const}: str = "tests::test
 
 fn test_attributes::tests::test_foo#1()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: (); // anonymous local
 
     storage_live(_0)
@@ -676,10 +676,10 @@ struct test_attributes::tests::test_foo::{closure} {}
 // Full name: test_attributes::tests::test_foo::{impl Fn<()> for test_attributes::tests::test_foo::{closure}}::call
 extern "rust-call" fn {impl Fn<()> for test_attributes::tests::test_foo::{closure}}::call<'_0>(_1: &'_0 test_attributes::tests::test_foo::{closure}, tupled_args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
-    let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let _1: &'1 test_attributes::tests::test_foo::{closure}; // arg #1
-    let tupled_args: (); // arg #2
-    let _3: (); // anonymous local
+    let mut _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
+    let mut _1: &'1 test_attributes::tests::test_foo::{closure}; // arg #1
+    let mut tupled_args: (); // arg #2
+    let mut _3: (); // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -694,10 +694,10 @@ extern "rust-call" fn {impl Fn<()> for test_attributes::tests::test_foo::{closur
 // Full name: test_attributes::tests::test_foo::{impl FnMut<()> for test_attributes::tests::test_foo::{closure}}::call_mut
 extern "rust-call" fn {impl FnMut<()> for test_attributes::tests::test_foo::{closure}}::call_mut<'_0>(state: &'_0 mut test_attributes::tests::test_foo::{closure}, args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
-    let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let state: &'_0 mut test_attributes::tests::test_foo::{closure}; // arg #1
-    let args: (); // arg #2
-    let _3: &'0 test_attributes::tests::test_foo::{closure}; // anonymous local
+    let mut _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
+    let mut state: &'_0 mut test_attributes::tests::test_foo::{closure}; // arg #1
+    let mut args: (); // arg #2
+    let mut _3: &'0 test_attributes::tests::test_foo::{closure}; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -710,7 +710,7 @@ extern "rust-call" fn {impl FnMut<()> for test_attributes::tests::test_foo::{clo
 // Full name: test_attributes::tests::test_foo::{impl FnOnce<()> for test_attributes::tests::test_foo::{closure}}::call_once
 extern "rust-call" fn {impl FnOnce<()> for test_attributes::tests::test_foo::{closure}}::call_once(_1: test_attributes::tests::test_foo::{closure}, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
-    let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
+    let mut _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
     let _1: test_attributes::tests::test_foo::{closure}; // arg #1
     let _2: (); // arg #2
     let _3: &'1 mut test_attributes::tests::test_foo::{closure}; // anonymous local
@@ -725,9 +725,9 @@ extern "rust-call" fn {impl FnOnce<()> for test_attributes::tests::test_foo::{cl
 
 fn test_attributes::tests::test_foo::{closure}::{as_fn}() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
-    let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let args: (); // local
-    let state: test_attributes::tests::test_foo::{closure}; // local
+    let mut _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
+    let mut args: (); // local
+    let mut state: test_attributes::tests::test_foo::{closure}; // local
 
     storage_live(_0)
     storage_live(args)
@@ -741,17 +741,17 @@ fn test_attributes::tests::test_foo::{closure}::{as_fn}() -> Result<(), String>[
 
 pub fn test_attributes::tests::test_foo() -> TestDescAndFn
 {
-    let _0: TestDescAndFn; // return
-    let _1: TestDesc; // anonymous local
-    let _2: TestName; // anonymous local
-    let _3: Option<&'8 str>[{built_in impl Sized for &'8 str}]; // anonymous local
-    let _4: ShouldPanic; // anonymous local
-    let _5: TestType; // anonymous local
-    let _6: TestFn; // anonymous local
-    let _7: fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // anonymous local
-    let _8: test_attributes::tests::test_foo::{closure}; // anonymous local
-    let _9: &'12 str; // anonymous local
-    let _10: &'20 str; // anonymous local
+    let mut _0: TestDescAndFn; // return
+    let mut _1: TestDesc; // anonymous local
+    let mut _2: TestName; // anonymous local
+    let mut _3: Option<&'8 str>[{built_in impl Sized for &'8 str}]; // anonymous local
+    let mut _4: ShouldPanic; // anonymous local
+    let mut _5: TestType; // anonymous local
+    let mut _6: TestFn; // anonymous local
+    let mut _7: fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // anonymous local
+    let mut _8: test_attributes::tests::test_foo::{closure}; // anonymous local
+    let mut _9: &'12 str; // anonymous local
+    let mut _10: &'20 str; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -801,16 +801,16 @@ pub static test_attributes::tests::test_foo: TestDescAndFn = test_attributes::te
 // Full name: test_attributes::main
 pub fn main()
 {
-    let _0: (); // return
-    let _1: &'13 [&'14 TestDescAndFn]; // anonymous local
-    let _2: &'30 [&'31 TestDescAndFn; 3usize]; // anonymous local
+    let mut _0: (); // return
+    let mut _1: &'13 [&'14 TestDescAndFn]; // anonymous local
+    let mut _2: &'30 [&'31 TestDescAndFn; 3usize]; // anonymous local
     let _3: &'35 [&'36 TestDescAndFn; 3usize]; // anonymous local
     let _4: [&'40 TestDescAndFn; 3usize]; // anonymous local
-    let _5: &'44 TestDescAndFn; // anonymous local
+    let mut _5: &'44 TestDescAndFn; // anonymous local
     let _6: &'45 TestDescAndFn; // anonymous local
-    let _7: &'47 TestDescAndFn; // anonymous local
+    let mut _7: &'47 TestDescAndFn; // anonymous local
     let _8: &'48 TestDescAndFn; // anonymous local
-    let _9: &'50 TestDescAndFn; // anonymous local
+    let mut _9: &'50 TestDescAndFn; // anonymous local
     let _10: &'51 TestDescAndFn; // anonymous local
 
     storage_live(_0)

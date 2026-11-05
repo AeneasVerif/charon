@@ -235,8 +235,8 @@ struct str {
 // Full name: test_crate::function_call
 fn function_call(_1: u32)
 {
-    let _0: (); // return
-    let _1: u32; // arg #1
+    let mut _0: (); // return
+    let mut _1: u32; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -248,33 +248,33 @@ fn function_call(_1: u32)
 // Full name: test_crate::sum
 pub fn sum<'_0>(s: &'_0 [u32]) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let s: &'1 [u32]; // arg #1
-    let sum: u32; // local
-    let i: usize; // local
+    let mut sum: u32; // local
+    let mut i: usize; // local
     let _4: (); // anonymous local
-    let _5: u32; // anonymous local
-    let _6: u32; // anonymous local
-    let _7: u32; // anonymous local
-    let _8: bool; // anonymous local
-    let _9: usize; // anonymous local
-    let _10: usize; // anonymous local
-    let _11: &'2 [u32]; // anonymous local
-    let _12: u32; // anonymous local
+    let mut _5: u32; // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: u32; // anonymous local
+    let mut _8: bool; // anonymous local
+    let mut _9: usize; // anonymous local
+    let mut _10: usize; // anonymous local
+    let mut _11: &'2 [u32]; // anonymous local
+    let mut _12: u32; // anonymous local
     let _13: usize; // anonymous local
-    let _14: u32; // anonymous local
-    let _15: usize; // anonymous local
-    let _16: u32; // anonymous local
-    let _17: bool; // anonymous local
-    let _18: u32; // anonymous local
-    let _19: u32; // anonymous local
-    let _20: u32; // anonymous local
+    let mut _14: u32; // anonymous local
+    let mut _15: usize; // anonymous local
+    let mut _16: u32; // anonymous local
+    let mut _17: bool; // anonymous local
+    let mut _18: u32; // anonymous local
+    let mut _19: u32; // anonymous local
+    let mut _20: u32; // anonymous local
     let _21: (); // anonymous local
-    let _22: u32; // anonymous local
-    let _23: u32; // anonymous local
-    let _24: u32; // anonymous local
-    let _25: &'_ [u32]; // anonymous local
-    let _26: &'_ u32; // anonymous local
+    let mut _22: u32; // anonymous local
+    let mut _23: u32; // anonymous local
+    let mut _24: u32; // anonymous local
+    let mut _25: &'_ [u32]; // anonymous local
+    let mut _26: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_7)
@@ -423,9 +423,9 @@ struct Foo {
 #[inline(hint)]
 pub fn impl_Default_for_Foo::default() -> Foo
 {
-    let _0: Foo; // return
-    let _1: u32; // anonymous local
-    let _2: u32; // anonymous local
+    let mut _0: Foo; // return
+    let mut _1: u32; // anonymous local
+    let mut _2: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -457,9 +457,9 @@ struct Bar {
 #[inline(hint)]
 pub fn impl_Default_for_Bar::default() -> Bar
 {
-    let _0: Bar; // return
-    let _1: u32; // anonymous local
-    let _2: u32; // anonymous local
+    let mut _0: Bar; // return
+    let mut _1: u32; // anonymous local
+    let mut _2: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -486,8 +486,8 @@ fn eat<T>(_1: T)
 where
     TraitClause0: (T: Sized),
 {
-    let _0: (); // return
-    let _1: T; // arg #1
+    let mut _0: (); // return
+    let mut _1: T; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -502,44 +502,44 @@ where
 // Full name: test_crate::foo
 fn foo()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x_1: u32; // local
     let y: u32; // local
-    let _3: Foo; // anonymous local
+    let mut _3: Foo; // anonymous local
     let _4: (); // anonymous local
-    let _5: Foo; // anonymous local
-    let _6: u32; // anonymous local
-    let _7: u32; // anonymous local
+    let mut _5: Foo; // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: u32; // anonymous local
     let x_8: u32; // local
     let super_long_field_name: u32; // local
-    let _10: Bar; // anonymous local
+    let mut _10: Bar; // anonymous local
     let _11: (); // anonymous local
-    let _12: Bar; // anonymous local
-    let _13: u32; // anonymous local
-    let _14: u32; // anonymous local
+    let mut _12: Bar; // anonymous local
+    let mut _13: u32; // anonymous local
+    let mut _14: u32; // anonymous local
     let a: [u32; 10usize]; // local
-    let _16: (&'9 u32, &'10 u32); // anonymous local
-    let _17: &'14 u32; // anonymous local
+    let mut _16: (&'9 u32, &'10 u32); // anonymous local
+    let mut _17: &'14 u32; // anonymous local
     let _18: usize; // anonymous local
-    let _19: &'15 u32; // anonymous local
+    let mut _19: &'15 u32; // anonymous local
     let left_val: &'16 u32; // local
     let right_val: &'17 u32; // local
-    let _22: bool; // anonymous local
-    let _23: u32; // anonymous local
-    let _24: u32; // anonymous local
+    let mut _22: bool; // anonymous local
+    let mut _23: u32; // anonymous local
+    let mut _24: u32; // anonymous local
     let kind: AssertKind; // local
-    let _26: AssertKind; // anonymous local
-    let _27: &'18 u32; // anonymous local
+    let mut _26: AssertKind; // anonymous local
+    let mut _27: &'18 u32; // anonymous local
     let _28: &'19 u32; // anonymous local
-    let _29: &'20 u32; // anonymous local
+    let mut _29: &'20 u32; // anonymous local
     let _30: &'21 u32; // anonymous local
-    let _31: Option<Arguments<'30>>[{built_in impl Sized for Arguments<'30>}]; // anonymous local
-    let _32: &'34 u32; // anonymous local
-    let _33: &'35 u32; // anonymous local
-    let _34: &'56 u32; // anonymous local
-    let _35: u32; // anonymous local
-    let _36: &'_ [u32; 10usize]; // anonymous local
-    let _37: &'_ u32; // anonymous local
+    let mut _31: Option<Arguments<'30>>[{built_in impl Sized for Arguments<'30>}]; // anonymous local
+    let mut _32: &'34 u32; // anonymous local
+    let mut _33: &'35 u32; // anonymous local
+    let mut _34: &'56 u32; // anonymous local
+    let mut _35: u32; // anonymous local
+    let mut _36: &'_ [u32; 10usize]; // anonymous local
+    let mut _37: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_32)
@@ -730,7 +730,7 @@ fn foo()
 // Full name: test_crate::CONSTANT
 fn CONSTANT() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 42u32
@@ -743,12 +743,12 @@ const CONSTANT: u32 = CONSTANT()
 // Full name: test_crate::thing
 pub fn thing()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: u32; // local
-    let _2: u32; // anonymous local
-    let _3: u32; // anonymous local
+    let mut _2: u32; // anonymous local
+    let mut _3: u32; // anonymous local
     let _4: (); // anonymous local
-    let _5: u32; // anonymous local
+    let mut _5: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -778,7 +778,7 @@ pub fn thing()
 // Full name: test_crate::fake_read
 pub fn fake_read(x: u32)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: u32; // arg #1
 
     storage_live(_0)
@@ -794,8 +794,8 @@ pub const test_crate::fool::{promoted_const}: str = "\n    // Fooled ya" with_me
 // Full name: test_crate::fool
 fn fool()
 {
-    let _0: (); // return
-    let _1: &'1 str; // anonymous local
+    let mut _0: (); // return
+    let mut _1: &'1 str; // anonymous local
 
     storage_live(_0)
     _0 = ()

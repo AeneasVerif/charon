@@ -29,7 +29,7 @@ fn ignore<T>(t: T)
 where
     TraitClause0: (T: Sized),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let t: T; // arg #1
 
     storage_live(_0)

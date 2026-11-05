@@ -346,6 +346,9 @@ and local = {
           through desugaring. *)
   span : span;  (** Span of the variable declaration. *)
   local_ty : ty;  (** The variable type *)
+  is_mutable : bool;
+      (** Whether this local was declared [mut]. Anonymous locals are always
+          mutable. *)
   drop_flag_for : place option;
       (** If this local is a drop flag, this is the place whose initialization
           state it tracks. *)

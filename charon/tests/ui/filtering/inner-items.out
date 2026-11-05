@@ -10,7 +10,7 @@ struct () {}
 // Full name: test_crate::foo
 fn foo()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -21,7 +21,7 @@ fn foo()
 // Full name: test_crate::foo::inner1
 fn inner1()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -48,7 +48,7 @@ struct Bar {}
 // Full name: test_crate::{Bar}::bar
 fn bar<'_0>(self: &'_0 Bar)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 Bar; // arg #1
 
     storage_live(_0)
@@ -61,7 +61,7 @@ fn bar<'_0>(self: &'_0 Bar)
 // Full name: test_crate::{Bar}::bar::inner2
 fn inner2()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -72,7 +72,7 @@ fn inner2()
 // Full name: test_crate::module::_
 fn _()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -86,7 +86,7 @@ const _: () = _()
 // Full name: test_crate::module::_::inner3
 fn inner3()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -97,7 +97,7 @@ fn inner3()
 // Full name: test_crate::module::baz
 fn baz()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -108,7 +108,7 @@ fn baz()
 // Full name: test_crate::module::baz::inner4
 fn inner4()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

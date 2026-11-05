@@ -57,9 +57,9 @@ const test_crate::promoted_scalar::{promoted_const}: &'_ i32 = &test_crate::{pro
 // Full name: test_crate::promoted_scalar
 pub fn promoted_scalar() -> &'static i32
 {
-    let _0: &'1 i32; // return
+    let mut _0: &'1 i32; // return
     let _1: &'2 i32; // anonymous local
-    let _2: &'3 i32; // anonymous local
+    let mut _2: &'3 i32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -77,9 +77,9 @@ const test_crate::promoted_array::{promoted_const}: &'_ [i32; 3usize] = &test_cr
 // Full name: test_crate::promoted_array
 pub fn promoted_array() -> &'static [i32; 3usize]
 {
-    let _0: &'1 [i32; 3usize]; // return
+    let mut _0: &'1 [i32; 3usize]; // return
     let _1: &'2 [i32; 3usize]; // anonymous local
-    let _2: &'3 [i32; 3usize]; // anonymous local
+    let mut _2: &'3 [i32; 3usize]; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -97,10 +97,10 @@ const test_crate::promoted_local::{promoted_const}: &'_ i32 = &test_crate::{prom
 // Full name: test_crate::promoted_local
 pub fn promoted_local() -> i32
 {
-    let _0: i32; // return
+    let mut _0: i32; // return
     let r: &'1 i32; // local
-    let _2: i32; // anonymous local
-    let _3: &'2 i32; // anonymous local
+    let mut _2: i32; // anonymous local
+    let mut _3: &'2 i32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -120,7 +120,7 @@ pub fn promoted_local() -> i32
 // Full name: test_crate::inline_ref_scalar
 pub fn inline_ref_scalar() -> &'static i32
 {
-    let _0: &'1 i32; // return
+    let mut _0: &'1 i32; // return
 
     storage_live(_0)
     _0 = &test_crate::{promoted_const}
@@ -130,7 +130,7 @@ pub fn inline_ref_scalar() -> &'static i32
 // Full name: test_crate::inline_ref_array
 pub fn inline_ref_array() -> &'static [i32; 3usize]
 {
-    let _0: &'1 [i32; 3usize]; // return
+    let mut _0: &'1 [i32; 3usize]; // return
 
     storage_live(_0)
     _0 = &test_crate::{promoted_const#1}
@@ -140,7 +140,7 @@ pub fn inline_ref_array() -> &'static [i32; 3usize]
 // Full name: test_crate::inline_block
 pub fn inline_block() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 5u32
@@ -150,7 +150,7 @@ pub fn inline_block() -> u32
 // Full name: test_crate::inline_pair
 pub fn inline_pair() -> (u32, u32)
 {
-    let _0: (u32, u32); // return
+    let mut _0: (u32, u32); // return
 
     storage_live(_0)
     _0 = (const 1u32, const 2u32)
@@ -163,7 +163,7 @@ static S: i32 = 1i32
 // Full name: test_crate::inline_ref_static
 pub fn inline_ref_static() -> &'static i32
 {
-    let _0: &'1 i32; // return
+    let mut _0: &'1 i32; // return
 
     storage_live(_0)
     _0 = &S
@@ -175,9 +175,9 @@ const test_crate::promoted_bools::{promoted_const}: &'_ [bool; 2usize] = &test_c
 // Full name: test_crate::promoted_bools
 pub fn promoted_bools() -> &'static [bool; 2usize]
 {
-    let _0: &'1 [bool; 2usize]; // return
+    let mut _0: &'1 [bool; 2usize]; // return
     let _1: &'2 [bool; 2usize]; // anonymous local
-    let _2: &'3 [bool; 2usize]; // anonymous local
+    let mut _2: &'3 [bool; 2usize]; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -195,9 +195,9 @@ const test_crate::promoted_chars::{promoted_const}: &'_ [char; 2usize] = &test_c
 // Full name: test_crate::promoted_chars
 pub fn promoted_chars() -> &'static [char; 2usize]
 {
-    let _0: &'1 [char; 2usize]; // return
+    let mut _0: &'1 [char; 2usize]; // return
     let _1: &'2 [char; 2usize]; // anonymous local
-    let _2: &'3 [char; 2usize]; // anonymous local
+    let mut _2: &'3 [char; 2usize]; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -213,9 +213,9 @@ pub fn promoted_chars() -> &'static [char; 2usize]
 // Full name: test_crate::promoted_str
 pub fn promoted_str() -> &'static str
 {
-    let _0: &'1 str; // return
-    let _1: *const [u8; 5usize]; // anonymous local
-    let _2: *const str; // anonymous local
+    let mut _0: &'1 str; // return
+    let mut _1: *const [u8; 5usize]; // anonymous local
+    let mut _2: *const str; // anonymous local
 
     storage_live(_0)
     storage_live(_1)

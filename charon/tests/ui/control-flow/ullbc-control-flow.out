@@ -280,34 +280,34 @@ where
 // Full name: test_crate::nested_loops_enum
 pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
     let step_out: usize; // arg #1
     let step_in: usize; // arg #2
-    let s: usize; // local
-    let _4: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _5: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let iter_6: Range<i32>[{built_in impl Sized for i32}]; // local
-    let _7: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _8: &'1 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _9: &'2 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _10: usize; // anonymous local
-    let _11: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _12: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _13: usize; // anonymous local
-    let iter_14: Range<usize>[{built_in impl Sized for usize}]; // local
-    let _15: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _16: &'4 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _17: &'5 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _18: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _19: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _20: usize; // anonymous local
-    let iter_21: Range<usize>[{built_in impl Sized for usize}]; // local
-    let _22: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _23: &'6 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _24: &'7 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _25: usize; // anonymous local
-    let _26: bool; // anonymous local
-    let _27: usize; // anonymous local
+    let mut s: usize; // local
+    let mut _4: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _5: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut iter_6: Range<i32>[{built_in impl Sized for i32}]; // local
+    let mut _7: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _8: &'1 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _9: &'2 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _10: usize; // anonymous local
+    let mut _11: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _12: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _13: usize; // anonymous local
+    let mut iter_14: Range<usize>[{built_in impl Sized for usize}]; // local
+    let mut _15: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _16: &'4 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _17: &'5 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _18: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _19: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _20: usize; // anonymous local
+    let mut iter_21: Range<usize>[{built_in impl Sized for usize}]; // local
+    let mut _22: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _23: &'6 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _24: &'7 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _25: usize; // anonymous local
+    let mut _26: bool; // anonymous local
+    let mut _27: usize; // anonymous local
 
     bb0: {
         storage_live(_0);

@@ -58,7 +58,7 @@ where
     TraitClause1: (U: Sized),
     TraitClause2: (U: Destruct),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: U; // arg #1
 
     storage_live(_0)
@@ -77,7 +77,7 @@ where
     TraitClause0: (U: Sized),
     TraitClause1: (U: Destruct),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: U; // arg #1
 
     storage_live(_0)
@@ -112,7 +112,7 @@ where
     TraitClause3: (T: Destruct),
     TraitClause4: (X: Destruct),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _x: T; // arg #1
     let _y: X; // arg #2
 
@@ -139,9 +139,9 @@ where
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: (); // anonymous local
-    let _2: (); // anonymous local
+    let mut _2: (); // anonymous local
 
     storage_live(_0)
     _0 = ()

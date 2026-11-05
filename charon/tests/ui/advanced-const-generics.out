@@ -93,15 +93,15 @@ enum Foo {
 #[inline(hint)]
 pub fn eq<'_0, '_1>(self: &'_0 Foo, other: &'_1 Foo) -> bool
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
     let self: &'1 Foo; // arg #1
     let other: &'2 Foo; // arg #2
     let __self_discr: isize; // local
-    let _4: &'3 Foo; // anonymous local
+    let mut _4: &'3 Foo; // anonymous local
     let __arg1_discr: isize; // local
-    let _6: &'4 Foo; // anonymous local
-    let _7: isize; // anonymous local
-    let _8: isize; // anonymous local
+    let mut _6: &'4 Foo; // anonymous local
+    let mut _7: isize; // anonymous local
+    let mut _8: isize; // anonymous local
 
     storage_live(_0)
     storage_live(__self_discr)
@@ -168,11 +168,11 @@ pub fn fmt<'_0, '_1, '_2>(self: &'_0 Foo, f: &'_1 mut Formatter<'_2>) -> Result<
 where
     Outlives0: ('_2: '_1),
 {
-    let _0: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // return
+    let mut _0: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // return
     let self: &'1 Foo; // arg #1
     let f: &'5 mut Formatter<'6>; // arg #2
-    let _3: &'7 mut Formatter<'8>; // anonymous local
-    let _4: &'10 str; // anonymous local
+    let mut _3: &'7 mut Formatter<'8>; // anonymous local
+    let mut _4: &'10 str; // anonymous local
     let _5: &'11 str; // anonymous local
     let _6: &'12 str; // anonymous local
 
@@ -214,7 +214,7 @@ impl "impl_Debug_for_Foo" Debug for Foo {
 // Full name: test_crate::foo
 fn foo<const X : Foo>() -> Foo
 {
-    let _0: Foo; // return
+    let mut _0: Foo; // return
 
     storage_live(_0)
     _0 = const X
@@ -224,9 +224,9 @@ fn foo<const X : Foo>() -> Foo
 // Full name: test_crate::bar
 fn bar<const N : usize>()
 {
-    let _0: (); // return
-    let _1: [(); test_crate::bar::{const#2}<N>]; // anonymous local
-    let _2: (); // anonymous local
+    let mut _0: (); // return
+    let mut _1: [(); test_crate::bar::{const#2}<N>]; // anonymous local
+    let mut _2: (); // anonymous local
 
     storage_live(_0)
     _0 = ()

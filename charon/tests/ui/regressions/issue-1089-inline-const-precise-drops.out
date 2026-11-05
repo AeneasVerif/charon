@@ -30,7 +30,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Destruct),
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const 42usize

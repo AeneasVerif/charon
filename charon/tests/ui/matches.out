@@ -34,7 +34,7 @@ pub enum E1 {
 // Full name: test_crate::test1
 pub fn test1(x: E1) -> bool
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
     let x: E1; // arg #1
 
     storage_live(_0)
@@ -57,7 +57,7 @@ pub fn id<T>(x: T) -> T
 where
     TraitClause0: (T: Sized),
 {
-    let _0: T; // return
+    let mut _0: T; // return
     let x: T; // arg #1
 
     storage_live(_0)
@@ -79,7 +79,7 @@ pub enum E2 {
 // Full name: test_crate::test2
 pub fn test2(x: E2) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let x: E2; // arg #1
     let n: u32; // local
 
@@ -108,14 +108,14 @@ pub fn test2(x: E2) -> u32
 // Full name: test_crate::test3
 pub fn test3(x: E2) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let x: E2; // arg #1
     let y: u32; // local
     let n: u32; // local
     let z: u32; // local
-    let _5: u32; // anonymous local
-    let _6: u32; // anonymous local
-    let _7: u32; // anonymous local
+    let mut _5: u32; // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_7)

@@ -36,11 +36,11 @@ trait T<Self>
 #[lang_item(DropGlue)]
 unsafe fn drop_glue::<(dyn T)><'_0>(_1: &'_0 mut (dyn T))
 {
-    let ret: (); // return
-    let _1: &'_0 mut (dyn T + '0); // arg #1
-    let drop_arg: &'_ mut (dyn T + '2); // local
-    let drop_ret: (); // local
-    let _4: unsafe fn(&'_ mut (dyn T + '2)); // anonymous local
+    let mut ret: (); // return
+    let mut _1: &'_0 mut (dyn T + '0); // arg #1
+    let mut drop_arg: &'_ mut (dyn T + '2); // local
+    let mut drop_ret: (); // local
+    let mut _4: unsafe fn(&'_ mut (dyn T + '2)); // anonymous local
 
     storage_live(ret)
     ret = ()
@@ -58,10 +58,10 @@ unsafe fn drop_glue::<(dyn T)><'_0>(_1: &'_0 mut (dyn T))
 #[diagnostic_item("ptr_drop_in_place")]
 pub unsafe fn drop_in_place::<(dyn T)>(to_drop: *mut (dyn T))
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let to_drop: *mut (dyn T + '0); // arg #1
-    let _2: &'3 mut (dyn T + '4); // anonymous local
-    let _3: &'5 mut (dyn T + '6); // anonymous local
+    let mut _2: &'3 mut (dyn T + '4); // anonymous local
+    let mut _3: &'5 mut (dyn T + '6); // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -79,9 +79,9 @@ pub unsafe fn drop_in_place::<(dyn T)>(to_drop: *mut (dyn T))
 // Full name: test_crate::f
 unsafe fn f(p: *mut (dyn T + 'static))
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let p: *mut (dyn T + '2); // arg #1
-    let _2: *mut (dyn T + '3); // anonymous local
+    let mut _2: *mut (dyn T + '3); // anonymous local
 
     storage_live(_0)
     _0 = ()

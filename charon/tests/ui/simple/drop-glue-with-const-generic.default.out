@@ -61,7 +61,7 @@ struct PortableHash<const K : usize> {
 // Full name: test_crate::PortableHash::{impl Destruct for PortableHash<K>}::drop_glue
 unsafe fn impl_Destruct_for_PortableHash::drop_glue<'_0, const K : usize>(_1: &'_0 mut PortableHash<K>)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut PortableHash<K>; // arg #1
 
     storage_live(_0)
@@ -76,8 +76,8 @@ unsafe fn impl_Destruct_for_PortableHash::drop_glue<'_0, const K : usize>(_1: &'
 // Full name: test_crate::foo
 fn foo(_1: PortableHash<42usize>)
 {
-    let _0: (); // return
-    let _1: PortableHash<42usize>; // arg #1
+    let mut _0: (); // return
+    let mut _1: PortableHash<42usize>; // arg #1
 
     storage_live(_0)
     _0 = ()

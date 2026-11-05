@@ -5,8 +5,8 @@ struct () {}
 // Full name: test_crate::DISGUISED_INT
 fn DISGUISED_INT() -> *const ()
 {
-    let _0: *const (); // return
-    let _1: *const (); // anonymous local
+    let mut _0: *const (); // return
+    let mut _1: *const (); // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -22,9 +22,9 @@ const DISGUISED_INT: *const () = DISGUISED_INT()
 // Full name: test_crate::pointer_pattern
 pub fn pointer_pattern()
 {
-    let _0: (); // return
-    let _1: *const (); // anonymous local
-    let _2: bool; // anonymous local
+    let mut _0: (); // return
+    let mut _1: *const (); // anonymous local
+    let mut _2: bool; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

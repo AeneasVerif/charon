@@ -59,9 +59,9 @@ struct () {}
 // Full name: test_crate::init_option
 fn init_option()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let a: [Option::<u8>; 6usize]; // local
-    let _2: Option::<u8>; // anonymous local
+    let mut _2: Option::<u8>; // anonymous local
     let b: Option::<u8>; // local
     let _4: usize; // anonymous local
 

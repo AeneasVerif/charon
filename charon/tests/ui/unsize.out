@@ -228,7 +228,7 @@ where
     TraitClause0: (T: MetaSized),
     Outlives0: (T: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut MyPtr<T>[TraitClause0]; // arg #1
 
     storage_live(_0)
@@ -244,10 +244,10 @@ fn test_crate::{MyPtr<T>[TraitClause0::ImpliedClause0]}::new<T>(x: T) -> MyPtr<T
 where
     TraitClause0: (T: Sized),
 {
-    let _0: MyPtr<T>[TraitClause0::ImpliedClause0]; // return
+    let mut _0: MyPtr<T>[TraitClause0::ImpliedClause0]; // return
     let x: T; // arg #1
-    let _2: Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]; // anonymous local
-    let _3: T; // anonymous local
+    let mut _2: Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]; // anonymous local
+    let mut _3: T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -281,43 +281,43 @@ where
 // Full name: test_crate::foo
 fn foo()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let array: [i32; 2usize]; // local
-    let _2: &'1 [i32]; // anonymous local
-    let _3: &'3 [i32; 2usize]; // anonymous local
+    let mut _2: &'1 [i32]; // anonymous local
+    let mut _3: &'3 [i32; 2usize]; // anonymous local
     let _4: &'4 [i32; 2usize]; // anonymous local
-    let _5: Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]; // anonymous local
-    let _6: Box<[i32; 2usize]>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}]; // anonymous local
-    let _7: [i32; 2usize]; // anonymous local
-    let _8: Rc<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]; // anonymous local
-    let _9: Rc<[i32; 2usize]>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}]; // anonymous local
-    let _10: [i32; 2usize]; // anonymous local
-    let _11: Arc<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]; // anonymous local
-    let _12: Arc<[i32; 2usize]>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}]; // anonymous local
-    let _13: [i32; 2usize]; // anonymous local
-    let _14: MyPtr<[i32]>[{built_in impl MetaSized for [i32]}]; // anonymous local
-    let _15: MyPtr<[i32; 2usize]>[{built_in impl MetaSized for [i32; 2usize]}]; // anonymous local
-    let _16: [i32; 2usize]; // anonymous local
+    let mut _5: Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _6: Box<[i32; 2usize]>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _7: [i32; 2usize]; // anonymous local
+    let mut _8: Rc<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _9: Rc<[i32; 2usize]>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _10: [i32; 2usize]; // anonymous local
+    let mut _11: Arc<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _12: Arc<[i32; 2usize]>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _13: [i32; 2usize]; // anonymous local
+    let mut _14: MyPtr<[i32]>[{built_in impl MetaSized for [i32]}]; // anonymous local
+    let mut _15: MyPtr<[i32; 2usize]>[{built_in impl MetaSized for [i32; 2usize]}]; // anonymous local
+    let mut _16: [i32; 2usize]; // anonymous local
     let string: String; // local
-    let _18: &'8 (dyn Display + '9); // anonymous local
-    let _19: &'11 String; // anonymous local
+    let mut _18: &'8 (dyn Display + '9); // anonymous local
+    let mut _19: &'11 String; // anonymous local
     let _20: &'12 String; // anonymous local
-    let _21: Box<(dyn Display + '18)>[{built_in impl MetaSized for (dyn Display + '20)}, {built_in impl Sized for Global}]; // anonymous local
-    let _22: Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
-    let _23: String; // anonymous local
-    let _24: &'21 String; // anonymous local
-    let _25: Rc<(dyn Display + '27)>[{built_in impl MetaSized for (dyn Display + '29)}, {built_in impl Sized for Global}]; // anonymous local
-    let _26: Rc<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
-    let _27: String; // anonymous local
-    let _28: &'30 String; // anonymous local
-    let _29: Arc<(dyn Display + '36)>[{built_in impl MetaSized for (dyn Display + '38)}, {built_in impl Sized for Global}]; // anonymous local
-    let _30: Arc<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
-    let _31: String; // anonymous local
-    let _32: &'39 String; // anonymous local
-    let _33: MyPtr<(dyn Display + '45)>[{built_in impl MetaSized for (dyn Display + '47)}]; // anonymous local
-    let _34: MyPtr<String>[{built_in impl MetaSized for String}]; // anonymous local
-    let _35: String; // anonymous local
-    let _36: &'48 String; // anonymous local
+    let mut _21: Box<(dyn Display + '18)>[{built_in impl MetaSized for (dyn Display + '20)}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _22: Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _23: String; // anonymous local
+    let mut _24: &'21 String; // anonymous local
+    let mut _25: Rc<(dyn Display + '27)>[{built_in impl MetaSized for (dyn Display + '29)}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _26: Rc<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _27: String; // anonymous local
+    let mut _28: &'30 String; // anonymous local
+    let mut _29: Arc<(dyn Display + '36)>[{built_in impl MetaSized for (dyn Display + '38)}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _30: Arc<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _31: String; // anonymous local
+    let mut _32: &'39 String; // anonymous local
+    let mut _33: MyPtr<(dyn Display + '45)>[{built_in impl MetaSized for (dyn Display + '47)}]; // anonymous local
+    let mut _34: MyPtr<String>[{built_in impl MetaSized for String}]; // anonymous local
+    let mut _35: String; // anonymous local
+    let mut _36: &'48 String; // anonymous local
 
     storage_live(_0)
     _0 = ()

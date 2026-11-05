@@ -514,17 +514,17 @@ where
 // Full name: test_crate::test_loop1
 pub fn test_loop1(max: u32) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let max: u32; // arg #1
-    let i: u32; // local
-    let s: u32; // local
-    let _4: bool; // anonymous local
-    let _5: u32; // anonymous local
-    let _6: u32; // anonymous local
-    let _7: u32; // anonymous local
-    let _8: u32; // anonymous local
-    let _9: u32; // anonymous local
-    let _10: u32; // anonymous local
+    let mut i: u32; // local
+    let mut s: u32; // local
+    let mut _4: bool; // anonymous local
+    let mut _5: u32; // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: u32; // anonymous local
+    let mut _8: u32; // anonymous local
+    let mut _9: u32; // anonymous local
+    let mut _10: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_8)
@@ -577,18 +577,18 @@ pub fn test_loop1(max: u32) -> u32
 // Full name: test_crate::test_loop2
 pub fn test_loop2(max: u32) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let max: u32; // arg #1
-    let i: u32; // local
-    let s: u32; // local
-    let _4: bool; // anonymous local
-    let _5: u32; // anonymous local
-    let _6: u32; // anonymous local
-    let _7: bool; // anonymous local
-    let _8: u32; // anonymous local
-    let _9: u32; // anonymous local
-    let _10: u32; // anonymous local
-    let _11: u32; // anonymous local
+    let mut i: u32; // local
+    let mut s: u32; // local
+    let mut _4: bool; // anonymous local
+    let mut _5: u32; // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: bool; // anonymous local
+    let mut _8: u32; // anonymous local
+    let mut _9: u32; // anonymous local
+    let mut _10: u32; // anonymous local
+    let mut _11: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_10)
@@ -649,28 +649,28 @@ pub fn test_loop2(max: u32) -> u32
 // Full name: test_crate::test_loop3
 pub fn test_loop3(max: u32) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let max: u32; // arg #1
-    let i: u32; // local
-    let j: u32; // local
-    let s: u32; // local
-    let _5: bool; // anonymous local
-    let _6: u32; // anonymous local
-    let _7: u32; // anonymous local
-    let _8: bool; // anonymous local
-    let _9: u32; // anonymous local
-    let _10: u32; // anonymous local
-    let _11: bool; // anonymous local
-    let _12: u32; // anonymous local
-    let _13: u32; // anonymous local
-    let _14: u32; // anonymous local
-    let _15: u32; // anonymous local
-    let _16: u32; // anonymous local
-    let _17: u32; // anonymous local
-    let _18: u32; // anonymous local
-    let _19: u32; // anonymous local
-    let _20: u32; // anonymous local
-    let _21: u32; // anonymous local
+    let mut i: u32; // local
+    let mut j: u32; // local
+    let mut s: u32; // local
+    let mut _5: bool; // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: u32; // anonymous local
+    let mut _8: bool; // anonymous local
+    let mut _9: u32; // anonymous local
+    let mut _10: u32; // anonymous local
+    let mut _11: bool; // anonymous local
+    let mut _12: u32; // anonymous local
+    let mut _13: u32; // anonymous local
+    let mut _14: u32; // anonymous local
+    let mut _15: u32; // anonymous local
+    let mut _16: u32; // anonymous local
+    let mut _17: u32; // anonymous local
+    let mut _18: u32; // anonymous local
+    let mut _19: u32; // anonymous local
+    let mut _20: u32; // anonymous local
+    let mut _21: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_15)
@@ -778,28 +778,28 @@ pub fn test_loop3(max: u32) -> u32
 #[allow(unused_assignments)]
 pub fn test_loop4(max: u32) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let max: u32; // arg #1
-    let i: u32; // local
-    let j: u32; // local
-    let s: u32; // local
-    let _5: bool; // anonymous local
-    let _6: u32; // anonymous local
-    let _7: u32; // anonymous local
-    let _8: bool; // anonymous local
-    let _9: u32; // anonymous local
-    let _10: u32; // anonymous local
-    let _11: bool; // anonymous local
-    let _12: u32; // anonymous local
-    let _13: u32; // anonymous local
-    let _14: u32; // anonymous local
-    let _15: u32; // anonymous local
-    let _16: u32; // anonymous local
-    let _17: u32; // anonymous local
-    let _18: u32; // anonymous local
-    let _19: u32; // anonymous local
-    let _20: u32; // anonymous local
-    let _21: u32; // anonymous local
+    let mut i: u32; // local
+    let mut j: u32; // local
+    let mut s: u32; // local
+    let mut _5: bool; // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: u32; // anonymous local
+    let mut _8: bool; // anonymous local
+    let mut _9: u32; // anonymous local
+    let mut _10: u32; // anonymous local
+    let mut _11: bool; // anonymous local
+    let mut _12: u32; // anonymous local
+    let mut _13: u32; // anonymous local
+    let mut _14: u32; // anonymous local
+    let mut _15: u32; // anonymous local
+    let mut _16: u32; // anonymous local
+    let mut _17: u32; // anonymous local
+    let mut _18: u32; // anonymous local
+    let mut _19: u32; // anonymous local
+    let mut _20: u32; // anonymous local
+    let mut _21: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_15)
@@ -905,23 +905,23 @@ pub fn test_loop4(max: u32) -> u32
 // Full name: test_crate::test_loop5
 pub fn test_loop5(max: u32) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let max: u32; // arg #1
-    let i: u32; // local
-    let j: u32; // local
-    let s: u32; // local
-    let _5: bool; // anonymous local
-    let _6: u32; // anonymous local
-    let _7: u32; // anonymous local
-    let _8: bool; // anonymous local
-    let _9: u32; // anonymous local
-    let _10: u32; // anonymous local
-    let _11: u32; // anonymous local
-    let _12: u32; // anonymous local
-    let _13: u32; // anonymous local
-    let _14: u32; // anonymous local
-    let _15: u32; // anonymous local
-    let _16: u32; // anonymous local
+    let mut i: u32; // local
+    let mut j: u32; // local
+    let mut s: u32; // local
+    let mut _5: bool; // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: u32; // anonymous local
+    let mut _8: bool; // anonymous local
+    let mut _9: u32; // anonymous local
+    let mut _10: u32; // anonymous local
+    let mut _11: u32; // anonymous local
+    let mut _12: u32; // anonymous local
+    let mut _13: u32; // anonymous local
+    let mut _14: u32; // anonymous local
+    let mut _15: u32; // anonymous local
+    let mut _16: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_12)
@@ -1004,19 +1004,19 @@ pub fn test_loop5(max: u32) -> u32
 // Full name: test_crate::test_loop6
 pub fn test_loop6(max: u32) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let max: u32; // arg #1
-    let i: u32; // local
-    let s: u32; // local
-    let _4: bool; // anonymous local
-    let _5: u32; // anonymous local
-    let _6: u32; // anonymous local
-    let _7: bool; // anonymous local
-    let _8: u32; // anonymous local
-    let _9: u32; // anonymous local
-    let _10: u32; // anonymous local
-    let _11: u32; // anonymous local
-    let _12: u32; // anonymous local
+    let mut i: u32; // local
+    let mut s: u32; // local
+    let mut _4: bool; // anonymous local
+    let mut _5: u32; // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: bool; // anonymous local
+    let mut _8: u32; // anonymous local
+    let mut _9: u32; // anonymous local
+    let mut _10: u32; // anonymous local
+    let mut _11: u32; // anonymous local
+    let mut _12: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_10)
@@ -1082,22 +1082,22 @@ pub fn test_loop6(max: u32) -> u32
 // Full name: test_crate::test_loop7
 pub fn test_loop7(max: u32) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let max: u32; // arg #1
-    let i: u32; // local
-    let s: u32; // local
-    let _4: bool; // anonymous local
-    let _5: u32; // anonymous local
-    let _6: u32; // anonymous local
-    let _7: bool; // anonymous local
-    let _8: u32; // anonymous local
-    let _9: u32; // anonymous local
-    let _10: bool; // anonymous local
-    let _11: u32; // anonymous local
-    let _12: u32; // anonymous local
-    let _13: u32; // anonymous local
-    let _14: u32; // anonymous local
-    let _15: u32; // anonymous local
+    let mut i: u32; // local
+    let mut s: u32; // local
+    let mut _4: bool; // anonymous local
+    let mut _5: u32; // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: bool; // anonymous local
+    let mut _8: u32; // anonymous local
+    let mut _9: u32; // anonymous local
+    let mut _10: bool; // anonymous local
+    let mut _11: u32; // anonymous local
+    let mut _12: u32; // anonymous local
+    let mut _13: u32; // anonymous local
+    let mut _14: u32; // anonymous local
+    let mut _15: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_13)
@@ -1177,25 +1177,25 @@ pub fn test_loop7(max: u32) -> u32
 // Full name: test_crate::test_loops
 pub fn test_loops()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x_1: u32; // local
-    let _2: bool; // anonymous local
-    let _3: u32; // anonymous local
+    let mut _2: bool; // anonymous local
+    let mut _3: u32; // anonymous local
     let x_4: u32; // local
-    let _5: bool; // anonymous local
-    let _6: u32; // anonymous local
+    let mut _5: bool; // anonymous local
+    let mut _6: u32; // anonymous local
     let x_7: u32; // local
-    let _8: bool; // anonymous local
-    let _9: u32; // anonymous local
+    let mut _8: bool; // anonymous local
+    let mut _9: u32; // anonymous local
     let x_10: u32; // local
-    let _11: bool; // anonymous local
-    let _12: u32; // anonymous local
+    let mut _11: bool; // anonymous local
+    let mut _12: u32; // anonymous local
     let x_13: u32; // local
-    let _14: bool; // anonymous local
-    let _15: u32; // anonymous local
+    let mut _14: bool; // anonymous local
+    let mut _15: u32; // anonymous local
     let x_16: u32; // local
-    let _17: bool; // anonymous local
-    let _18: u32; // anonymous local
+    let mut _17: bool; // anonymous local
+    let mut _18: u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1284,32 +1284,32 @@ pub fn test_loops()
 // Full name: test_crate::nested_loops_enum
 pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
     let step_out: usize; // arg #1
     let step_in: usize; // arg #2
-    let s: usize; // local
-    let _4: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _5: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let iter_6: Range<i32>[{built_in impl Sized for i32}]; // local
-    let _7: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _8: &'1 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _9: &'2 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _10: usize; // anonymous local
-    let _11: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _12: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _13: usize; // anonymous local
-    let iter_14: Range<usize>[{built_in impl Sized for usize}]; // local
-    let _15: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _16: &'4 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _17: &'5 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _18: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _19: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _20: usize; // anonymous local
-    let iter_21: Range<usize>[{built_in impl Sized for usize}]; // local
-    let _22: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _23: &'6 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _24: &'7 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _25: usize; // anonymous local
+    let mut s: usize; // local
+    let mut _4: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _5: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut iter_6: Range<i32>[{built_in impl Sized for i32}]; // local
+    let mut _7: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _8: &'1 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _9: &'2 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _10: usize; // anonymous local
+    let mut _11: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _12: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _13: usize; // anonymous local
+    let mut iter_14: Range<usize>[{built_in impl Sized for usize}]; // local
+    let mut _15: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _16: &'4 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _17: &'5 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _18: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _19: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _20: usize; // anonymous local
+    let mut iter_21: Range<usize>[{built_in impl Sized for usize}]; // local
+    let mut _22: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _23: &'6 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _24: &'7 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _25: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_10)
@@ -1459,21 +1459,21 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
 // Full name: test_crate::loop_inside_if
 pub fn loop_inside_if(b: bool, n: u32) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let b: bool; // arg #1
     let n: u32; // arg #2
-    let _3: bool; // anonymous local
-    let s: u32; // local
-    let _5: Range<u32>[{built_in impl Sized for u32}]; // anonymous local
-    let _6: Range<u32>[{built_in impl Sized for u32}]; // anonymous local
-    let _7: u32; // anonymous local
-    let iter: Range<u32>[{built_in impl Sized for u32}]; // local
-    let _9: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
-    let _10: &'1 mut Range<u32>[{built_in impl Sized for u32}]; // anonymous local
-    let _11: &'2 mut Range<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let mut _3: bool; // anonymous local
+    let mut s: u32; // local
+    let mut _5: Range<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let mut _6: Range<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let mut _7: u32; // anonymous local
+    let mut iter: Range<u32>[{built_in impl Sized for u32}]; // local
+    let mut _9: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let mut _10: &'1 mut Range<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let mut _11: &'2 mut Range<u32>[{built_in impl Sized for u32}]; // anonymous local
     let i: u32; // local
-    let _13: u32; // anonymous local
-    let _14: u32; // anonymous local
+    let mut _13: u32; // anonymous local
+    let mut _14: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_14)
@@ -1551,17 +1551,17 @@ pub fn loop_inside_if(b: bool, n: u32) -> u32
 
 pub fn test_crate::sum(max: u32) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let max: u32; // arg #1
-    let i: u32; // local
-    let s: u32; // local
-    let _4: bool; // anonymous local
-    let _5: u32; // anonymous local
-    let _6: u32; // anonymous local
-    let _7: u32; // anonymous local
-    let _8: u32; // anonymous local
-    let _9: u32; // anonymous local
-    let _10: u32; // anonymous local
+    let mut i: u32; // local
+    let mut s: u32; // local
+    let mut _4: bool; // anonymous local
+    let mut _5: u32; // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: u32; // anonymous local
+    let mut _8: u32; // anonymous local
+    let mut _9: u32; // anonymous local
+    let mut _10: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_8)
@@ -1614,18 +1614,18 @@ pub fn test_crate::sum(max: u32) -> u32
 // Full name: test_crate::sum_array
 pub fn sum_array<const N : usize>(a: [u32; N]) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let a: [u32; N]; // arg #1
-    let i: usize; // local
-    let s: u32; // local
-    let _4: bool; // anonymous local
-    let _5: usize; // anonymous local
-    let _6: u32; // anonymous local
+    let mut i: usize; // local
+    let mut s: u32; // local
+    let mut _4: bool; // anonymous local
+    let mut _5: usize; // anonymous local
+    let mut _6: u32; // anonymous local
     let _7: usize; // anonymous local
-    let _8: u32; // anonymous local
-    let _9: usize; // anonymous local
-    let _10: &'_ [u32; N]; // anonymous local
-    let _11: &'_ u32; // anonymous local
+    let mut _8: u32; // anonymous local
+    let mut _9: usize; // anonymous local
+    let mut _10: &'_ [u32; N]; // anonymous local
+    let mut _11: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_8)
@@ -1681,17 +1681,17 @@ pub fn sum_array<const N : usize>(a: [u32; N]) -> u32
 // Full name: test_crate::clear
 pub fn clear<'_0>(v: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let v: &'1 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1
-    let i: usize; // local
-    let _3: bool; // anonymous local
-    let _4: usize; // anonymous local
-    let _5: usize; // anonymous local
-    let _6: &'3 Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
-    let _7: &'5 mut u32; // anonymous local
-    let _8: &'6 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
-    let _9: usize; // anonymous local
-    let _10: usize; // anonymous local
+    let mut i: usize; // local
+    let mut _3: bool; // anonymous local
+    let mut _4: usize; // anonymous local
+    let mut _5: usize; // anonymous local
+    let mut _6: &'3 Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _7: &'5 mut u32; // anonymous local
+    let mut _8: &'6 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
+    let mut _9: usize; // anonymous local
+    let mut _10: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_10)
@@ -1758,15 +1758,15 @@ where
 // Full name: test_crate::get_elem_mut
 pub fn get_elem_mut<'_0>(ls: &'_0 mut List<usize>[{built_in impl Sized for usize}], x: usize) -> &'_0 mut usize
 {
-    let _0: &'1 mut usize; // return
-    let ls: &'3 mut List<usize>[{built_in impl Sized for usize}]; // arg #1
+    let mut _0: &'1 mut usize; // return
+    let mut ls: &'3 mut List<usize>[{built_in impl Sized for usize}]; // arg #1
     let x: usize; // arg #2
     let y: &'4 mut usize; // local
     let tl: &'6 mut Box<List<usize>[{built_in impl Sized for usize}]>[{built_in impl MetaSized for List<usize>[{built_in impl Sized for usize}]}, {built_in impl Sized for Global}]; // local
-    let _5: bool; // anonymous local
-    let _6: usize; // anonymous local
-    let _7: usize; // anonymous local
-    let _8: &'7 mut List<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _5: bool; // anonymous local
+    let mut _6: usize; // anonymous local
+    let mut _7: usize; // anonymous local
+    let mut _8: &'7 mut List<usize>[{built_in impl Sized for usize}]; // anonymous local
 
     storage_live(_0)
     loop {
@@ -1821,15 +1821,15 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
-    let _0: &'1 mut T; // return
-    let ls: &'3 mut List<T>[TraitClause0]; // arg #1
-    let i: u32; // arg #2
+    let mut _0: &'1 mut T; // return
+    let mut ls: &'3 mut List<T>[TraitClause0]; // arg #1
+    let mut i: u32; // arg #2
     let x: &'4 mut T; // local
     let tl: &'6 mut Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]; // local
-    let _5: bool; // anonymous local
-    let _6: u32; // anonymous local
-    let _7: &'7 mut List<T>[TraitClause0]; // anonymous local
-    let _8: u32; // anonymous local
+    let mut _5: bool; // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: &'7 mut List<T>[TraitClause0]; // anonymous local
+    let mut _8: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_8)
@@ -1883,9 +1883,9 @@ where
 // Full name: test_crate::loop_break_1
 pub fn loop_break_1()
 {
-    let _0: (); // return
-    let x: i32; // local
-    let _2: bool; // anonymous local
+    let mut _0: (); // return
+    let mut x: i32; // local
+    let mut _2: bool; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1915,9 +1915,9 @@ pub fn loop_break_1()
 // Full name: test_crate::loop_break_2
 pub fn loop_break_2()
 {
-    let _0: (); // return
-    let x: i32; // local
-    let _2: bool; // anonymous local
+    let mut _0: (); // return
+    let mut x: i32; // local
+    let mut _2: bool; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1947,10 +1947,10 @@ pub fn loop_break_2()
 // Full name: test_crate::interleaved_loops
 pub fn interleaved_loops()
 {
-    let _0: (); // return
-    let x: i32; // local
-    let _2: bool; // anonymous local
-    let _3: bool; // anonymous local
+    let mut _0: (); // return
+    let mut x: i32; // local
+    let mut _2: bool; // anonymous local
+    let mut _3: bool; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1994,10 +1994,10 @@ pub fn interleaved_loops()
 // Full name: test_crate::interleaved_loops2
 pub fn interleaved_loops2()
 {
-    let _0: (); // return
-    let x: i32; // local
-    let _2: bool; // anonymous local
-    let _3: bool; // anonymous local
+    let mut _0: (); // return
+    let mut x: i32; // local
+    let mut _2: bool; // anonymous local
+    let mut _3: bool; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -2044,12 +2044,12 @@ pub fn interleaved_loops2()
 // Full name: test_crate::loop_after_loop
 pub fn loop_after_loop()
 {
-    let _0: (); // return
-    let x: i32; // local
-    let _2: bool; // anonymous local
-    let _3: i32; // anonymous local
-    let _4: bool; // anonymous local
-    let _5: i32; // anonymous local
+    let mut _0: (); // return
+    let mut x: i32; // local
+    let mut _2: bool; // anonymous local
+    let mut _3: i32; // anonymous local
+    let mut _4: bool; // anonymous local
+    let mut _5: i32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -2098,8 +2098,8 @@ pub fn loop_after_loop()
 // Full name: test_crate::trick_exit_computation
 pub fn trick_exit_computation()
 {
-    let _0: (); // return
-    let x: i32; // local
+    let mut _0: (); // return
+    let mut x: i32; // local
 
     storage_live(_0)
     _0 = ()

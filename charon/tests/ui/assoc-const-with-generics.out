@@ -28,7 +28,7 @@ fn test_crate::{V<T, N>[TraitClause0]}::LEN<T, const N : usize>() -> usize
 where
     TraitClause0: (T: Sized),
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const N
@@ -51,7 +51,7 @@ trait HasLen<Self>
 // Full name: test_crate::{impl HasLen for [(); N]}::LEN
 fn {impl HasLen for [(); N]}::LEN<const N : usize>() -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const N
@@ -71,8 +71,8 @@ impl<const N : usize> HasLen for [(); N] {
 // Full name: test_crate::{impl HasLen for [bool; N]}::LEN
 fn {impl HasLen for [bool; N]}::LEN<const N : usize>() -> usize
 {
-    let _0: usize; // return
-    let _1: usize; // anonymous local
+    let mut _0: usize; // return
+    let mut _1: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -105,7 +105,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: HasLen),
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const TraitClause1::LEN
@@ -142,7 +142,7 @@ pub fn test_crate::HasDefaultLen::LEN<Self, const M : usize>() -> usize
 where
     TraitClause0: (Self: HasDefaultLen<M>),
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const M
@@ -164,8 +164,8 @@ impl<const N : usize> HasDefaultLen<N> for [(); N] {
 // Full name: test_crate::{impl HasDefaultLen<N> for [bool; N]}::LEN
 pub fn {impl HasDefaultLen<N> for [bool; N]}::LEN<const N : usize>() -> usize
 {
-    let _0: usize; // return
-    let _1: bool; // anonymous local
+    let mut _0: usize; // return
+    let mut _1: bool; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -205,8 +205,8 @@ fn ALSO_LEN<Self>() -> usize
 where
     TraitClause0: (Self: AlsoHasLen),
 {
-    let _0: usize; // return
-    let _1: usize; // anonymous local
+    let mut _0: usize; // return
+    let mut _1: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_1)

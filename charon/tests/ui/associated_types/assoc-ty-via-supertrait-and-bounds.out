@@ -82,7 +82,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: HasOutput2<Clause1_Clause1_Output>),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -93,7 +93,7 @@ where
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

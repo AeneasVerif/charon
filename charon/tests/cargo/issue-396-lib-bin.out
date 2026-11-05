@@ -3,7 +3,7 @@
 // Full name: issue_396_lib_bin::hello
 pub fn hello() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 42u32
@@ -97,7 +97,7 @@ pub fn _print<'_0>(_1: Arguments<'_0>)
 // Full name: issue_396_lib_bin#1::hello
 pub fn hello() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 42u32
@@ -111,20 +111,20 @@ struct (_,)<A> {
 // Full name: issue_396_lib_bin::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: (); // anonymous local
-    let _2: Arguments<'1>; // anonymous local
+    let mut _2: Arguments<'1>; // anonymous local
     let args_3: (&'4 u32,); // local
-    let _4: &'5 u32; // anonymous local
+    let mut _4: &'5 u32; // anonymous local
     let _5: u32; // anonymous local
     let args_6: [Argument<'14>; 1usize]; // local
-    let _7: Argument<'18>; // anonymous local
-    let _8: &'19 u32; // anonymous local
-    let _9: &'21 [u8; 4usize]; // anonymous local
+    let mut _7: Argument<'18>; // anonymous local
+    let mut _8: &'19 u32; // anonymous local
+    let mut _9: &'21 [u8; 4usize]; // anonymous local
     let _10: &'22 [u8; 4usize]; // anonymous local
-    let _11: &'28 [Argument<'29>; 1usize]; // anonymous local
+    let mut _11: &'28 [Argument<'29>; 1usize]; // anonymous local
     let _12: &'33 [Argument<'34>; 1usize]; // anonymous local
-    let _13: [u8; 4usize]; // anonymous local
+    let mut _13: [u8; 4usize]; // anonymous local
 
     storage_live(_0)
     _0 = ()

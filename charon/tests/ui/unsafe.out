@@ -221,10 +221,10 @@ where
 // Full name: test_crate::call_unsafe_fn
 fn call_unsafe_fn()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: *const u32; // local
-    let _2: u32; // anonymous local
-    let _3: *const u32; // anonymous local
+    let mut _2: u32; // anonymous local
+    let mut _3: *const u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -248,9 +248,9 @@ fn call_unsafe_fn()
 // Full name: test_crate::deref_raw_ptr
 fn deref_raw_ptr()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: *const u32; // local
-    let _2: u32; // anonymous local
+    let mut _2: u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -283,7 +283,7 @@ unsafe impl "impl_Trait_for_unit" Trait for () {
 // Full name: test_crate::COUNTER
 fn COUNTER() -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const 0usize
@@ -296,8 +296,8 @@ static mut COUNTER: usize = COUNTER()
 // Full name: test_crate::access_mutable_static
 fn access_mutable_static()
 {
-    let _0: (); // return
-    let _1: usize; // anonymous local
+    let mut _0: (); // return
+    let mut _1: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -318,7 +318,7 @@ union Foo {
 // Full name: test_crate::access_union_field
 fn access_union_field()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let one: Foo; // local
     let _two: [u32; 2usize]; // local
 
@@ -338,7 +338,7 @@ fn access_union_field()
 
 fn test_crate::assume()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

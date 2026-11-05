@@ -41,7 +41,7 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut Option<T>[TraitClause0]; // arg #1
 
     storage_live(_0)
@@ -67,9 +67,9 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
-    let _0: isize; // return
+    let mut _0: isize; // return
     let opt: &'1 Option<T>[TraitClause0]; // arg #1
-    let _2: &'2 Option<T>[TraitClause0]; // anonymous local
+    let mut _2: &'2 Option<T>[TraitClause0]; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -85,10 +85,10 @@ fn is_some<T>(opt: Option<T>[TraitClause0]) -> bool
 where
     TraitClause0: (T: Sized),
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
     let opt: Option<T>[TraitClause0]; // arg #1
-    let _2: isize; // anonymous local
-    let _3: &'1 Option<T>[TraitClause0]; // anonymous local
+    let mut _2: isize; // anonymous local
+    let mut _3: &'1 Option<T>[TraitClause0]; // anonymous local
     let _4: &'2 Option<T>[TraitClause0]; // anonymous local
 
     storage_live(_0)
@@ -119,7 +119,7 @@ fn my_is_some<T>(opt: Option<T>[TraitClause0]) -> isize
 where
     TraitClause0: (T: Sized),
 {
-    let _0: isize; // return
+    let mut _0: isize; // return
     let opt: Option<T>[TraitClause0]; // arg #1
 
     storage_live(_0)

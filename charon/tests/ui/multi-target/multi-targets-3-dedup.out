@@ -5,9 +5,9 @@ struct () {}
 
 fn test_crate::clone_it<'_0>(x: &'_0 u32) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let x: &'1 u32; // arg #1
-    let _2: &'2 u32; // anonymous local
+    let mut _2: &'2 u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -22,7 +22,7 @@ fn test_crate::clone_it<'_0>(x: &'_0 u32) -> u32
 
 fn test_crate::platform_specific::x86_64-pc-windows-msvc() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 42u32
@@ -31,7 +31,7 @@ fn test_crate::platform_specific::x86_64-pc-windows-msvc() -> u32
 
 fn test_crate::platform_specific::i686-unknown-linux-gnu() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 44u32
@@ -40,7 +40,7 @@ fn test_crate::platform_specific::i686-unknown-linux-gnu() -> u32
 
 fn test_crate::platform_specific::aarch64-apple-darwin() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 43u32
@@ -56,12 +56,12 @@ fn test_crate::platform_specific() -> u32
 
 pub fn test_crate::call_both<'_0>(x: &'_0 u32) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let x: &'1 u32; // arg #1
-    let _2: u32; // anonymous local
-    let _3: &'2 u32; // anonymous local
-    let _4: u32; // anonymous local
-    let _5: u32; // anonymous local
+    let mut _2: u32; // anonymous local
+    let mut _3: &'2 u32; // anonymous local
+    let mut _4: u32; // anonymous local
+    let mut _5: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_5)

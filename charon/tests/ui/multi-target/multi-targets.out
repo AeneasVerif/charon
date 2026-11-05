@@ -5,7 +5,7 @@ pub struct test_crate::StructTargetIndep {
 
 fn test_crate::make_pair_same() -> test_crate::StructTargetIndep
 {
-    let _0: test_crate::StructTargetIndep; // return
+    let mut _0: test_crate::StructTargetIndep; // return
 
     storage_live(_0)
     _0 = test_crate::StructTargetIndep { x: const 1u64, y: const 2u64 }
@@ -14,7 +14,7 @@ fn test_crate::make_pair_same() -> test_crate::StructTargetIndep
 
 pub fn test_crate::f1_same() -> u64
 {
-    let _0: u64; // return
+    let mut _0: u64; // return
 
     storage_live(_0)
     _0 = const 0u64
@@ -23,7 +23,7 @@ pub fn test_crate::f1_same() -> u64
 
 fn test_crate::f2_same() -> u64
 {
-    let _0: u64; // return
+    let mut _0: u64; // return
 
     storage_live(_0)
     _0 = test_crate::f1_same()
@@ -33,9 +33,9 @@ fn test_crate::f2_same() -> u64
 
 pub fn test_crate::f3_different::i686-unknown-linux-gnu() -> u64
 {
-    let _0: u64; // return
-    let _1: u64; // anonymous local
-    let _2: u64; // anonymous local
+    let mut _0: u64; // return
+    let mut _1: u64; // anonymous local
+    let mut _2: u64; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -52,7 +52,7 @@ pub fn test_crate::f3_different::i686-unknown-linux-gnu() -> u64
 
 pub fn test_crate::f3_different::x86_64-apple-darwin() -> u64
 {
-    let _0: u64; // return
+    let mut _0: u64; // return
 
     storage_live(_0)
     _0 = const 2u64
@@ -67,10 +67,10 @@ pub fn test_crate::f3_different() -> u64
 
 fn test_crate::foo_same() -> u64
 {
-    let _0: u64; // return
-    let _1: u64; // anonymous local
-    let _2: u64; // anonymous local
-    let _3: u64; // anonymous local
+    let mut _0: u64; // return
+    let mut _1: u64; // anonymous local
+    let mut _2: u64; // anonymous local
+    let mut _3: u64; // anonymous local
 
     storage_live(_0)
     storage_live(_3)

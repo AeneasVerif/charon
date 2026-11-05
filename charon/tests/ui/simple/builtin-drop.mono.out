@@ -27,14 +27,14 @@ unsafe fn impl_Destruct_for_String::drop_glue<'_0>(_1: &'_0 mut String)
 // Full name: {impl Destruct for [String]}::drop_glue::<String>
 unsafe fn impl_Destruct_for_slice::drop_glue::<String><'_0>(_1: &'_0 mut [String])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut [String]; // arg #1
-    let _2: usize; // anonymous local
-    let _3: usize; // anonymous local
-    let _4: *mut String; // anonymous local
-    let _5: bool; // anonymous local
-    let _6: *mut String; // anonymous local
-    let _7: bool; // anonymous local
+    let mut _2: usize; // anonymous local
+    let mut _3: usize; // anonymous local
+    let mut _4: *mut String; // anonymous local
+    let mut _5: bool; // anonymous local
+    let mut _6: *mut String; // anonymous local
+    let mut _7: bool; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -98,8 +98,8 @@ unsafe fn impl_Destruct_for_slice::drop_glue::<String><'_0>(_1: &'_0 mut [String
 #[lang_item(DropGlue)]
 unsafe fn drop_glue::<[String]><'_0>(_1: &'_0 mut [String])
 {
-    let ret: (); // return
-    let _1: &'_0 mut [String]; // arg #1
+    let mut ret: (); // return
+    let mut _1: &'_0 mut [String]; // arg #1
 
     storage_live(ret)
     ret = ()
@@ -122,9 +122,9 @@ unsafe fn {impl Destruct for Box::<[String], Global>}::drop_glue::<[String], Glo
 // Full name: {impl Destruct for [String; 4usize]}::drop_glue::<String, 4usize>
 unsafe fn impl_Destruct_for_array::drop_glue::<String, 4usize><'_0>(_1: &'_0 mut [String; 4usize])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut [String; 4usize]; // arg #1
-    let _2: &'3 mut [String]; // anonymous local
+    let mut _2: &'3 mut [String]; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -147,7 +147,7 @@ struct (_, _)::<String, String> {
 // Full name: (_, _)::{impl Destruct for (String, String)}::drop_glue::<String, String>
 unsafe fn {impl Destruct for (String, String)}::drop_glue::<String, String><'_0>(_1: &'_0 mut (String, String))
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut (String, String); // arg #1
 
     storage_live(_0)
@@ -168,8 +168,8 @@ unsafe fn {impl Destruct for (String, String)}::drop_glue::<String, String><'_0>
 // Full name: test_crate::drop_array
 fn drop_array(_1: [String; 4usize])
 {
-    let _0: (); // return
-    let _1: [String; 4usize]; // arg #1
+    let mut _0: (); // return
+    let mut _1: [String; 4usize]; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -184,8 +184,8 @@ fn drop_array(_1: [String; 4usize])
 // Full name: test_crate::drop_slice
 fn drop_slice(_1: Box::<[String], Global>)
 {
-    let _0: (); // return
-    let _1: Box::<[String], Global>; // arg #1
+    let mut _0: (); // return
+    let mut _1: Box::<[String], Global>; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -200,8 +200,8 @@ fn drop_slice(_1: Box::<[String], Global>)
 // Full name: test_crate::drop_tuple_string
 fn drop_tuple_string(_1: (String, String))
 {
-    let _0: (); // return
-    let _1: (String, String); // arg #1
+    let mut _0: (); // return
+    let mut _1: (String, String); // arg #1
 
     storage_live(_0)
     _0 = ()

@@ -32,10 +32,10 @@ where
     Outlives0: ('_1: '_0),
     Outlives1: ('_2: '_1),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let bufs: &'19 mut &'20 mut [IoSlice<'21>]; // arg #1
     let _2: (); // anonymous local
-    let _3: &'25 mut &'26 mut [IoSlice<'27>]; // anonymous local
+    let mut _3: &'25 mut &'26 mut [IoSlice<'27>]; // anonymous local
 
     storage_live(_0)
     _0 = ()

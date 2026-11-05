@@ -25,9 +25,9 @@ pub const test_crate::main::{promoted_const}: str = "O no" with_metadata(4usize)
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let _1: Arguments<'1>; // anonymous local
-    let _2: &'4 str; // anonymous local
+    let mut _0: (); // return
+    let mut _1: Arguments<'1>; // anonymous local
+    let mut _2: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()

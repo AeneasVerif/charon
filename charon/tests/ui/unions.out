@@ -25,8 +25,8 @@ union Foo {
 // Full name: test_crate::use_union
 fn use_union()
 {
-    let _0: (); // return
-    let one: Foo; // local
+    let mut _0: (); // return
+    let mut one: Foo; // local
     let _two: [u32; 2usize]; // local
 
     storage_live(_0)

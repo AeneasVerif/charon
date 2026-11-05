@@ -37,10 +37,10 @@ pub const unsafe::main::{promoted_const}: str = "Hello, world!\n" with_metadata(
 // Full name: unsafe::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: (); // anonymous local
-    let _2: Arguments<'1>; // anonymous local
-    let _3: &'4 str; // anonymous local
+    let mut _2: Arguments<'1>; // anonymous local
+    let mut _3: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()

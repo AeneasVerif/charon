@@ -457,9 +457,9 @@ struct {closure} {}
 // Full name: test_crate::map::{impl FnMut<(i32,)> for {closure}}::call_mut
 extern "rust-call" fn call_mut<'_0>(_1: &'_0 mut {closure}, tupled_args: (i32,)) -> i32
 {
-    let _0: i32; // return
-    let _1: &'1 mut {closure}; // arg #1
-    let tupled_args: (i32,); // arg #2
+    let mut _0: i32; // return
+    let mut _1: &'1 mut {closure}; // arg #1
+    let mut tupled_args: (i32,); // arg #2
     let v: i32; // local
 
     storage_live(_0)
@@ -475,7 +475,7 @@ extern "rust-call" fn call_mut<'_0>(_1: &'_0 mut {closure}, tupled_args: (i32,))
 // Full name: test_crate::map::{impl FnOnce<(i32,)> for {closure}}::call_once
 extern "rust-call" fn call_once(_1: {closure}, _2: (i32,)) -> i32
 {
-    let _0: i32; // return
+    let mut _0: i32; // return
     let _1: {closure}; // arg #1
     let _2: (i32,); // arg #2
     let _3: &'1 mut {closure}; // anonymous local
@@ -517,10 +517,10 @@ impl "impl_FnMut_tuple_for_closure" FnMut<(i32,)> for {closure} {
 
 pub fn test_crate::map(x: [i32; 256usize]) -> [i32; 256usize]
 {
-    let _0: [i32; 256usize]; // return
+    let mut _0: [i32; 256usize]; // return
     let x: [i32; 256usize]; // arg #1
-    let _2: [i32; 256usize]; // anonymous local
-    let _3: {closure}; // anonymous local
+    let mut _2: [i32; 256usize]; // anonymous local
+    let mut _3: {closure}; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -539,7 +539,7 @@ pub fn test_crate::map(x: [i32; 256usize]) -> [i32; 256usize]
 // Full name: test_crate::array
 pub fn array<const LEN : usize>() -> [u8; LEN]
 {
-    let _0: [u8; LEN]; // return
+    let mut _0: [u8; LEN]; // return
 
     storage_live(_0)
     _0 = repeat<u8, LEN>[{built_in impl Sized for u8}, impl_Clone_for_u8](const 0u8)
@@ -550,19 +550,19 @@ pub fn array<const LEN : usize>() -> [u8; LEN]
 // Full name: test_crate::cbd
 fn cbd(prf_input: [u8; 33usize])
 {
-    let _0: (); // return
-    let prf_input: [u8; 33usize]; // arg #1
-    let _2: Range<u8>[{built_in impl Sized for u8}]; // anonymous local
-    let _3: Range<u8>[{built_in impl Sized for u8}]; // anonymous local
-    let iter: Range<u8>[{built_in impl Sized for u8}]; // local
-    let _5: Option<u8>[{built_in impl Sized for u8}]; // anonymous local
-    let _6: &'1 mut Range<u8>[{built_in impl Sized for u8}]; // anonymous local
-    let _7: &'2 mut Range<u8>[{built_in impl Sized for u8}]; // anonymous local
+    let mut _0: (); // return
+    let mut prf_input: [u8; 33usize]; // arg #1
+    let mut _2: Range<u8>[{built_in impl Sized for u8}]; // anonymous local
+    let mut _3: Range<u8>[{built_in impl Sized for u8}]; // anonymous local
+    let mut iter: Range<u8>[{built_in impl Sized for u8}]; // local
+    let mut _5: Option<u8>[{built_in impl Sized for u8}]; // anonymous local
+    let mut _6: &'1 mut Range<u8>[{built_in impl Sized for u8}]; // anonymous local
+    let mut _7: &'2 mut Range<u8>[{built_in impl Sized for u8}]; // anonymous local
     let i: u8; // local
-    let _9: u8; // anonymous local
+    let mut _9: u8; // anonymous local
     let _10: usize; // anonymous local
-    let _11: &'_ mut [u8; 33usize]; // anonymous local
-    let _12: &'_ mut u8; // anonymous local
+    let mut _11: &'_ mut [u8; 33usize]; // anonymous local
+    let mut _12: &'_ mut u8; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -626,29 +626,29 @@ fn cbd(prf_input: [u8; 33usize])
 // Full name: test_crate::select
 fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let lhs: &'1 [u8]; // arg #1
     let rhs: &'2 [u8]; // arg #2
-    let _3: bool; // anonymous local
-    let _4: (&'12 usize, &'13 usize); // anonymous local
-    let _5: &'17 usize; // anonymous local
+    let mut _3: bool; // anonymous local
+    let mut _4: (&'12 usize, &'13 usize); // anonymous local
+    let mut _5: &'17 usize; // anonymous local
     let _6: usize; // anonymous local
-    let _7: &'18 [u8]; // anonymous local
-    let _8: &'19 usize; // anonymous local
+    let mut _7: &'18 [u8]; // anonymous local
+    let mut _8: &'19 usize; // anonymous local
     let _9: usize; // anonymous local
-    let _10: &'20 [u8]; // anonymous local
+    let mut _10: &'20 [u8]; // anonymous local
     let left_val: &'21 usize; // local
     let right_val: &'22 usize; // local
-    let _13: bool; // anonymous local
-    let _14: usize; // anonymous local
-    let _15: usize; // anonymous local
+    let mut _13: bool; // anonymous local
+    let mut _14: usize; // anonymous local
+    let mut _15: usize; // anonymous local
     let kind: AssertKind; // local
-    let _17: AssertKind; // anonymous local
-    let _18: &'23 usize; // anonymous local
+    let mut _17: AssertKind; // anonymous local
+    let mut _18: &'23 usize; // anonymous local
     let _19: &'24 usize; // anonymous local
-    let _20: &'25 usize; // anonymous local
+    let mut _20: &'25 usize; // anonymous local
     let _21: &'26 usize; // anonymous local
-    let _22: Option<Arguments<'35>>[{built_in impl Sized for Arguments<'35>}]; // anonymous local
+    let mut _22: Option<Arguments<'35>>[{built_in impl Sized for Arguments<'35>}]; // anonymous local
 
     storage_live(_0)
     _0 = ()

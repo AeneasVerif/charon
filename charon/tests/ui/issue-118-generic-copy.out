@@ -52,7 +52,7 @@ struct Foo {}
 #[inline(hint)]
 pub fn clone<'_0>(self: &'_0 Foo) -> Foo
 {
-    let _0: Foo; // return
+    let mut _0: Foo; // return
     let self: &'1 Foo; // arg #1
 
     storage_live(_0)
@@ -85,7 +85,7 @@ impl "impl_Copy_for_Foo" Copy for Foo {
 // Full name: test_crate::copy_foo
 fn copy_foo(x: Foo)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: Foo; // arg #1
     let y: Foo; // local
     let z: Foo; // local
@@ -111,7 +111,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: T; // arg #1
     let y: T; // local
     let z: T; // local
@@ -147,7 +147,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: TraitClause1::Ty; // arg #1
     let y: TraitClause1::Ty; // local
     let z: TraitClause1::Ty; // local

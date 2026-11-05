@@ -238,7 +238,7 @@ where
 // Full name: test_crate::included
 pub fn included() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 3u32
@@ -248,7 +248,7 @@ pub fn included() -> u32
 // Full name: test_crate::from_included_local
 pub fn from_included_local() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 4u32
@@ -258,7 +258,7 @@ pub fn from_included_local() -> u32
 // Full name: test_crate::pathmod::in_pathmod
 pub fn in_pathmod() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 5u32
@@ -268,7 +268,7 @@ pub fn in_pathmod() -> u32
 // Full name: test_crate::pathmod::from_pathmod_local
 pub fn from_pathmod_local() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 6u32
@@ -278,7 +278,7 @@ pub fn from_pathmod_local() -> u32
 // Full name: test_crate::local
 pub fn local() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 1u32
@@ -288,7 +288,7 @@ pub fn local() -> u32
 // Full name: test_crate::nested
 pub fn nested() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 1u32
@@ -298,7 +298,7 @@ pub fn nested() -> u32
 // Full name: test_crate::from_aux
 pub fn from_aux() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 2u32
@@ -308,7 +308,7 @@ pub fn from_aux() -> u32
 // Full name: test_crate::from_included
 pub fn from_included() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 4u32
@@ -318,7 +318,7 @@ pub fn from_included() -> u32
 // Full name: test_crate::from_pathmod
 pub fn from_pathmod() -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
 
     storage_live(_0)
     _0 = const 6u32
@@ -334,10 +334,10 @@ pub struct Derived {
 #[inline(hint)]
 pub fn impl_Clone_for_Derived::clone<'_0>(self: &'_0 Derived) -> Derived
 {
-    let _0: Derived; // return
+    let mut _0: Derived; // return
     let self: &'1 Derived; // arg #1
-    let _2: u32; // anonymous local
-    let _3: &'3 u32; // anonymous local
+    let mut _2: u32; // anonymous local
+    let mut _3: &'3 u32; // anonymous local
     let _4: &'4 u32; // anonymous local
 
     storage_live(_0)
@@ -367,11 +367,11 @@ impl "impl_Clone_for_Derived" Clone for Derived {
 // Full name: test_crate::macro_expr
 pub fn macro_expr(x: u32) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let x: u32; // arg #1
-    let _2: u32; // anonymous local
-    let _3: u32; // anonymous local
-    let _4: u32; // anonymous local
+    let mut _2: u32; // anonymous local
+    let mut _3: u32; // anonymous local
+    let mut _4: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_4)
@@ -391,25 +391,25 @@ pub fn macro_expr(x: u32) -> u32
 // Full name: test_crate::desugarings
 pub fn desugarings(x: Option<u32>[{built_in impl Sized for u32}]) -> Option<u32>[{built_in impl Sized for u32}]
 {
-    let _0: Option<u32>[{built_in impl Sized for u32}]; // return
+    let mut _0: Option<u32>[{built_in impl Sized for u32}]; // return
     let x: Option<u32>[{built_in impl Sized for u32}]; // arg #1
-    let sum: u32; // local
-    let _3: Range<u32>[{built_in impl Sized for u32}]; // anonymous local
-    let _4: Range<u32>[{built_in impl Sized for u32}]; // anonymous local
-    let _5: u32; // anonymous local
-    let _6: ControlFlow<Option<!>[{built_in impl Sized for !}], u32>[{built_in impl Sized for Option<!>[{built_in impl Sized for !}]}, {built_in impl Sized for u32}]; // anonymous local
-    let _7: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let mut sum: u32; // local
+    let mut _3: Range<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let mut _4: Range<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let mut _5: u32; // anonymous local
+    let mut _6: ControlFlow<Option<!>[{built_in impl Sized for !}], u32>[{built_in impl Sized for Option<!>[{built_in impl Sized for !}]}, {built_in impl Sized for u32}]; // anonymous local
+    let mut _7: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
     let residual: Option<!>[{built_in impl Sized for !}]; // local
-    let _9: Option<!>[{built_in impl Sized for !}]; // anonymous local
+    let mut _9: Option<!>[{built_in impl Sized for !}]; // anonymous local
     let val: u32; // local
-    let iter: Range<u32>[{built_in impl Sized for u32}]; // local
-    let _12: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
-    let _13: &'1 mut Range<u32>[{built_in impl Sized for u32}]; // anonymous local
-    let _14: &'2 mut Range<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let mut iter: Range<u32>[{built_in impl Sized for u32}]; // local
+    let mut _12: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let mut _13: &'1 mut Range<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let mut _14: &'2 mut Range<u32>[{built_in impl Sized for u32}]; // anonymous local
     let i: u32; // local
-    let _16: u32; // anonymous local
-    let _17: u32; // anonymous local
-    let _18: u32; // anonymous local
+    let mut _16: u32; // anonymous local
+    let mut _17: u32; // anonymous local
+    let mut _18: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_17)

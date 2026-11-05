@@ -48,7 +48,7 @@ where
     TraitClause1: (T: Destruct),
     Outlives0: (T: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut test_crate::foo::{closure}<T>[TraitClause0, TraitClause1]; // arg #1
 
     storage_live(_0)
@@ -66,9 +66,9 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Destruct),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: T; // arg #1
-    let _2: test_crate::foo::{closure}<T>[TraitClause0, TraitClause1]; // anonymous local
+    let mut _2: test_crate::foo::{closure}<T>[TraitClause0, TraitClause1]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -89,10 +89,10 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Destruct),
 {
-    let _0: (); // return
-    let _1: test_crate::foo::{closure}<T>[TraitClause0, TraitClause1]; // arg #1
-    let tupled_args: (); // arg #2
-    let _3: T; // anonymous local
+    let mut _0: (); // return
+    let mut _1: test_crate::foo::{closure}<T>[TraitClause0, TraitClause1]; // arg #1
+    let mut tupled_args: (); // arg #2
+    let mut _3: T; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -113,7 +113,7 @@ struct test_crate::bar::{closure} {}
 // Full name: test_crate::bar
 fn bar()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: test_crate::bar::{closure}; // local
 
     storage_live(_0)
@@ -128,9 +128,9 @@ fn bar()
 // Full name: test_crate::bar::{impl Fn<()> for test_crate::bar::{closure}}::call
 extern "rust-call" fn call<'_0>(_1: &'_0 test_crate::bar::{closure}, tupled_args: ())
 {
-    let _0: (); // return
-    let _1: &'1 test_crate::bar::{closure}; // arg #1
-    let tupled_args: (); // arg #2
+    let mut _0: (); // return
+    let mut _1: &'1 test_crate::bar::{closure}; // arg #1
+    let mut tupled_args: (); // arg #2
 
     storage_live(_0)
     _0 = ()

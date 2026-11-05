@@ -52,15 +52,15 @@ where
 // Full name: test_crate::sum
 pub unsafe extern "C" fn sum(...) -> i32
 {
-    let _0: i32; // return
-    let ap: VaList<'1>; // arg #1
+    let mut _0: i32; // return
+    let mut ap: VaList<'1>; // arg #1
     let a: i32; // local
-    let _3: &'4 mut VaList<'5>; // anonymous local
+    let mut _3: &'4 mut VaList<'5>; // anonymous local
     let b: i32; // local
-    let _5: &'6 mut VaList<'7>; // anonymous local
-    let _6: i32; // anonymous local
-    let _7: i32; // anonymous local
-    let _8: i32; // anonymous local
+    let mut _5: &'6 mut VaList<'7>; // anonymous local
+    let mut _6: i32; // anonymous local
+    let mut _7: i32; // anonymous local
+    let mut _8: i32; // anonymous local
 
     storage_live(_0)
     storage_live(_8)
@@ -118,12 +118,12 @@ extern unsafe extern "C" fn foo(_1: u32, _2: u64, ...)
 // Full name: test_crate::call
 pub fn call()
 {
-    let _0: (); // return
-    let _1: i32; // anonymous local
-    let _2: (); // anonymous local
+    let mut _0: (); // return
+    let mut _1: i32; // anonymous local
+    let mut _2: (); // anonymous local
     let fn_ptr: unsafe extern "C" fn(u32, u64, ...); // local
-    let _4: (); // anonymous local
-    let _5: unsafe extern "C" fn(u32, u64, ...); // anonymous local
+    let mut _4: (); // anonymous local
+    let mut _5: unsafe extern "C" fn(u32, u64, ...); // anonymous local
 
     storage_live(_0)
     _0 = ()

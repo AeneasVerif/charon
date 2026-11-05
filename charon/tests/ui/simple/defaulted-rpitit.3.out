@@ -70,7 +70,7 @@ where
     TraitClause0: (Self: MyTrait<T>),
     Outlives0: (Self: '_0),
 {
-    let _0: Empty<T>[TraitClause0::ImpliedClause1]; // return
+    let mut _0: Empty<T>[TraitClause0::ImpliedClause1]; // return
     let self: &'1 Self; // arg #1
 
     storage_live(_0)
@@ -86,7 +86,7 @@ pub fn impl_MyTrait_for_unit::rows<'_0, T>(self: &'_0 ()) -> Empty<T>[TraitClaus
 where
     TraitClause0: (T: Sized),
 {
-    let _0: Empty<T>[TraitClause0]; // return
+    let mut _0: Empty<T>[TraitClause0]; // return
     let self: &'1 (); // arg #1
 
     storage_live(_0)

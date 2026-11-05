@@ -33,9 +33,9 @@ where
     TraitClause1: (U: Sized),
     TraitClause2: (U: From<T>),
 {
-    let _0: U; // return
+    let mut _0: U; // return
     let self: T; // arg #1
-    let _2: T; // anonymous local
+    let mut _2: T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -73,17 +73,17 @@ pub const core::num::{u32}::MIN: u32 = core::num::{u32}::MIN()
 // Full name: core::convert::num::{impl From<u32> for u64}::from
 pub fn from(small: u32) -> u64
 {
-    let _0: u64; // return
+    let mut _0: u64; // return
     let small: u32; // arg #1
-    let _2: bool; // anonymous local
-    let _3: bool; // anonymous local
-    let _4: i128; // anonymous local
-    let _5: i128; // anonymous local
-    let _6: bool; // anonymous local
-    let _7: bool; // anonymous local
-    let _8: u128; // anonymous local
-    let _9: u128; // anonymous local
-    let _10: u32; // anonymous local
+    let mut _2: bool; // anonymous local
+    let mut _3: bool; // anonymous local
+    let mut _4: i128; // anonymous local
+    let mut _5: i128; // anonymous local
+    let mut _6: bool; // anonymous local
+    let mut _7: bool; // anonymous local
+    let mut _8: u128; // anonymous local
+    let mut _9: u128; // anonymous local
+    let mut _10: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -153,7 +153,7 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
     let self: &'1 Option<T>[TraitClause0]; // arg #1
 
     storage_live(_0)
@@ -175,21 +175,21 @@ where
 // Full name: test_crate::foo
 fn foo()
 {
-    let _0: (); // return
-    let _1: bool; // anonymous local
-    let _2: &'1 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _3: u64; // anonymous local
-    let _4: &'3 [i32]; // anonymous local
-    let _5: &'5 i32; // anonymous local
+    let mut _0: (); // return
+    let mut _1: bool; // anonymous local
+    let mut _2: &'1 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _3: u64; // anonymous local
+    let mut _4: &'3 [i32]; // anonymous local
+    let mut _5: &'5 i32; // anonymous local
     let _6: &'6 i32; // anonymous local
-    let _7: &'7 i32; // anonymous local
-    let _8: &'8 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _9: &'9 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _10: &'12 i32; // anonymous local
-    let _11: &'15 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _12: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _13: &'16 i32; // anonymous local
-    let _14: i32; // anonymous local
+    let mut _7: &'7 i32; // anonymous local
+    let mut _8: &'8 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _9: &'9 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _10: &'12 i32; // anonymous local
+    let mut _11: &'15 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _12: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _13: &'16 i32; // anonymous local
+    let mut _14: i32; // anonymous local
 
     storage_live(_9)
     storage_live(_11)

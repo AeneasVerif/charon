@@ -81,13 +81,13 @@ pub trait Foo<Self>
 // Full name: test_crate::{impl Foo for ()}::get_ty
 pub fn get_ty<'_0>(self: &'_0 ()) -> &'_0 u32
 {
-    let _0: &'1 u32; // return
+    let mut _0: &'1 u32; // return
     let self: &'3 (); // arg #1
     let _2: &'4 u32; // anonymous local
-    let _3: &'5 u32; // anonymous local
-    let _4: &'6 u32; // anonymous local
-    let _5: &'7 u32; // anonymous local
-    let _6: u32; // anonymous local
+    let mut _3: &'5 u32; // anonymous local
+    let mut _4: &'6 u32; // anonymous local
+    let mut _5: &'7 u32; // anonymous local
+    let mut _6: u32; // anonymous local
 
     storage_live(_4)
     storage_live(_5)
@@ -123,7 +123,7 @@ impl "impl_Foo_for_unit" Foo for () {
 // Full name: test_crate::mk_foo
 fn mk_foo()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -134,12 +134,12 @@ fn mk_foo()
 // Full name: test_crate::use_foo
 fn use_foo()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let foo: (); // local
-    let _2: u32; // anonymous local
-    let _3: &'1 u32; // anonymous local
+    let mut _2: u32; // anonymous local
+    let mut _3: &'1 u32; // anonymous local
     let _4: &'2 u32; // anonymous local
-    let _5: &'4 (); // anonymous local
+    let mut _5: &'4 (); // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -181,7 +181,7 @@ pub fn test_crate::RPITIT::make_foo<Self>()
 where
     TraitClause0: (Self: RPITIT),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -192,7 +192,7 @@ where
 // Full name: test_crate::{impl RPITIT for ()}::make_foo
 pub fn impl_RPITIT_for_unit::make_foo()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -216,12 +216,12 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: RPITIT),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let foo: TraitClause1::make_foo_ty; // local
-    let _2: TraitClause1::ImpliedClause2::Type; // anonymous local
-    let _3: &'1 TraitClause1::ImpliedClause2::Type; // anonymous local
+    let mut _2: TraitClause1::ImpliedClause2::Type; // anonymous local
+    let mut _3: &'1 TraitClause1::ImpliedClause2::Type; // anonymous local
     let _4: &'2 TraitClause1::ImpliedClause2::Type; // anonymous local
-    let _5: &'4 TraitClause1::make_foo_ty; // anonymous local
+    let mut _5: &'4 TraitClause1::make_foo_ty; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -278,7 +278,7 @@ pub fn wrap<U>() -> {closure}<U>[TraitClause0]
 where
     TraitClause0: (U: Sized),
 {
-    let _0: {closure}<U>[TraitClause0]; // return
+    let mut _0: {closure}<U>[TraitClause0]; // return
 
     storage_live(_0)
     _0 = {closure} {  }
@@ -291,11 +291,11 @@ where
     TraitClause0: (U: Sized),
     Outlives0: (U: '_0),
 {
-    let _0: WrapClone<&'11 U>[{built_in impl Sized for &'11 U}, {impl Clone for &'_0 T}<'11, U>]; // return
-    let _1: {closure}<U>[TraitClause0]; // arg #1
-    let tupled_args: (&'_0 U,); // arg #2
+    let mut _0: WrapClone<&'11 U>[{built_in impl Sized for &'11 U}, {impl Clone for &'_0 T}<'11, U>]; // return
+    let mut _1: {closure}<U>[TraitClause0]; // arg #1
+    let mut tupled_args: (&'_0 U,); // arg #2
     let x: &'17 U; // local
-    let _4: &'18 U; // anonymous local
+    let mut _4: &'18 U; // anonymous local
 
     storage_live(_0)
     storage_live(x)
@@ -313,17 +313,17 @@ where
 // Full name: test_crate::use_wrap
 pub fn use_wrap()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let f: {closure}<u32>[{built_in impl Sized for u32}]; // local
-    let _2: WrapClone<&'11 u32>[{built_in impl Sized for &'11 u32}, {impl Clone for &'_0 T}<'11, u32>]; // anonymous local
-    let _3: {closure}<u32>[{built_in impl Sized for u32}]; // anonymous local
-    let _4: (&'18 u32,); // anonymous local
-    let _5: &'19 u32; // anonymous local
+    let mut _2: WrapClone<&'11 u32>[{built_in impl Sized for &'11 u32}, {impl Clone for &'_0 T}<'11, u32>]; // anonymous local
+    let mut _3: {closure}<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let mut _4: (&'18 u32,); // anonymous local
+    let mut _5: &'19 u32; // anonymous local
     let _6: &'20 u32; // anonymous local
-    let _7: &'21 u32; // anonymous local
-    let _8: &'22 u32; // anonymous local
-    let _9: &'37 u32; // anonymous local
-    let _10: u32; // anonymous local
+    let mut _7: &'21 u32; // anonymous local
+    let mut _8: &'22 u32; // anonymous local
+    let mut _9: &'37 u32; // anonymous local
+    let mut _10: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_7)

@@ -86,7 +86,7 @@ where
     TraitClause0: (D: Sized),
     TraitClause1: (D: HasType3<Clause1_Type3>),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -97,7 +97,7 @@ where
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

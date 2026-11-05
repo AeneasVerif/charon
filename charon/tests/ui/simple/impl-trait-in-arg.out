@@ -37,8 +37,8 @@ where
     TraitClause0: (T0: Sized),
     TraitClause1: (T0: Trait),
 {
-    let _0: (); // return
-    let _1: T0; // arg #1
+    let mut _0: (); // return
+    let mut _1: T0; // arg #1
 
     storage_live(_0)
     _0 = ()

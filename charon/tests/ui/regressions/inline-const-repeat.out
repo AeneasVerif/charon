@@ -61,7 +61,7 @@ fn {const}<T, const N : usize>() -> MaybeUninit<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
-    let _0: MaybeUninit<T>[TraitClause0]; // return
+    let mut _0: MaybeUninit<T>[TraitClause0]; // return
 
     storage_live(_0)
     _0 = uninit<T>[TraitClause0]()
@@ -80,7 +80,7 @@ pub fn repeat_inline_const<T, const N : usize>() -> [MaybeUninit<T>[TraitClause0
 where
     TraitClause0: (T: Sized),
 {
-    let _0: [MaybeUninit<T>[TraitClause0]; N]; // return
+    let mut _0: [MaybeUninit<T>[TraitClause0]; N]; // return
 
     storage_live(_0)
     _0 = const [{const}<T, N>[TraitClause0]; N]
@@ -95,7 +95,7 @@ pub struct NonCopy {
 // Full name: test_crate::VALUE
 fn VALUE() -> NonCopy
 {
-    let _0: NonCopy; // return
+    let mut _0: NonCopy; // return
 
     storage_live(_0)
     _0 = NonCopy { _0: const 42u32 }
@@ -108,7 +108,7 @@ const VALUE: NonCopy = VALUE()
 // Full name: test_crate::repeat_named_const
 pub fn repeat_named_const<const N : usize>() -> [NonCopy; N]
 {
-    let _0: [NonCopy; N]; // return
+    let mut _0: [NonCopy; N]; // return
 
     storage_live(_0)
     _0 = const [VALUE; N]
@@ -118,9 +118,9 @@ pub fn repeat_named_const<const N : usize>() -> [NonCopy; N]
 // Full name: test_crate::repeat_zero
 pub fn repeat_zero(value: NonCopy) -> [NonCopy; 0usize]
 {
-    let _0: [NonCopy; 0usize]; // return
+    let mut _0: [NonCopy; 0usize]; // return
     let value: NonCopy; // arg #1
-    let _2: NonCopy; // anonymous local
+    let mut _2: NonCopy; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -134,9 +134,9 @@ pub fn repeat_zero(value: NonCopy) -> [NonCopy; 0usize]
 // Full name: test_crate::repeat_one
 pub fn repeat_one(value: NonCopy) -> [NonCopy; 1usize]
 {
-    let _0: [NonCopy; 1usize]; // return
+    let mut _0: [NonCopy; 1usize]; // return
     let value: NonCopy; // arg #1
-    let _2: NonCopy; // anonymous local
+    let mut _2: NonCopy; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -153,9 +153,9 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
 {
-    let _0: [T; N]; // return
+    let mut _0: [T; N]; // return
     let value: T; // arg #1
-    let _2: T; // anonymous local
+    let mut _2: T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

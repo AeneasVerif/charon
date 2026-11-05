@@ -104,9 +104,9 @@ pub fn f<Self, T>(x: u64)
 where
     TraitClause0: (Self: T6<T>),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: u64; // arg #1
-    let _2: u64; // anonymous local
+    let mut _2: u64; // anonymous local
 
     storage_live(_0)
     _0 = ()

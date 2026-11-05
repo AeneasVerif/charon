@@ -225,8 +225,8 @@ where
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let _1: *const u8; // anonymous local
+    let mut _0: (); // return
+    let mut _1: *const u8; // anonymous local
 
     storage_live(_0)
     _0 = ()

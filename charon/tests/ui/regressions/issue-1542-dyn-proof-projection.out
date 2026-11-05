@@ -98,8 +98,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait),
 {
-    let _0: (); // return
-    let _1: T; // arg #1
+    let mut _0: (); // return
+    let mut _1: T; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -114,11 +114,11 @@ where
 // Full name: test_crate::pass_to_wrap
 fn pass_to_wrap<'_0>(p: &'_0 (dyn Trait + '_0))
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let p: &'3 (dyn Trait + '4); // arg #1
     let _2: (); // anonymous local
-    let _3: Wrap<&'22 (dyn Trait + '23)>[{built_in impl Sized for &'22 (dyn Trait + '29)}]; // anonymous local
-    let _4: &'30 (dyn Trait + '31); // anonymous local
+    let mut _3: Wrap<&'22 (dyn Trait + '23)>[{built_in impl Sized for &'22 (dyn Trait + '29)}]; // anonymous local
+    let mut _4: &'30 (dyn Trait + '31); // anonymous local
 
     storage_live(_0)
     _0 = ()

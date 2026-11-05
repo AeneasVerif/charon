@@ -23,13 +23,13 @@ extern "rust-call" fn call<'_0, '_1>(_1: &'_1 test_crate::main::{closure}<'_0>, 
 where
     Outlives0: ('_0: '_1),
 {
-    let _0: u8; // return
-    let _1: &'2 test_crate::main::{closure}<'_0>; // arg #1
-    let tupled_args: (u8,); // arg #2
+    let mut _0: u8; // return
+    let mut _1: &'2 test_crate::main::{closure}<'_0>; // arg #1
+    let mut tupled_args: (u8,); // arg #2
     let x: u8; // local
-    let _4: u8; // anonymous local
-    let _5: u8; // anonymous local
-    let _6: u8; // anonymous local
+    let mut _4: u8; // anonymous local
+    let mut _5: u8; // anonymous local
+    let mut _6: u8; // anonymous local
 
     storage_live(_0)
     storage_live(x)
@@ -53,10 +53,10 @@ where
 // Full name: test_crate::apply_to_zero::<test_crate::main::{closure}<'_>>
 fn apply_to_zero::<test_crate::main::{closure}<'_>>(f: test_crate::main::{closure}<'_>) -> u8
 {
-    let _0: u8; // return
+    let mut _0: u8; // return
     let f: test_crate::main::{closure}<'0>; // arg #1
-    let _2: &'3 test_crate::main::{closure}<'4>; // anonymous local
-    let _3: (u8,); // anonymous local
+    let mut _2: &'3 test_crate::main::{closure}<'4>; // anonymous local
+    let mut _3: (u8,); // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -81,14 +81,14 @@ extern "rust-call" fn call_mut<'_0, '_1>(_1: &'_1 mut test_crate::main::{closure
 where
     Outlives0: ('_0: '_1),
 {
-    let _0: u8; // return
-    let _1: &'2 mut test_crate::main::{closure#1}<'_0>; // arg #1
-    let tupled_args: (u8,); // arg #2
+    let mut _0: u8; // return
+    let mut _1: &'2 mut test_crate::main::{closure#1}<'_0>; // arg #1
+    let mut tupled_args: (u8,); // arg #2
     let x: u8; // local
-    let _4: u8; // anonymous local
-    let _5: u8; // anonymous local
-    let _6: u8; // anonymous local
-    let _7: u8; // anonymous local
+    let mut _4: u8; // anonymous local
+    let mut _5: u8; // anonymous local
+    let mut _6: u8; // anonymous local
+    let mut _7: u8; // anonymous local
 
     storage_live(_0)
     storage_live(x)
@@ -116,10 +116,10 @@ where
 // Full name: test_crate::apply_to_zero_mut::<test_crate::main::{closure#1}<'_>>
 fn apply_to_zero_mut::<test_crate::main::{closure#1}<'_>>(f: test_crate::main::{closure#1}<'_>) -> u8
 {
-    let _0: u8; // return
-    let f: test_crate::main::{closure#1}<'0>; // arg #1
-    let _2: &'3 mut test_crate::main::{closure#1}<'4>; // anonymous local
-    let _3: (u8,); // anonymous local
+    let mut _0: u8; // return
+    let mut f: test_crate::main::{closure#1}<'0>; // arg #1
+    let mut _2: &'3 mut test_crate::main::{closure#1}<'4>; // anonymous local
+    let mut _3: (u8,); // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -142,14 +142,14 @@ struct test_crate::main::{closure#2} {
 // Full name: test_crate::main::{impl FnOnce<(u8,)> for test_crate::main::{closure#2}}::call_once
 extern "rust-call" fn call_once(_1: test_crate::main::{closure#2}, tupled_args: (u8,)) -> u8
 {
-    let _0: u8; // return
-    let _1: test_crate::main::{closure#2}; // arg #1
-    let tupled_args: (u8,); // arg #2
+    let mut _0: u8; // return
+    let mut _1: test_crate::main::{closure#2}; // arg #1
+    let mut tupled_args: (u8,); // arg #2
     let x: u8; // local
     let _4: (); // anonymous local
-    let _5: Thing; // anonymous local
-    let _6: u8; // anonymous local
-    let _7: u8; // anonymous local
+    let mut _5: Thing; // anonymous local
+    let mut _6: u8; // anonymous local
+    let mut _7: u8; // anonymous local
 
     storage_live(_0)
     storage_live(x)
@@ -181,10 +181,10 @@ extern "rust-call" fn call_once(_1: test_crate::main::{closure#2}, tupled_args: 
 // Full name: test_crate::apply_to_zero_once::<test_crate::main::{closure#2}>
 fn apply_to_zero_once::<test_crate::main::{closure#2}>(f: test_crate::main::{closure#2}) -> u8
 {
-    let _0: u8; // return
+    let mut _0: u8; // return
     let f: test_crate::main::{closure#2}; // arg #1
-    let _2: test_crate::main::{closure#2}; // anonymous local
-    let _3: (u8,); // anonymous local
+    let mut _2: test_crate::main::{closure#2}; // anonymous local
+    let mut _3: (u8,); // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -203,18 +203,18 @@ fn apply_to_zero_once::<test_crate::main::{closure#2}>(f: test_crate::main::{clo
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let z_1: u8; // local
     let _2: u8; // anonymous local
-    let _3: test_crate::main::{closure}<'1>; // anonymous local
-    let _4: &'3 u8; // anonymous local
-    let z_5: u8; // local
+    let mut _3: test_crate::main::{closure}<'1>; // anonymous local
+    let mut _4: &'3 u8; // anonymous local
+    let mut z_5: u8; // local
     let _6: u8; // anonymous local
-    let _7: test_crate::main::{closure#1}<'5>; // anonymous local
-    let _8: &'7 mut u8; // anonymous local
+    let mut _7: test_crate::main::{closure#1}<'5>; // anonymous local
+    let mut _8: &'7 mut u8; // anonymous local
     let z_9: Thing; // local
     let _10: u8; // anonymous local
-    let _11: test_crate::main::{closure#2}; // anonymous local
+    let mut _11: test_crate::main::{closure#2}; // anonymous local
 
     storage_live(_0)
     _0 = ()

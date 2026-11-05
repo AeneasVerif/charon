@@ -29,7 +29,7 @@ where
 // Full name: test_crate::test_static
 fn test_static(x: &'static u32) -> &'static u32
 {
-    let _0: &'1 u32; // return
+    let mut _0: &'1 u32; // return
     let x: &'2 u32; // arg #1
 
     storage_live(_0)

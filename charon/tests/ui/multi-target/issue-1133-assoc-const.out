@@ -151,7 +151,7 @@ pub struct test_crate::Foo::i686-unknown-linux-gnu {
 
 fn test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::TABLE::x86_64-pc-windows-msvc() -> [u32; 4usize]
 {
-    let _0: [u32; 4usize]; // return
+    let mut _0: [u32; 4usize]; // return
 
     storage_live(_0)
     _0 = [const 10u32, const 20u32, const 30u32, const 40u32]
@@ -162,12 +162,12 @@ const test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::TABLE::
 
 pub fn test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::x86_64-pc-windows-msvc<'_0>(self: &'_0 test_crate::Foo::x86_64-pc-windows-msvc) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let self: &'1 test_crate::Foo::x86_64-pc-windows-msvc; // arg #1
-    let _2: [u32; 4usize]; // anonymous local
+    let mut _2: [u32; 4usize]; // anonymous local
     let _3: usize; // anonymous local
-    let _4: &'_ [u32; 4usize]; // anonymous local
-    let _5: &'_ u32; // anonymous local
+    let mut _4: &'_ [u32; 4usize]; // anonymous local
+    let mut _5: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -191,7 +191,7 @@ pub fn test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::x86_64
 
 fn test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::TABLE::i686-unknown-linux-gnu() -> [u32; 4usize]
 {
-    let _0: [u32; 4usize]; // return
+    let mut _0: [u32; 4usize]; // return
 
     storage_live(_0)
     _0 = [const 10u32, const 20u32, const 30u32, const 40u32]
@@ -202,12 +202,12 @@ const test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::TABLE::
 
 pub fn test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::i686-unknown-linux-gnu<'_0>(self: &'_0 test_crate::Foo::i686-unknown-linux-gnu) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let self: &'1 test_crate::Foo::i686-unknown-linux-gnu; // arg #1
-    let _2: [u32; 4usize]; // anonymous local
+    let mut _2: [u32; 4usize]; // anonymous local
     let _3: usize; // anonymous local
-    let _4: &'_ [u32; 4usize]; // anonymous local
-    let _5: &'_ u32; // anonymous local
+    let mut _4: &'_ [u32; 4usize]; // anonymous local
+    let mut _5: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

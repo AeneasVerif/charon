@@ -37,9 +37,9 @@ pub unsafe trait Allocator<Self>
 
 pub fn core::ptr::non_null::{NonNull<T>}::as_ptr<T>(self: NonNull<T>) -> *mut T
 {
-    let _0: *mut T; // return
+    let mut _0: *mut T; // return
     let self: NonNull<T>; // arg #1
-    let _2: NonNull<T>; // anonymous local
+    let mut _2: NonNull<T>; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -53,12 +53,12 @@ pub fn core::ptr::non_null::{NonNull<T>}::cast<T, U>(self: NonNull<T>) -> NonNul
 where
     TraitClause0: (U: Sized),
 {
-    let _0: NonNull<U>; // return
+    let mut _0: NonNull<U>; // return
     let self: NonNull<T>; // arg #1
-    let _2: *mut U; // anonymous local
-    let _3: *mut U; // anonymous local
-    let _4: *mut T; // anonymous local
-    let _5: NonNull<T>; // anonymous local
+    let mut _2: *mut U; // anonymous local
+    let mut _3: *mut U; // anonymous local
+    let mut _4: *mut T; // anonymous local
+    let mut _5: NonNull<T>; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -82,9 +82,9 @@ pub fn core::ptr::non_null::{NonNull<[T]>}::as_non_null_ptr<T>(self: NonNull<[T]
 where
     TraitClause0: (T: Sized),
 {
-    let _0: NonNull<T>; // return
+    let mut _0: NonNull<T>; // return
     let self: NonNull<[T]>; // arg #1
-    let _2: NonNull<[T]>; // anonymous local
+    let mut _2: NonNull<[T]>; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -115,9 +115,9 @@ pub trait Pointee<Self>
 // Full name: core::ptr::metadata::metadata
 pub fn metadata<T>(ptr: *const T) -> {built_in impl Pointee for T}::Metadata
 {
-    let _0: {built_in impl Pointee for T}::Metadata; // return
+    let mut _0: {built_in impl Pointee for T}::Metadata; // return
     let ptr: *const T; // arg #1
-    let _2: *const T; // anonymous local
+    let mut _2: *const T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -131,10 +131,10 @@ pub fn core::ptr::mut_ptr::{*mut [T]}::len<T>(self: *mut [T]) -> usize
 where
     TraitClause0: (T: Sized),
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
     let self: *mut [T]; // arg #1
-    let _2: *const [T]; // anonymous local
-    let _3: *mut [T]; // anonymous local
+    let mut _2: *const [T]; // anonymous local
+    let mut _3: *mut [T]; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -152,10 +152,10 @@ pub fn core::ptr::non_null::{NonNull<[T]>}::len<T>(self: NonNull<[T]>) -> usize
 where
     TraitClause0: (T: Sized),
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
     let self: NonNull<[T]>; // arg #1
-    let _2: *mut [T]; // anonymous local
-    let _3: NonNull<[T]>; // anonymous local
+    let mut _2: *mut [T]; // anonymous local
+    let mut _3: NonNull<[T]>; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -179,18 +179,18 @@ pub const core::ptr::write_bytes::precondition_check::{promoted_const}: str = "u
 #[track_caller]
 fn core::ptr::write_bytes::precondition_check(addr: *const (), align: usize, zero_size: bool)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let addr: *const (); // arg #1
     let align: usize; // arg #2
     let zero_size: bool; // arg #3
-    let _4: bool; // anonymous local
-    let _5: *const (); // anonymous local
-    let _6: usize; // anonymous local
-    let _7: bool; // anonymous local
+    let mut _4: bool; // anonymous local
+    let mut _5: *const (); // anonymous local
+    let mut _6: usize; // anonymous local
+    let mut _7: bool; // anonymous local
     let msg: &'1 str; // local
     let _9: !; // anonymous local
-    let _10: Arguments<'3>; // anonymous local
-    let _11: &'4 str; // anonymous local
+    let mut _10: Arguments<'3>; // anonymous local
+    let mut _11: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -319,12 +319,12 @@ pub fn MAX_SLICE_LEN<Self>() -> usize
 where
     TraitClause0: (Self: SizedTypeProperties),
 {
-    let _0: usize; // return
-    let _1: usize; // anonymous local
+    let mut _0: usize; // return
+    let mut _1: usize; // anonymous local
     let n: usize; // local
-    let _3: usize; // anonymous local
-    let _4: usize; // anonymous local
-    let _5: bool; // anonymous local
+    let mut _3: usize; // anonymous local
+    let mut _4: usize; // anonymous local
+    let mut _5: bool; // anonymous local
 
     storage_live(_0)
     storage_live(_5)
@@ -367,7 +367,7 @@ pub fn LAYOUT<Self>() -> Layout
 where
     TraitClause0: (Self: SizedTypeProperties),
 {
-    let _0: Layout; // return
+    let mut _0: Layout; // return
 
     storage_live(_0)
     _0 = from_size_align_unchecked(const TraitClause0::SIZE, const TraitClause0::ALIGN)
@@ -386,7 +386,7 @@ pub fn IS_ZST<Self>() -> bool
 where
     TraitClause0: (Self: SizedTypeProperties),
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
 
     storage_live(_0)
     _0 = const TraitClause0::SIZE == const 0usize
@@ -415,14 +415,14 @@ pub const core::mem::alignment::{Alignment}::new_unchecked::precondition_check::
 #[track_caller]
 fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: usize)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let align: usize; // arg #1
-    let _2: bool; // anonymous local
-    let _3: usize; // anonymous local
+    let mut _2: bool; // anonymous local
+    let mut _3: usize; // anonymous local
     let msg: &'1 str; // local
     let _5: !; // anonymous local
-    let _6: Arguments<'3>; // anonymous local
-    let _7: &'4 str; // anonymous local
+    let mut _6: Arguments<'3>; // anonymous local
+    let mut _7: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -455,12 +455,12 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
 #[track_caller]
 pub unsafe fn core::mem::alignment::{Alignment}::new_unchecked(align: usize) -> Alignment
 {
-    let _0: Alignment; // return
+    let mut _0: Alignment; // return
     let align: usize; // arg #1
-    let _2: bool; // anonymous local
+    let mut _2: bool; // anonymous local
     let _3: (); // anonymous local
-    let _4: usize; // anonymous local
-    let _5: usize; // anonymous local
+    let mut _4: usize; // anonymous local
+    let mut _5: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -486,12 +486,12 @@ pub unsafe fn core::mem::alignment::{Alignment}::new_unchecked(align: usize) -> 
 
 pub fn core::mem::alignment::{Alignment}::new(align: usize) -> Option<Alignment>[{built_in impl Sized for Alignment}]
 {
-    let _0: Option<Alignment>[{built_in impl Sized for Alignment}]; // return
+    let mut _0: Option<Alignment>[{built_in impl Sized for Alignment}]; // return
     let align: usize; // arg #1
-    let _2: bool; // anonymous local
-    let _3: usize; // anonymous local
-    let _4: Alignment; // anonymous local
-    let _5: usize; // anonymous local
+    let mut _2: bool; // anonymous local
+    let mut _3: usize; // anonymous local
+    let mut _4: Alignment; // anonymous local
+    let mut _5: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -524,8 +524,8 @@ pub fn ALIGNMENT<Self>() -> Alignment
 where
     TraitClause0: (Self: SizedTypeProperties),
 {
-    let _0: Alignment; // return
-    let _1: Option<Alignment>[{built_in impl Sized for Alignment}]; // anonymous local
+    let mut _0: Alignment; // return
+    let mut _1: Option<Alignment>[{built_in impl Sized for Alignment}]; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -549,7 +549,7 @@ pub fn ALIGN<Self>() -> usize
 where
     TraitClause0: (Self: SizedTypeProperties),
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = core::intrinsics::align_of<Self>[TraitClause0::ImpliedClause0]()
@@ -570,7 +570,7 @@ pub fn SIZE<Self>() -> usize
 where
     TraitClause0: (Self: SizedTypeProperties),
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = core::intrinsics::size_of<Self>[TraitClause0::ImpliedClause0]()
@@ -605,7 +605,7 @@ pub fn core::mem::align_of<T>() -> usize
 where
     TraitClause0: (T: Sized),
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = copy ALIGN<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
@@ -618,21 +618,21 @@ pub unsafe fn core::ptr::write_bytes<T>(dst: *mut T, val: u8, count: usize)
 where
     TraitClause0: (T: Sized),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let dst: *mut T; // arg #1
     let val: u8; // arg #2
     let count: usize; // arg #3
-    let _4: bool; // anonymous local
+    let mut _4: bool; // anonymous local
     let _5: (); // anonymous local
-    let _6: *const (); // anonymous local
-    let _7: *mut T; // anonymous local
-    let _8: usize; // anonymous local
-    let _9: bool; // anonymous local
-    let _10: bool; // anonymous local
-    let _11: usize; // anonymous local
-    let _12: *mut T; // anonymous local
-    let _13: u8; // anonymous local
-    let _14: usize; // anonymous local
+    let mut _6: *const (); // anonymous local
+    let mut _7: *mut T; // anonymous local
+    let mut _8: usize; // anonymous local
+    let mut _9: bool; // anonymous local
+    let mut _10: bool; // anonymous local
+    let mut _11: usize; // anonymous local
+    let mut _12: *mut T; // anonymous local
+    let mut _13: u8; // anonymous local
+    let mut _14: usize; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -689,13 +689,13 @@ pub unsafe fn core::ptr::mut_ptr::{*mut T}::write_bytes<T>(self: *mut T, val: u8
 where
     TraitClause0: (T: Sized),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: *mut T; // arg #1
     let val: u8; // arg #2
     let count: usize; // arg #3
-    let _4: *mut T; // anonymous local
-    let _5: u8; // anonymous local
-    let _6: usize; // anonymous local
+    let mut _4: *mut T; // anonymous local
+    let mut _5: u8; // anonymous local
+    let mut _6: usize; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -730,25 +730,25 @@ where
     TraitClause0: (Self: Allocator),
     Outlives0: (Self: '_0),
 {
-    let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
+    let mut _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
     let self: &'1 Self; // arg #1
     let layout: Layout; // arg #2
     let ptr: NonNull<[u8]>; // local
-    let _4: ControlFlow<Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
-    let _5: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
-    let _6: &'2 Self; // anonymous local
-    let _7: Layout; // anonymous local
-    let _8: isize; // anonymous local
+    let mut _4: ControlFlow<Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
+    let mut _5: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let mut _6: &'2 Self; // anonymous local
+    let mut _7: Layout; // anonymous local
+    let mut _8: isize; // anonymous local
     let residual: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // local
-    let _10: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // anonymous local
+    let mut _10: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // anonymous local
     let val: NonNull<[u8]>; // local
     let _12: (); // anonymous local
-    let _13: *mut u8; // anonymous local
-    let _14: NonNull<u8>; // anonymous local
-    let _15: NonNull<[u8]>; // anonymous local
-    let _16: usize; // anonymous local
-    let _17: NonNull<[u8]>; // anonymous local
-    let _18: NonNull<[u8]>; // anonymous local
+    let mut _13: *mut u8; // anonymous local
+    let mut _14: NonNull<u8>; // anonymous local
+    let mut _15: NonNull<[u8]>; // anonymous local
+    let mut _16: usize; // anonymous local
+    let mut _17: NonNull<[u8]>; // anonymous local
+    let mut _18: NonNull<[u8]>; // anonymous local
 
     storage_live(_0)
     storage_live(_8)
@@ -829,10 +829,10 @@ pub fn as_mut_ptr<T>(self: NonNull<[T]>) -> *mut T
 where
     TraitClause0: (T: Sized),
 {
-    let _0: *mut T; // return
+    let mut _0: *mut T; // return
     let self: NonNull<[T]>; // arg #1
-    let _2: NonNull<T>; // anonymous local
-    let _3: NonNull<[T]>; // anonymous local
+    let mut _2: NonNull<T>; // anonymous local
+    let mut _3: NonNull<[T]>; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -852,35 +852,35 @@ pub const core::ptr::copy_nonoverlapping::precondition_check::{promoted_const}: 
 #[track_caller]
 fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut (), size: usize, align: usize, count: usize)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let src: *const (); // arg #1
     let dst: *mut (); // arg #2
     let size: usize; // arg #3
     let align: usize; // arg #4
     let count: usize; // arg #5
-    let _6: bool; // anonymous local
+    let mut _6: bool; // anonymous local
     let zero_size: bool; // local
-    let _8: bool; // anonymous local
-    let _9: usize; // anonymous local
-    let _10: usize; // anonymous local
-    let _11: bool; // anonymous local
-    let _12: *const (); // anonymous local
-    let _13: usize; // anonymous local
-    let _14: bool; // anonymous local
-    let _15: bool; // anonymous local
-    let _16: *const (); // anonymous local
-    let _17: *mut (); // anonymous local
-    let _18: usize; // anonymous local
-    let _19: bool; // anonymous local
-    let _20: *const (); // anonymous local
-    let _21: *const (); // anonymous local
-    let _22: *mut (); // anonymous local
-    let _23: usize; // anonymous local
-    let _24: usize; // anonymous local
+    let mut _8: bool; // anonymous local
+    let mut _9: usize; // anonymous local
+    let mut _10: usize; // anonymous local
+    let mut _11: bool; // anonymous local
+    let mut _12: *const (); // anonymous local
+    let mut _13: usize; // anonymous local
+    let mut _14: bool; // anonymous local
+    let mut _15: bool; // anonymous local
+    let mut _16: *const (); // anonymous local
+    let mut _17: *mut (); // anonymous local
+    let mut _18: usize; // anonymous local
+    let mut _19: bool; // anonymous local
+    let mut _20: *const (); // anonymous local
+    let mut _21: *const (); // anonymous local
+    let mut _22: *mut (); // anonymous local
+    let mut _23: usize; // anonymous local
+    let mut _24: usize; // anonymous local
     let msg: &'1 str; // local
     let _26: !; // anonymous local
-    let _27: Arguments<'3>; // anonymous local
-    let _28: &'4 str; // anonymous local
+    let mut _27: Arguments<'3>; // anonymous local
+    let mut _28: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -986,7 +986,7 @@ pub fn core::mem::size_of<T>() -> usize
 where
     TraitClause0: (T: Sized),
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = copy SIZE<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
@@ -999,23 +999,23 @@ pub unsafe fn core::ptr::copy_nonoverlapping<T>(src: *const T, dst: *mut T, coun
 where
     TraitClause0: (T: Sized),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let src: *const T; // arg #1
     let dst: *mut T; // arg #2
     let count: usize; // arg #3
-    let _4: bool; // anonymous local
+    let mut _4: bool; // anonymous local
     let _5: (); // anonymous local
-    let _6: *const (); // anonymous local
-    let _7: *const T; // anonymous local
-    let _8: *mut (); // anonymous local
-    let _9: *mut T; // anonymous local
-    let _10: usize; // anonymous local
-    let _11: usize; // anonymous local
-    let _12: usize; // anonymous local
-    let _13: *const T; // anonymous local
-    let _14: *mut T; // anonymous local
-    let _15: usize; // anonymous local
-    let _16: (); // anonymous local
+    let mut _6: *const (); // anonymous local
+    let mut _7: *const T; // anonymous local
+    let mut _8: *mut (); // anonymous local
+    let mut _9: *mut T; // anonymous local
+    let mut _10: usize; // anonymous local
+    let mut _11: usize; // anonymous local
+    let mut _12: usize; // anonymous local
+    let mut _13: *const T; // anonymous local
+    let mut _14: *mut T; // anonymous local
+    let mut _15: usize; // anonymous local
+    let mut _16: (); // anonymous local
 
     storage_live(_0)
     storage_live(_16)
@@ -1074,42 +1074,42 @@ where
     TraitClause0: (Self: Allocator),
     Outlives0: (Self: '_0),
 {
-    let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
+    let mut _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
     let self: &'1 Self; // arg #1
     let ptr: NonNull<u8>; // arg #2
     let old_layout: Layout; // arg #3
     let new_layout: Layout; // arg #4
-    let _5: bool; // anonymous local
-    let _6: bool; // anonymous local
-    let _7: usize; // anonymous local
-    let _8: &'3 Layout; // anonymous local
-    let _9: usize; // anonymous local
-    let _10: &'4 Layout; // anonymous local
+    let mut _5: bool; // anonymous local
+    let mut _6: bool; // anonymous local
+    let mut _7: usize; // anonymous local
+    let mut _8: &'3 Layout; // anonymous local
+    let mut _9: usize; // anonymous local
+    let mut _10: &'4 Layout; // anonymous local
     let _11: !; // anonymous local
-    let _12: Arguments<'6>; // anonymous local
+    let mut _12: Arguments<'6>; // anonymous local
     let new_ptr: NonNull<[u8]>; // local
-    let _14: ControlFlow<Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
-    let _15: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
-    let _16: &'7 Self; // anonymous local
-    let _17: Layout; // anonymous local
-    let _18: isize; // anonymous local
+    let mut _14: ControlFlow<Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
+    let mut _15: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let mut _16: &'7 Self; // anonymous local
+    let mut _17: Layout; // anonymous local
+    let mut _18: isize; // anonymous local
     let residual: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // local
-    let _20: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // anonymous local
+    let mut _20: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // anonymous local
     let val: NonNull<[u8]>; // local
     let _22: (); // anonymous local
-    let _23: *const u8; // anonymous local
-    let _24: *mut u8; // anonymous local
-    let _25: NonNull<u8>; // anonymous local
-    let _26: *mut u8; // anonymous local
-    let _27: NonNull<[u8]>; // anonymous local
-    let _28: usize; // anonymous local
-    let _29: &'8 Layout; // anonymous local
+    let mut _23: *const u8; // anonymous local
+    let mut _24: *mut u8; // anonymous local
+    let mut _25: NonNull<u8>; // anonymous local
+    let mut _26: *mut u8; // anonymous local
+    let mut _27: NonNull<[u8]>; // anonymous local
+    let mut _28: usize; // anonymous local
+    let mut _29: &'8 Layout; // anonymous local
     let _30: (); // anonymous local
-    let _31: &'9 Self; // anonymous local
-    let _32: NonNull<u8>; // anonymous local
-    let _33: Layout; // anonymous local
-    let _34: NonNull<[u8]>; // anonymous local
-    let _35: &'17 str; // anonymous local
+    let mut _31: &'9 Self; // anonymous local
+    let mut _32: NonNull<u8>; // anonymous local
+    let mut _33: Layout; // anonymous local
+    let mut _34: NonNull<[u8]>; // anonymous local
+    let mut _35: &'17 str; // anonymous local
 
     storage_live(_0)
     storage_live(_18)
@@ -1246,42 +1246,42 @@ where
     TraitClause0: (Self: Allocator),
     Outlives0: (Self: '_0),
 {
-    let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
+    let mut _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
     let self: &'1 Self; // arg #1
     let ptr: NonNull<u8>; // arg #2
     let old_layout: Layout; // arg #3
     let new_layout: Layout; // arg #4
-    let _5: bool; // anonymous local
-    let _6: bool; // anonymous local
-    let _7: usize; // anonymous local
-    let _8: &'3 Layout; // anonymous local
-    let _9: usize; // anonymous local
-    let _10: &'4 Layout; // anonymous local
+    let mut _5: bool; // anonymous local
+    let mut _6: bool; // anonymous local
+    let mut _7: usize; // anonymous local
+    let mut _8: &'3 Layout; // anonymous local
+    let mut _9: usize; // anonymous local
+    let mut _10: &'4 Layout; // anonymous local
     let _11: !; // anonymous local
-    let _12: Arguments<'6>; // anonymous local
+    let mut _12: Arguments<'6>; // anonymous local
     let new_ptr: NonNull<[u8]>; // local
-    let _14: ControlFlow<Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
-    let _15: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
-    let _16: &'7 Self; // anonymous local
-    let _17: Layout; // anonymous local
-    let _18: isize; // anonymous local
+    let mut _14: ControlFlow<Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
+    let mut _15: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let mut _16: &'7 Self; // anonymous local
+    let mut _17: Layout; // anonymous local
+    let mut _18: isize; // anonymous local
     let residual: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // local
-    let _20: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // anonymous local
+    let mut _20: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // anonymous local
     let val: NonNull<[u8]>; // local
     let _22: (); // anonymous local
-    let _23: *const u8; // anonymous local
-    let _24: *mut u8; // anonymous local
-    let _25: NonNull<u8>; // anonymous local
-    let _26: *mut u8; // anonymous local
-    let _27: NonNull<[u8]>; // anonymous local
-    let _28: usize; // anonymous local
-    let _29: &'8 Layout; // anonymous local
+    let mut _23: *const u8; // anonymous local
+    let mut _24: *mut u8; // anonymous local
+    let mut _25: NonNull<u8>; // anonymous local
+    let mut _26: *mut u8; // anonymous local
+    let mut _27: NonNull<[u8]>; // anonymous local
+    let mut _28: usize; // anonymous local
+    let mut _29: &'8 Layout; // anonymous local
     let _30: (); // anonymous local
-    let _31: &'9 Self; // anonymous local
-    let _32: NonNull<u8>; // anonymous local
-    let _33: Layout; // anonymous local
-    let _34: NonNull<[u8]>; // anonymous local
-    let _35: &'17 str; // anonymous local
+    let mut _31: &'9 Self; // anonymous local
+    let mut _32: NonNull<u8>; // anonymous local
+    let mut _33: Layout; // anonymous local
+    let mut _34: NonNull<[u8]>; // anonymous local
+    let mut _35: &'17 str; // anonymous local
 
     storage_live(_0)
     storage_live(_18)
@@ -1418,42 +1418,42 @@ where
     TraitClause0: (Self: Allocator),
     Outlives0: (Self: '_0),
 {
-    let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
+    let mut _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
     let self: &'1 Self; // arg #1
     let ptr: NonNull<u8>; // arg #2
     let old_layout: Layout; // arg #3
     let new_layout: Layout; // arg #4
-    let _5: bool; // anonymous local
-    let _6: bool; // anonymous local
-    let _7: usize; // anonymous local
-    let _8: &'3 Layout; // anonymous local
-    let _9: usize; // anonymous local
-    let _10: &'4 Layout; // anonymous local
+    let mut _5: bool; // anonymous local
+    let mut _6: bool; // anonymous local
+    let mut _7: usize; // anonymous local
+    let mut _8: &'3 Layout; // anonymous local
+    let mut _9: usize; // anonymous local
+    let mut _10: &'4 Layout; // anonymous local
     let _11: !; // anonymous local
-    let _12: Arguments<'6>; // anonymous local
+    let mut _12: Arguments<'6>; // anonymous local
     let new_ptr: NonNull<[u8]>; // local
-    let _14: ControlFlow<Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
-    let _15: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
-    let _16: &'7 Self; // anonymous local
-    let _17: Layout; // anonymous local
-    let _18: isize; // anonymous local
+    let mut _14: ControlFlow<Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
+    let mut _15: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let mut _16: &'7 Self; // anonymous local
+    let mut _17: Layout; // anonymous local
+    let mut _18: isize; // anonymous local
     let residual: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // local
-    let _20: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // anonymous local
+    let mut _20: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // anonymous local
     let val: NonNull<[u8]>; // local
     let _22: (); // anonymous local
-    let _23: *const u8; // anonymous local
-    let _24: *mut u8; // anonymous local
-    let _25: NonNull<u8>; // anonymous local
-    let _26: *mut u8; // anonymous local
-    let _27: NonNull<[u8]>; // anonymous local
-    let _28: usize; // anonymous local
-    let _29: &'8 Layout; // anonymous local
+    let mut _23: *const u8; // anonymous local
+    let mut _24: *mut u8; // anonymous local
+    let mut _25: NonNull<u8>; // anonymous local
+    let mut _26: *mut u8; // anonymous local
+    let mut _27: NonNull<[u8]>; // anonymous local
+    let mut _28: usize; // anonymous local
+    let mut _29: &'8 Layout; // anonymous local
     let _30: (); // anonymous local
-    let _31: &'9 Self; // anonymous local
-    let _32: NonNull<u8>; // anonymous local
-    let _33: Layout; // anonymous local
-    let _34: NonNull<[u8]>; // anonymous local
-    let _35: &'17 str; // anonymous local
+    let mut _31: &'9 Self; // anonymous local
+    let mut _32: NonNull<u8>; // anonymous local
+    let mut _33: Layout; // anonymous local
+    let mut _34: NonNull<[u8]>; // anonymous local
+    let mut _35: &'17 str; // anonymous local
 
     storage_live(_0)
     storage_live(_18)
@@ -1603,9 +1603,9 @@ pub fn core::mem::manually_drop::{ManuallyDrop<T>[TraitClause0::ImpliedClause0]}
 where
     TraitClause0: (T: Sized),
 {
-    let _0: ManuallyDrop<T>[TraitClause0::ImpliedClause0]; // return
+    let mut _0: ManuallyDrop<T>[TraitClause0::ImpliedClause0]; // return
     let value: T; // arg #1
-    let _2: T; // anonymous local
+    let mut _2: T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -1621,7 +1621,7 @@ where
     TraitClause0: (T: MetaSized),
     Outlives0: (T: '_0),
 {
-    let _0: &'1 T; // return
+    let mut _0: &'1 T; // return
     let self: &'3 ManuallyDrop<T>[TraitClause0]; // arg #1
     let _2: &'4 T; // anonymous local
 
@@ -1639,10 +1639,10 @@ where
     TraitClause0: (T: MetaSized),
     Outlives0: (T: '_0),
 {
-    let _0: &'1 mut T; // return
+    let mut _0: &'1 mut T; // return
     let self: &'3 mut ManuallyDrop<T>[TraitClause0]; // arg #1
-    let _2: &'4 mut T; // anonymous local
-    let _3: &'5 mut T; // anonymous local
+    let mut _2: &'4 mut T; // anonymous local
+    let mut _3: &'5 mut T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -1661,10 +1661,10 @@ pub fn forget<T>(t: T)
 where
     TraitClause0: (T: Sized),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let t: T; // arg #1
-    let _2: ManuallyDrop<T>[TraitClause0::ImpliedClause0]; // anonymous local
-    let _3: T; // anonymous local
+    let mut _2: ManuallyDrop<T>[TraitClause0::ImpliedClause0]; // anonymous local
+    let mut _3: T; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1688,10 +1688,10 @@ pub fn core::ptr::const_ptr::{*const T}::cast<T, U>(self: *const T) -> *const U
 where
     TraitClause0: (U: Sized),
 {
-    let _0: *const U; // return
+    let mut _0: *const U; // return
     let self: *const T; // arg #1
-    let _2: *const U; // anonymous local
-    let _3: *const T; // anonymous local
+    let mut _2: *const U; // anonymous local
+    let mut _3: *const T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -1707,10 +1707,10 @@ where
 // Full name: core::ptr::const_ptr::{*const T}::addr
 pub fn addr<T>(self: *const T) -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
     let self: *const T; // arg #1
-    let _2: *const (); // anonymous local
-    let _3: *const T; // anonymous local
+    let mut _2: *const (); // anonymous local
+    let mut _3: *const T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -1727,10 +1727,10 @@ pub fn addr<T>(self: *const T) -> usize
 // Full name: core::ptr::const_ptr::{*const T}::is_null::runtime
 fn runtime(ptr: *const u8) -> bool
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
     let ptr: *const u8; // arg #1
-    let _2: usize; // anonymous local
-    let _3: *const u8; // anonymous local
+    let mut _2: usize; // anonymous local
+    let mut _3: *const u8; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -1747,12 +1747,12 @@ fn runtime(ptr: *const u8) -> bool
 #[diagnostic_item("ptr_const_is_null")]
 pub fn core::ptr::const_ptr::{*const T}::is_null<T>(self: *const T) -> bool
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
     let self: *const T; // arg #1
     let ptr: *const u8; // local
-    let _3: *const T; // anonymous local
-    let _4: (*const u8,); // anonymous local
-    let _5: *const u8; // anonymous local
+    let mut _3: *const T; // anonymous local
+    let mut _4: (*const u8,); // anonymous local
+    let mut _5: *const u8; // anonymous local
 
     storage_live(_0)
     storage_live(ptr)
@@ -1779,9 +1779,9 @@ pub unsafe fn read<T>(src: *const T) -> T
 where
     TraitClause0: (T: Sized),
 {
-    let _0: T; // return
+    let mut _0: T; // return
     let src: *const T; // arg #1
-    let _2: *const T; // anonymous local
+    let mut _2: *const T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -1795,11 +1795,11 @@ where
 #[diagnostic_item("ptr_cast_const")]
 pub fn cast_const<T>(self: *mut T) -> *const T
 {
-    let _0: *const T; // return
+    let mut _0: *const T; // return
     let self: *mut T; // arg #1
-    let _2: *const T; // anonymous local
-    let _3: *const T; // anonymous local
-    let _4: *mut T; // anonymous local
+    let mut _2: *const T; // anonymous local
+    let mut _3: *const T; // anonymous local
+    let mut _4: *mut T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -1818,10 +1818,10 @@ pub fn cast_const<T>(self: *mut T) -> *const T
 #[diagnostic_item("ptr_is_null")]
 pub fn core::ptr::mut_ptr::{*mut T}::is_null<T>(self: *mut T) -> bool
 {
-    let _0: bool; // return
+    let mut _0: bool; // return
     let self: *mut T; // arg #1
-    let _2: *const T; // anonymous local
-    let _3: *mut T; // anonymous local
+    let mut _2: *const T; // anonymous local
+    let mut _3: *mut T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -1841,14 +1841,14 @@ pub const core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check::
 #[track_caller]
 fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr: *mut ())
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let ptr: *mut (); // arg #1
-    let _2: bool; // anonymous local
-    let _3: *mut (); // anonymous local
+    let mut _2: bool; // anonymous local
+    let mut _3: *mut (); // anonymous local
     let msg: &'1 str; // local
     let _5: !; // anonymous local
-    let _6: Arguments<'3>; // anonymous local
-    let _7: &'4 str; // anonymous local
+    let mut _6: Arguments<'3>; // anonymous local
+    let mut _7: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1881,13 +1881,13 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr: *mu
 #[track_caller]
 pub unsafe fn core::ptr::non_null::{NonNull<T>}::new_unchecked<T>(ptr: *mut T) -> NonNull<T>
 {
-    let _0: NonNull<T>; // return
+    let mut _0: NonNull<T>; // return
     let ptr: *mut T; // arg #1
-    let _2: bool; // anonymous local
+    let mut _2: bool; // anonymous local
     let _3: (); // anonymous local
-    let _4: *mut (); // anonymous local
-    let _5: *mut T; // anonymous local
-    let _6: *mut T; // anonymous local
+    let mut _4: *mut (); // anonymous local
+    let mut _5: *mut T; // anonymous local
+    let mut _6: *mut T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -1922,7 +1922,7 @@ pub struct Unique<T> {
 
 pub fn core::ptr::unique::{Unique<T>}::as_non_null_ptr<T>(self: Unique<T>) -> NonNull<T>
 {
-    let _0: NonNull<T>; // return
+    let mut _0: NonNull<T>; // return
     let self: Unique<T>; // arg #1
 
     storage_live(_0)
@@ -1933,9 +1933,9 @@ pub fn core::ptr::unique::{Unique<T>}::as_non_null_ptr<T>(self: Unique<T>) -> No
 // Full name: core::ptr::non_null::{impl From<Unique<T>> for NonNull<T>}::from
 pub fn from<T>(unique: Unique<T>) -> NonNull<T>
 {
-    let _0: NonNull<T>; // return
+    let mut _0: NonNull<T>; // return
     let unique: Unique<T>; // arg #1
-    let _2: Unique<T>; // anonymous local
+    let mut _2: Unique<T>; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -1948,11 +1948,11 @@ pub fn from<T>(unique: Unique<T>) -> NonNull<T>
 
 pub unsafe fn core::ptr::unique::{Unique<T>}::new_unchecked<T>(ptr: *mut T) -> Unique<T>
 {
-    let _0: Unique<T>; // return
+    let mut _0: Unique<T>; // return
     let ptr: *mut T; // arg #1
-    let _2: NonNull<T>; // anonymous local
-    let _3: *mut T; // anonymous local
-    let _4: PhantomData<T>; // anonymous local
+    let mut _2: NonNull<T>; // anonymous local
+    let mut _3: *mut T; // anonymous local
+    let mut _4: PhantomData<T>; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -1971,9 +1971,9 @@ pub unsafe fn core::ptr::unique::{Unique<T>}::new_unchecked<T>(ptr: *mut T) -> U
 
 pub fn core::ptr::unique::{Unique<T>}::as_ptr<T>(self: Unique<T>) -> *mut T
 {
-    let _0: *mut T; // return
+    let mut _0: *mut T; // return
     let self: Unique<T>; // arg #1
-    let _2: NonNull<T>; // anonymous local
+    let mut _2: NonNull<T>; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -1988,11 +1988,11 @@ pub fn core::ptr::unique::{Unique<T>}::cast<T, U>(self: Unique<T>) -> Unique<U>
 where
     TraitClause0: (U: Sized),
 {
-    let _0: Unique<U>; // return
+    let mut _0: Unique<U>; // return
     let self: Unique<T>; // arg #1
-    let _2: NonNull<U>; // anonymous local
-    let _3: NonNull<T>; // anonymous local
-    let _4: PhantomData<U>; // anonymous local
+    let mut _2: NonNull<U>; // anonymous local
+    let mut _3: NonNull<T>; // anonymous local
+    let mut _4: PhantomData<U>; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -2031,22 +2031,22 @@ where
     Outlives0: (T: '_0),
     Outlives1: (A: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
     let ptr: Unique<T>; // local
     let layout: Layout; // local
-    let _4: *const T; // anonymous local
-    let _5: *mut T; // anonymous local
-    let _6: Unique<T>; // anonymous local
-    let _7: bool; // anonymous local
-    let _8: usize; // anonymous local
-    let _9: &'3 Layout; // anonymous local
+    let mut _4: *const T; // anonymous local
+    let mut _5: *mut T; // anonymous local
+    let mut _6: Unique<T>; // anonymous local
+    let mut _7: bool; // anonymous local
+    let mut _8: usize; // anonymous local
+    let mut _9: &'3 Layout; // anonymous local
     let _10: (); // anonymous local
-    let _11: &'5 A; // anonymous local
-    let _12: NonNull<u8>; // anonymous local
-    let _13: Unique<u8>; // anonymous local
-    let _14: Unique<T>; // anonymous local
-    let _15: Layout; // anonymous local
+    let mut _11: &'5 A; // anonymous local
+    let mut _12: NonNull<u8>; // anonymous local
+    let mut _13: Unique<u8>; // anonymous local
+    let mut _14: Unique<T>; // anonymous local
+    let mut _15: Layout; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -2120,13 +2120,13 @@ where
     Outlives0: (T: '_0),
     Outlives1: (A: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
-    let _2: &'2 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
-    let _3: (); // anonymous local
-    let _4: &'3 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
-    let _5: (); // anonymous local
-    let _6: *const T; // anonymous local
+    let mut _2: &'2 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
+    let mut _3: (); // anonymous local
+    let mut _4: &'3 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
+    let mut _5: (); // anonymous local
+    let mut _6: *const T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -2156,8 +2156,8 @@ where
 // Full name: alloc::boxed::box_new_uninit::{promoted_const}
 fn {promoted_const}() -> &'_ Global
 {
-    let _0: &'0 Global; // return
-    let _1: Global; // anonymous local
+    let mut _0: &'0 Global; // return
+    let mut _1: Global; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -2173,17 +2173,17 @@ const {promoted_const}: &'_ Global = {promoted_const}()
 #[track_caller]
 fn box_new_uninit(layout: Layout) -> *mut u8
 {
-    let _0: *mut u8; // return
+    let mut _0: *mut u8; // return
     let layout: Layout; // arg #1
-    let _2: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
-    let _3: &'1 Global; // anonymous local
-    let _4: Layout; // anonymous local
-    let _5: isize; // anonymous local
+    let mut _2: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let mut _3: &'1 Global; // anonymous local
+    let mut _4: Layout; // anonymous local
+    let mut _5: isize; // anonymous local
     let ptr: NonNull<[u8]>; // local
-    let _7: NonNull<[u8]>; // anonymous local
-    let _8: !; // anonymous local
-    let _9: Layout; // anonymous local
-    let _10: &'2 Global; // anonymous local
+    let mut _7: NonNull<[u8]>; // anonymous local
+    let mut _8: !; // anonymous local
+    let mut _9: Layout; // anonymous local
+    let mut _10: &'2 Global; // anonymous local
 
     storage_live(_0)
     storage_live(_5)
@@ -2231,14 +2231,14 @@ pub fn alloc::boxed::{Box<T, Global>[TraitClause0::ImpliedClause0, {built_in imp
 where
     TraitClause0: (T: Sized),
 {
-    let _0: Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl#0}]; // return
+    let mut _0: Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl#0}]; // return
     let x: T; // arg #1
     let ptr: *mut T; // local
-    let _3: *mut T; // anonymous local
-    let _4: *mut u8; // anonymous local
-    let _5: *mut T; // anonymous local
-    let _6: *mut T; // anonymous local
-    let _7: bool; // anonymous local
+    let mut _3: *mut T; // anonymous local
+    let mut _4: *mut u8; // anonymous local
+    let mut _5: *mut T; // anonymous local
+    let mut _6: *mut T; // anonymous local
+    let mut _7: bool; // anonymous local
 
     storage_live(_0)
     storage_live(_7)
@@ -2278,12 +2278,12 @@ where
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
 {
-    let _0: Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // return
+    let mut _0: Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // return
     let raw: *mut T; // arg #1
     let alloc: A; // arg #2
-    let _3: Unique<T>; // anonymous local
-    let _4: *mut T; // anonymous local
-    let _5: A; // anonymous local
+    let mut _3: Unique<T>; // anonymous local
+    let mut _4: *mut T; // anonymous local
+    let mut _5: A; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -2307,10 +2307,10 @@ pub unsafe fn from_raw<T>(raw: *mut T) -> Box<T, Global>[TraitClause0, {built_in
 where
     TraitClause0: (T: MetaSized),
 {
-    let _0: Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]; // return
+    let mut _0: Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]; // return
     let raw: *mut T; // arg #1
-    let _2: *mut T; // anonymous local
-    let _3: Global; // anonymous local
+    let mut _2: *mut T; // anonymous local
+    let mut _3: Global; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -2329,16 +2329,16 @@ pub fn into_raw<T>(b_1: Box<T, Global>[TraitClause0, {built_in impl Sized for Gl
 where
     TraitClause0: (T: MetaSized),
 {
-    let _0: *mut T; // return
+    let mut _0: *mut T; // return
     let b_1: Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]; // arg #1
-    let b_2: ManuallyDrop<Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]>[{built_in impl MetaSized for Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]}]; // local
-    let _3: Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]; // anonymous local
-    let _4: *mut T; // anonymous local
-    let _5: &'1 mut T; // anonymous local
-    let _6: &'3 mut Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]; // anonymous local
-    let _7: &'5 mut ManuallyDrop<Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]>[{built_in impl MetaSized for Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]}]; // anonymous local
-    let _8: Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]; // anonymous local
-    let _9: *const T; // anonymous local
+    let mut b_2: ManuallyDrop<Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]>[{built_in impl MetaSized for Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]}]; // local
+    let mut _3: Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]; // anonymous local
+    let mut _4: *mut T; // anonymous local
+    let mut _5: &'1 mut T; // anonymous local
+    let mut _6: &'3 mut Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]; // anonymous local
+    let mut _7: &'5 mut ManuallyDrop<Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]>[{built_in impl MetaSized for Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]}]; // anonymous local
+    let mut _8: Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]; // anonymous local
+    let mut _9: *const T; // anonymous local
 
     storage_live(_0)
     storage_live(_8)
@@ -2384,22 +2384,22 @@ where
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
 {
-    let _0: (*mut T, A); // return
+    let mut _0: (*mut T, A); // return
     let b_1: Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
-    let b_2: ManuallyDrop<Box<T, A>[TraitClause0, TraitClause1, TraitClause2]>[{built_in impl MetaSized for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}]; // local
-    let _3: Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
+    let mut b_2: ManuallyDrop<Box<T, A>[TraitClause0, TraitClause1, TraitClause2]>[{built_in impl MetaSized for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}]; // local
+    let mut _3: Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
     let ptr: *mut T; // local
-    let _5: &'1 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
-    let _6: &'3 mut ManuallyDrop<Box<T, A>[TraitClause0, TraitClause1, TraitClause2]>[{built_in impl MetaSized for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}]; // anonymous local
+    let mut _5: &'1 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
+    let mut _6: &'3 mut ManuallyDrop<Box<T, A>[TraitClause0, TraitClause1, TraitClause2]>[{built_in impl MetaSized for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}]; // anonymous local
     let alloc: A; // local
-    let _8: *const A; // anonymous local
+    let mut _8: *const A; // anonymous local
     let _9: &'5 A; // anonymous local
     let _10: &'7 Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
-    let _11: &'9 ManuallyDrop<Box<T, A>[TraitClause0, TraitClause1, TraitClause2]>[{built_in impl MetaSized for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}]; // anonymous local
-    let _12: *mut T; // anonymous local
-    let _13: A; // anonymous local
-    let _14: Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
-    let _15: *const T; // anonymous local
+    let mut _11: &'9 ManuallyDrop<Box<T, A>[TraitClause0, TraitClause1, TraitClause2]>[{built_in impl MetaSized for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}]; // anonymous local
+    let mut _12: *mut T; // anonymous local
+    let mut _13: A; // anonymous local
+    let mut _14: Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
+    let mut _15: *const T; // anonymous local
 
     storage_live(_0)
     storage_live(_14)
@@ -2459,17 +2459,17 @@ where
     Outlives0: (A: 'a),
     Outlives1: (T: 'a),
 {
-    let _0: &'1 mut T; // return
+    let mut _0: &'1 mut T; // return
     let b: Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
-    let _2: &'2 mut T; // anonymous local
+    let mut _2: &'2 mut T; // anonymous local
     let ptr: *mut T; // local
     let alloc: A; // local
-    let _5: (*mut T, A); // anonymous local
-    let _6: Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
+    let mut _5: (*mut T, A); // anonymous local
+    let mut _6: Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
     let _7: (); // anonymous local
-    let _8: A; // anonymous local
-    let _9: &'3 mut T; // anonymous local
-    let _10: &'4 mut T; // anonymous local
+    let mut _8: A; // anonymous local
+    let mut _9: &'3 mut T; // anonymous local
+    let mut _10: &'4 mut T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -2508,17 +2508,17 @@ where
 // Full name: test_crate::foo
 unsafe fn foo()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let b_1: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl#0}]; // local
     let p: *mut i32; // local
-    let _3: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl#0}]; // anonymous local
-    let _4: &'1 mut i32; // anonymous local
-    let _5: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl#0}]; // anonymous local
-    let b_6: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl#0}]; // local
-    let _7: *mut i32; // anonymous local
+    let mut _3: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl#0}]; // anonymous local
+    let mut _4: &'1 mut i32; // anonymous local
+    let mut _5: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl#0}]; // anonymous local
+    let mut b_6: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl#0}]; // local
+    let mut _7: *mut i32; // anonymous local
     let i: i32; // local
-    let _9: *const i32; // anonymous local
-    let _10: *const i32; // anonymous local
+    let mut _9: *const i32; // anonymous local
+    let mut _10: *const i32; // anonymous local
 
     storage_live(_0)
     storage_live(_9)

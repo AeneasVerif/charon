@@ -6,7 +6,7 @@ const LEN::<u8, 4usize>: usize = 4usize
 // Full name: test_crate::use_len
 pub fn use_len() -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = copy LEN::<u8, 4usize>
@@ -25,10 +25,10 @@ const impl_HasSize_for_array::SIZE::<[u32; 3usize]>: usize = 12usize
 // Full name: test_crate::use_size
 pub fn use_size() -> usize
 {
-    let _0: usize; // return
-    let _1: usize; // anonymous local
-    let _2: usize; // anonymous local
-    let _3: usize; // anonymous local
+    let mut _0: usize; // return
+    let mut _1: usize; // anonymous local
+    let mut _2: usize; // anonymous local
+    let mut _3: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

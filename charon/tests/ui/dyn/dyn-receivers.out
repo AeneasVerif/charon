@@ -79,7 +79,7 @@ where
     TraitClause0: (Ptr: Sized),
     Outlives0: (Ptr: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut Pin<Ptr>[TraitClause0]; // arg #1
 
     storage_live(_0)
@@ -149,13 +149,13 @@ where
     Outlives0: (T: '_0),
     Outlives1: (A: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
-    let _2: &'2 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
-    let _3: (); // anonymous local
-    let _4: &'3 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
-    let _5: (); // anonymous local
-    let _6: *const T; // anonymous local
+    let mut _2: &'2 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
+    let mut _3: (); // anonymous local
+    let mut _4: &'3 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
+    let mut _5: (); // anonymous local
+    let mut _6: *const T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -219,10 +219,10 @@ where
     Outlives0: (T: '_0),
     Outlives1: (A: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut Rc<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
-    let _2: &'2 mut Rc<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
-    let _3: (); // anonymous local
+    let mut _2: &'2 mut Rc<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
+    let mut _3: (); // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -275,10 +275,10 @@ where
     Outlives0: (T: '_0),
     Outlives1: (A: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut Arc<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
-    let _2: &'2 mut Arc<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
-    let _3: (); // anonymous local
+    let mut _2: &'2 mut Arc<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
+    let mut _3: (); // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -321,9 +321,9 @@ trait T<Self>
 // Full name: test_crate::call_box
 pub fn call_box(x: Box<(dyn T + 'static), Global>[{built_in impl MetaSized for (dyn T + 'static)}, {built_in impl Sized for Global}, impl_Allocator_for_Global])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: Box<(dyn T + '6), Global>[{built_in impl MetaSized for (dyn T + '8)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // arg #1
-    let _2: Box<(dyn T + '9), Global>[{built_in impl MetaSized for (dyn T + '11)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // anonymous local
+    let mut _2: Box<(dyn T + '9), Global>[{built_in impl MetaSized for (dyn T + '11)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -344,9 +344,9 @@ pub fn call_box(x: Box<(dyn T + 'static), Global>[{built_in impl MetaSized for (
 // Full name: test_crate::call_rc
 pub fn call_rc(x: Rc<(dyn T + 'static), Global>[{built_in impl MetaSized for (dyn T + 'static)}, {built_in impl Sized for Global}, impl_Allocator_for_Global])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: Rc<(dyn T + '6), Global>[{built_in impl MetaSized for (dyn T + '8)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // arg #1
-    let _2: Rc<(dyn T + '9), Global>[{built_in impl MetaSized for (dyn T + '11)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // anonymous local
+    let mut _2: Rc<(dyn T + '9), Global>[{built_in impl MetaSized for (dyn T + '11)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -367,9 +367,9 @@ pub fn call_rc(x: Rc<(dyn T + 'static), Global>[{built_in impl MetaSized for (dy
 // Full name: test_crate::call_arc
 pub fn call_arc(x: Arc<(dyn T + 'static), Global>[{built_in impl MetaSized for (dyn T + 'static)}, {built_in impl Sized for Global}, impl_Allocator_for_Global])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: Arc<(dyn T + '6), Global>[{built_in impl MetaSized for (dyn T + '8)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // arg #1
-    let _2: Arc<(dyn T + '9), Global>[{built_in impl MetaSized for (dyn T + '11)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // anonymous local
+    let mut _2: Arc<(dyn T + '9), Global>[{built_in impl MetaSized for (dyn T + '11)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -390,9 +390,9 @@ pub fn call_arc(x: Arc<(dyn T + 'static), Global>[{built_in impl MetaSized for (
 // Full name: test_crate::call_pin_mut
 pub fn call_pin_mut<'_0>(x: Pin<&'_0 mut (dyn T + '_0)>[{built_in impl Sized for &'_0 mut (dyn T + '_0)}])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: Pin<&'20 mut (dyn T + '21)>[{built_in impl Sized for &'20 mut (dyn T + '27)}]; // arg #1
-    let _2: Pin<&'28 mut (dyn T + '29)>[{built_in impl Sized for &'28 mut (dyn T + '35)}]; // anonymous local
+    let mut _2: Pin<&'28 mut (dyn T + '29)>[{built_in impl Sized for &'28 mut (dyn T + '35)}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -407,9 +407,9 @@ pub fn call_pin_mut<'_0>(x: Pin<&'_0 mut (dyn T + '_0)>[{built_in impl Sized for
 // Full name: test_crate::call_pin_box
 pub fn call_pin_box(x: Pin<Box<(dyn T + 'static), Global>[{built_in impl MetaSized for (dyn T + 'static)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn T + 'static), Global>[{built_in impl MetaSized for (dyn T + 'static)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: Pin<Box<(dyn T + '36), Global>[{built_in impl MetaSized for (dyn T + '38)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn T + '45), Global>[{built_in impl MetaSized for (dyn T + '47)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}]; // arg #1
-    let _2: Pin<Box<(dyn T + '48), Global>[{built_in impl MetaSized for (dyn T + '50)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn T + '57), Global>[{built_in impl MetaSized for (dyn T + '59)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}]; // anonymous local
+    let mut _2: Pin<Box<(dyn T + '48), Global>[{built_in impl MetaSized for (dyn T + '50)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn T + '57), Global>[{built_in impl MetaSized for (dyn T + '59)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}]; // anonymous local
 
     storage_live(_0)
     _0 = ()

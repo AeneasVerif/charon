@@ -52,8 +52,8 @@ where
     Outlives1: (T: '_0),
     Outlives2: (Clause1_V: '_0),
 {
-    let _0: (); // return
-    let _1: &'1 TraitClause1::ImpliedClause2::Self_Clause1_B; // arg #1
+    let mut _0: (); // return
+    let mut _1: &'1 TraitClause1::ImpliedClause2::Self_Clause1_B; // arg #1
 
     storage_live(_0)
     _0 = ()

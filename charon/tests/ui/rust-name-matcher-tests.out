@@ -64,7 +64,7 @@ struct str {
 #[pattern::fail("foo::bar")]
 fn bar()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -98,7 +98,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -123,7 +123,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -148,7 +148,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -173,7 +173,7 @@ fn impl_Trait_bool_for_usize::method<U>()
 where
     TraitClause0: (U: Sized),
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
@@ -204,9 +204,9 @@ fn new<T>(value: T) -> Generic<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
-    let _0: Generic<T>[TraitClause0]; // return
+    let mut _0: Generic<T>[TraitClause0]; // return
     let value: T; // arg #1
-    let _2: T; // anonymous local
+    let mut _2: T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -228,7 +228,7 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
-    let _0: &'1 T; // return
+    let mut _0: &'1 T; // return
     let self: &'3 Generic<T>[TraitClause0]; // arg #1
     let _2: &'4 T; // anonymous local
 
@@ -246,12 +246,12 @@ pub const test_crate::use_generic::{promoted_const}: str = "hello" with_metadata
 #[pattern::pass("test_crate::use_generic")]
 fn use_generic()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _int_generic: Generic<i32>[{built_in impl Sized for i32}]; // local
     let _str_generic: Generic<&'8 str>[{built_in impl Sized for &'8 str}]; // local
-    let _3: &'13 i32; // anonymous local
-    let _4: &'15 Generic<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _5: &'24 str; // anonymous local
+    let mut _3: &'13 i32; // anonymous local
+    let mut _4: &'15 Generic<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _5: &'24 str; // anonymous local
 
     storage_live(_0)
     _0 = ()

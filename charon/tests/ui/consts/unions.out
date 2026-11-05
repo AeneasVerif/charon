@@ -47,13 +47,13 @@ static SAME: Same = RawMemory(0x07, 0x00, 0x00, 0x00)
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let _1: &'1 U; // anonymous local
-    let _2: &'3 U; // anonymous local
-    let _3: &'5 U; // anonymous local
-    let _4: &'7 U; // anonymous local
-    let _5: &'9 U; // anonymous local
-    let _6: &'12 Same; // anonymous local
+    let mut _0: (); // return
+    let mut _1: &'1 U; // anonymous local
+    let mut _2: &'3 U; // anonymous local
+    let mut _3: &'5 U; // anonymous local
+    let mut _4: &'7 U; // anonymous local
+    let mut _5: &'9 U; // anonymous local
+    let mut _6: &'12 Same; // anonymous local
 
     storage_live(_0)
     _0 = ()

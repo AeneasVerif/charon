@@ -3,15 +3,15 @@
 // Full name: test_crate::f
 pub fn f(x: u32) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let x: u32; // arg #1
-    let _2: bool; // anonymous local
-    let _3: u32; // anonymous local
-    let _4: i32; // anonymous local
-    let _5: bool; // anonymous local
-    let _6: u32; // anonymous local
-    let _7: bool; // anonymous local
-    let _8: u32; // anonymous local
+    let mut _2: bool; // anonymous local
+    let mut _3: u32; // anonymous local
+    let mut _4: i32; // anonymous local
+    let mut _5: bool; // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: bool; // anonymous local
+    let mut _8: u32; // anonymous local
 
     storage_live(_0)
     loop {

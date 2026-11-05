@@ -15,7 +15,7 @@ struct Foo::<bool> {
 // Full name: test_crate::FooInt
 fn FooInt() -> Foo::<i32>
 {
-    let _0: Foo::<i32>; // return
+    let mut _0: Foo::<i32>; // return
 
     storage_live(_0)
     _0 = Foo::<i32> { value: const 0i32 }
@@ -28,7 +28,7 @@ static FooInt: Foo::<i32> = FooInt()
 // Full name: test_crate::FooBool
 fn FooBool() -> Foo::<bool>
 {
-    let _0: Foo::<bool>; // return
+    let mut _0: Foo::<bool>; // return
 
     storage_live(_0)
     _0 = Foo::<bool> { value: const false }
@@ -41,7 +41,7 @@ static FooBool: Foo::<bool> = FooBool()
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _b: bool; // local
 
     storage_live(_0)

@@ -33,7 +33,7 @@ unsafe fn drop_glue<'_0, A>(_1: &'_0 mut (A,))
 where
     Outlives0: (A: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut (A,); // arg #1
 
     storage_live(_0)
@@ -67,10 +67,10 @@ where
     TraitClause0: (Self: Thing),
     Outlives0: (Self: '_0),
 {
-    let _0: (); // return
-    let _1: &'1 {closure}<Self>[TraitClause0]; // arg #1
-    let tupled_args: (TraitClause0::Item,); // arg #2
-    let _3: TraitClause0::Item; // anonymous local
+    let mut _0: (); // return
+    let mut _1: &'1 {closure}<Self>[TraitClause0]; // arg #1
+    let mut tupled_args: (TraitClause0::Item,); // arg #2
+    let mut _3: TraitClause0::Item; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -93,15 +93,15 @@ fn foo<Self>(i: TraitClause0::Item)
 where
     TraitClause0: (Self: Thing),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let i: TraitClause0::Item; // arg #1
-    let _2: &'1 {closure}<Self>[TraitClause0]; // anonymous local
-    let _3: (TraitClause0::Item,); // anonymous local
-    let _4: TraitClause0::Item; // anonymous local
-    let _5: &'2 {closure}<Self>[TraitClause0]; // anonymous local
-    let _6: &'3 {closure}<Self>[TraitClause0]; // anonymous local
-    let _7: &'10 {closure}<Self>[TraitClause0]; // anonymous local
-    let _8: {closure}<Self>[TraitClause0]; // anonymous local
+    let mut _2: &'1 {closure}<Self>[TraitClause0]; // anonymous local
+    let mut _3: (TraitClause0::Item,); // anonymous local
+    let mut _4: TraitClause0::Item; // anonymous local
+    let mut _5: &'2 {closure}<Self>[TraitClause0]; // anonymous local
+    let mut _6: &'3 {closure}<Self>[TraitClause0]; // anonymous local
+    let mut _7: &'10 {closure}<Self>[TraitClause0]; // anonymous local
+    let mut _8: {closure}<Self>[TraitClause0]; // anonymous local
 
     storage_live(_6)
     storage_live(_7)

@@ -5,11 +5,11 @@ struct () {}
 // Full name: core::ptr::metadata::from_raw_parts::<u8, ()>
 pub fn from_raw_parts::<u8, ()>(data_pointer: *const (), metadata: ()) -> *const u8
 {
-    let _0: *const u8; // return
+    let mut _0: *const u8; // return
     let data_pointer: *const (); // arg #1
     let metadata: (); // arg #2
-    let _3: *const (); // anonymous local
-    let _4: (); // anonymous local
+    let mut _3: *const (); // anonymous local
+    let mut _4: (); // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -26,9 +26,9 @@ pub fn from_raw_parts::<u8, ()>(data_pointer: *const (), metadata: ()) -> *const
 #[diagnostic_item("ptr_without_provenance_mut")]
 pub fn without_provenance_mut::<()>(addr: usize) -> *mut ()
 {
-    let _0: *mut (); // return
+    let mut _0: *mut (); // return
     let addr: usize; // arg #1
-    let _2: usize; // anonymous local
+    let mut _2: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -42,10 +42,10 @@ pub fn without_provenance_mut::<()>(addr: usize) -> *mut ()
 #[diagnostic_item("ptr_without_provenance")]
 pub fn without_provenance::<()>(addr: usize) -> *const ()
 {
-    let _0: *const (); // return
+    let mut _0: *const (); // return
     let addr: usize; // arg #1
-    let _2: *mut (); // anonymous local
-    let _3: usize; // anonymous local
+    let mut _2: *mut (); // anonymous local
+    let mut _3: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -63,9 +63,9 @@ pub fn without_provenance::<()>(addr: usize) -> *const ()
 #[diagnostic_item("ptr_null")]
 pub fn null::<u8>() -> *const u8
 {
-    let _0: *const u8; // return
-    let _1: *const (); // anonymous local
-    let _2: (); // anonymous local
+    let mut _0: *const u8; // return
+    let mut _1: *const (); // anonymous local
+    let mut _2: (); // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -83,8 +83,8 @@ pub fn null::<u8>() -> *const u8
 // Full name: test_crate::null_ptr
 pub fn null_ptr()
 {
-    let _0: (); // return
-    let _1: *const u8; // anonymous local
+    let mut _0: (); // return
+    let mut _1: *const u8; // anonymous local
 
     storage_live(_0)
     _0 = ()

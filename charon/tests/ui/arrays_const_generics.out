@@ -187,12 +187,12 @@ struct () {}
 // Full name: test_crate::index_array_generic
 pub fn index_array_generic<const N : usize>(s: [u32; N], i: usize) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let s: [u32; N]; // arg #1
     let i: usize; // arg #2
     let _3: usize; // anonymous local
-    let _4: &'_ [u32; N]; // anonymous local
-    let _5: &'_ u32; // anonymous local
+    let mut _4: &'_ [u32; N]; // anonymous local
+    let mut _5: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -215,11 +215,11 @@ pub fn index_array_generic<const N : usize>(s: [u32; N], i: usize) -> u32
 // Full name: test_crate::index_array_generic_call
 pub fn index_array_generic_call<const N : usize>(s: [u32; N], i: usize) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let s: [u32; N]; // arg #1
     let i: usize; // arg #2
-    let _3: [u32; N]; // anonymous local
-    let _4: usize; // anonymous local
+    let mut _3: [u32; N]; // anonymous local
+    let mut _4: usize; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -240,7 +240,7 @@ pub fn index_array_generic_call<const N : usize>(s: [u32; N], i: usize) -> u32
 // Full name: test_crate::const_gen_ret
 pub fn const_gen_ret<const N : usize>() -> usize
 {
-    let _0: usize; // return
+    let mut _0: usize; // return
 
     storage_live(_0)
     _0 = const N
@@ -250,7 +250,7 @@ pub fn const_gen_ret<const N : usize>() -> usize
 // Full name: test_crate::init_array_variable_len
 pub fn init_array_variable_len<const LEN : usize>() -> [u8; LEN]
 {
-    let _0: [u8; LEN]; // return
+    let mut _0: [u8; LEN]; // return
 
     storage_live(_0)
     _0 = repeat<u8, LEN>[{built_in impl Sized for u8}, impl_Clone_for_u8](const 0u8)

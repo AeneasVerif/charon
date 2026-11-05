@@ -27,7 +27,7 @@ trait Trait<Self>
 // Full name: test_crate::{impl Trait for ()}::method
 fn method(self: (), _other: &'static u32)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: (); // arg #1
     let _other: &'1 u32; // arg #2
 
@@ -49,15 +49,15 @@ impl "impl_Trait_for_unit" Trait for () {
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let _1: (); // anonymous local
-    let _2: (); // anonymous local
-    let _3: &'1 u32; // anonymous local
+    let mut _0: (); // return
+    let mut _1: (); // anonymous local
+    let mut _2: (); // anonymous local
+    let mut _3: &'1 u32; // anonymous local
     let _4: &'2 u32; // anonymous local
-    let _5: &'3 u32; // anonymous local
-    let _6: &'4 u32; // anonymous local
-    let _7: &'5 u32; // anonymous local
-    let _8: u32; // anonymous local
+    let mut _5: &'3 u32; // anonymous local
+    let mut _6: &'4 u32; // anonymous local
+    let mut _7: &'5 u32; // anonymous local
+    let mut _8: u32; // anonymous local
 
     storage_live(_6)
     storage_live(_7)

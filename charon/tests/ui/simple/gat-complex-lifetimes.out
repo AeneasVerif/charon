@@ -52,10 +52,10 @@ where
     Outlives0: ('y: 'x),
     Outlives1: ('z: 'y),
 {
-    let _0: &'6 &'7 &'8 (); // return
+    let mut _0: &'6 &'7 &'8 (); // return
     let x: TraitClause1::Type<'12>; // arg #1
     let _2: &'13 &'14 &'15 (); // anonymous local
-    let _3: TraitClause1::Type<'17>; // anonymous local
+    let mut _3: TraitClause1::Type<'17>; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

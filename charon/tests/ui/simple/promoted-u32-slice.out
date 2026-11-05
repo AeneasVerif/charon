@@ -26,13 +26,13 @@ struct () {}
 // Full name: test_crate::foo
 pub fn foo() -> &'static [u32]
 {
-    let _0: &'1 [u32]; // return
-    let _1: &'3 [u32; 4usize]; // anonymous local
+    let mut _0: &'1 [u32]; // return
+    let mut _1: &'3 [u32; 4usize]; // anonymous local
     let _2: &'4 [u32; 4usize]; // anonymous local
-    let _3: &'5 [u32; 4usize]; // anonymous local
-    let _4: &'6 [u32; 4usize]; // anonymous local
-    let _5: &'8 [u32; 4usize]; // anonymous local
-    let _6: [u32; 4usize]; // anonymous local
+    let mut _3: &'5 [u32; 4usize]; // anonymous local
+    let mut _4: &'6 [u32; 4usize]; // anonymous local
+    let mut _5: &'8 [u32; 4usize]; // anonymous local
+    let mut _6: [u32; 4usize]; // anonymous local
 
     storage_live(_4)
     storage_live(_5)

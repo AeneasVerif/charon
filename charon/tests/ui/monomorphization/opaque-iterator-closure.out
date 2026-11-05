@@ -62,10 +62,10 @@ struct (_,)::<u32> {
 // Full name: test_crate::callback
 fn callback(x: u32) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let x: u32; // arg #1
-    let _2: u32; // anonymous local
-    let _3: u32; // anonymous local
+    let mut _2: u32; // anonymous local
+    let mut _3: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -98,21 +98,21 @@ fn apply_once::<test_crate::main::{closure#2}>(_1: test_crate::main::{closure#2}
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let total: u32; // local
-    let iter: Map::<Range::<u32>, test_crate::main::{closure}<'_>>; // local
-    let _3: Range::<u32>; // anonymous local
-    let _4: test_crate::main::{closure}<'1>; // anonymous local
-    let _5: &'3 mut u32; // anonymous local
-    let _6: Option::<u32>; // anonymous local
-    let _7: &'5 mut Map::<Range::<u32>, test_crate::main::{closure}<'_>>; // anonymous local
+    let mut _0: (); // return
+    let mut total: u32; // local
+    let mut iter: Map::<Range::<u32>, test_crate::main::{closure}<'_>>; // local
+    let mut _3: Range::<u32>; // anonymous local
+    let mut _4: test_crate::main::{closure}<'1>; // anonymous local
+    let mut _5: &'3 mut u32; // anonymous local
+    let mut _6: Option::<u32>; // anonymous local
+    let mut _7: &'5 mut Map::<Range::<u32>, test_crate::main::{closure}<'_>>; // anonymous local
     let offset: u32; // local
-    let _9: u32; // anonymous local
-    let _10: test_crate::main::{closure#1}<'7>; // anonymous local
-    let _11: &'9 u32; // anonymous local
+    let mut _9: u32; // anonymous local
+    let mut _10: test_crate::main::{closure#1}<'7>; // anonymous local
+    let mut _11: &'9 u32; // anonymous local
     let thing: Thing; // local
-    let _13: u32; // anonymous local
-    let _14: test_crate::main::{closure#2}; // anonymous local
+    let mut _13: u32; // anonymous local
+    let mut _14: test_crate::main::{closure#2}; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -175,13 +175,13 @@ extern "rust-call" fn call_mut<'_0, '_1>(_1: &'_1 mut test_crate::main::{closure
 where
     Outlives0: ('_0: '_1),
 {
-    let _0: u32; // return
-    let _1: &'2 mut test_crate::main::{closure}<'_0>; // arg #1
-    let tupled_args: (u32,); // arg #2
+    let mut _0: u32; // return
+    let mut _1: &'2 mut test_crate::main::{closure}<'_0>; // arg #1
+    let mut tupled_args: (u32,); // arg #2
     let x: u32; // local
-    let _4: u32; // anonymous local
-    let _5: u32; // anonymous local
-    let _6: u32; // anonymous local
+    let mut _4: u32; // anonymous local
+    let mut _5: u32; // anonymous local
+    let mut _6: u32; // anonymous local
 
     storage_live(_0)
     storage_live(x)
@@ -213,14 +213,14 @@ extern "rust-call" fn call<'_0, '_1>(_1: &'_1 test_crate::main::{closure#1}<'_0>
 where
     Outlives0: ('_0: '_1),
 {
-    let _0: u32; // return
-    let _1: &'2 test_crate::main::{closure#1}<'_0>; // arg #1
-    let tupled_args: (u32,); // arg #2
+    let mut _0: u32; // return
+    let mut _1: &'2 test_crate::main::{closure#1}<'_0>; // arg #1
+    let mut tupled_args: (u32,); // arg #2
     let x: u32; // local
-    let _4: u32; // anonymous local
-    let _5: u32; // anonymous local
-    let _6: u32; // anonymous local
-    let _7: u32; // anonymous local
+    let mut _4: u32; // anonymous local
+    let mut _5: u32; // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: u32; // anonymous local
 
     storage_live(_0)
     storage_live(x)
@@ -252,13 +252,13 @@ where
 // Full name: test_crate::main::{impl FnOnce<(u32,)> for test_crate::main::{closure#2}}::call_once
 extern "rust-call" fn call_once(_1: test_crate::main::{closure#2}, tupled_args: (u32,)) -> u32
 {
-    let _0: u32; // return
-    let _1: test_crate::main::{closure#2}; // arg #1
-    let tupled_args: (u32,); // arg #2
+    let mut _0: u32; // return
+    let mut _1: test_crate::main::{closure#2}; // arg #1
+    let mut tupled_args: (u32,); // arg #2
     let x: u32; // local
     let _4: (); // anonymous local
-    let _5: Thing; // anonymous local
-    let _6: u32; // anonymous local
+    let mut _5: Thing; // anonymous local
+    let mut _6: u32; // anonymous local
 
     storage_live(_0)
     storage_live(x)

@@ -51,8 +51,8 @@ where
     TraitClause0: (R: Sized),
     TraitClause1: (R: Ring),
 {
-    let _0: (); // return
-    let _1: TraitClause1::Sub; // anonymous local
+    let mut _0: (); // return
+    let mut _1: TraitClause1::Sub; // anonymous local
 
     storage_live(_0)
     _0 = ()

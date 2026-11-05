@@ -9,9 +9,9 @@ struct test_crate::main::AssertIsAsBytes {}
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
-    let _1: test_crate::main::AssertIsAsBytes; // anonymous local
-    let _2: test_crate::main::AssertIsAsBytes#1; // anonymous local
+    let mut _0: (); // return
+    let mut _1: test_crate::main::AssertIsAsBytes; // anonymous local
+    let mut _2: test_crate::main::AssertIsAsBytes#1; // anonymous local
 
     storage_live(_0)
     _0 = ()

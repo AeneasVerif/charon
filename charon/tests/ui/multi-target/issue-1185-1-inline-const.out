@@ -19,10 +19,10 @@ pub const core::num::{u32}::MAX: u32 = core::num::{u32}::MAX()
 
 pub fn test_crate::const_time_array_copy_mwe<'_0, const N : usize>(_a: &'_0 mut [u8; N])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _a: &'1 mut [u8; N]; // arg #1
-    let _2: bool; // anonymous local
-    let _3: usize; // anonymous local
+    let mut _2: bool; // anonymous local
+    let mut _3: usize; // anonymous local
 
     storage_live(_2)
     storage_live(_3)

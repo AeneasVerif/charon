@@ -118,7 +118,7 @@ unsafe fn drop_glue<'_0, A>(_1: &'_0 mut (A,))
 where
     Outlives0: (A: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut (A,); // arg #1
 
     storage_live(_0)
@@ -133,7 +133,7 @@ pub fn shared<'_0, '_1>(arr: (&'_0 mut (&'_1 mut (u64,),),))
 where
     Outlives0: ('_1: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let arr: (&'6 mut (&'7 mut (u64,),),); // arg #1
 
     storage_live(_0)
@@ -148,7 +148,7 @@ pub fn mutable<'_0, '_1>(arr: (&'_0 (&'_1 (u64,),),))
 where
     Outlives0: ('_1: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let arr: (&'6 (&'7 (u64,),),); // arg #1
     let _2: u64; // anonymous local
 
@@ -164,8 +164,8 @@ where
 // Full name: test_crate::boxed
 pub fn boxed(arr: (Box<(Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],), Global>[{built_in impl MetaSized for (Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],))
 {
-    let _0: (); // return
-    let arr: (Box<(Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],), Global>[{built_in impl MetaSized for (Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],); // arg #1
+    let mut _0: (); // return
+    let mut arr: (Box<(Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],), Global>[{built_in impl MetaSized for (Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],); // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -179,13 +179,13 @@ pub fn boxed(arr: (Box<(Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}
 // Full name: test_crate::f
 pub fn f<'_0>(ctx: &'_0 mut [u64])
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let ctx: &'1 mut [u64]; // arg #1
     let acc: (&'10 mut [u64], &'11 mut [u64]); // local
-    let _3: &'15 mut [u64]; // anonymous local
+    let mut _3: &'15 mut [u64]; // anonymous local
     let _4: usize; // anonymous local
-    let _5: &'_ mut [u64]; // anonymous local
-    let _6: &'_ mut u64; // anonymous local
+    let mut _5: &'_ mut [u64]; // anonymous local
+    let mut _6: &'_ mut u64; // anonymous local
 
     storage_live(_0)
     _0 = ()

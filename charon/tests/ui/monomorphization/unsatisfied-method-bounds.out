@@ -20,7 +20,7 @@ struct A {}
 // Full name: test_crate::MyIterator::method::<A>
 fn method::<A><'_0>(self: &'_0 A)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 A; // arg #1
 
     storage_live(_0)
@@ -36,7 +36,7 @@ struct B {}
 // Full name: test_crate::MyIterator::method::<B>
 fn method::<B><'_0>(self: &'_0 B)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 B; // arg #1
 
     storage_live(_0)
@@ -49,19 +49,19 @@ fn method::<B><'_0>(self: &'_0 B)
 // Full name: test_crate::main
 fn main()
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: (); // anonymous local
-    let _2: &'1 A; // anonymous local
+    let mut _2: &'1 A; // anonymous local
     let _3: (); // anonymous local
-    let _4: &'3 B; // anonymous local
-    let _5: &'4 B; // anonymous local
-    let _6: &'5 A; // anonymous local
-    let _7: &'6 A; // anonymous local
-    let _8: &'9 B; // anonymous local
-    let _9: &'12 A; // anonymous local
-    let _10: A; // anonymous local
-    let _11: &'13 B; // anonymous local
-    let _12: B; // anonymous local
+    let mut _4: &'3 B; // anonymous local
+    let mut _5: &'4 B; // anonymous local
+    let mut _6: &'5 A; // anonymous local
+    let mut _7: &'6 A; // anonymous local
+    let mut _8: &'9 B; // anonymous local
+    let mut _9: &'12 A; // anonymous local
+    let mut _10: A; // anonymous local
+    let mut _11: &'13 B; // anonymous local
+    let mut _12: B; // anonymous local
 
     storage_live(_7)
     storage_live(_9)

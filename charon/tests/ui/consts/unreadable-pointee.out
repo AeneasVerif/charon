@@ -54,11 +54,11 @@ const test_crate::HUGE::{promoted_const}: &'_ u8 = cast<&'_ u8>(&raw const test_
 // Full name: test_crate::HUGE
 pub fn HUGE() -> Wrapper
 {
-    let _0: Wrapper; // return
-    let _1: *const [u8]; // anonymous local
-    let _2: *const u8; // anonymous local
+    let mut _0: Wrapper; // return
+    let mut _1: *const [u8]; // anonymous local
+    let mut _2: *const u8; // anonymous local
     let _3: &'1 u8; // anonymous local
-    let _4: &'2 u8; // anonymous local
+    let mut _4: &'2 u8; // anonymous local
 
     storage_live(_0)
     storage_live(_4)

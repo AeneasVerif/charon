@@ -53,7 +53,7 @@ where
     Outlives0: (Self: '_0),
     TypeConstraint0: TraitClause2::Assoc = bool,
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 Self; // arg #1
 
     storage_live(_0)
@@ -81,7 +81,7 @@ where
     Outlives0: (T: '_0),
     TypeConstraint0: TraitClause2::Assoc = bool,
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 Empty<T>[TraitClause0]; // arg #1
 
     storage_live(_0)

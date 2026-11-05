@@ -162,7 +162,7 @@ where
     TraitClause0: (Self: test_crate::Foo<'a, Clause0_Item>),
     TraitClause1: (Clause0_Item: test_crate::Foo<'a, Clause1_Item>),
 {
-    let _0: Clause0_Item; // return
+    let mut _0: Clause0_Item; // return
     let x: Clause0_Item; // arg #1
 
     storage_live(_0)
@@ -177,7 +177,7 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
 {
-    let _0: Option<&'8 T>[{built_in impl Sized for &'8 T}]; // return
+    let mut _0: Option<&'8 T>[{built_in impl Sized for &'8 T}]; // return
     let x: Option<&'12 T>[{built_in impl Sized for &'12 T}]; // arg #1
 
     storage_live(_0)
@@ -193,7 +193,7 @@ where
     TraitClause1: (Option<&'a T>[{built_in impl Sized for &'a T}]: test_crate::Foo<'a, Clause1_Item>),
     Outlives0: (T: 'a),
 {
-    let _0: Option<&'a T>[{built_in impl Sized for &'a T}]; // return
+    let mut _0: Option<&'a T>[{built_in impl Sized for &'a T}]; // return
     let x: Option<&'a T>[{built_in impl Sized for &'a T}]; // arg #1
 
     storage_live(_0)
@@ -224,7 +224,7 @@ where
     TraitClause1: (T: Copy),
     Outlives0: (T: 'a),
 {
-    let _0: T; // return
+    let mut _0: T; // return
     let x: T; // arg #1
 
     storage_live(_0)
@@ -241,7 +241,7 @@ where
     TraitClause2: (T: test_crate::Foo<'a, Clause2_Item>),
     Outlives0: (T: 'a),
 {
-    let _0: T; // return
+    let mut _0: T; // return
     let x: T; // arg #1
 
     storage_live(_0)
@@ -273,11 +273,11 @@ where
     TraitClause1: (T: test_crate::Foo<'a, Clause1_Item>),
     TraitClause2: (Clause1_Item: test_crate::Foo<'a, Clause2_Item>),
 {
-    let _0: Clause1_Item; // return
+    let mut _0: Clause1_Item; // return
     let x: Clause1_Item; // arg #1
-    let _2: &'5 Clause1_Item; // anonymous local
+    let mut _2: &'5 Clause1_Item; // anonymous local
     let _3: Clause1_Item; // anonymous local
-    let _4: Clause1_Item; // anonymous local
+    let mut _4: Clause1_Item; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -301,9 +301,9 @@ where
 // Full name: test_crate::call_fn
 fn call_fn()
 {
-    let _0: (); // return
-    let _1: Option<&'8 bool>[{built_in impl Sized for &'8 bool}]; // anonymous local
-    let _2: Option<&'12 bool>[{built_in impl Sized for &'12 bool}]; // anonymous local
+    let mut _0: (); // return
+    let mut _1: Option<&'8 bool>[{built_in impl Sized for &'8 bool}]; // anonymous local
+    let mut _2: Option<&'12 bool>[{built_in impl Sized for &'12 bool}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -326,7 +326,7 @@ where
     TraitClause2: (I: test_crate::Foo<'a, Clause2_Item>),
     TraitClause3: (J: test_crate::Foo<'a, Clause2_Item>),
 {
-    let _0: Clause2_Item; // return
+    let mut _0: Clause2_Item; // return
     let x: Clause2_Item; // arg #1
 
     storage_live(_0)

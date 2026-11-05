@@ -81,10 +81,10 @@ where
     TraitClause1: (F: Sized),
     Outlives0: (F: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let self: &'1 F; // arg #1
-    let _2: &'2 F; // anonymous local
-    let _3: (); // anonymous local
+    let mut _2: &'2 F; // anonymous local
+    let mut _3: (); // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -117,7 +117,7 @@ where
 // Full name: test_crate::use_foo
 pub fn use_foo()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()

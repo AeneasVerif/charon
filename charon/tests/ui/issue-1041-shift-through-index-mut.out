@@ -49,7 +49,7 @@ pub struct Wrap {
 // Full name: test_crate::{impl Index<usize> for Wrap}::index
 pub fn index<'_0>(self: &'_0 Wrap, i: usize) -> &'_0 u64
 {
-    let _0: &'1 u64; // return
+    let mut _0: &'1 u64; // return
     let self: &'3 Wrap; // arg #1
     let i: usize; // arg #2
     let _3: &'4 u64; // anonymous local
@@ -82,11 +82,11 @@ impl "impl_Index_usize_for_Wrap" Index<usize> for Wrap {
 // Full name: test_crate::{impl IndexMut<usize> for Wrap}::index_mut
 pub fn index_mut<'_0>(self: &'_0 mut Wrap, i: usize) -> &'_0 mut u64
 {
-    let _0: &'1 mut u64; // return
+    let mut _0: &'1 mut u64; // return
     let self: &'3 mut Wrap; // arg #1
     let i: usize; // arg #2
-    let _3: &'4 mut u64; // anonymous local
-    let _4: &'5 mut u64; // anonymous local
+    let mut _3: &'4 mut u64; // anonymous local
+    let mut _4: &'5 mut u64; // anonymous local
     let _5: usize; // anonymous local
 
     bb0: {
@@ -118,13 +118,13 @@ impl "impl_IndexMut_usize_for_Wrap" IndexMut<usize> for Wrap {
 // Full name: test_crate::shr_into_index
 pub fn shr_into_index<'_0>(x: u64, out: &'_0 mut Wrap)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: u64; // arg #1
     let out: &'1 mut Wrap; // arg #2
-    let _3: u64; // anonymous local
-    let _4: &'3 mut u64; // anonymous local
-    let _5: &'4 mut Wrap; // anonymous local
-    let _6: u64; // anonymous local
+    let mut _3: u64; // anonymous local
+    let mut _4: &'3 mut u64; // anonymous local
+    let mut _5: &'4 mut Wrap; // anonymous local
+    let mut _6: u64; // anonymous local
 
     bb0: {
         storage_live(_6);
@@ -156,15 +156,15 @@ pub fn shr_into_index<'_0>(x: u64, out: &'_0 mut Wrap)
 // Full name: test_crate::shl_into_index_by_var
 pub fn shl_into_index_by_var<'_0>(x: u64, n: u32, out: &'_0 mut Wrap)
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: u64; // arg #1
     let n: u32; // arg #2
     let out: &'1 mut Wrap; // arg #3
-    let _4: u64; // anonymous local
-    let _5: u32; // anonymous local
-    let _6: &'3 mut u64; // anonymous local
-    let _7: &'4 mut Wrap; // anonymous local
-    let _8: u64; // anonymous local
+    let mut _4: u64; // anonymous local
+    let mut _5: u32; // anonymous local
+    let mut _6: &'3 mut u64; // anonymous local
+    let mut _7: &'4 mut Wrap; // anonymous local
+    let mut _8: u64; // anonymous local
 
     bb0: {
         storage_live(_8);

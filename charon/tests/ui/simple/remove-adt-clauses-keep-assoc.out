@@ -49,7 +49,7 @@ where
     TraitClause1: (T: HasAssoc),
     Outlives0: (T: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut Direct<T>[TraitClause0, TraitClause1]; // arg #1
 
     storage_live(_0)
@@ -94,7 +94,7 @@ where
     TraitClause1: (T: DerivedNoAssoc),
     Outlives0: (T: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut Transitive<T>[TraitClause0, TraitClause1]; // arg #1
 
     storage_live(_0)
@@ -133,7 +133,7 @@ where
     TraitClause1: (T: MarkerChild),
     Outlives0: (T: '_0),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _1: &'1 mut Marker<T>; // arg #1
 
     storage_live(_0)
@@ -155,7 +155,7 @@ where
     TraitClause4: (U: DerivedNoAssoc),
     TraitClause5: (V: MarkerChild),
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let _x: Direct<T>[TraitClause0, TraitClause3]; // arg #1
     let _y: Transitive<U>[TraitClause1, TraitClause4]; // arg #2
     let _z: Marker<V>; // arg #3

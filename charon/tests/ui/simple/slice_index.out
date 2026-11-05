@@ -24,11 +24,11 @@ where
 // Full name: test_crate::first
 pub fn first<'_0>(s: &'_0 [u32]) -> u32
 {
-    let _0: u32; // return
+    let mut _0: u32; // return
     let s: &'1 [u32]; // arg #1
     let _2: usize; // anonymous local
-    let _3: &'_ [u32]; // anonymous local
-    let _4: &'_ u32; // anonymous local
+    let mut _3: &'_ [u32]; // anonymous local
+    let mut _4: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

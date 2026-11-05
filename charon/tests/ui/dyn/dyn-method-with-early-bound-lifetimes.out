@@ -28,7 +28,7 @@ trait Trait<Self>
 // Full name: test_crate::foo
 fn foo<'_0>(x: &'_0 (dyn Trait + '_0))
 {
-    let _0: (); // return
+    let mut _0: (); // return
     let x: &'3 (dyn Trait + '4); // arg #1
 
     storage_live(_0)

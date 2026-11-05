@@ -40,11 +40,11 @@ where
     TraitClause1: (T: Any),
     Outlives0: (T: '_0),
 {
-    let _0: &'3 (dyn Any + '4); // return
+    let mut _0: &'3 (dyn Any + '4); // return
     let x: &'6 T; // arg #1
-    let _2: &'7 (dyn Any + '8); // anonymous local
+    let mut _2: &'7 (dyn Any + '8); // anonymous local
     let _3: &'9 (dyn Any + '10); // anonymous local
-    let _4: &'11 T; // anonymous local
+    let mut _4: &'11 T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

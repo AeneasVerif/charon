@@ -5,7 +5,7 @@ struct () {}
 // Full name: test_crate::bar
 fn bar()
 {
-    let _0: (); // return
+    let mut _0: (); // return
 
     storage_live(_0)
     _0 = ()
