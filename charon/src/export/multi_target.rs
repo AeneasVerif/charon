@@ -746,13 +746,13 @@ impl<'a> ItemDeduplicator<'a> {
                     self.krate
                         .type_decls
                         .get_mut(id)
-                        .map(|tdecl| mem::take(&mut tdecl.layout))
+                        .map(|tdecl| mem::take(&mut tdecl.layout.0))
                         .into_iter()
                         .flatten()
                 })
                 .collect();
             if let Some(dest) = self.krate.type_decls.get_mut(canonical_type_id) {
-                dest.layout = layouts;
+                dest.layout.0 = layouts;
             }
         }
 
