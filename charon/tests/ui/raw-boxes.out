@@ -213,7 +213,7 @@ fn core::ptr::write_bytes::precondition_check(addr: *const (), align: usize, zer
         storage_live(_9)
         storage_live(_10)
         storage_live(_11)
-        _11 = &(*msg) with_metadata(copy msg.metadata)
+        _11 = &(*msg) with_metadata(read msg.metadata)
         _10 = from_str<'6>(move _11)
         ↳⚡ unwind_terminate
         storage_dead(_11)
@@ -337,7 +337,7 @@ where
             storage_live(n)
             n = copy _1
             storage_live(_3)
-            _3 = cast<usize>(copy core::num::{isize}::MAX)
+            _3 = cast<usize>(read core::num::{isize}::MAX)
             storage_live(_4)
             _4 = copy n
             _5 = copy _4 == const 0usize
@@ -351,7 +351,7 @@ where
             return
         },
     }
-    _0 = copy core::num::{usize}::MAX
+    _0 = read core::num::{usize}::MAX
     storage_dead(_1)
     return
 }
@@ -439,7 +439,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
         storage_live(_5)
         storage_live(_6)
         storage_live(_7)
-        _7 = &(*msg) with_metadata(copy msg.metadata)
+        _7 = &(*msg) with_metadata(read msg.metadata)
         _6 = from_str<'6>(move _7)
         ↳⚡ unwind_terminate
         storage_dead(_7)
@@ -608,7 +608,7 @@ where
     let mut _0: usize; // return
 
     storage_live(_0)
-    _0 = copy ALIGN<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
+    _0 = read ALIGN<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
     return
 }
 
@@ -651,7 +651,7 @@ where
         ↳⚡ unwind_continue
         storage_live(_9)
         storage_live(_10)
-        _10 = copy IS_ZST<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
+        _10 = read IS_ZST<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
         if move _10 {
             _9 = const true
         } else {
@@ -756,7 +756,7 @@ where
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = &(*self) with_metadata(copy self.metadata)
+    _6 = &(*self) with_metadata(read self.metadata)
     storage_live(_7)
     _7 = copy layout
     _5 = TraitClause0::allocate<'3>(move _6, move _7)
@@ -775,7 +775,7 @@ where
             residual = copy (_4 as variant ControlFlow::Break)._0
             storage_live(_10)
             _10 = copy residual
-            _0 = from_residual<NonNull<[u8]>, AllocError, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}, {built_in impl Sized for AllocError}, {impl#6}<AllocError>[{built_in impl Sized for AllocError}]](move _10)
+            _0 = from_residual<NonNull<[u8]>, AllocError, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}, {built_in impl Sized for AllocError}, {impl#16}<AllocError>[{built_in impl Sized for AllocError}]](move _10)
             ↳⚡ unwind_continue
             storage_dead(_10)
             storage_dead(residual)
@@ -969,7 +969,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut 
         storage_live(_26)
         storage_live(_27)
         storage_live(_28)
-        _28 = &(*msg) with_metadata(copy msg.metadata)
+        _28 = &(*msg) with_metadata(read msg.metadata)
         _27 = from_str<'6>(move _28)
         ↳⚡ unwind_terminate
         storage_dead(_28)
@@ -989,7 +989,7 @@ where
     let mut _0: usize; // return
 
     storage_live(_0)
-    _0 = copy SIZE<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
+    _0 = read SIZE<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
     return
 }
 
@@ -1153,7 +1153,7 @@ where
     storage_live(_14)
     storage_live(_15)
     storage_live(_16)
-    _16 = &(*self) with_metadata(copy self.metadata)
+    _16 = &(*self) with_metadata(read self.metadata)
     storage_live(_17)
     _17 = copy new_layout
     _15 = TraitClause0::allocate<'14>(move _16, move _17)
@@ -1172,7 +1172,7 @@ where
             residual = copy (_14 as variant ControlFlow::Break)._0
             storage_live(_20)
             _20 = copy residual
-            _0 = from_residual<NonNull<[u8]>, AllocError, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}, {built_in impl Sized for AllocError}, {impl#6}<AllocError>[{built_in impl Sized for AllocError}]](move _20)
+            _0 = from_residual<NonNull<[u8]>, AllocError, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}, {built_in impl Sized for AllocError}, {impl#16}<AllocError>[{built_in impl Sized for AllocError}]](move _20)
             ↳⚡ unwind_continue
             storage_dead(_20)
             storage_dead(residual)
@@ -1219,7 +1219,7 @@ where
     storage_dead(_22)
     storage_live(_30)
     storage_live(_31)
-    _31 = &(*self) with_metadata(copy self.metadata)
+    _31 = &(*self) with_metadata(read self.metadata)
     storage_live(_32)
     _32 = copy ptr
     storage_live(_33)
@@ -1325,7 +1325,7 @@ where
     storage_live(_14)
     storage_live(_15)
     storage_live(_16)
-    _16 = &(*self) with_metadata(copy self.metadata)
+    _16 = &(*self) with_metadata(read self.metadata)
     storage_live(_17)
     _17 = copy new_layout
     _15 = TraitClause0::allocate_zeroed<'14>(move _16, move _17)
@@ -1344,7 +1344,7 @@ where
             residual = copy (_14 as variant ControlFlow::Break)._0
             storage_live(_20)
             _20 = copy residual
-            _0 = from_residual<NonNull<[u8]>, AllocError, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}, {built_in impl Sized for AllocError}, {impl#6}<AllocError>[{built_in impl Sized for AllocError}]](move _20)
+            _0 = from_residual<NonNull<[u8]>, AllocError, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}, {built_in impl Sized for AllocError}, {impl#16}<AllocError>[{built_in impl Sized for AllocError}]](move _20)
             ↳⚡ unwind_continue
             storage_dead(_20)
             storage_dead(residual)
@@ -1391,7 +1391,7 @@ where
     storage_dead(_22)
     storage_live(_30)
     storage_live(_31)
-    _31 = &(*self) with_metadata(copy self.metadata)
+    _31 = &(*self) with_metadata(read self.metadata)
     storage_live(_32)
     _32 = copy ptr
     storage_live(_33)
@@ -1497,7 +1497,7 @@ where
     storage_live(_14)
     storage_live(_15)
     storage_live(_16)
-    _16 = &(*self) with_metadata(copy self.metadata)
+    _16 = &(*self) with_metadata(read self.metadata)
     storage_live(_17)
     _17 = copy new_layout
     _15 = TraitClause0::allocate<'14>(move _16, move _17)
@@ -1516,7 +1516,7 @@ where
             residual = copy (_14 as variant ControlFlow::Break)._0
             storage_live(_20)
             _20 = copy residual
-            _0 = from_residual<NonNull<[u8]>, AllocError, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}, {built_in impl Sized for AllocError}, {impl#6}<AllocError>[{built_in impl Sized for AllocError}]](move _20)
+            _0 = from_residual<NonNull<[u8]>, AllocError, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}, {built_in impl Sized for AllocError}, {impl#16}<AllocError>[{built_in impl Sized for AllocError}]](move _20)
             ↳⚡ unwind_continue
             storage_dead(_20)
             storage_dead(residual)
@@ -1563,7 +1563,7 @@ where
     storage_dead(_22)
     storage_live(_30)
     storage_live(_31)
-    _31 = &(*self) with_metadata(copy self.metadata)
+    _31 = &(*self) with_metadata(read self.metadata)
     storage_live(_32)
     _32 = copy ptr
     storage_live(_33)
@@ -1627,8 +1627,8 @@ where
 
     storage_live(_0)
     storage_live(_2)
-    _2 = &(*self).value with_metadata(copy self.metadata)
-    _0 = &(*_2) with_metadata(copy _2.metadata)
+    _2 = &(*self).value with_metadata(read self.metadata)
+    _0 = &(*_2) with_metadata(read _2.metadata)
     storage_dead(_2)
     return
 }
@@ -1647,10 +1647,10 @@ where
     storage_live(_0)
     storage_live(_2)
     storage_live(_3)
-    _3 = &mut (*self).value with_metadata(copy self.metadata)
-    _2 = &mut (*_3) with_metadata(copy _3.metadata)
+    _3 = &mut (*self).value with_metadata(read self.metadata)
+    _2 = &mut (*_3) with_metadata(read _3.metadata)
     storage_dead(_3)
-    _0 = &mut (*_2) with_metadata(copy _2.metadata)
+    _0 = &mut (*_2) with_metadata(read _2.metadata)
     storage_dead(_2)
     return
 }
@@ -1786,7 +1786,7 @@ where
     storage_live(_0)
     storage_live(_2)
     _2 = copy src
-    _0 = copy (*_2)
+    _0 = read (*_2)
     storage_dead(_2)
     return
 }
@@ -1870,7 +1870,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr: *mu
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = &(*msg) with_metadata(copy msg.metadata)
+    _7 = &(*msg) with_metadata(read msg.metadata)
     _6 = from_str<'6>(move _7)
     ↳⚡ unwind_terminate
     storage_dead(_7)
@@ -2085,7 +2085,7 @@ where
     storage_dead(_8)
     storage_live(_10)
     storage_live(_11)
-    _11 = &(*self)._1 with_metadata(copy self.metadata)
+    _11 = &(*self)._1 with_metadata(read self.metadata)
     storage_live(_12)
     storage_live(_13)
     storage_live(_14)
@@ -2190,8 +2190,8 @@ fn box_new_uninit(layout: Layout) -> *mut u8
     storage_live(_10)
     storage_live(_2)
     storage_live(_3)
-    _10 = copy {promoted_const}
-    _3 = &(*_10) with_metadata(copy _10.metadata)
+    _10 = read {promoted_const}
+    _3 = &(*_10) with_metadata(read _10.metadata)
     storage_live(_4)
     _4 = copy layout
     _2 = allocate<'5>(move _3, move _4)
@@ -2247,7 +2247,7 @@ where
     storage_live(ptr)
     storage_live(_3)
     storage_live(_4)
-    _4 = box_new_uninit(copy LAYOUT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]])
+    _4 = box_new_uninit(read LAYOUT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]])
     ↳⚡ if copy _7 {
             drop[{built_in impl Destruct for T}::drop_glue<'0>] x
             ↳⚡ unwind_terminate
@@ -2357,10 +2357,10 @@ where
     _6 = deref_mut<'7, Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]>[{built_in impl MetaSized for Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]}](move _7)
     ↳⚡ unwind_continue
     storage_dead(_7)
-    _8 = noretag copy (*_6)
+    _8 = noretag read (*_6)
     _9 = transmute<*const T>(copy _8._0)
-    _5 = &mut (*_9) with_metadata(copy _9.metadata)
-    _4 = &raw mut (*_5) with_metadata(copy _5.metadata)
+    _5 = &mut (*_9) with_metadata(read _9.metadata)
+    _4 = &raw mut (*_5) with_metadata(read _5.metadata)
     _0 = copy _4
     storage_dead(_6)
     storage_dead(_5)
@@ -2417,9 +2417,9 @@ where
     _5 = deref_mut<'11, Box<T, A>[TraitClause0, TraitClause1, TraitClause2]>[{built_in impl MetaSized for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}](move _6)
     ↳⚡ unwind_continue
     storage_dead(_6)
-    _14 = noretag copy (*_5)
+    _14 = noretag read (*_5)
     _15 = transmute<*const T>(copy _14._0)
-    ptr = &raw mut (*_15) with_metadata(copy _15.metadata)
+    ptr = &raw mut (*_15) with_metadata(read _15.metadata)
     storage_live(alloc)
     storage_live(_8)
     storage_live(_9)
@@ -2429,8 +2429,8 @@ where
     _10 = deref<'13, Box<T, A>[TraitClause0, TraitClause1, TraitClause2]>[{built_in impl MetaSized for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}](move _11)
     ↳⚡ unwind_continue
     storage_dead(_11)
-    _9 = &(*_10)._1 with_metadata(copy _10.metadata)
-    _8 = &raw const (*_9) with_metadata(copy _9.metadata)
+    _9 = &(*_10)._1 with_metadata(read _10.metadata)
+    _8 = &raw const (*_9) with_metadata(read _9.metadata)
     alloc = read<A>[TraitClause1](move _8)
     ↳⚡ unwind_continue
     storage_dead(_10)
@@ -2493,14 +2493,14 @@ where
     storage_dead(_7)
     storage_live(_9)
     storage_live(_10)
-    _10 = &mut (*ptr) with_metadata(copy ptr.metadata)
-    _9 = &mut (*_10) with_metadata(copy _10.metadata)
+    _10 = &mut (*ptr) with_metadata(read ptr.metadata)
+    _9 = &mut (*_10) with_metadata(read _10.metadata)
     storage_dead(_10)
-    _2 = &mut (*_9) with_metadata(copy _9.metadata)
+    _2 = &mut (*_9) with_metadata(read _9.metadata)
     storage_dead(_9)
     storage_dead(alloc)
     storage_dead(ptr)
-    _0 = &mut (*_2) with_metadata(copy _2.metadata)
+    _0 = &mut (*_2) with_metadata(read _2.metadata)
     storage_dead(_2)
     return
 }

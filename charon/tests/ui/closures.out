@@ -2058,7 +2058,7 @@ pub fn test_regions_casted<'a>(x: &'a u32) -> u32
     storage_live(_6)
     _6 = &x
     _5 = &(*_6)
-    _0 = (move _4)<'33>(move _5)
+    _0 = (move _4)<'61>(move _5)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_5)

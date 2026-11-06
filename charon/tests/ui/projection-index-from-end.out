@@ -195,11 +195,11 @@ fn slice_pattern_end<'_0>(x: &'_0 [()])
     }
     storage_live(_named)
     storage_live(_7)
-    _7 = &(*x) with_metadata(copy x.metadata)
+    _7 = &(*x) with_metadata(read x.metadata)
     storage_live(_8)
-    _8 = copy x.metadata ub.- const 1usize
+    _8 = read x.metadata ub.- const 1usize
     storage_live(_9)
-    _9 = impl_SliceIndex_slice_for_usize::index<'_, ()>[{built_in impl Sized for ()}](copy _8, move _7)
+    _9 = impl_SliceIndex_slice_for_usize::index<'_, ()>[{built_in impl Sized for ()}](read _8, move _7)
     ↳⚡ undefined_behavior
     _named = &(*_9)
     _0 = ()
@@ -268,7 +268,7 @@ fn field_pattern_end<'_0>(x: &'_0 Tail) -> u32
     storage_live(_5)
     storage_live(_6)
     _ = (*x).values
-    _3 = &raw const (*x).values with_metadata(copy x.metadata)
+    _3 = &raw const (*x).values with_metadata(read x.metadata)
     _4 = noretag copy _3.metadata
     _2 = move _4
     _5 = const 1usize
@@ -289,11 +289,11 @@ fn field_pattern_end<'_0>(x: &'_0 Tail) -> u32
     }
     storage_live(last)
     storage_live(_8)
-    _8 = &(*x).values with_metadata(copy x.metadata)
+    _8 = &(*x).values with_metadata(read x.metadata)
     storage_live(_9)
-    _9 = copy x.metadata ub.- const 1usize
+    _9 = read x.metadata ub.- const 1usize
     storage_live(_10)
-    _10 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _9, move _8)
+    _10 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](read _9, move _8)
     ↳⚡ undefined_behavior
     last = copy (*_10)
     _0 = copy last

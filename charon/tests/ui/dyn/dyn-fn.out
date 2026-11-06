@@ -103,14 +103,14 @@ fn takes_fn<'_0>(f: &'_0 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::Implied
     fake_read(counter)
     storage_live(_3)
     storage_live(_4)
-    _4 = &(*f) with_metadata(copy f.metadata)
+    _4 = &(*f) with_metadata(read f.metadata)
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
     _7 = &mut counter
     _6 = &two-phase-mut (*_7)
     _5 = (move _6,)
-    _3 = (copy (*_4.metadata).method_call)<'51>(move _4, move _5)
+    _3 = (read (*_4.metadata).method_call)<'51>(move _4, move _5)
     ↳⚡ storage_dead(f)
         unwind_continue
     if move _3 {

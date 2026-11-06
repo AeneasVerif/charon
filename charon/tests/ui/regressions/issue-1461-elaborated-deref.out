@@ -191,14 +191,14 @@ pub fn f<'_0>(ctx: &'_0 mut [u64])
     _0 = ()
     storage_live(acc)
     storage_live(_3)
-    _3 = &two-phase-mut (*ctx) with_metadata(copy ctx.metadata)
+    _3 = &two-phase-mut (*ctx) with_metadata(read ctx.metadata)
     acc = split_at_mut<'19, u64>[{built_in impl Sized for u64}](move _3, const 0usize)
     ↳⚡ unwind_continue
     storage_dead(_3)
     storage_live(_4)
     _4 = const 0usize
     storage_live(_5)
-    _5 = &mut (*acc._1) with_metadata(copy acc._1.metadata)
+    _5 = &mut (*acc._1) with_metadata(read acc._1.metadata)
     storage_live(_6)
     _6 = impl_SliceIndex_slice_for_usize::index_mut<'_, u64>[{built_in impl Sized for u64}](copy _4, move _5)
     ↳⚡ undefined_behavior

@@ -40,14 +40,14 @@ pub trait Clone<Self>
 vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
 
 // Full name: core::clone::impls::{impl Clone for i32}::clone
-pub fn clone<'_0>(_1: &'_0 i32) -> i32
+pub fn impl_Clone_for_i32::clone<'_0>(_1: &'_0 i32) -> i32
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}
 impl "impl_Clone_for_i32" Clone for i32 {
     proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
     proof ImpliedClause1: (i32: Destruct) = {built_in impl Destruct for i32}
-    fn clone<'_0_1> = clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_i32::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -296,10 +296,10 @@ where
     storage_dead(_3)
     storage_dead(_4)
     storage_live(_6)
-    _6 = &two-phase-mut (*x) with_metadata(copy x.metadata)
+    _6 = &two-phase-mut (*x) with_metadata(read x.metadata)
     storage_live(_7)
     _7 = &(*arg)
-    _0 = (copy (*_6.metadata).method_modify)<'18, '19>(move _6, move _7)
+    _0 = (read (*_6.metadata).method_modify)<'18, '19>(move _6, move _7)
     ↳⚡ drop[impl_Destruct_for_Box::drop_glue<'20, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]] _5
         ↳⚡ storage_dead(arg)
             unwind_terminate

@@ -348,7 +348,7 @@ where
     _4 = &(*arg)
     _3 = unsize_cast<&'12 (dyn NoParam + '13), &vtable_of(TraitClause1)>(move _4)
     storage_dead(_4)
-    _2 = &(*_3) with_metadata(copy _3.metadata)
+    _2 = &(*_3) with_metadata(read _3.metadata)
     _0 = unsize_cast<&'15 (dyn NoParam + '16),  at []>(move _2)
     storage_dead(_3)
     storage_dead(_2)
@@ -500,10 +500,10 @@ where
     set_type(typeof(x) == &'15 mut (dyn Modifiable<T> + '16))
     storage_dead(_4)
     storage_live(_6)
-    _6 = &two-phase-mut (*x) with_metadata(copy x.metadata)
+    _6 = &two-phase-mut (*x) with_metadata(read x.metadata)
     storage_live(_7)
     _7 = &(*arg)
-    _0 = (copy (*_6.metadata).method_modify)<'20, '21>(move _6, move _7)
+    _0 = (read (*_6.metadata).method_modify)<'20, '21>(move _6, move _7)
     ↳⚡ storage_dead(arg)
         unwind_continue
     storage_dead(_7)
@@ -571,7 +571,7 @@ where
     _0 = ()
     storage_live(_4)
     storage_live(_5)
-    _5 = &(*self) with_metadata(copy self.metadata)
+    _5 = &(*self) with_metadata(read self.metadata)
     storage_live(_6)
     _6 = &(*t32)
     _4 = TraitClause0::ImpliedClause1::operate_on<'10, '11>(move _5, move _6)
@@ -584,7 +584,7 @@ where
     storage_dead(_4)
     storage_live(_7)
     storage_live(_8)
-    _8 = &(*self) with_metadata(copy self.metadata)
+    _8 = &(*self) with_metadata(read self.metadata)
     storage_live(_9)
     _9 = &(*t64)
     _7 = TraitClause0::ImpliedClause2::operate_on<'12, '13>(move _8, move _9)
@@ -985,10 +985,10 @@ fn use_lifetime_trait<'a, '_1>(x: &'_1 (dyn LifetimeTrait<Ty = i32> + '_1), y: &
     storage_live(_0)
     storage_live(_3)
     storage_live(_4)
-    _4 = &(*x) with_metadata(copy x.metadata)
+    _4 = &(*x) with_metadata(read x.metadata)
     storage_live(_5)
     _5 = &(*y)
-    _3 = (copy (*_4.metadata).method_lifetime_method)<'15, '16>(move _4, move _5)
+    _3 = (read (*_4.metadata).method_lifetime_method)<'15, '16>(move _4, move _5)
     ↳⚡ storage_dead(y)
         storage_dead(x)
         unwind_continue
@@ -1039,7 +1039,7 @@ fn use_alias<'_0>(x: &'_0 (dyn Both32And64 + '_0))
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = &(*x) with_metadata(copy x.metadata)
+    _3 = &(*x) with_metadata(read x.metadata)
     storage_live(_4)
     storage_live(_5)
     _9 = move _10
@@ -1050,7 +1050,7 @@ fn use_alias<'_0>(x: &'_0 (dyn Both32And64 + '_0))
     _8 = move _11
     _7 = &(*_8)
     _6 = &(*_7)
-    _2 = (copy (*_3.metadata).method_both_operate)<'20, '21, '22>(move _3, move _4, move _6)
+    _2 = (read (*_3.metadata).method_both_operate)<'20, '21, '22>(move _3, move _4, move _6)
     ↳⚡ storage_dead(_9)
         storage_dead(_8)
         storage_dead(x)
@@ -1167,30 +1167,30 @@ fn main()
     let mut _85: &'128 i32; // anonymous local
     let mut _86: &'129 i32; // anonymous local
     let mut _87: &'162 i32; // anonymous local
-    let mut _88: &'170 i32; // anonymous local
-    let mut _89: &'195 i32; // anonymous local
-    let mut _90: &'201 i32; // anonymous local
-    let mut _91: &'202 i64; // anonymous local
-    let mut _92: &'208 i32; // anonymous local
-    let mut _93: &'216 i32; // anonymous local
-    let mut _94: &'221 i32; // anonymous local
-    let mut _95: &'242 i32; // anonymous local
+    let mut _88: &'176 i32; // anonymous local
+    let mut _89: &'201 i32; // anonymous local
+    let mut _90: &'207 i32; // anonymous local
+    let mut _91: &'208 i64; // anonymous local
+    let mut _92: &'214 i32; // anonymous local
+    let mut _93: &'222 i32; // anonymous local
+    let mut _94: &'227 i32; // anonymous local
+    let mut _95: &'254 i32; // anonymous local
     let mut _96: i32; // anonymous local
-    let mut _97: &'243 i32; // anonymous local
+    let mut _97: &'255 i32; // anonymous local
     let mut _98: i32; // anonymous local
-    let mut _99: &'244 i32; // anonymous local
+    let mut _99: &'256 i32; // anonymous local
     let mut _100: i32; // anonymous local
-    let mut _101: &'245 i32; // anonymous local
+    let mut _101: &'257 i32; // anonymous local
     let mut _102: i32; // anonymous local
-    let mut _103: &'246 i32; // anonymous local
+    let mut _103: &'258 i32; // anonymous local
     let mut _104: i32; // anonymous local
-    let mut _105: &'247 i64; // anonymous local
+    let mut _105: &'259 i64; // anonymous local
     let mut _106: i64; // anonymous local
-    let mut _107: &'248 i32; // anonymous local
+    let mut _107: &'260 i32; // anonymous local
     let mut _108: i32; // anonymous local
-    let mut _109: &'249 i32; // anonymous local
+    let mut _109: &'261 i32; // anonymous local
     let mut _110: i32; // anonymous local
-    let mut _111: &'250 i32; // anonymous local
+    let mut _111: &'262 i32; // anonymous local
     let mut _112: i32; // anonymous local
 
     storage_live(_86)
@@ -1223,8 +1223,8 @@ fn main()
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = &(*x) with_metadata(copy x.metadata)
-    _4 = (copy (*_5.metadata).method_check)<'137>(move _5)
+    _5 = &(*x) with_metadata(read x.metadata)
+    _4 = (read (*_5.metadata).method_check)<'137>(move _5)
     ↳⚡ storage_dead(_85)
         storage_dead(_84)
         storage_dead(_83)
@@ -1274,7 +1274,7 @@ fn main()
     storage_live(_16)
     storage_live(_17)
     _17 = &test_crate::main::{promoted_const#18} with_metadata(const 5usize)
-    _16 = &(*_17) with_metadata(copy _17.metadata)
+    _16 = &(*_17) with_metadata(read _17.metadata)
     _15 = to_string<'144, str>[{built_in impl MetaSized for str}, {impl#16}](move _16)
     ↳⚡ storage_dead(_85)
         storage_dead(_84)
@@ -1625,14 +1625,14 @@ fn main()
         storage_live(_19)
         storage_live(_20)
         storage_live(_21)
-        _21 = &two-phase-mut (*y) with_metadata(copy y.metadata)
+        _21 = &two-phase-mut (*y) with_metadata(read y.metadata)
         storage_live(_22)
         storage_live(_23)
         storage_live(_24)
         _24 = const 100i32
         _23 = &mut _24
         _22 = &(*_23)
-        _20 = (copy (*_21.metadata).method_modify)<'160, '161>(move _21, move _22)
+        _20 = (read (*_21.metadata).method_modify)<'160, '161>(move _21, move _22)
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1777,7 +1777,7 @@ fn main()
         _83 = move _88
         _42 = &(*_83)
         _41 = &(*_42)
-        _40 = to_dyn_obj<'172, i32>[{built_in impl Sized for i32}, impl_NoParam_for_i32](move _41)
+        _40 = to_dyn_obj<'178, i32>[{built_in impl Sized for i32}, impl_NoParam_for_i32](move _41)
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1802,18 +1802,18 @@ fn main()
             storage_dead(_32)
             storage_dead(kind_31)
             unwind_continue
-        _39 = &(*_40) with_metadata(copy _40.metadata)
-        z = unsize_cast<&'187 (dyn NoParam + '188),  at []>(move _39)
+        _39 = &(*_40) with_metadata(read _40.metadata)
+        z = unsize_cast<&'193 (dyn NoParam + '194),  at []>(move _39)
         storage_dead(_41)
         storage_dead(_39)
         fake_read(z)
-        set_type(typeof(z) == &'189 (dyn NoParam + '190))
+        set_type(typeof(z) == &'195 (dyn NoParam + '196))
         storage_dead(_42)
         storage_dead(_40)
         storage_live(_43)
         storage_live(_44)
-        _44 = &(*z) with_metadata(copy z.metadata)
-        _43 = (copy (*_44.metadata).method_dummy)<'194>(move _44)
+        _44 = &(*z) with_metadata(read z.metadata)
+        _43 = (read (*_44.metadata).method_dummy)<'200>(move _44)
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1864,14 +1864,14 @@ fn main()
         _82 = move _89
         _47 = &(*_82)
         _46 = &(*_47)
-        a = unsize_cast<&'196 (dyn Both32And64 + '197), &impl_Both32And64_for_i32::{vtable}>(move _46)
+        a = unsize_cast<&'202 (dyn Both32And64 + '203), &impl_Both32And64_for_i32::{vtable}>(move _46)
         storage_dead(_46)
         fake_read(a)
-        set_type(typeof(a) == &'198 (dyn Both32And64 + '199))
+        set_type(typeof(a) == &'204 (dyn Both32And64 + '205))
         storage_dead(_47)
         storage_live(_48)
         storage_live(_49)
-        _49 = &(*a) with_metadata(copy a.metadata)
+        _49 = &(*a) with_metadata(read a.metadata)
         storage_live(_50)
         storage_live(_51)
         _81 = move _90
@@ -1882,7 +1882,7 @@ fn main()
         _80 = move _91
         _53 = &(*_80)
         _52 = &(*_53)
-        _48 = (copy (*_49.metadata).method_both_operate)<'205, '206, '207>(move _49, move _50, move _52)
+        _48 = (read (*_49.metadata).method_both_operate)<'211, '212, '213>(move _49, move _50, move _52)
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1931,25 +1931,25 @@ fn main()
         _79 = move _92
         _56 = &(*_79)
         _55 = &(*_56)
-        b = unsize_cast<&'209 (dyn LifetimeTrait<Ty = i32> + '210), &impl_LifetimeTrait_for_i32::{vtable}>(move _55)
+        b = unsize_cast<&'215 (dyn LifetimeTrait<Ty = i32> + '216), &impl_LifetimeTrait_for_i32::{vtable}>(move _55)
         storage_dead(_55)
         fake_read(b)
-        set_type(typeof(b) == &'211 (dyn LifetimeTrait<Ty = i32> + '212))
+        set_type(typeof(b) == &'217 (dyn LifetimeTrait<Ty = i32> + '218))
         storage_dead(_56)
         storage_live(_57)
         storage_live(_58)
         storage_live(_59)
         storage_live(_60)
         storage_live(_61)
-        _61 = &(*b) with_metadata(copy b.metadata)
-        _60 = unsize_cast<&'214 (dyn LifetimeTrait<Ty = i32> + '215),  at []>(move _61)
+        _61 = &(*b) with_metadata(read b.metadata)
+        _60 = unsize_cast<&'220 (dyn LifetimeTrait<Ty = i32> + '221),  at []>(move _61)
         storage_dead(_61)
         storage_live(_62)
         storage_live(_63)
         _78 = move _93
         _63 = &(*_78)
         _62 = &(*_63)
-        _59 = use_lifetime_trait<'219, '220>(move _60, move _62)
+        _59 = use_lifetime_trait<'225, '226>(move _60, move _62)
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)

@@ -122,10 +122,17 @@ and nullop =
   | ContractChecks
 
 and operand =
-  | Copy of place
-  | Move of place
-  | Constant of constant_expr
-      (** Constant value (including constant and static variables) *)
+  | Copy of place * trait_ref
+      (** Copy the value inside this place. The [TraitRef] proves that its type
+          implements [Copy]. *)
+  | Read of place
+      (** Read the value inside this place. This is allowed for non-[Copy]
+          values, and only used when it is sound to do so.
+
+          Used for MIR's [CopyForDeref], reading the value of named constants,
+          and reads introduced by Charon such as pointer metadata. *)
+  | Move of place  (** Move the value out of this place. *)
+  | Constant of constant_expr  (** Use the value of this constant. *)
 
 and overflow_mode =
   | OPanic

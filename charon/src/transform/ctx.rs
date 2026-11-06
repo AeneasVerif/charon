@@ -292,7 +292,7 @@ pub trait BodyTransformCtx: Sized {
                 index_var.clone(),
                 Rvalue::BinaryOp(BinOp::Sub(OverflowMode::UB), len, last_arg),
             );
-            Operand::Copy(index_var)
+            Operand::Read(index_var)
         } else {
             last_arg
         }
@@ -361,7 +361,7 @@ pub trait BodyTransformCtx: Sized {
                     let metadata_place = subplace
                         .clone()
                         .project(ProjectionElem::PtrMetadata, metadata_ty.clone());
-                    Some(Operand::Copy(metadata_place))
+                    Some(Operand::Read(metadata_place))
                 }
                 ProjectionElem::Field { .. } => {
                     compute_place_metadata_inner(ctx, subplace, metadata_ty)
@@ -384,7 +384,7 @@ pub trait BodyTransformCtx: Sized {
                         // Overflow is UB and should have been prevented by a bound check beforehand.
                         Rvalue::BinaryOp(BinOp::Sub(OverflowMode::UB), to_idx, *from.clone()),
                     );
-                    Some(Operand::Copy(diff_place))
+                    Some(Operand::Read(diff_place))
                 }
             }
         }
@@ -430,7 +430,7 @@ pub trait BodyTransformCtx: Sized {
                     OverflowMode::Wrap
                 };
                 let rval = Rvalue::BinaryOp(BinOp::Mul(mode), count, Operand::Const(size));
-                Operand::Copy(self.rval_to_place(rval, count_ty))
+                Operand::Read(self.rval_to_place(rval, count_ty))
             }
         };
         ProjectionElem::Offset {

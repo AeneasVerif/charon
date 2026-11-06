@@ -1444,7 +1444,7 @@ where
     let mut _0: usize; // return
 
     storage_live(_0)
-    _0 = copy impl_Trait_for_Wrapper::LEN<T>[TraitClause0, TraitClause1]
+    _0 = read impl_Trait_for_Wrapper::LEN<T>[TraitClause0, TraitClause1]
     return
 }
 
@@ -1490,7 +1490,7 @@ where
     let mut _0: Result<T, i32>[TraitClause0, {built_in impl Sized for i32}]; // return
 
     storage_live(_0)
-    _0 = copy FOO<T, U>[TraitClause0, TraitClause1, TraitClause2]
+    _0 = read FOO<T, U>[TraitClause0, TraitClause1, TraitClause2]
     return
 }
 
@@ -1504,7 +1504,7 @@ where
     let mut _0: Result<U, i32>[TraitClause1, {built_in impl Sized for i32}]; // return
 
     storage_live(_0)
-    _0 = copy FOO<U, T>[TraitClause1, TraitClause0, TraitClause2]
+    _0 = read FOO<U, T>[TraitClause1, TraitClause0, TraitClause2]
     return
 }
 

@@ -185,10 +185,10 @@ where
     set_type(typeof(x) == &'15 mut (dyn Modifiable<T> + '16))
     storage_dead(_4)
     storage_live(_6)
-    _6 = &two-phase-mut (*x) with_metadata(copy x.metadata)
+    _6 = &two-phase-mut (*x) with_metadata(read x.metadata)
     storage_live(_7)
     _7 = &(*arg)
-    _0 = (copy (*_6.metadata).method_modify)<'20, '21>(move _6, move _7)
+    _0 = (read (*_6.metadata).method_modify)<'20, '21>(move _6, move _7)
     ↳⚡ storage_dead(arg)
         unwind_continue
     storage_dead(_7)

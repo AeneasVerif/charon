@@ -200,7 +200,7 @@ where
         storage_dead(_4);
         _0 = Result::Err { _0: const 0usize };
         storage_dead(size);
-        drop[TraitClause3::drop_glue<'15>] f -> bb33 (unwind: bb2);
+        drop[TraitClause3::drop_glue<'18>] f -> bb33 (unwind: bb2);
     }
 
     bb2 (cleanup): {
@@ -292,7 +292,7 @@ where
         _15 = &(*_29);
         storage_dead(_29);
         _14 = (copy _15,);
-        cmp_12 = TraitClause2::call_mut<'20>(move _13, move _14) -> bb11 (unwind: bb36);
+        cmp_12 = TraitClause2::call_mut<'32>(move _13, move _14) -> bb11 (unwind: bb36);
     }
 
     bb11: {
@@ -367,7 +367,7 @@ where
         storage_dead(_35);
         storage_dead(index);
         _20 = (copy _21,);
-        cmp_18 = TraitClause2::call_mut<'25>(move _19, move _20) -> bb20 (unwind: bb36);
+        cmp_18 = TraitClause2::call_mut<'46>(move _19, move _20) -> bb20 (unwind: bb36);
     }
 
     bb20: {
@@ -448,7 +448,7 @@ where
     bb32: {
         storage_dead(cmp_18);
         storage_dead(size);
-        drop[TraitClause3::drop_glue<'27>] f -> bb33 (unwind: bb34);
+        drop[TraitClause3::drop_glue<'48>] f -> bb33 (unwind: bb34);
     }
 
     bb33: {
@@ -502,7 +502,7 @@ where
     }
 
     bb36 (cleanup): {
-        drop[TraitClause3::drop_glue<'26>] f -> bb37 (unwind: bb38);
+        drop[TraitClause3::drop_glue<'47>] f -> bb37 (unwind: bb38);
     }
 
     bb37 (cleanup): {

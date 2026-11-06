@@ -437,7 +437,7 @@ fn box_new_uninit(layout: Layout) -> *mut u8
     storage_live(_10)
     storage_live(_2)
     storage_live(_3)
-    _10 = copy {promoted_const}
+    _10 = read {promoted_const}
     _3 = &(*_10)
     storage_live(_4)
     _4 = copy layout
@@ -495,7 +495,7 @@ where
     storage_live(ptr)
     storage_live(_3)
     storage_live(_4)
-    _4 = box_new_uninit(copy LAYOUT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]])
+    _4 = box_new_uninit(read LAYOUT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]])
     ↳⚡ if copy _7 {
             drop[{built_in impl Destruct for T}::drop_glue<'0>] x
             ↳⚡ unwind_terminate

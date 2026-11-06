@@ -109,14 +109,14 @@ fn from_fn_def<'a>(x: &'a u8) -> &'a u8
     _9 = copy f
     storage_live(_10)
     _10 = &(*x)
-    _8 = (move _9)<'41>(move _10)
+    _8 = (move _9)<'65>(move _10)
     ↳⚡ storage_dead(_11)
         storage_dead(x)
         unwind_continue
     _7 = &(*_8)
     storage_dead(_10)
     storage_dead(_9)
-    _4 = (move _5)<'42>(move _6, move _7)
+    _4 = (move _5)<'66>(move _6, move _7)
     ↳⚡ storage_dead(_11)
         storage_dead(x)
         unwind_continue
@@ -295,7 +295,7 @@ fn from_closure<'a>(x: &'a u8) -> &'a u8
     _6 = copy x
     storage_live(_7)
     _7 = &(*x)
-    _4 = (move _5)<'69>(move _6, move _7)
+    _4 = (move _5)<'93>(move _6, move _7)
     ↳⚡ storage_dead(_8)
         storage_dead(x)
         unwind_continue

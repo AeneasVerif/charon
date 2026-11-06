@@ -1130,9 +1130,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     }
                 }
                 Index(local) => {
-                    let var_id = self.translate_local(local).unwrap();
-                    let local = self.locals.place_for_var(var_id);
-                    let offset = Operand::Copy(local);
+                    let offset =
+                        self.translate_operand(span, &mir::Operand::Copy((*local).into()))?;
                     ProjectionElem::Index {
                         offset: Box::new(offset),
                         from_end: false,
@@ -1184,8 +1183,16 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
     ) -> Result<Operand, Error> {
         Ok(match operand {
             mir::Operand::Copy(place) => {
+                let ty = place.ty(self.local_decls, self.tcx).ty;
                 let p = self.translate_place(span, place)?;
-                Operand::Copy(p)
+                if let Some(proof) = hax::solve_copy(&self.hax_state, ty) {
+                    let proof = self.translate_trait_proof(span, &proof)?.no_bound_vars();
+                    Operand::Copy(p, proof)
+                } else {
+                    // Runtime MIR replaces `CopyForDeref` with `Copy`, so we may end up here for
+                    // non-`Copy` types such as mutable references.
+                    Operand::Read(p)
+                }
             }
             mir::Operand::Move(place) => {
                 let p = self.translate_place(span, place)?;
@@ -1238,10 +1245,9 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 Ok(Rvalue::Use(self.translate_operand(span, operand)?, retag))
             }
             mir::Rvalue::CopyForDeref(place) => {
-                // According to the documentation, it seems to be an optimisation
-                // for drop elaboration. We treat it as a regular copy.
+                // A read of a pointer, used only for derefing it. The pointer need not be `Copy`.
                 let place = self.translate_place(span, place)?;
-                Ok(Rvalue::Use(Operand::Copy(place), WithRetag::No))
+                Ok(Rvalue::Use(Operand::Read(place), WithRetag::No))
             }
             mir::Rvalue::Repeat(operand, _) => {
                 let copy_proof = {
@@ -1424,7 +1430,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     .unwrap();
                 let pointee_is_sized = self.translate_sized_proof(span, rust_pointee)?;
                 let ptr = match self.translate_operand(span, ptr)? {
-                    Operand::Copy(p) | Operand::Move(p) => p,
+                    Operand::Copy(p, _) | Operand::Read(p) | Operand::Move(p) => p,
                     op @ Operand::Const(_) => {
                         let ty = op.ty().clone();
                         self.rval_to_place(Rvalue::Use(op, WithRetag::No), ty)
@@ -1452,15 +1458,21 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 self.translate_operand(span, right)?,
             )),
             mir::Rvalue::UnaryOp(unop, operand) => {
+                let operand_ty = operand.ty(self.local_decls, self.tcx);
                 let operand = self.translate_operand(span, operand)?;
                 let unop = match unop {
                     mir::UnOp::Not => UnOp::Not,
                     mir::UnOp::Neg => UnOp::Neg(OverflowMode::Wrap),
                     mir::UnOp::PtrMetadata => match operand {
-                        Operand::Copy(p) | Operand::Move(p) => {
+                        Operand::Copy(p, _) | Operand::Read(p) | Operand::Move(p) => {
+                            let metadata_ty = unop.ty(self.tcx, operand_ty);
+                            let proof = hax::solve_copy(&self.hax_state, metadata_ty)
+                                .expect("pointer metadata is always Copy");
+                            let proof = self.translate_trait_proof(span, &proof)?.no_bound_vars();
                             return Ok(Rvalue::Use(
                                 Operand::Copy(
                                     p.project(ProjectionElem::PtrMetadata, tgt_ty.clone()),
+                                    proof,
                                 ),
                                 WithRetag::No,
                             ));

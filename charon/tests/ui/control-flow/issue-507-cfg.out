@@ -54,7 +54,7 @@ fn f0()
     }
     storage_dead(_2)
     storage_live(x)
-    x = copy CONST
+    x = read CONST
     fake_read(x)
     _0 = ()
     storage_dead(x)
@@ -116,7 +116,7 @@ fn f1<'_0>(serialized: &'_0 [u8; 1usize])
                 if move _9 {
                     storage_dead(_10)
                     storage_live(x)
-                    x = copy CONST
+                    x = read CONST
                     fake_read(x)
                     storage_dead(x)
                     storage_dead(_9)

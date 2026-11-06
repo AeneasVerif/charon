@@ -33,7 +33,7 @@ where
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = &(*self) with_metadata(copy self.metadata)
+    _3 = &(*self) with_metadata(read self.metadata)
     _2 = TraitClause0::required<'4>(move _3)
     ↳⚡ storage_dead(self)
         unwind_continue
@@ -41,7 +41,7 @@ where
     storage_dead(_2)
     storage_live(_4)
     storage_live(_5)
-    _5 = &(*self) with_metadata(copy self.metadata)
+    _5 = &(*self) with_metadata(read self.metadata)
     _4 = TraitClause0::provided2<'5>(move _5)
     ↳⚡ storage_dead(self)
         unwind_continue
@@ -68,7 +68,7 @@ where
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = &(*self) with_metadata(copy self.metadata)
+    _3 = &(*self) with_metadata(read self.metadata)
     _2 = TraitClause0::required<'4>(move _3)
     ↳⚡ storage_dead(self)
         unwind_continue
@@ -76,7 +76,7 @@ where
     storage_dead(_2)
     storage_live(_4)
     storage_live(_5)
-    _5 = &(*self) with_metadata(copy self.metadata)
+    _5 = &(*self) with_metadata(read self.metadata)
     _4 = TraitClause0::provided1<'5>(move _5)
     ↳⚡ storage_dead(self)
         unwind_continue

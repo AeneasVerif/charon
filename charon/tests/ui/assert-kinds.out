@@ -25,13 +25,13 @@ pub trait Clone<Self>
 }
 
 // Full name: core::clone::impls::{impl Clone for i32}::clone
-pub fn clone<'_0>(_1: &'_0 i32) -> i32
+pub fn impl_Clone_for_i32::clone<'_0>(_1: &'_0 i32) -> i32
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}
 impl "impl_Clone_for_i32" Clone for i32 {
     proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
-    fn clone<'_0_1> = clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_i32::clone<'_0_1>
     non-dyn-compatible
 }
 

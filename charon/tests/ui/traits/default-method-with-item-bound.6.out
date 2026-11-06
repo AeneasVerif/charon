@@ -58,7 +58,7 @@ where
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = &(*self) with_metadata(copy self.metadata)
+    _3 = &(*self) with_metadata(read self.metadata)
     _2 = TraitClause0::consume<'3, ()>[{built_in impl Sized for ()}, impl_Takes_bool_for_unit](move _3)
     ↳⚡ storage_dead(self)
         unwind_continue

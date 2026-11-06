@@ -251,7 +251,7 @@ pub fn captured_generic_closure<'a>(x: &'a u8) -> test_crate::captured_generic_c
     storage_live(inner)
     storage_live(_3)
     _3 = copy x
-    inner = generic_closure<&'50 u8>[{built_in impl Sized for &'50 u8}, {impl Copy for &'_0 T}<'50, u8>](move _3)
+    inner = generic_closure<&'53 u8>[{built_in impl Sized for &'53 u8}, {impl Copy for &'_0 T}<'53, u8>](move _3)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_3)
@@ -380,7 +380,7 @@ where
     _4 = copy (*_1)._0
     storage_live(_5)
     _5 = &(*x)
-    _0 = (move _4)<'17>(move _5)
+    _0 = (move _4)<'38>(move _5)
     ↳⚡ storage_dead(x)
         storage_dead(tupled_args)
         storage_dead(_1)
@@ -611,7 +611,7 @@ where
     storage_live(inner)
     storage_live(_3)
     _3 = copy x
-    inner = lifetime_assoc_closure<'52, T>[TraitClause0, TraitClause1](move _3)
+    inner = lifetime_assoc_closure<'55, T>[TraitClause0, TraitClause1](move _3)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_3)

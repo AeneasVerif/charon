@@ -134,7 +134,7 @@ fn transform_dyn_trait_call(
         raise_error!(ctx.ctx, ctx.span, "Dyn trait call has no arguments!");
     }
     let mut dyn_trait_place = match &call.args[0] {
-        Operand::Copy(place) | Operand::Move(place) => place.clone(),
+        Operand::Copy(place, _) | Operand::Read(place) | Operand::Move(place) => place.clone(),
         Operand::Const(_) => {
             panic!("Unexpected constant as receiver for dyn trait method call")
         }
@@ -148,7 +148,7 @@ fn transform_dyn_trait_call(
         && let PlaceKind::Local(local) = dyn_trait_place.kind
         && let Some(last) = ctx.statements.last()
         && let StatementKind::Assign(dest, Rvalue::Use(src, _)) = &last.kind
-        && let Operand::Copy(place) | Operand::Move(place) = src
+        && let Operand::Copy(place, _) | Operand::Read(place) | Operand::Move(place) = src
         && dest.local_id() == Some(local)
     {
         call.args[0] = src.clone();
@@ -244,7 +244,7 @@ fn transform_dyn_trait_call(
         let fn_ptr_place = ctx.fresh_var(None, real_sig_ty);
         let rval_cast = Rvalue::UnaryOp(
             UnOp::Cast(CastKind::RawPtr(fn_ptr_place.ty().clone())),
-            Operand::Copy(method_field_place),
+            Operand::Read(method_field_place),
         );
         ctx.insert_assn_stmt(fn_ptr_place.clone(), rval_cast);
         fn_ptr_place
@@ -268,7 +268,7 @@ fn transform_dyn_trait_call(
         .collect();
 
     // Transform the original call to use the function pointer.
-    call.func = FnOperand::Dynamic(Operand::Copy(fn_ptr_place), regions);
+    call.func = FnOperand::Dynamic(Operand::Read(fn_ptr_place), regions);
 
     Ok(())
 }

@@ -59,7 +59,7 @@ where
     storage_live(_5)
     _5 = copy i
     storage_live(_6)
-    _6 = &(*(*_4)) with_metadata(copy (*_4).metadata)
+    _6 = &(*(*_4)) with_metadata(read (*_4).metadata)
     storage_live(_7)
     _7 = impl_SliceIndex_slice_for_usize::index<'_, u8>[{built_in impl Sized for u8}](copy _5, move _6)
     ↳⚡ undefined_behavior

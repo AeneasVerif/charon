@@ -188,7 +188,7 @@ pub fn inline_const()
     _2 = &raw const test_crate::{promoted_const#6}
     storage_live(_3)
     _3 = unsize_cast<*const Outer<[u16]>[{built_in impl MetaSized for [u16]}], 2usize>(move _2)
-    _1 = &(*_3) with_metadata(copy _3.metadata)
+    _1 = &(*_3) with_metadata(read _3.metadata)
     set_type(typeof(_1) <= &'3 Outer<[u16]>[{built_in impl MetaSized for [u16]}])
     storage_dead(_1)
     _0 = ()

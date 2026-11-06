@@ -52,7 +52,7 @@ where
     _0 = ()
     storage_live(_3)
     storage_live(_4)
-    _4 = &(*source) with_metadata(copy source.metadata)
+    _4 = &(*source) with_metadata(read source.metadata)
     _3 = TraitClause0::clone<'5>(move _4)
     ↳⚡ storage_dead(source)
         storage_dead(self)
@@ -72,7 +72,7 @@ where
 }
 
 // Full name: core::clone::impls::{impl Clone for u8}::clone
-pub fn clone<'_0>(self: &'_0 u8) -> u8
+pub fn impl_Clone_for_u8::clone<'_0>(self: &'_0 u8) -> u8
 {
     let mut _0: u8; // return
     let self: &'1 u8; // arg #1
@@ -99,7 +99,7 @@ where
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source)
-    _3 = clone<'5>(move _4)
+    _3 = impl_Clone_for_u8::clone<'5>(move _4)
     ↳⚡ storage_dead(source)
         storage_dead(self)
         unwind_continue
@@ -120,7 +120,7 @@ where
 // Full name: core::clone::impls::{impl Clone for u8}
 impl "impl_Clone_for_u8" Clone for u8 {
     proof ImpliedClause0: (u8: Sized) = {built_in impl Sized for u8}
-    fn clone<'_0_1> = clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_u8::clone<'_0_1>
     fn clone_from<'_0_1, '_1_1, TraitClause0_1: (u8: Destruct)> = impl_Clone_for_u8::clone_from<'_0_1, '_1_1>[TraitClause0_1]
     non-dyn-compatible
 }

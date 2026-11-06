@@ -60,7 +60,7 @@ where
     let mut _0: usize; // return
 
     storage_live(_0)
-    _0 = copy FOO<T>[impl_Trait_for_T<T>[TraitClause0]]
+    _0 = read FOO<T>[impl_Trait_for_T<T>[TraitClause0]]
     return
 }
 

@@ -100,7 +100,7 @@ fn main()
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = &(*slice) with_metadata(copy slice.metadata)
+    _7 = &(*slice) with_metadata(read slice.metadata)
     _6 = iter<'29, i32>[{built_in impl Sized for i32}](move _7)
     ↳⚡ storage_dead(_8)
         unwind_continue

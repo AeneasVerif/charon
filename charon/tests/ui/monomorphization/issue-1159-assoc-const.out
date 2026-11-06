@@ -53,7 +53,7 @@ pub fn SLICE_HOLDER() -> Option::<&'_ [u64]>
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = copy ARR
+    _7 = read ARR
     _6 = &_7
     _5 = move _6
     storage_live(_0)

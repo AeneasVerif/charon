@@ -24,6 +24,8 @@ pub fn MUTABLE() -> u8
     return
 }
 
+struct () {}
+
 // Full name: issue_1393_foreign_static_aux::MUTABLE
 pub static mut MUTABLE: u8 = MUTABLE()
 
@@ -88,7 +90,7 @@ fn foo() -> (u8, *const u8, u8)
     _1 = copy MUTABLE
     storage_live(_2)
     _2 = copy DANGLING._0
-    _0 = (move _1, move _2, copy TRIVIAL<bool, 3usize>[{built_in impl Sized for bool}])
+    _0 = (move _1, move _2, read TRIVIAL<bool, 3usize>[{built_in impl Sized for bool}])
     storage_dead(_2)
     storage_dead(_1)
     return

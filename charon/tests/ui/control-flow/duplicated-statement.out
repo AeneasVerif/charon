@@ -51,7 +51,7 @@ fn rej_sample<'_0>(a: &'_0 [u8]) -> usize
     storage_live(_5)
     _5 = const 0usize
     storage_live(_13)
-    _13 = &(*a) with_metadata(copy a.metadata)
+    _13 = &(*a) with_metadata(read a.metadata)
     storage_live(_14)
     _14 = impl_SliceIndex_slice_for_usize::index<'_, u8>[{built_in impl Sized for u8}](copy _5, move _13)
     ↳⚡ undefined_behavior
@@ -65,7 +65,7 @@ fn rej_sample<'_0>(a: &'_0 [u8]) -> usize
         storage_live(_8)
         _8 = const 1usize
         storage_live(_11)
-        _11 = &(*a) with_metadata(copy a.metadata)
+        _11 = &(*a) with_metadata(read a.metadata)
         storage_live(_12)
         _12 = impl_SliceIndex_slice_for_usize::index<'_, u8>[{built_in impl Sized for u8}](copy _8, move _11)
         ↳⚡ undefined_behavior

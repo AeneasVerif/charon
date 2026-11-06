@@ -1045,14 +1045,64 @@ pub fn test_dyn_fn(x: u32) -> u32
     set_type(typeof(dyn_fn) == &'12 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '13))
     storage_dead(_5)
     storage_live(_6)
-    _6 = &(*dyn_fn) with_metadata(copy dyn_fn.metadata)
+    _6 = &(*dyn_fn) with_metadata(read dyn_fn.metadata)
     storage_live(_7)
     storage_live(_8)
     _8 = copy x
     _7 = (move _8,)
     storage_live(_9)
-    _9 = cast<fn(&'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9), (u32,)) -> u32>(copy (*_6.metadata).method_call)
-    _0 = (copy _9)(move _6, move _7)
+    _9 = cast<fn(&'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9), (u32,)) -> u32>(read (*_6.metadata).method_call)
+    _0 = (read _9)(move _6, move _7)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(dyn_fn)
+    storage_dead(fn_ptr)
+    storage_dead(x)
+    storage_dead(_9)
+    return
+}
+
+// Full name: test_crate::test_dyn_fn_mut
+pub fn test_dyn_fn_mut(x: u32) -> u32
+{
+    let mut _0: u32; // return
+    let x: u32; // arg #1
+    let mut fn_ptr: fn(u32) -> u32; // local
+    let dyn_fn: &'3 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '4); // local
+    let mut _4: &'6 mut fn(u32) -> u32; // anonymous local
+    let mut _5: &'7 mut fn(u32) -> u32; // anonymous local
+    let mut _6: &'8 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '9); // anonymous local
+    let mut _7: (u32,); // anonymous local
+    let mut _8: u32; // anonymous local
+    let mut _9: fn(&'8 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '9), (u32,)) -> u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(fn_ptr)
+    fn_ptr = fn_def_to_fn_ptr(const increment)
+    fake_read(fn_ptr)
+    set_type(typeof(fn_ptr) == fn(u32) -> u32)
+    storage_live(dyn_fn)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &mut fn_ptr
+    _4 = &mut (*_5)
+    dyn_fn = unsize_cast<&'10 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '11), &{impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>>(move _4)
+    storage_dead(_4)
+    fake_read(dyn_fn)
+    set_type(typeof(dyn_fn) == &'12 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '13))
+    storage_dead(_5)
+    storage_live(_6)
+    _6 = &mut (*dyn_fn) with_metadata(read dyn_fn.metadata)
+    storage_live(_7)
+    storage_live(_8)
+    _8 = copy x
+    _7 = (move _8,)
+    storage_live(_9)
+    _9 = cast<fn(&'8 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '9), (u32,)) -> u32>(read (*_6.metadata).method_call_mut)
+    _0 = (read _9)(move _6, move _7)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_8)

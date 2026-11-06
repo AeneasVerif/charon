@@ -87,7 +87,7 @@ pub fn use_consts() -> u32
     storage_live(_2)
     storage_live(_4)
     storage_live(_1)
-    _2 = copy SIMPLE panic.+ copy COMPUTED
+    _2 = read SIMPLE panic.+ read COMPUTED
     _1 = move _2
     storage_live(_3)
     _3 = copy STATIC

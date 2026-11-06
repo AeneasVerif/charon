@@ -125,7 +125,7 @@ where
             break 0
         } else {
             storage_live(_10)
-            _10 = &mut (*_1) with_metadata(copy _1.metadata)
+            _10 = &mut (*_1) with_metadata(read _1.metadata)
             storage_live(_11)
             _11 = impl_SliceIndex_slice_for_usize::index_mut<'_, T>[TraitClause0](copy _3, move _10)
             ↳⚡ undefined_behavior
@@ -138,7 +138,7 @@ where
                         break 0
                     } else {
                         storage_live(_8)
-                        _8 = &mut (*_1) with_metadata(copy _1.metadata)
+                        _8 = &mut (*_1) with_metadata(read _1.metadata)
                         storage_live(_9)
                         _9 = impl_SliceIndex_slice_for_usize::index_mut<'_, T>[TraitClause0](copy _3, move _8)
                         ↳⚡ undefined_behavior

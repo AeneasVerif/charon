@@ -61,7 +61,7 @@ where
     _0 = ()
     storage_live(_3)
     storage_live(_4)
-    _4 = &(*source) with_metadata(copy source.metadata)
+    _4 = &(*source) with_metadata(read source.metadata)
     _3 = TraitClause0::clone<'5>(move _4)
     ↳⚡ storage_dead(source)
         storage_dead(self)
@@ -81,7 +81,7 @@ where
 }
 
 // Full name: core::clone::impls::{impl Clone for usize}::clone
-pub fn clone<'_0>(self: &'_0 usize) -> usize
+pub fn impl_Clone_for_usize::clone<'_0>(self: &'_0 usize) -> usize
 {
     let mut _0: usize; // return
     let self: &'1 usize; // arg #1
@@ -108,7 +108,7 @@ where
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source)
-    _3 = clone<'5>(move _4)
+    _3 = impl_Clone_for_usize::clone<'5>(move _4)
     ↳⚡ storage_dead(source)
         storage_dead(self)
         unwind_continue
@@ -129,7 +129,7 @@ where
 // Full name: core::clone::impls::{impl Clone for usize}
 impl "impl_Clone_for_usize" Clone for usize {
     proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
-    fn clone<'_0_1> = clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_usize::clone<'_0_1>
     fn clone_from<'_0_1, '_1_1, TraitClause0_1: (usize: Destruct)> = impl_Clone_for_usize::clone_from<'_0_1, '_1_1>[TraitClause0_1]
     non-dyn-compatible
 }
@@ -413,7 +413,7 @@ fn core::panic::panic_info::{PanicInfo<'a>}::new<'a>(message: &'a Arguments<'a>,
     storage_live(_5)
     _5 = copy location
     storage_live(_6)
-    _6 = &(*message) with_metadata(copy message.metadata)
+    _6 = &(*message) with_metadata(read message.metadata)
     storage_live(_7)
     _7 = copy can_unwind
     storage_live(_8)
@@ -468,7 +468,7 @@ fn core::panicking::panic_nounwind_fmt::runtime<'_0>(fmt: Arguments<'_0>, force_
         storage_live(_6)
         storage_live(_7)
         _7 = &fmt
-        _6 = &(*_7) with_metadata(copy _7.metadata)
+        _6 = &(*_7) with_metadata(read _7.metadata)
         storage_live(_8)
         _8 = caller<'22>()
         ↳⚡ storage_dead(_11)
@@ -530,7 +530,7 @@ pub fn panic_nounwind_fmt<'_0>(fmt: Arguments<'_0>, force_no_backtrace: bool) ->
     _3 = (move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
-    _0 = core::panicking::panic_nounwind_fmt::runtime<'19>(move _3._0, move _3._1)
+    _0 = core::panicking::panic_nounwind_fmt::runtime<'22>(move _3._0, move _3._1)
     ↳⚡ storage_dead(_3)
         storage_dead(force_no_backtrace)
         storage_dead(fmt)
@@ -568,7 +568,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
         storage_live(_5)
         storage_live(_6)
         storage_live(_7)
-        _7 = &(*msg) with_metadata(copy msg.metadata)
+        _7 = &(*msg) with_metadata(read msg.metadata)
         _6 = from_str<'6>(move _7)
         ↳⚡ storage_dead(_6)
             storage_dead(_5)
@@ -681,7 +681,7 @@ pub fn core::num::{isize}::MAX() -> isize
 
     storage_live(_0)
     storage_live(_1)
-    _1 = copy core::num::{usize}::MAX panic.>> const 1i32
+    _1 = read core::num::{usize}::MAX panic.>> const 1i32
     _0 = cast<isize>(move _1)
     storage_dead(_1)
     return
@@ -723,7 +723,7 @@ where
             storage_live(n)
             n = copy _1
             storage_live(_3)
-            _3 = cast<usize>(copy core::num::{isize}::MAX)
+            _3 = cast<usize>(read core::num::{isize}::MAX)
             storage_live(_4)
             _4 = copy n
             _0 = move _3 panic./ move _4
@@ -734,7 +734,7 @@ where
             return
         },
     }
-    _0 = copy core::num::{usize}::MAX
+    _0 = read core::num::{usize}::MAX
     storage_dead(_1)
     return
 }
@@ -915,7 +915,7 @@ where
     let mut _0: usize; // return
 
     storage_live(_0)
-    _0 = copy SIZE<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
+    _0 = read SIZE<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
     return
 }
 
@@ -927,7 +927,7 @@ where
     let mut _0: usize; // return
 
     storage_live(_0)
-    _0 = copy ALIGN<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
+    _0 = read ALIGN<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
     return
 }
 

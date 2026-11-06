@@ -171,7 +171,7 @@ pub fn test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::x86_64
 
     storage_live(_0)
     storage_live(_2)
-    _2 = copy test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::TABLE::x86_64-pc-windows-msvc
+    _2 = read test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::TABLE::x86_64-pc-windows-msvc
     storage_live(_3)
     _3 = const 0usize
     fake_read(_2)
@@ -211,7 +211,7 @@ pub fn test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::i686-u
 
     storage_live(_0)
     storage_live(_2)
-    _2 = copy test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::TABLE::i686-unknown-linux-gnu
+    _2 = read test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::TABLE::i686-unknown-linux-gnu
     storage_live(_3)
     _3 = const 0usize
     fake_read(_2)

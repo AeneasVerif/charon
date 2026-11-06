@@ -1522,7 +1522,8 @@ impl_display_via_ctx!(Operand);
 impl<C: AstFormatter> FmtWithCtx<C> for Operand {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Operand::Copy(p) => write!(f, "copy {}", p.with_ctx(ctx)),
+            Operand::Copy(p, _) => write!(f, "copy {}", p.with_ctx(ctx)),
+            Operand::Read(p) => write!(f, "read {}", p.with_ctx(ctx)),
             Operand::Move(p) => write!(f, "move {}", p.with_ctx(ctx)),
             Operand::Const(c) => write!(f, "const {}", c.with_ctx(ctx)),
         }

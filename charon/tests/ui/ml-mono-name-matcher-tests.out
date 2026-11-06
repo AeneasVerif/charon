@@ -109,7 +109,7 @@ fn foo()
     _0 = ()
     storage_live(_1)
     storage_live(_2)
-    _11 = copy test_crate::foo::{promoted_const#1}
+    _11 = read test_crate::foo::{promoted_const#1}
     _2 = &(*_11)
     _1 = is_some::<i32><'14>(move _2)
     ↳⚡ unwind_continue
@@ -118,7 +118,7 @@ fn foo()
     storage_live(slice)
     storage_live(_4)
     storage_live(_5)
-    _10 = copy test_crate::foo::{promoted_const}
+    _10 = read test_crate::foo::{promoted_const}
     _5 = &(*_10)
     _4 = &(*_5)
     slice = unsize_cast<&'16 [bool], 1usize>(move _4)
@@ -129,14 +129,14 @@ fn foo()
     storage_live(_6)
     storage_live(_7)
     storage_live(_8)
-    _8 = &(*slice) with_metadata(copy slice.metadata)
+    _8 = &(*slice) with_metadata(read slice.metadata)
     storage_live(_9)
     _9 = RangeFrom::<usize> { start: const 1usize }
     _7 = index::<bool, RangeFrom::<usize>><'19>(move _8, move _9)
     ↳⚡ unwind_continue
     storage_dead(_9)
     storage_dead(_8)
-    _6 = &(*_7) with_metadata(copy _7.metadata)
+    _6 = &(*_7) with_metadata(read _7.metadata)
     storage_dead(_6)
     _0 = ()
     storage_dead(_7)

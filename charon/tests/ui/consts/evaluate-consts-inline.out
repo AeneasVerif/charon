@@ -64,7 +64,7 @@ pub fn promoted_scalar() -> &'static i32
     storage_live(_0)
     storage_live(_2)
     storage_live(_1)
-    _2 = copy test_crate::promoted_scalar::{promoted_const}
+    _2 = read test_crate::promoted_scalar::{promoted_const}
     _1 = &(*_2)
     _0 = &(*_1)
     storage_dead(_1)
@@ -84,7 +84,7 @@ pub fn promoted_array() -> &'static [i32; 3usize]
     storage_live(_0)
     storage_live(_2)
     storage_live(_1)
-    _2 = copy test_crate::promoted_array::{promoted_const}
+    _2 = read test_crate::promoted_array::{promoted_const}
     _1 = &(*_2)
     _0 = &(*_1)
     storage_dead(_1)
@@ -107,7 +107,7 @@ pub fn promoted_local() -> i32
     storage_live(_3)
     storage_live(r)
     _2 = const 2i32 panic.+ const 3i32
-    _3 = copy test_crate::promoted_local::{promoted_const}
+    _3 = read test_crate::promoted_local::{promoted_const}
     r = &(*_3)
     fake_read(r)
     _0 = copy (*r)
@@ -182,7 +182,7 @@ pub fn promoted_bools() -> &'static [bool; 2usize]
     storage_live(_0)
     storage_live(_2)
     storage_live(_1)
-    _2 = copy test_crate::promoted_bools::{promoted_const}
+    _2 = read test_crate::promoted_bools::{promoted_const}
     _1 = &(*_2)
     _0 = &(*_1)
     storage_dead(_1)
@@ -202,7 +202,7 @@ pub fn promoted_chars() -> &'static [char; 2usize]
     storage_live(_0)
     storage_live(_2)
     storage_live(_1)
-    _2 = copy test_crate::promoted_chars::{promoted_const}
+    _2 = read test_crate::promoted_chars::{promoted_const}
     _1 = &(*_2)
     _0 = &(*_1)
     storage_dead(_1)
@@ -222,7 +222,7 @@ pub fn promoted_str() -> &'static str
     _1 = &raw const test_crate::{promoted_const#2}
     storage_live(_2)
     _2 = unsize_cast<*const str, 5usize>(move _1)
-    _0 = &(*_2) with_metadata(copy _2.metadata)
+    _0 = &(*_2) with_metadata(read _2.metadata)
     storage_dead(_2)
     storage_dead(_1)
     return

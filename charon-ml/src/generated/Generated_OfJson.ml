@@ -1154,9 +1154,13 @@ and nullop_of_json (ctx : of_json_ctx) (js : json) : (nullop, string) result =
 and operand_of_json (ctx : of_json_ctx) (js : json) : (operand, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Copy", _0) ] ->
+    | `Assoc [ ("Copy", `List [ _0; _1 ]) ] ->
         let* _0 = place_of_json ctx _0 in
-        Ok (Copy _0)
+        let* _1 = trait_ref_of_json ctx _1 in
+        Ok (Copy (_0, _1))
+    | `Assoc [ ("Read", _0) ] ->
+        let* _0 = place_of_json ctx _0 in
+        Ok (Read _0)
     | `Assoc [ ("Move", _0) ] ->
         let* _0 = place_of_json ctx _0 in
         Ok (Move _0)

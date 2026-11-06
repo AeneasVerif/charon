@@ -260,9 +260,9 @@ pub fn get_or_insert<'_0>(map: &'_0 mut HashMap<u32, u32, RandomState, Global>[{
     let mut _15: &'27 u32; // anonymous local
     let mut _16: &'28 u32; // anonymous local
     let mut _17: &'35 u32; // anonymous local
-    let mut _18: &'44 u32; // anonymous local
+    let mut _18: &'47 u32; // anonymous local
     let mut _19: u32; // anonymous local
-    let mut _20: &'45 u32; // anonymous local
+    let mut _20: &'48 u32; // anonymous local
     let mut _21: u32; // anonymous local
 
     storage_live(_16)

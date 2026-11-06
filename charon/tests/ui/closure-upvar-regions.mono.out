@@ -298,7 +298,7 @@ where
     _4 = copy (*_1)._0
     storage_live(_5)
     _5 = &(*x)
-    _0 = (move _4)<'12>(move _5)
+    _0 = (move _4)<'27>(move _5)
     ↳⚡ storage_dead(x)
         storage_dead(tupled_args)
         storage_dead(_1)

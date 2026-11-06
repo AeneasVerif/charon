@@ -724,7 +724,7 @@ fn index_slice_ignore_value<'_0>(x: &'_0 [u32])
     // function doesn't panic on empty slices anymore.
     _2 = const 0usize
     storage_live(_3)
-    _3 = &(*x) with_metadata(copy x.metadata)
+    _3 = &(*x) with_metadata(read x.metadata)
     storage_live(_4)
     _4 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _2, move _3)
     ↳⚡ undefined_behavior
@@ -852,7 +852,7 @@ pub fn test_crate::_#8() -> u32
 
     storage_live(_0)
     storage_live(_1)
-    _1 = const 1u32 panic.+ copy test_crate::FOO
+    _1 = const 1u32 panic.+ read test_crate::FOO
     _0 = move _1
     return
 }
@@ -866,7 +866,7 @@ pub fn test_crate::_#9() -> u32
 
     storage_live(_0)
     storage_live(_1)
-    _1 = const 10u32 panic.- copy test_crate::FOO
+    _1 = const 10u32 panic.- read test_crate::FOO
     _0 = move _1
     return
 }
@@ -880,7 +880,7 @@ pub fn test_crate::_#10() -> u32
 
     storage_live(_0)
     storage_live(_1)
-    _1 = const 2u32 panic.* copy test_crate::FOO
+    _1 = const 2u32 panic.* read test_crate::FOO
     _0 = move _1
     return
 }
@@ -892,7 +892,7 @@ pub fn test_crate::_#11() -> u32
     let mut _0: u32; // return
 
     storage_live(_0)
-    _0 = const 2u32 panic.>> copy test_crate::FOO
+    _0 = const 2u32 panic.>> read test_crate::FOO
     return
 }
 
@@ -903,7 +903,7 @@ pub fn test_crate::_#12() -> u32
     let mut _0: u32; // return
 
     storage_live(_0)
-    _0 = const 2u32 panic.<< copy test_crate::FOO
+    _0 = const 2u32 panic.<< read test_crate::FOO
     return
 }
 
@@ -914,7 +914,7 @@ pub fn test_crate::_#13() -> u32
     let mut _0: u32; // return
 
     storage_live(_0)
-    _0 = const 2u32 panic.% copy test_crate::FOO
+    _0 = const 2u32 panic.% read test_crate::FOO
     return
 }
 
@@ -925,7 +925,7 @@ pub fn test_crate::_#14() -> u32
     let mut _0: u32; // return
 
     storage_live(_0)
-    _0 = const 2u32 panic./ copy test_crate::FOO
+    _0 = const 2u32 panic./ read test_crate::FOO
     return
 }
 
@@ -948,7 +948,7 @@ fn div_signed_with_constant() -> i32
     let mut _0: i32; // return
 
     storage_live(_0)
-    _0 = copy test_crate::div_signed_with_constant::FOO panic./ const 2i32
+    _0 = read test_crate::div_signed_with_constant::FOO panic./ const 2i32
     return
 }
 
@@ -970,7 +970,7 @@ fn div_unsigned_to_slice<'_0>(result: &'_0 mut [u32], x: u32)
     storage_live(_4)
     _4 = const 0usize
     storage_live(_5)
-    _5 = &mut (*result) with_metadata(copy result.metadata)
+    _5 = &mut (*result) with_metadata(read result.metadata)
     storage_live(_6)
     _6 = impl_SliceIndex_slice_for_usize::index_mut<'_, u32>[{built_in impl Sized for u32}](copy _4, move _5)
     ↳⚡ undefined_behavior
@@ -1003,7 +1003,7 @@ fn div_signed_to_slice<'_0>(result: &'_0 mut [i32], x: i32)
     storage_live(_4)
     _4 = const 0usize
     storage_live(_5)
-    _5 = &mut (*result) with_metadata(copy result.metadata)
+    _5 = &mut (*result) with_metadata(read result.metadata)
     storage_live(_6)
     _6 = impl_SliceIndex_slice_for_usize::index_mut<'_, i32>[{built_in impl Sized for i32}](copy _4, move _5)
     ↳⚡ undefined_behavior
@@ -1039,7 +1039,7 @@ fn add_to_slice<'_0>(result: &'_0 mut [u32], x: u32)
     storage_live(_5)
     _5 = const 0usize
     storage_live(_6)
-    _6 = &mut (*result) with_metadata(copy result.metadata)
+    _6 = &mut (*result) with_metadata(read result.metadata)
     storage_live(_7)
     _7 = impl_SliceIndex_slice_for_usize::index_mut<'_, u32>[{built_in impl Sized for u32}](copy _5, move _6)
     ↳⚡ undefined_behavior
@@ -1084,7 +1084,7 @@ fn add_to_slice2<'_0>(result: &'_0 mut [u8], i: usize, x: u8)
     _6 = move _8
     storage_dead(_7)
     storage_live(_9)
-    _9 = &mut (*result) with_metadata(copy result.metadata)
+    _9 = &mut (*result) with_metadata(read result.metadata)
     storage_live(_10)
     _10 = impl_SliceIndex_slice_for_usize::index_mut<'_, u8>[{built_in impl Sized for u8}](copy _6, move _9)
     ↳⚡ undefined_behavior

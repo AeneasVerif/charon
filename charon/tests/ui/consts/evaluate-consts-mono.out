@@ -9,7 +9,7 @@ pub fn use_len() -> usize
     let mut _0: usize; // return
 
     storage_live(_0)
-    _0 = copy LEN::<u8, 4usize>
+    _0 = read LEN::<u8, 4usize>
     return
 }
 
@@ -34,9 +34,9 @@ pub fn use_size() -> usize
     storage_live(_2)
     storage_live(_3)
     storage_live(_1)
-    _2 = copy impl_HasSize_for_u8::SIZE::<u8> panic.+ copy impl_HasSize_for_u64::SIZE::<u64>
+    _2 = read impl_HasSize_for_u8::SIZE::<u8> panic.+ read impl_HasSize_for_u64::SIZE::<u64>
     _1 = move _2
-    _3 = copy _1 panic.+ copy impl_HasSize_for_array::SIZE::<[u32; 3usize]>
+    _3 = copy _1 panic.+ read impl_HasSize_for_array::SIZE::<[u32; 3usize]>
     _0 = move _3
     storage_dead(_1)
     storage_dead(_3)

@@ -51,7 +51,7 @@ where
     storage_live(_4)
     _4 = copy i
     storage_live(_5)
-    _5 = &(*(*_1)._0) with_metadata(copy (*_1)._0.metadata)
+    _5 = &(*(*_1)._0) with_metadata(read (*_1)._0.metadata)
     storage_live(_6)
     _6 = impl_SliceIndex_slice_for_usize::index<'_, u8>[{built_in impl Sized for u8}](copy _4, move _5)
     ↳⚡ undefined_behavior
@@ -80,7 +80,7 @@ pub fn call_fn_shared<'_0>(a: &'_0 [u8], i: usize) -> u8
     storage_live(_0)
     storage_live(read)
     storage_live(_4)
-    _4 = &(*a) with_metadata(copy a.metadata)
+    _4 = &(*a) with_metadata(read a.metadata)
     read = {closure} { _0: move _4 }
     storage_dead(_4)
     fake_read(read)

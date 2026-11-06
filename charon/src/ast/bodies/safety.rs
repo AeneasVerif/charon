@@ -163,7 +163,9 @@ impl Place {
 impl HasSafety for Operand {
     fn safety(&self, krate: &TranslatedCrate) -> Safety {
         match self {
-            Operand::Copy(place) | Operand::Move(place) => place.read_safety(krate),
+            Operand::Copy(place, _) | Operand::Read(place) | Operand::Move(place) => {
+                place.read_safety(krate)
+            }
             Operand::Const(_) => Safety::Safe,
         }
     }

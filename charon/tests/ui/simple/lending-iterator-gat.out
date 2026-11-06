@@ -492,10 +492,10 @@ pub fn main()
     let mut _24: &'56 i32; // anonymous local
     let mut _25: &'57 i32; // anonymous local
     let mut _26: &'58 i32; // anonymous local
-    let mut _27: &'157 i32; // anonymous local
-    let mut _28: &'178 i32; // anonymous local
+    let mut _27: &'179 i32; // anonymous local
+    let mut _28: &'206 i32; // anonymous local
     let mut _29: i32; // anonymous local
-    let mut _30: &'179 i32; // anonymous local
+    let mut _30: &'207 i32; // anonymous local
     let mut _31: i32; // anonymous local
 
     storage_live(_26)
@@ -529,7 +529,7 @@ pub fn main()
     _8 = &mut sum
     _7 = {closure} { _0: move _8 }
     storage_dead(_8)
-    _5 = for_each<Option<&'79 i32>[{built_in impl Sized for &'79 i32}], {closure}<'84>>[{built_in impl Sized for Option<&'79 i32>[{built_in impl Sized for &'79 i32}]}, {built_in impl Sized for {closure}<'84>}, impl_LendingIterator_for_Option<'79, i32>[{built_in impl Sized for i32}], for<'a> impl_FnMut_tuple_for_closure<'84, '156>](move _6, move _7)
+    _5 = for_each<Option<&'101 i32>[{built_in impl Sized for &'101 i32}], {closure}<'106>>[{built_in impl Sized for Option<&'101 i32>[{built_in impl Sized for &'101 i32}]}, {built_in impl Sized for {closure}<'106>}, impl_LendingIterator_for_Option<'101, i32>[{built_in impl Sized for i32}], for<'a> impl_FnMut_tuple_for_closure<'106, '178>](move _6, move _7)
     ↳⚡ storage_dead(_25)
         storage_dead(_24)
         storage_dead(_23)

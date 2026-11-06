@@ -45,12 +45,20 @@ pub trait Copy<Self>
 
 struct () {}
 
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
 // Full name: test_crate::Foo
 struct Foo {}
 
 // Full name: test_crate::{impl Clone for Foo}::clone
 #[inline(hint)]
-pub fn clone<'_0>(self: &'_0 Foo) -> Foo
+pub fn impl_Clone_for_Foo::clone<'_0>(self: &'_0 Foo) -> Foo
 {
     let mut _0: Foo; // return
     let self: &'1 Foo; // arg #1
@@ -64,7 +72,7 @@ pub fn clone<'_0>(self: &'_0 Foo) -> Foo
 // Full name: test_crate::{impl Clone for Foo}
 impl "impl_Clone_for_Foo" Clone for Foo {
     proof ImpliedClause0: (Foo: Sized) = {built_in impl Sized for Foo}
-    fn clone<'_0_1> = clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_Foo::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -151,6 +159,106 @@ where
     let x: TraitClause1::Ty; // arg #1
     let y: TraitClause1::Ty; // local
     let z: TraitClause1::Ty; // local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(y)
+    y = copy x
+    fake_read(y)
+    storage_live(z)
+    z = copy x
+    fake_read(z)
+    _0 = ()
+    storage_dead(z)
+    storage_dead(y)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::Supertrait
+trait Supertrait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Copy)
+    non-dyn-compatible
+}
+
+// Full name: test_crate::copy_supertrait
+fn copy_supertrait<T>(x: T) -> (T, T)
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Supertrait),
+{
+    let mut _0: (T, T); // return
+    let x: T; // arg #1
+    let mut _2: T; // anonymous local
+    let mut _3: T; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = copy x
+    storage_live(_3)
+    _3 = copy x
+    _0 = (move _2, move _3)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::copy_array
+fn copy_array<T, const N : usize>(x: [T; N]) -> ([T; N], [T; N])
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
+{
+    let mut _0: ([T; N], [T; N]); // return
+    let x: [T; N]; // arg #1
+    let mut _2: [T; N]; // anonymous local
+    let mut _3: [T; N]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = copy x
+    storage_live(_3)
+    _3 = copy x
+    _0 = (move _2, move _3)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::copy_shared_ref
+fn copy_shared_ref<'_0, T>(x: &'_0 T) -> (&'_0 T, &'_0 T)
+where
+    TraitClause0: (T: MetaSized),
+    Outlives0: (T: '_0),
+{
+    let mut _0: (&'9 T, &'10 T); // return
+    let x: &'14 T; // arg #1
+    let mut _2: &'15 T; // anonymous local
+    let mut _3: &'16 T; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = copy x
+    storage_live(_3)
+    _3 = copy x
+    _0 = (move _2, move _3)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::copy_fn_ptr
+fn copy_fn_ptr(x: fn<'a>(&'a u32) -> &'a u32)
+{
+    let mut _0: (); // return
+    let x: fn<'a>(&'a u32) -> &'a u32; // arg #1
+    let y: fn<'a>(&'a u32) -> &'a u32; // local
+    let z: fn<'a>(&'a u32) -> &'a u32; // local
 
     storage_live(_0)
     _0 = ()

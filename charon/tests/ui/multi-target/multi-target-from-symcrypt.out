@@ -910,7 +910,7 @@ fn test_crate::poly_element_ntt_layer::x86_64-apple-darwin<'_0, '_1>(a: &'_0 mut
     storage_live(_0)
     _0 = ()
     storage_live(_3)
-    _3 = test_crate::cpu_features_present(copy test_crate::SYMCRYPT_CPU_FEATURE_SSE2)
+    _3 = test_crate::cpu_features_present(read test_crate::SYMCRYPT_CPU_FEATURE_SSE2)
     ↳⚡ storage_dead(b)
         storage_dead(a)
         unwind_continue
@@ -969,7 +969,7 @@ fn test_crate::poly_element_ntt_layer::aarch64-apple-darwin<'_0, '_1>(a: &'_0 mu
     storage_live(_0)
     _0 = ()
     storage_live(_3)
-    _3 = test_crate::cpu_features_present(copy test_crate::SYMCRYPT_CPU_FEATURE_NEON)
+    _3 = test_crate::cpu_features_present(read test_crate::SYMCRYPT_CPU_FEATURE_NEON)
     ↳⚡ storage_dead(b)
         storage_dead(a)
         unwind_continue

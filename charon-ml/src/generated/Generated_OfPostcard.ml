@@ -1030,11 +1030,15 @@ and operand_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      match __tag with
      | 0 ->
          let* _0 = place_of_postcard ctx st in
-         Ok (Copy _0)
+         let* _1 = trait_ref_of_postcard ctx st in
+         Ok (Copy (_0, _1))
      | 1 ->
          let* _0 = place_of_postcard ctx st in
-         Ok (Move _0)
+         Ok (Read _0)
      | 2 ->
+         let* _0 = place_of_postcard ctx st in
+         Ok (Move _0)
+     | 3 ->
          let* _0 = constant_expr_of_postcard ctx st in
          Ok (Constant _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))

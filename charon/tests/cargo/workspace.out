@@ -53,7 +53,7 @@ where
     _0 = ()
     storage_live(_3)
     storage_live(_4)
-    _4 = &(*source) with_metadata(copy source.metadata)
+    _4 = &(*source) with_metadata(read source.metadata)
     _3 = TraitClause0::clone<'5>(move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)

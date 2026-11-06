@@ -57,7 +57,7 @@ where
 }
 
 // Full name: core::clone::impls::{impl Clone for u128}::clone
-pub fn clone<'_0>(self: &'_0 u128) -> u128
+pub fn impl_Clone_for_u128::clone<'_0>(self: &'_0 u128) -> u128
 {
     let mut _0: u128; // return
     let self: &'1 u128; // arg #1
@@ -84,7 +84,7 @@ where
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source)
-    _3 = clone<'5>(move _4)
+    _3 = impl_Clone_for_u128::clone<'5>(move _4)
     ↳⚡ storage_dead(source)
         storage_dead(self)
         unwind_continue
@@ -104,7 +104,7 @@ where
 
 // Full name: core::clone::impls::{impl Clone for u128}
 impl "impl_Clone_for_u128" Clone for u128 {
-    fn clone<'_0_1> = clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_u128::clone<'_0_1>
     fn clone_from<'_0_1, '_1_1, TraitClause0_1: (u128: Destruct)> = impl_Clone_for_u128::clone_from<'_0_1, '_1_1>[TraitClause0_1]
     non-dyn-compatible
 }
@@ -135,7 +135,7 @@ fn MASK() -> u128
 
     storage_live(_0)
     storage_live(_1)
-    _1 = cast<u128>(copy MAX)
+    _1 = cast<u128>(read MAX)
     _0 = copy _1
     storage_dead(_1)
     return
@@ -158,7 +158,7 @@ fn to_low_high(x: u128) -> [u128; 2usize]
     storage_live(_2)
     storage_live(_3)
     _3 = copy x
-    _2 = move _3 & copy MASK
+    _2 = move _3 & read MASK
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)

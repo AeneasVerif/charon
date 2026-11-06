@@ -48,8 +48,9 @@ impl UllbcPass for Transform {
             }
 
             if let TerminatorKind::Switch { data, branches } = &block.terminator.kind
-                && let SwitchScrutinee::Value(Operand::Copy(flag_place) | Operand::Move(flag_place)) =
-                    &data.scrutinee
+                && let SwitchScrutinee::Value(
+                    Operand::Copy(flag_place, _) | Operand::Move(flag_place),
+                ) = &data.scrutinee
                 && let Some(flag) = flag_place.as_local()
                 && let Some(flagged_place) = &body.locals.locals[flag].drop_flag_for
                 && let Some((true_branch, false_branch)) = data.as_if()

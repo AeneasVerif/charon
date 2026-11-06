@@ -68,7 +68,7 @@ fn main()
     fake_read(x)
     set_type(typeof(x) == usize)
     storage_live(y)
-    y = copy MAX
+    y = read MAX
     fake_read(y)
     set_type(typeof(y) == usize)
     storage_live(z)

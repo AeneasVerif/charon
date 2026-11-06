@@ -146,7 +146,7 @@ fn super_method<'_0>(self: &'_0 i32, arg: i32) -> i32
     _3 = copy self
     storage_live(_4)
     _4 = copy arg
-    _0 = add<'3>(move _3, move _4)
+    _0 = add<'6>(move _3, move _4)
     ↳⚡ storage_dead(arg)
         storage_dead(self)
         unwind_continue
@@ -569,8 +569,8 @@ fn main()
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = &(*v) with_metadata(copy v.metadata)
-    _4 = (copy (*_5.metadata).method_join_method)<'19>(move _5)
+    _5 = &(*v) with_metadata(read v.metadata)
+    _4 = (read (*_5.metadata).method_join_method)<'19>(move _5)
     ↳⚡ storage_dead(_6)
         unwind_continue
     storage_dead(_5)

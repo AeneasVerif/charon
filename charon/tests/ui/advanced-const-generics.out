@@ -178,19 +178,19 @@ where
 
     storage_live(_0)
     storage_live(_3)
-    _3 = &two-phase-mut (*f) with_metadata(copy f.metadata)
+    _3 = &two-phase-mut (*f) with_metadata(read f.metadata)
     storage_live(_4)
     match (*self) {
         Foo::A => {
             storage_live(_5)
             _5 = &test_crate::impl_Debug_for_Foo::fmt::{promoted_const} with_metadata(const 1usize)
-            _4 = &(*_5) with_metadata(copy _5.metadata)
+            _4 = &(*_5) with_metadata(read _5.metadata)
             storage_dead(_5)
         },
         Foo::B => {
             storage_live(_6)
             _6 = &test_crate::impl_Debug_for_Foo::fmt::{promoted_const#1} with_metadata(const 1usize)
-            _4 = &(*_6) with_metadata(copy _6.metadata)
+            _4 = &(*_6) with_metadata(read _6.metadata)
             storage_dead(_6)
         },
     }

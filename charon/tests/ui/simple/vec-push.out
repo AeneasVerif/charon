@@ -212,7 +212,7 @@ where
     len = copy (*self_1).len
     storage_live(_4)
     storage_live(_5)
-    switch copy SIZE<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]] {
+    switch read SIZE<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]] {
         0usize => {
             _5 = const 18446744073709551615usize
         },
@@ -254,7 +254,7 @@ where
     storage_dead(_12)
     storage_live(_13)
     _13 = copy len ub.* const size_of::<T>()
-    end = &raw mut (*self_9).offset!(copy _13)
+    end = &raw mut (*self_9).offset!(read _13)
     storage_dead(self_9)
     storage_live(src)
     src = move value

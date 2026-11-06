@@ -82,7 +82,7 @@ pub fn run()
     _0 = ()
     storage_live(_1)
     storage_live(_2)
-    _3 = copy {promoted_const}
+    _3 = read {promoted_const}
     _2 = &(*_3)
     _1 = is_some<'5, bool>[{built_in impl Sized for bool}](move _2)
     ↳⚡ unwind_continue
