@@ -507,6 +507,8 @@ pub fn inline_const()
     storage_live(_1)
     _1 = &test_crate::inline_const::{promoted_const} with_metadata(const 2usize)
     set _1 :< &'3 Outer<[u16]>[{built_in impl MetaSized for [u16]}]
+    set '3 :> '4
+    set '4 :> '3
     storage_dead(_1)
     _0 = ()
     return

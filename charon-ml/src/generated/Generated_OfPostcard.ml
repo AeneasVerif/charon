@@ -321,12 +321,8 @@ and borrowck_statement_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* temporary = bool_of_postcard ctx st in
          Ok (SetType (place, ty, variance, temporary))
      | 2 ->
-         let* _0 = ty_of_postcard ctx st in
-         let* _1 = region_of_postcard ctx st in
-         Ok (SetOutlives (_0, _1))
-     | 3 ->
-         let* _0 = poly_trait_ref_of_postcard ctx st in
-         Ok (PredicateHolds _0)
+         let* _0 = outlives_pred_of_postcard ctx st in
+         Ok (SetOutlives _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and branch_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

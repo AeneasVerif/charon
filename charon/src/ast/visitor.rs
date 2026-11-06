@@ -387,6 +387,7 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
         IntegerValue,
         Name,
         NullOp,
+        OutlivesPred,
         PathBuf,
         PolyTraitRef,
         RefKind,

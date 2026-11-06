@@ -825,6 +825,10 @@ pub fn test_free_region<'a>(x: &'a u32) -> &'a u32
     f = fn_def_to_fn_ptr(const ref_identity<'16>)
     fake_read(f)
     set f := fn(&'17 u32) -> &'18 u32
+    set '17 :> 'a
+    set 'a :> '17
+    set '18 :> 'a
+    set 'a :> '18
     storage_live(_3)
     storage_live(_4)
     _4 = copy f
@@ -1043,6 +1047,11 @@ pub fn test_dyn_fn(x: u32) -> u32
     storage_dead(_4)
     fake_read(dyn_fn)
     set dyn_fn := &'12 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '13)
+    set '12 :> '14
+    set '14 :> '12
+    set '13 :> '15
+    set '15 :> '13
+    set '15 :> '14
     storage_dead(_5)
     storage_live(_6)
     _6 = &(*dyn_fn) with_metadata(read dyn_fn.metadata)
@@ -1093,6 +1102,11 @@ pub fn test_dyn_fn_mut(x: u32) -> u32
     storage_dead(_4)
     fake_read(dyn_fn)
     set dyn_fn := &'12 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '13)
+    set '12 :> '14
+    set '14 :> '12
+    set '13 :> '15
+    set '15 :> '13
+    set '15 :> '14
     storage_dead(_5)
     storage_live(_6)
     _6 = &mut (*dyn_fn) with_metadata(read dyn_fn.metadata)

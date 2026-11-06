@@ -1791,13 +1791,9 @@ let pp_borrowck_statement (env : fmt_env) (fmt : Format.formatter)
       let name = if temporary then "set_here" else "set" in
       Format.fprintf fmt "%s %a %s %s" name (pp_place env) place relation
         (ty_to_string env ty)
-  | SetOutlives (ty, region) ->
-      Format.fprintf fmt "set %s :> %s" (ty_to_string env ty)
-        (region_to_string env region)
-  | PredicateHolds predicate ->
-      Format.fprintf fmt "predicate_holds(%a)"
-        (pp_region_binder ty_to_string pp_trait_ref env)
-        predicate
+  | SetOutlives (lhs, rhs) ->
+      Format.fprintf fmt "set %s :> %s" (region_to_string env lhs)
+        (region_to_string env rhs)
 
 let pp_abort_kind (env : fmt_env) (fmt : Format.formatter) (a : abort_kind) :
     unit =

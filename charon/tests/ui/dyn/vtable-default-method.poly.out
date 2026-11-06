@@ -177,7 +177,7 @@ pub fn main()
     let mut _5: &'8 (dyn Trait + '9); // anonymous local
     let mut _6: &'10 Struct; // anonymous local
     let mut _7: &'11 Struct; // anonymous local
-    let mut _8: &'20 Struct; // anonymous local
+    let mut _8: &'22 Struct; // anonymous local
     let mut _9: Struct; // anonymous local
 
     storage_live(_7)
@@ -199,11 +199,16 @@ pub fn main()
     storage_dead(_2)
     fake_read(b)
     set b := &'14 (dyn Trait + '15)
+    set '14 :> '16
+    set '16 :> '14
+    set '15 :> '17
+    set '17 :> '15
+    set '17 :> '16
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*b) with_metadata(read b.metadata)
-    _4 = (read (*_5.metadata).method_dflt)<'19>(move _5)
+    _4 = (read (*_5.metadata).method_dflt)<'21>(move _5)
     ↳⚡ storage_dead(_6)
         unwind_continue
     storage_dead(_5)

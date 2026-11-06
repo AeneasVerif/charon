@@ -500,13 +500,18 @@ fn main()
     storage_dead(_2)
     fake_read(boo)
     set boo := &'14 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '15)
+    set '14 :> '16
+    set '16 :> '14
+    set '15 :> '17
+    set '17 :> '15
+    set '17 :> '16
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*boo) with_metadata(read boo.metadata)
     storage_live(_6)
     _6 = (const 42i32,)
-    _4 = Fn<(dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '18), (i32,)>::call<'19>(move _5, move _6)
+    _4 = Fn<(dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '20), (i32,)>::call<'21>(move _5, move _6)
     ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_5)

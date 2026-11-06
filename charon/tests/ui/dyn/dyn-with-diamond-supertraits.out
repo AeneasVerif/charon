@@ -544,7 +544,7 @@ fn main()
     let mut _5: &'8 (dyn Join<i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::Left = i32, ImpliedClause2::Right = i32> + '9); // anonymous local
     let mut _6: &'10 i32; // anonymous local
     let mut _7: &'11 i32; // anonymous local
-    let mut _8: &'20 i32; // anonymous local
+    let mut _8: &'22 i32; // anonymous local
     let mut _9: i32; // anonymous local
 
     storage_live(_7)
@@ -566,11 +566,16 @@ fn main()
     storage_dead(_2)
     fake_read(v)
     set v := &'14 (dyn Join<i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::Left = i32, ImpliedClause2::Right = i32> + '15)
+    set '14 :> '16
+    set '16 :> '14
+    set '15 :> '17
+    set '17 :> '15
+    set '17 :> '16
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*v) with_metadata(read v.metadata)
-    _4 = (read (*_5.metadata).method_join_method)<'19>(move _5)
+    _4 = (read (*_5.metadata).method_join_method)<'21>(move _5)
     ↳⚡ storage_dead(_6)
         unwind_continue
     storage_dead(_5)

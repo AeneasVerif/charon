@@ -2052,6 +2052,8 @@ pub fn test_regions_casted<'a>(x: &'a u32) -> u32
     storage_dead(_3)
     fake_read(f)
     set f := fn<'_0_1>(&'_0_1 &'31 u32) -> u32
+    set '31 :> 'a
+    set 'a :> '31
     storage_live(_4)
     _4 = copy f
     storage_live(_5)

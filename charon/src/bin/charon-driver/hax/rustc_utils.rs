@@ -1,7 +1,7 @@
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 
 use rustc_hir::def::DefKind as RDefKind;
-use rustc_middle::infer::canonical::{CanonicalVarKinds, CanonicalVarValues};
+use rustc_middle::infer::canonical::QueryRegionConstraints;
 use rustc_middle::ty::relate::{
     Relate, RelateResult, TypeRelation, relate_args_with_variances, structurally_relate_consts,
     structurally_relate_tys,
@@ -11,128 +11,162 @@ use rustc_span::kw;
 
 use crate::hax::prelude::*;
 
-/// Structurally pairs a canonicalized type with its inferred type to recover the values rustc
-/// replaced with canonical variables. Inference regions are deliberately erased instead.
-pub fn match_canonical_var_values<'tcx>(
+/// Recover a user type annotation and all its region obligations. Rustc has already chosen the
+/// needed types; the inference context here only reconnects their erased regions to the
+/// annotation. The resulting binder binds existentially the regions involved.
+pub fn recover_user_type<'tcx>(
     tcx: ty::TyCtxt<'tcx>,
-    var_kinds: CanonicalVarKinds<'tcx>,
-    canonical_ty: ty::Ty<'tcx>,
-    inferred_ty: ty::Ty<'tcx>,
-) -> Option<CanonicalVarValues<'tcx>> {
-    let values = var_kinds
-        .iter()
-        .map(|kind| match kind {
-            ty::CanonicalVarKind::Region(_) => Some(tcx.lifetimes.re_erased.into()),
-            _ => None,
-        })
-        .collect();
-    let mut matcher = CanonicalVarMatcher { tcx, values };
-    matcher.relate(canonical_ty, inferred_ty).ok()?;
+    typing_env: ty::TypingEnv<'tcx>,
+    user_type_annotations: &ty::CanonicalUserTypeAnnotations<'tcx>,
+    owner: RDefId,
+    user_ty: &mir::UserTypeProjection,
+) -> Result<ty::Binder<'tcx, (ty::Ty<'tcx>, Vec<ty::Clause<'tcx>>)>, String> {
+    use rustc_trait_selection::infer::{RegionVariableOrigin, TyCtxtInferExt};
+    use rustc_trait_selection::traits::query::type_op::{AscribeUserType, Normalize, TypeOp};
+    use ty::{TypeVisitableExt, Upcast};
 
-    // A canonical type variable may be equated to an earlier canonical root without occurring
-    // independently in the canonicalized type.
-    for (index, kind) in var_kinds.iter().enumerate() {
-        if matcher.values[index].is_none()
-            && let ty::CanonicalVarKind::Ty { sub_root, .. } = kind
-        {
-            matcher.values[index] = matcher.values[sub_root.as_usize()];
-        }
-    }
-    let values = matcher.values.into_iter().collect::<Option<Vec<_>>>()?;
-    Some(CanonicalVarValues {
-        var_values: tcx.mk_args(&values),
-    })
-}
+    let annotation = &user_type_annotations[user_ty.base];
+    let span = annotation.span;
+    let projections = &user_ty.projs;
+    let owner = tcx.typeck_root_def_id(owner).as_local().unwrap();
+    let (infcx, param_env) = tcx.infer_ctxt().build_with_typing_env(typing_env);
 
-struct CanonicalVarMatcher<'tcx> {
-    tcx: ty::TyCtxt<'tcx>,
-    values: Vec<Option<ty::GenericArg<'tcx>>>,
-}
-
-impl<'tcx> CanonicalVarMatcher<'tcx> {
-    fn record<T>(
-        &mut self,
-        var: ty::BoundVar,
-        value: ty::GenericArg<'tcx>,
-        result: T,
-    ) -> RelateResult<'tcx, T> {
-        let slot = &mut self.values[var.as_usize()];
-        if slot.is_some_and(|old| old != value) {
-            Err(ty::error::TypeError::Mismatch)
+    let (user_ty, _) = infcx.instantiate_canonical(span, &annotation.user_ty);
+    let user_ty = ty::fold_regions(tcx, user_ty, |r, _| {
+        if r.is_erased() {
+            infcx.next_region_var(RegionVariableOrigin::Misc(span))
         } else {
-            *slot = Some(value);
-            Ok(result)
+            r
         }
-    }
-}
+    });
+    let inferred_ty = ty::fold_regions(tcx, annotation.inferred_ty, |_, _| {
+        infcx.next_region_var(RegionVariableOrigin::Misc(span))
+    });
 
-impl<'tcx> TypeRelation<ty::TyCtxt<'tcx>> for CanonicalVarMatcher<'tcx> {
-    fn cx(&self) -> ty::TyCtxt<'tcx> {
-        self.tcx
-    }
-
-    fn relate_ty_args(
-        &mut self,
-        a_ty: ty::Ty<'tcx>,
-        _: ty::Ty<'tcx>,
-        _: rustc_hir::def_id::DefId,
-        a_args: ty::GenericArgsRef<'tcx>,
-        b_args: ty::GenericArgsRef<'tcx>,
-        _: impl FnOnce(ty::GenericArgsRef<'tcx>) -> ty::Ty<'tcx>,
-    ) -> RelateResult<'tcx, ty::Ty<'tcx>> {
-        ty::relate::relate_args_invariantly(self, a_args, b_args)?;
-        Ok(a_ty)
-    }
-
-    fn relate_with_variance<T: Relate<ty::TyCtxt<'tcx>>>(
-        &mut self,
-        _: ty::Variance,
-        _: ty::VarianceDiagInfo<ty::TyCtxt<'tcx>>,
-        a: T,
-        b: T,
-    ) -> RelateResult<'tcx, T> {
-        self.relate(a, b)
-    }
-
-    fn tys(&mut self, a: ty::Ty<'tcx>, b: ty::Ty<'tcx>) -> RelateResult<'tcx, ty::Ty<'tcx>> {
-        if let ty::Bound(ty::BoundVarIndexKind::Canonical, bound) = *a.kind() {
-            self.record(bound.var, b.into(), a)
-        } else {
-            structurally_relate_tys(self, a, b)
+    // Compute the inferred type of the place, and constraints needed to match it with the
+    // user-provided type.
+    let (projected_ty, constraints): (mir::PlaceTy<'tcx>, QueryRegionConstraints<'tcx>) = {
+        let mut constraints = param_env
+            .and(AscribeUserType {
+                mir_ty: inferred_ty,
+                user_ty,
+            })
+            .fully_perform(&infcx, owner, span)
+            .map_err(|_| "could not recover user type ascription".to_owned())?
+            .constraints
+            .cloned()
+            .unwrap_or_default();
+        // Add any normalization obligations coming from projections. In particular, projecting a field
+        // can expose an associated type with lifetime requirements.
+        let mut projected_ty = mir::PlaceTy::from_ty(inferred_ty);
+        let mut iter = projections.iter();
+        loop {
+            let resolved = param_env
+                .and(Normalize {
+                    value: ty::Unnormalized::new_wip(projected_ty.ty),
+                })
+                .fully_perform(&infcx, owner, span)
+                .map_err(|_| "could not normalize user type projection".to_owned())?;
+            projected_ty.ty = resolved.output;
+            if let Some(extra) = resolved.constraints {
+                constraints
+                    .constraints
+                    .extend(extra.constraints.iter().copied());
+                constraints
+                    .assumptions
+                    .extend(extra.assumptions.iter().copied());
+            }
+            let Some(projection) = iter.next() else { break };
+            if matches!(
+                projection,
+                mir::ProjectionElem::OpaqueCast(()) | mir::ProjectionElem::UnwrapUnsafeBinder(())
+            ) {
+                return Err("unsupported cast in user type projection".into());
+            }
+            projected_ty = projected_ty.projection_ty_core(
+                tcx,
+                projection,
+                |ty, variant, field, ()| {
+                    mir::PlaceTy::field_ty(tcx, ty, variant, field).skip_normalization()
+                },
+                |()| unreachable!(),
+            );
         }
-    }
+        (projected_ty, constraints)
+    };
 
-    fn regions(
-        &mut self,
-        a: ty::Region<'tcx>,
-        _: ty::Region<'tcx>,
-    ) -> RelateResult<'tcx, ty::Region<'tcx>> {
-        Ok(a)
-    }
-
-    fn consts(
-        &mut self,
-        a: ty::Const<'tcx>,
-        b: ty::Const<'tcx>,
-    ) -> RelateResult<'tcx, ty::Const<'tcx>> {
-        if let ty::ConstKind::Bound(ty::BoundVarIndexKind::Canonical, bound) = a.kind() {
-            self.record(bound.var, b.into(), a)
-        } else {
-            structurally_relate_consts(self, a, b)
+    // Turn the constraints into clauses.
+    let clauses: Vec<ty::Clause<'tcx>> = {
+        if !constraints.assumptions.is_empty() {
+            return Err("unsupported assumptions in user type ascription constraints".into());
         }
-    }
+        let mut clauses = Vec::new();
+        let mut push_clause = |kind| clauses.push(ty::Binder::dummy(kind).upcast(tcx));
+        for constraint in constraints.constraints {
+            match constraint.constraint {
+                ty::RegionConstraint::Outlives(ty::OutlivesClause(lhs, rhs)) => {
+                    let clause = match lhs.kind() {
+                        ty::GenericArgKind::Lifetime(lhs) => {
+                            ty::ClauseKind::RegionOutlives(ty::OutlivesClause(lhs, rhs))
+                        }
+                        ty::GenericArgKind::Type(lhs) => {
+                            ty::ClauseKind::TypeOutlives(ty::OutlivesClause(lhs, rhs))
+                        }
+                        ty::GenericArgKind::Const(_) => {
+                            return Err("const outlives constraint in user type ascription".into());
+                        }
+                    };
+                    push_clause(clause);
+                }
+                ty::RegionConstraint::Eq(ty::RegionEqPredicate(lhs, rhs)) => {
+                    // Equality is the conjunction of the two outlives relations.
+                    for (lhs, rhs) in [(lhs, rhs), (rhs, lhs)] {
+                        push_clause(ty::ClauseKind::RegionOutlives(ty::OutlivesClause(lhs, rhs)));
+                    }
+                }
+            }
+        }
+        clauses
+    };
 
-    fn binders<T>(
-        &mut self,
-        a: ty::Binder<'tcx, T>,
-        b: ty::Binder<'tcx, T>,
-    ) -> RelateResult<'tcx, ty::Binder<'tcx, T>>
-    where
-        T: Relate<ty::TyCtxt<'tcx>>,
-    {
-        self.relate(a.skip_binder(), b.skip_binder())?;
-        Ok(a)
-    }
+    // Bind all the inferred regions in a binder.
+    let bound = {
+        let value = infcx.deeply_resolve_ignoring_regions((projected_ty.ty, clauses));
+        if value.has_non_region_infer() || value.has_non_region_placeholders() {
+            return Err("unresolved type or const in user type ascription".into());
+        }
+        let mut regions = HashMap::default();
+        let mut bound_vars = Vec::new();
+        let mut unsupported_region = false;
+        let value = ty::fold_regions(tcx, value, |region, depth| match region.kind() {
+            ty::ReVar(_) if infcx.universe_of_region(region) == ty::UniverseIndex::ROOT => {
+                let var = *regions.entry(region).or_insert_with(|| {
+                    let var = ty::BoundVar::from_usize(bound_vars.len());
+                    bound_vars.push(ty::BoundVariableKind::Region(ty::BoundRegionKind::Anon));
+                    var
+                });
+                ty::Region::new_bound(
+                    tcx,
+                    depth,
+                    ty::BoundRegion {
+                        var,
+                        kind: ty::BoundRegionKind::Anon,
+                    },
+                )
+            }
+            ty::ReVar(_) | ty::RePlaceholder(_) | ty::ReErased => {
+                unsupported_region = true;
+                region
+            }
+            _ => region,
+        });
+        if unsupported_region {
+            return Err("unsupported region in user type ascription constraints".into());
+        }
+        ty::Binder::bind_with_vars(value, tcx.mk_bound_variable_kinds(&bound_vars))
+    };
+
+    Ok(bound)
 }
 
 /// Computes the variance of each region bound by `sig`.

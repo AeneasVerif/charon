@@ -47,35 +47,6 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
-// Full name: core::clone::impls::{impl Clone for u32}::clone
-pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for u32}
-impl "impl_Clone_for_u32" Clone for u32 {
-    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
-    fn clone<'_0_1> = impl_Clone_for_u32::clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
-#[diagnostic_item("noop_method_clone")]
-pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
-where
-    Outlives0: ('_0: '_1),
-    Outlives1: (T: '_0),
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for &'_0 T}
-impl<'_0, T> Clone for &'_0 T
-where
-    Outlives0: (T: '_0),
-{
-    proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
-    fn clone<'_0_1> = {impl Clone for &'_0 T}::clone<'_0, '_0_1, T>
-    non-dyn-compatible
-}
-
 // Full name: core::marker::Copy
 #[lang_item(Copy)]
 #[diagnostic_item("Copy")]
@@ -83,23 +54,6 @@ pub trait Copy<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for u32}
-impl "impl_Copy_for_u32" Copy for u32 {
-    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
-    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for &'_0 T}
-impl<'_0, T> Copy for &'_0 T
-where
-    Outlives0: (T: '_0),
-{
-    proof ImpliedClause0: (&'_0 T: MetaSized) = {built_in impl MetaSized for &'_0 T}
-    proof ImpliedClause1: (&'_0 T: Clone) = {impl Clone for &'_0 T}<'_, T>
     non-dyn-compatible
 }
 
@@ -253,23 +207,22 @@ where
 #[lang_item(String)]
 pub opaque type String
 
-// Full name: alloc::string::{impl Clone for String}::clone
-pub fn impl_Clone_for_String::clone<'_0>(_1: &'_0 String) -> String
-= <opaque>
-
-// Full name: alloc::string::{impl Clone for String}
-impl "impl_Clone_for_String" Clone for String {
-    proof ImpliedClause0: (String: Sized) = {built_in impl Sized for String}
-    fn clone<'_0_1> = impl_Clone_for_String::clone<'_0_1>
-    non-dyn-compatible
-}
-
 struct (_, _)<A, B>
 where
     TraitClause0: (A: Sized),
 {
   _0: A,
   _1: B,
+}
+
+struct (_, _, _)<A, B, C>
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+{
+  _0: A,
+  _1: B,
+  _2: C,
 }
 
 // Full name: (_, _)::{impl Destruct for (A, B)}::drop_glue
@@ -328,6 +281,8 @@ pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u
         },
     }
     set _3 :< &'8 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]
+    set '8 :> '9
+    set '9 :> '8
     storage_live(x)
     x = &((*_3) as variant Either::Left)._0._0
     storage_dead(_3)
@@ -413,8 +368,6 @@ pub fn impl_trait_binding(value_1: u32) -> u32
     value_2 = copy value_1
     fake_read(value_2)
     set value_2 := u32
-    predicate_holds({built_in impl Sized for u32})
-    predicate_holds(impl_Copy_for_u32)
     _0 = copy value_2
     storage_dead(value_2)
     storage_dead(value_1)
@@ -434,8 +387,6 @@ pub fn nested_impl_trait(value_1: Box<u32>[{built_in impl MetaSized for u32}, {b
     value_2 = move value_1
     fake_read(value_2)
     set value_2 := Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}]
-    predicate_holds({built_in impl Sized for u32})
-    predicate_holds(impl_Copy_for_u32)
     _0 = ()
     conditional_drop[impl_Destruct_for_Box::drop_glue<'0, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}]] value_2
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'2, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}]] value_1
@@ -464,10 +415,6 @@ pub fn multiple_impl_traits(value_1: (u32, String))
     value_2 = move value_1
     fake_read(value_2)
     set value_2 := (u32, String)
-    predicate_holds({built_in impl Sized for u32})
-    predicate_holds(impl_Copy_for_u32)
-    predicate_holds({built_in impl Sized for String})
-    predicate_holds(impl_Clone_for_String)
     _0 = ()
     conditional_drop[impl_Destruct_for_tuple::drop_glue<'0, u32, String>[{built_in impl Sized for u32}]] value_2
     ↳⚡ conditional_drop[impl_Destruct_for_tuple::drop_glue<'2, u32, String>[{built_in impl Sized for u32}]] value_1
@@ -479,6 +426,25 @@ pub fn multiple_impl_traits(value_1: (u32, String))
     conditional_drop[impl_Destruct_for_tuple::drop_glue<'1, u32, String>[{built_in impl Sized for u32}]] value_1
     ↳⚡ storage_dead(value_1)
         unwind_continue
+    storage_dead(value_1)
+    return
+}
+
+// Full name: test_crate::higher_ranked_impl_trait
+pub fn higher_ranked_impl_trait(value_1: fn<'a>(&'a u32))
+{
+    let mut _0: (); // return
+    let value_1: fn<'a>(&'a u32); // arg #1
+    let value_2: fn<'a>(&'a u32); // local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(value_2)
+    value_2 = copy value_1
+    fake_read(value_2)
+    set value_2 := fn<'a>(&'a u32)
+    _0 = ()
+    storage_dead(value_2)
     storage_dead(value_1)
     return
 }
@@ -497,10 +463,8 @@ where
     storage_live(value_2)
     value_2 = copy value_1
     fake_read(value_2)
-    set value_2 := &'16 u32
-    predicate_holds({built_in impl Sized for &'7 u32})
-    predicate_holds({impl Copy for &'_0 T}<'14, u32>)
-    set &'15 u32 :> 'b
+    set value_2 := &'6 u32
+    set '6 :> 'b
     _0 = ()
     storage_dead(value_2)
     storage_dead(value_1)
@@ -525,9 +489,163 @@ pub fn set_type_self<'_0>(self: Foo<'_0>)
     x = move self
     fake_read(x)
     set x := Foo<'3>
+    set '3 :> '_0
+    set '_0 :> '3
     _0 = ()
     storage_dead(x)
     storage_dead(self)
+    return
+}
+
+// Full name: test_crate::explicit_lifetimes
+pub fn explicit_lifetimes<'a>(value: (&'static u32, &'a u32, &'a u32))
+{
+    let mut _0: (); // return
+    let value: (&'16 u32, &'17 u32, &'18 u32); // arg #1
+    let x: (&'25 u32, &'26 u32, &'27 u32); // local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(x)
+    x = copy value
+    fake_read(x)
+    set x := (&'221 u32, &'222 u32, &'223 u32)
+    set '221 :> 'static
+    set 'static :> '221
+    set '222 :> 'a
+    set 'a :> '222
+    set '223 :> 'a
+    set 'a :> '223
+    _0 = ()
+    storage_dead(x)
+    storage_dead(value)
+    return
+}
+
+// Full name: test_crate::StaticCopy
+pub struct StaticCopy<'a> {
+  _0: &'a u32,
+}
+
+// Full name: test_crate::{impl Clone for StaticCopy<'static>}::clone
+pub fn impl_Clone_for_StaticCopy::clone<'_0>(self: &'_0 StaticCopy<'static>) -> StaticCopy<'static>
+{
+    let mut _0: StaticCopy<'1>; // return
+    let self: &'4 StaticCopy<'5>; // arg #1
+
+    storage_live(_0)
+    _0 = copy (*self)
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::{impl Clone for StaticCopy<'static>}
+impl "impl_Clone_for_StaticCopy" Clone for StaticCopy<'static> {
+    proof ImpliedClause0: (StaticCopy<'static>: Sized) = {built_in impl Sized for StaticCopy<'static>}
+    fn clone<'_0_1> = impl_Clone_for_StaticCopy::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Copy for StaticCopy<'static>}
+impl "impl_Copy_for_StaticCopy" Copy for StaticCopy<'static> {
+    proof ImpliedClause0: (StaticCopy<'static>: MetaSized) = {built_in impl MetaSized for StaticCopy<'static>}
+    proof ImpliedClause1: (StaticCopy<'static>: Clone) = impl_Clone_for_StaticCopy
+    non-dyn-compatible
+}
+
+// Full name: test_crate::static_copy_bound
+pub fn static_copy_bound<'a>(value: StaticCopy<'a>)
+where
+    Outlives0: ('a: 'static),
+{
+    let mut _0: (); // return
+    let value: StaticCopy<'1>; // arg #1
+    let x: StaticCopy<'2>; // local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(x)
+    x = copy value
+    fake_read(x)
+    set x := StaticCopy<'5>
+    set '5 :> 'static
+    _0 = ()
+    storage_dead(x)
+    storage_dead(value)
+    return
+}
+
+// Full name: test_crate::boxed_static_copy_bound
+pub fn boxed_static_copy_bound<'a>(value: Box<StaticCopy<'a>>[{built_in impl MetaSized for StaticCopy<'a>}, {built_in impl Sized for Global}])
+where
+    Outlives0: ('a: 'static),
+{
+    let mut _0: (); // return
+    let value: Box<StaticCopy<'6>>[{built_in impl MetaSized for StaticCopy<'6>}, {built_in impl Sized for Global}]; // arg #1
+    let x: Box<StaticCopy<'9>>[{built_in impl MetaSized for StaticCopy<'9>}, {built_in impl Sized for Global}]; // local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(x)
+    x = move value
+    fake_read(x)
+    set x := Box<StaticCopy<'12>>[{built_in impl MetaSized for StaticCopy<'12>}, {built_in impl Sized for Global}]
+    set '12 :> 'static
+    _0 = ()
+    conditional_drop[impl_Destruct_for_Box::drop_glue<'27, StaticCopy<'22>, Global>[{built_in impl MetaSized for StaticCopy<'22>}, {built_in impl Sized for Global}]] x
+    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'57, StaticCopy<'52>, Global>[{built_in impl MetaSized for StaticCopy<'52>}, {built_in impl Sized for Global}]] value
+        ↳⚡ storage_dead(value)
+            unwind_terminate
+        storage_dead(value)
+        unwind_continue
+    storage_dead(x)
+    conditional_drop[impl_Destruct_for_Box::drop_glue<'42, StaticCopy<'37>, Global>[{built_in impl MetaSized for StaticCopy<'37>}, {built_in impl Sized for Global}]] value
+    ↳⚡ storage_dead(value)
+        unwind_continue
+    storage_dead(value)
+    return
+}
+
+// Full name: test_crate::Project
+pub trait Project<'a, Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Output: Sized)
+    type Output
+    vtable: test_crate::Project::{vtable}<'a, Self::Output>
+}
+
+// Full name: test_crate::{impl Project<'a> for &'b u32}
+impl<'a, 'b> Project<'a> for &'b u32
+where
+    Outlives0: ('b: 'a),
+{
+    proof ImpliedClause0: (&'b u32: MetaSized) = {built_in impl MetaSized for &'b u32}
+    proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
+    type Output = u32
+    vtable: lazy
+}
+
+// Full name: test_crate::projection_outlives
+pub fn projection_outlives<'a, 'b>(value: u32)
+where
+    Outlives0: ('b: 'a),
+{
+    let mut _0: (); // return
+    let value: u32; // arg #1
+    let x: u32; // local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(x)
+    x = copy value
+    fake_read(x)
+    set x := u32
+    set 'b :> 'a
+    set 'b :> 'a
+    _0 = ()
+    storage_dead(x)
+    storage_dead(value)
     return
 }
 

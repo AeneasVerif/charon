@@ -2461,11 +2461,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for BorrowckStatement {
                     ty.with_ctx(ctx)
                 )
             }
-            BorrowckStatement::SetOutlives(ty, region) => {
-                write!(f, "set {} :> {}", ty.with_ctx(ctx), region.with_ctx(ctx))
-            }
-            BorrowckStatement::PredicateHolds(predicate) => {
-                write!(f, "predicate_holds({})", predicate.with_ctx(ctx))
+            BorrowckStatement::SetOutlives(OutlivesPred(lhs, rhs)) => {
+                write!(f, "set {} :> {}", lhs.with_ctx(ctx), rhs.with_ctx(ctx))
             }
         }
     }

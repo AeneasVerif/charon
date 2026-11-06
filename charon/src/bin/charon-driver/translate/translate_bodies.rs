@@ -817,146 +817,48 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         ))
     }
 
-    fn apply_user_type_projection(
-        &mut self,
-        span: Span,
-        mut ty: Ty,
-        projections: &[mir::ProjectionElem<(), ()>],
-    ) -> Result<Ty, Error> {
-        let mut downcast = None;
-        for projection in projections {
-            let projection = match projection {
-                mir::ProjectionElem::Deref => ProjectionElem::Deref,
-                mir::ProjectionElem::PhantomDeref => {
-                    raise_error!(
-                        self,
-                        span,
-                        "unsupported phantom dereference in user type projection"
-                    );
-                }
-                mir::ProjectionElem::Field(field, ()) => {
-                    let field = self.translate_field_id(*field);
-                    let TyKind::Adt(type_ref) = ty.kind() else {
-                        raise_error!(self, span, "field projection on unexpected type");
-                    };
-                    match type_ref.as_builtin() {
-                        None => ProjectionElem::Field(downcast.take(), field),
-                        Some(BuiltinAdt::Tuple) => ProjectionElem::Field(None, field),
-                        Some(BuiltinAdt::Box) if field == FieldId::ZERO => ProjectionElem::Deref,
-                        _ => raise_error!(self, span, "field projection on unexpected type"),
-                    }
-                }
-                mir::ProjectionElem::Index(()) => ProjectionElem::Index {
-                    offset: Box::new(Operand::mk_const_unit()),
-                    from_end: false,
-                },
-                mir::ProjectionElem::ConstantIndex { from_end, .. } => ProjectionElem::Index {
-                    offset: Box::new(Operand::mk_const_unit()),
-                    from_end: *from_end,
-                },
-                mir::ProjectionElem::Subslice { from_end, .. } => ProjectionElem::Subslice {
-                    from: Box::new(Operand::mk_const_unit()),
-                    to: Box::new(Operand::mk_const_unit()),
-                    from_end: *from_end,
-                },
-                mir::ProjectionElem::Downcast(_, variant) => {
-                    downcast = Some(self.translate_variant_id(*variant));
-                    continue;
-                }
-                mir::ProjectionElem::OpaqueCast(()) => {
-                    raise_error!(self, span, "unexpected opaque cast in user type projection");
-                }
-                mir::ProjectionElem::UnwrapUnsafeBinder(()) => {
-                    raise_error!(
-                        self,
-                        span,
-                        "unsupported unsafe binder in user type projection"
-                    );
-                }
-            };
-            let Some(next_ty) = projection.project_type(&self.translated, &ty) else {
-                raise_error!(self, span, "invalid user type projection");
-            };
-            ty = next_ty;
-        }
-        Ok(ty)
-    }
-
     fn translate_user_type_projection(
         &mut self,
         span: Span,
         user_ty: &mir::UserTypeProjection,
-    ) -> Result<(Ty, Vec<BorrowckStatement>), Error> {
-        use rustc_trait_selection::infer::canonical::CanonicalExt;
-
-        let annotation = self.user_type_annotations[user_ty.base].clone();
-        let canonical = *annotation.user_ty;
-
-        let mut facts = Vec::new();
-        if !canonical.value.bounds.is_empty() {
-            let user_ty_before_inference = match canonical.value.kind {
-                ty::UserTypeKind::Ty(ty) => ty,
-                ty::UserTypeKind::TypeOf(def_id, user_args)
-                    if user_args.args.len() == self.tcx.generics_of(def_id).count() =>
-                {
-                    self.tcx
-                        .type_of(def_id)
-                        .instantiate(self.tcx, user_args.args)
-                        .skip_normalization()
-                }
-                // Inherent associated type consts use a special argument format; rustc reconstructs
-                // their impl arguments with inference. Their resulting type is already recorded here.
-                ty::UserTypeKind::TypeOf(..) => annotation.inferred_ty,
-            };
-
-            // Rustc discards the original canonicalization values when it stores this annotation.
-            // Recover just enough of that mapping to instantiate the explicit user bounds. The
-            // place relation below deliberately uses `inferred_ty` directly.
-            let Some(var_values) = hax::rustc::match_canonical_var_values(
-                self.tcx,
-                canonical.var_kinds,
-                user_ty_before_inference,
-                annotation.inferred_ty,
-            ) else {
-                raise_error!(
-                    self,
-                    span,
-                    "could not match a user type annotation with its inferred type"
-                )
-            };
-            let instantiated_user_ty = canonical.instantiate(self.tcx, &var_values);
-
-            for clause in instantiated_user_ty.bounds {
-                if let Some(trait_predicate) = clause.as_trait_clause() {
-                    if trait_predicate.skip_binder().polarity != ty::ClausePolarity::Positive {
-                        raise_error!(self, span, "negative trait bound in a user type annotation")
-                    }
-                    let proof = hax::solve_trait(
-                        &self.hax_state,
-                        trait_predicate.map_bound(|predicate| predicate.trait_ref),
-                    );
-                    facts.push(BorrowckStatement::PredicateHolds(
-                        self.translate_trait_proof(span, &proof)?,
-                    ));
-                } else if let Some(outlives) = clause.as_type_outlives_clause() {
-                    let Some(ty::OutlivesClause(outlived_ty, region)) = outlives.no_bound_vars()
-                    else {
-                        raise_error!(self, span, "higher-ranked outlives user type bound")
-                    };
-                    let outlived_ty = self.translate_rustc_ty(span, &outlived_ty)?;
-                    let region = self.catch_sinto(span, &region)?;
-                    let region = self.translate_region(span, &region)?;
-                    facts.push(BorrowckStatement::SetOutlives(outlived_ty, region));
-                }
+    ) -> Result<RegionBinder<(Ty, Vec<OutlivesPred>)>, Error> {
+        let Some(owner) = self.item_src.def_id().as_real_or_promoted() else {
+            raise_error!(self, span, "user type annotation without a rustc owner");
+        };
+        let ty_constraints = hax::rustc::recover_user_type(
+            self.tcx,
+            hax::UnderOwnerState::typing_env(&self.hax_state),
+            &self.user_type_annotations,
+            owner,
+            user_ty,
+        );
+        let ty_constraints = match ty_constraints {
+            Ok(ty_constraints) => ty_constraints,
+            Err(message) => raise_error!(self, span, "{message}"),
+        };
+        let ty_constraints: hax::Binder<(hax::Ty<'tcx>, Vec<hax::Clause<'tcx>>)> =
+            self.catch_sinto(span, &ty_constraints)?;
+        self.translate_region_binder(span, &ty_constraints, |ctx, (ty, clauses)| {
+            let ty = ctx.translate_ty(span, ty)?;
+            let mut preds = Vec::new();
+            for clause in clauses {
+                let pred = ctx.translate_region_binder(span, &clause.kind, |ctx, kind| {
+                    Ok(match kind {
+                        hax::ClauseKind::RegionOutlives(p) => OutlivesPred(
+                            ctx.translate_region(span, &p.lhs)?,
+                            ctx.translate_region(span, &p.rhs)?,
+                        ),
+                        hax::ClauseKind::TypeOutlives(p) => OutlivesPred(
+                            Region::Lub(ctx.translate_ty(span, &p.lhs)?),
+                            ctx.translate_region(span, &p.rhs)?,
+                        ),
+                        _ => unreachable!("recovered ascription contains a non-region constraint"),
+                    })
+                })?;
+                preds.push(pred.no_bound_vars());
             }
-        }
-
-        // This is the type rustc itself relates the MIR place against. In particular, it has
-        // already revealed local `impl Trait` types and performed type normalization.
-        let ty = self.translate_rustc_ty(span, &annotation.inferred_ty)?;
-        let ty = self.apply_user_type_projection(span, ty, &user_ty.projs)?;
-
-        Ok((ty, facts))
+            Ok((ty, preds))
+        })
     }
 
     fn translate_thread_local_ref(
@@ -1721,7 +1623,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     ty::Variance::Bivariant => return Ok(()),
                 };
                 let place = self.translate_place(span, place)?;
-                let (ty, facts) = self.translate_user_type_projection(span, user_ty)?;
+                let constraints = self.translate_user_type_projection(span, user_ty)?;
+                let (ty, outlives) = self.erase_region_binder(constraints);
                 self.statements.push(Statement::new(
                     span,
                     StatementKind::Borrowck(BorrowckStatement::SetType {
@@ -1731,11 +1634,14 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         temporary: false,
                     }),
                 ));
-                self.statements.extend(
-                    facts
-                        .into_iter()
-                        .map(|fact| Statement::new(span, StatementKind::Borrowck(fact))),
-                );
+                for pred in outlives {
+                    for pred in pred.normalize() {
+                        self.statements.push(Statement::new(
+                            span,
+                            StatementKind::Borrowck(BorrowckStatement::SetOutlives(pred)),
+                        ));
+                    }
+                }
                 None
             }
             // Used for coverage instrumentation.

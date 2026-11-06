@@ -98,6 +98,8 @@ fn from_fn_def<'a>(x: &'a u8) -> &'a u8
     g = fn_ptr_to_unsafe(move _11)
     fake_read(g)
     set g := unsafe fn<'b>(&'40 u8, &'b u8) -> &'b u8
+    set '40 :> 'a
+    set 'a :> '40
     storage_live(_4)
     storage_live(_5)
     _5 = copy g
@@ -288,6 +290,8 @@ fn from_closure<'a>(x: &'a u8) -> &'a u8
     storage_dead(_3)
     fake_read(f)
     set f := unsafe fn<'b>(&'68 u8, &'b u8) -> &'b u8
+    set '68 :> 'a
+    set 'a :> '68
     storage_live(_4)
     storage_live(_5)
     _5 = copy f

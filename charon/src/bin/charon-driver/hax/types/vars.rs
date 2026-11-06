@@ -429,6 +429,7 @@ impl<'tcx> BinderVariances<'tcx> for ty::ClauseKind<'tcx> {}
 impl<'tcx> BinderVariances<'tcx> for ty::PredicateKind<'tcx> {}
 impl<'tcx> BinderVariances<'tcx> for ty::TraitRef<'tcx> {}
 impl<'tcx> BinderVariances<'tcx> for ty::TraitClause<'tcx> {}
+impl<'tcx> BinderVariances<'tcx> for (ty::Ty<'tcx>, Vec<ty::Clause<'tcx>>) {}
 
 impl<'tcx, S: UnderOwnerState<'tcx>, T1, T2> SInto<S, Binder<T2>> for ty::Binder<'tcx, T1>
 where

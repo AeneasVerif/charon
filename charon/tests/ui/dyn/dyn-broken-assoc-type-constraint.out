@@ -146,7 +146,7 @@ fn main()
     let _3: &'7 (); // anonymous local
     let mut _4: &'8 (); // anonymous local
     let mut _5: &'9 (); // anonymous local
-    let mut _6: &'14 (); // anonymous local
+    let mut _6: &'16 (); // anonymous local
     let mut _7: (); // anonymous local
 
     storage_live(_5)
@@ -168,6 +168,11 @@ fn main()
     storage_dead(_2)
     fake_read(_m)
     set _m := &'12 (dyn Broken<Assoc = ()> + '13)
+    set '12 :> '14
+    set '14 :> '12
+    set '13 :> '15
+    set '15 :> '13
+    set '15 :> '14
     storage_dead(_3)
     _0 = ()
     storage_dead(_m)

@@ -255,6 +255,57 @@ impl RegionArgs {
     }
 }
 
+impl OutlivesPred {
+    /// Normalize an outlives bound if it can be (e.g. `&'a T: 'b` becomes `'a: 'b` and `T: 'b`).
+    pub fn normalize(&self) -> impl Iterator<Item = Self> + use<'_> {
+        let Self(longer, shorter) = self;
+        let longers: SeqHashSet<_> = if let Region::Lub(ty) = longer
+            && !matches!(ty.kind(), TyKind::TypeVar(_) | TyKind::TraitType(..))
+        {
+            // Collect the regions and param types visible from the outside of this type.
+            #[derive(Visitor, Default)]
+            struct RequireTypeOutlives {
+                regions: SeqHashSet<Region>,
+                binder_depth: DeBruijnId,
+            }
+
+            impl VisitorWithBinderDepth for RequireTypeOutlives {
+                fn binder_depth_mut(&mut self) -> &mut DeBruijnId {
+                    &mut self.binder_depth
+                }
+            }
+
+            impl VisitAst for RequireTypeOutlives {
+                fn visit<U: AstVisitable>(&mut self, value: &U) -> ControlFlow<Self::Break> {
+                    VisitWithBinderDepth::new(self).visit(value)
+                }
+
+                fn enter_region(&mut self, region: &Region) {
+                    if let Some(region) = region.clone().move_from_under_binders(self.binder_depth)
+                    {
+                        self.regions.insert(region);
+                    }
+                }
+
+                fn enter_ty(&mut self, ty: &Ty) {
+                    if matches!(ty.kind(), TyKind::TypeVar(_) | TyKind::TraitType(..)) {
+                        self.enter_region(&Region::Lub(ty.clone()));
+                    }
+                }
+            }
+
+            RequireTypeOutlives::default()
+                .visit_by_val_infallible(ty)
+                .regions
+        } else {
+            [longer.clone()].into()
+        };
+        longers
+            .into_iter()
+            .map(move |longer| OutlivesPred(longer, shorter.clone()))
+    }
+}
+
 impl GenericParams {
     pub fn empty() -> Self {
         Self::default()
