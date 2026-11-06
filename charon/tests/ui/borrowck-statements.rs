@@ -99,3 +99,23 @@ where
 {
     let x: <&'b u32 as Project<'a>>::Output = value;
 }
+
+pub trait SameAs<T> {}
+impl<T> SameAs<T> for T {}
+
+// Resolving the inferred region must preserve the relation between the named regions.
+pub fn equal_named_regions<'a, 'b>(value: &'a u32)
+where
+    'a: 'b,
+    'b: 'a,
+{
+    let x: impl SameAs<&'a u32> + SameAs<&'b u32> = value;
+}
+
+// Substitution must also reach the type inside a type-outlives obligation.
+pub fn resolved_type_outlives<'a, 'b>(value: &'a u32)
+where
+    'a: 'b,
+{
+    let x: impl SameAs<&'a u32> + 'b = value;
+}

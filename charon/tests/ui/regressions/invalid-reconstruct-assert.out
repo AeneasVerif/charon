@@ -703,18 +703,16 @@ fn main()
         storage_dead(_3);
         fake_read(b);
         set b := &'14 [u32];
-        set '14 :> '15;
-        set '15 :> '14;
         storage_dead(_4);
         storage_live(res);
         storage_live(_6);
         storage_live(_7);
         _7 = &a;
-        _6 = unsize_cast<&'16 [u32], 5usize>(move _7);
+        _6 = unsize_cast<&'15 [u32], 5usize>(move _7);
         storage_dead(_7);
         storage_live(_8);
         _8 = {closure} {  };
-        res = binary_search_by<'19, u32, {closure}<'19>>[{built_in impl Sized for u32}, {built_in impl Sized for {closure}<'19>}, impl_FnMut_tuple_for_closure<'19>, {built_in impl Destruct for {closure}<'19>}](move _6, move _8) -> bb1 (unwind: bb2);
+        res = binary_search_by<'18, u32, {closure}<'18>>[{built_in impl Sized for u32}, {built_in impl Sized for {closure}<'18>}, impl_FnMut_tuple_for_closure<'18>, {built_in impl Destruct for {closure}<'18>}](move _6, move _8) -> bb1 (unwind: bb2);
     }
 
     bb1: {

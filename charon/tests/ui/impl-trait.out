@@ -322,7 +322,7 @@ pub fn use_wrap()
     let _6: &'20 u32; // anonymous local
     let mut _7: &'21 u32; // anonymous local
     let mut _8: &'22 u32; // anonymous local
-    let mut _9: &'41 u32; // anonymous local
+    let mut _9: &'40 u32; // anonymous local
     let mut _10: u32; // anonymous local
 
     storage_live(_0)
@@ -356,8 +356,6 @@ pub fn use_wrap()
     storage_dead(_4)
     storage_dead(_3)
     set _2 :< WrapClone<&'37 u32>[{built_in impl Sized for &'37 u32}, {impl Clone for &'_0 T}<'37, u32>]
-    set '37 :> '38
-    set '38 :> '37
     storage_dead(_6)
     storage_dead(_2)
     _0 = ()

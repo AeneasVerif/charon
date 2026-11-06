@@ -281,8 +281,6 @@ pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u
         },
     }
     set _3 :< &'8 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]
-    set '8 :> '9
-    set '9 :> '8
     storage_live(x)
     x = &((*_3) as variant Either::Left)._0._0
     storage_dead(_3)
@@ -488,9 +486,7 @@ pub fn set_type_self<'_0>(self: Foo<'_0>)
     storage_live(x)
     x = move self
     fake_read(x)
-    set x := Foo<'3>
-    set '3 :> '_0
-    set '_0 :> '3
+    set x := Foo<'_0>
     _0 = ()
     storage_dead(x)
     storage_dead(self)
@@ -509,13 +505,7 @@ pub fn explicit_lifetimes<'a>(value: (&'static u32, &'a u32, &'a u32))
     storage_live(x)
     x = copy value
     fake_read(x)
-    set x := (&'221 u32, &'222 u32, &'223 u32)
-    set '221 :> 'static
-    set 'static :> '221
-    set '222 :> 'a
-    set 'a :> '222
-    set '223 :> 'a
-    set 'a :> '223
+    set x := (&'static u32, &'a u32, &'a u32)
     _0 = ()
     storage_dead(x)
     storage_dead(value)
@@ -643,6 +633,70 @@ where
     set x := u32
     set 'b :> 'a
     set 'b :> 'a
+    _0 = ()
+    storage_dead(x)
+    storage_dead(value)
+    return
+}
+
+// Full name: test_crate::SameAs
+pub trait SameAs<Self, T>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: Sized)
+    vtable: test_crate::SameAs::{vtable}<T>
+}
+
+// Full name: test_crate::{impl SameAs<T> for T}
+impl<T> "impl_SameAs_for_T" SameAs<T> for T
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
+    proof ImpliedClause1: (T: Sized) = TraitClause0
+    vtable: lazy
+}
+
+// Full name: test_crate::equal_named_regions
+pub fn equal_named_regions<'a, 'b>(value: &'a u32)
+where
+    Outlives0: ('a: 'b),
+    Outlives1: ('b: 'a),
+{
+    let mut _0: (); // return
+    let value: &'1 u32; // arg #1
+    let x: &'2 u32; // local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(x)
+    x = copy value
+    fake_read(x)
+    set x := &'b u32
+    set 'a :> 'b
+    set 'b :> 'a
+    _0 = ()
+    storage_dead(x)
+    storage_dead(value)
+    return
+}
+
+// Full name: test_crate::resolved_type_outlives
+pub fn resolved_type_outlives<'a, 'b>(value: &'a u32)
+where
+    Outlives0: ('a: 'b),
+{
+    let mut _0: (); // return
+    let value: &'1 u32; // arg #1
+    let x: &'2 u32; // local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(x)
+    x = copy value
+    fake_read(x)
+    set x := &'a u32
+    set 'a :> 'b
     _0 = ()
     storage_dead(x)
     storage_dead(value)

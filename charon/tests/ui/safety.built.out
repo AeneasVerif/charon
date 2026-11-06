@@ -1119,8 +1119,6 @@ fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
     storage_dead(_9)
     storage_dead(_8)
     set _7 :< &'27 u32
-    set '27 :> '28
-    set '28 :> '27
     storage_dead(_7)
     storage_live(_10)
     storage_live(_11)

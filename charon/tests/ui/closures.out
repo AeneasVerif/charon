@@ -2051,16 +2051,14 @@ pub fn test_regions_casted<'a>(x: &'a u32) -> u32
     f = fn_def_to_fn_ptr(const test_crate::test_regions_casted::{closure}::{as_fn}<'24, '26>)
     storage_dead(_3)
     fake_read(f)
-    set f := fn<'_0_1>(&'_0_1 &'31 u32) -> u32
-    set '31 :> 'a
-    set 'a :> '31
+    set f := fn<'_0_1>(&'_0_1 &'a u32) -> u32
     storage_live(_4)
     _4 = copy f
     storage_live(_5)
     storage_live(_6)
     _6 = &x
     _5 = &(*_6)
-    _0 = (move _4)<'61>(move _5)
+    _0 = (move _4)<'60>(move _5)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_5)

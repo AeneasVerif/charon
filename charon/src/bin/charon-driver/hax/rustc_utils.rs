@@ -95,6 +95,22 @@ pub fn recover_user_type<'tcx>(
         (projected_ty, constraints)
     };
 
+    // Apply the region equality constraints to remove redundant regions.
+    let (projected_ty, constraints) = {
+        let cause = rustc_middle::traits::ObligationCause::dummy_with_span(span);
+        for constraint in &constraints.constraints {
+            if let ty::RegionConstraint::Eq(eq @ ty::RegionEqPredicate(lhs, rhs)) =
+                constraint.constraint
+                && [lhs, rhs]
+                    .into_iter()
+                    .all(|r| infcx.universe_of_region(r) == ty::UniverseIndex::ROOT)
+            {
+                infcx.register_region_eq_constraint(eq, constraint.visible_for_leak_check, &cause);
+            }
+        }
+        infcx.deeply_resolve_via_unification_table((projected_ty.ty, constraints))
+    };
+
     // Turn the constraints into clauses.
     let clauses: Vec<ty::Clause<'tcx>> = {
         if !constraints.assumptions.is_empty() {
@@ -119,9 +135,13 @@ pub fn recover_user_type<'tcx>(
                     push_clause(clause);
                 }
                 ty::RegionConstraint::Eq(ty::RegionEqPredicate(lhs, rhs)) => {
-                    // Equality is the conjunction of the two outlives relations.
-                    for (lhs, rhs) in [(lhs, rhs), (rhs, lhs)] {
-                        push_clause(ty::ClauseKind::RegionOutlives(ty::OutlivesClause(lhs, rhs)));
+                    if lhs != rhs {
+                        // Equality is the conjunction of the two outlives relations.
+                        for (lhs, rhs) in [(lhs, rhs), (rhs, lhs)] {
+                            push_clause(ty::ClauseKind::RegionOutlives(ty::OutlivesClause(
+                                lhs, rhs,
+                            )));
+                        }
                     }
                 }
             }
@@ -131,7 +151,7 @@ pub fn recover_user_type<'tcx>(
 
     // Bind all the inferred regions in a binder.
     let bound = {
-        let value = infcx.deeply_resolve_ignoring_regions((projected_ty.ty, clauses));
+        let value = (projected_ty, clauses);
         if value.has_non_region_infer() || value.has_non_region_placeholders() {
             return Err("unresolved type or const in user type ascription".into());
         }

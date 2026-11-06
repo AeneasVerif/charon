@@ -1029,17 +1029,13 @@ pub fn test_free_region<'a>(x: &'a u32) -> &'a u32
     storage_live(f)
     f = fn_def_to_fn_ptr(const ref_identity<'16>)
     fake_read(f)
-    set f := fn(&'17 u32) -> &'18 u32
-    set '17 :> 'a
-    set 'a :> '17
-    set '18 :> 'a
-    set 'a :> '18
+    set f := fn(&'a u32) -> &'a u32
     storage_live(_3)
     storage_live(_4)
     _4 = copy f
     storage_live(_5)
     _5 = &(*x)
-    _3 = generic_call_once<fn(&'57 u32) -> &'58 u32, &'60 u32, &'61 u32>[{built_in impl Sized for fn(&'65 u32) -> &'66 u32}, {built_in impl Sized for &'60 u32}, {built_in impl Sized for &'61 u32}, {impl FnOnce<(A,)> for fn(A) -> B}<&'60 u32, &'98 u32>[{built_in impl Sized for &'60 u32}, {built_in impl Sized for &'98 u32}]](move _4, move _5)
+    _3 = generic_call_once<fn(&'55 u32) -> &'56 u32, &'58 u32, &'59 u32>[{built_in impl Sized for fn(&'63 u32) -> &'64 u32}, {built_in impl Sized for &'58 u32}, {built_in impl Sized for &'59 u32}, {impl FnOnce<(A,)> for fn(A) -> B}<&'58 u32, &'96 u32>[{built_in impl Sized for &'58 u32}, {built_in impl Sized for &'96 u32}]](move _4, move _5)
     ↳⚡ storage_dead(x)
         unwind_continue
     _0 = &(*_3)
@@ -1309,11 +1305,7 @@ pub fn test_dyn_fn(x: u32) -> u32
     storage_dead(_4)
     fake_read(dyn_fn)
     set dyn_fn := &'12 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '13)
-    set '12 :> '14
-    set '14 :> '12
-    set '13 :> '15
-    set '15 :> '13
-    set '15 :> '14
+    set '13 :> '12
     storage_dead(_5)
     storage_live(_6)
     _6 = &(*dyn_fn) with_metadata(read dyn_fn.metadata)
@@ -1321,7 +1313,7 @@ pub fn test_dyn_fn(x: u32) -> u32
     storage_live(_8)
     _8 = copy x
     _7 = (move _8,)
-    _0 = (read (*_6.metadata).method_call)<'19>(move _6, move _7)
+    _0 = (read (*_6.metadata).method_call)<'17>(move _6, move _7)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_8)
@@ -1360,11 +1352,7 @@ pub fn test_dyn_fn_mut(x: u32) -> u32
     storage_dead(_4)
     fake_read(dyn_fn)
     set dyn_fn := &'12 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '13)
-    set '12 :> '14
-    set '14 :> '12
-    set '13 :> '15
-    set '15 :> '13
-    set '15 :> '14
+    set '13 :> '12
     storage_dead(_5)
     storage_live(_6)
     _6 = &mut (*dyn_fn) with_metadata(read dyn_fn.metadata)
@@ -1372,7 +1360,7 @@ pub fn test_dyn_fn_mut(x: u32) -> u32
     storage_live(_8)
     _8 = copy x
     _7 = (move _8,)
-    _0 = (read (*_6.metadata).method_call_mut)<'19>(move _6, move _7)
+    _0 = (read (*_6.metadata).method_call_mut)<'17>(move _6, move _7)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_8)

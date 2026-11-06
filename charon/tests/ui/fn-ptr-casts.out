@@ -97,9 +97,7 @@ fn from_fn_def<'a>(x: &'a u8) -> &'a u8
     _11 = fn_def_to_fn_ptr(const with_early_and_late<'28, '36>[{built_in impl Sized for &'30 u8}])
     g = fn_ptr_to_unsafe(move _11)
     fake_read(g)
-    set g := unsafe fn<'b>(&'40 u8, &'b u8) -> &'b u8
-    set '40 :> 'a
-    set 'a :> '40
+    set g := unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8
     storage_live(_4)
     storage_live(_5)
     _5 = copy g
@@ -111,14 +109,14 @@ fn from_fn_def<'a>(x: &'a u8) -> &'a u8
     _9 = copy f
     storage_live(_10)
     _10 = &(*x)
-    _8 = (move _9)<'65>(move _10)
+    _8 = (move _9)<'64>(move _10)
     ↳⚡ storage_dead(_11)
         storage_dead(x)
         unwind_continue
     _7 = &(*_8)
     storage_dead(_10)
     storage_dead(_9)
-    _4 = (move _5)<'66>(move _6, move _7)
+    _4 = (move _5)<'65>(move _6, move _7)
     ↳⚡ storage_dead(_11)
         storage_dead(x)
         unwind_continue
@@ -289,9 +287,7 @@ fn from_closure<'a>(x: &'a u8) -> &'a u8
     f = fn_ptr_to_unsafe(move _8)
     storage_dead(_3)
     fake_read(f)
-    set f := unsafe fn<'b>(&'68 u8, &'b u8) -> &'b u8
-    set '68 :> 'a
-    set 'a :> '68
+    set f := unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8
     storage_live(_4)
     storage_live(_5)
     _5 = copy f
@@ -299,7 +295,7 @@ fn from_closure<'a>(x: &'a u8) -> &'a u8
     _6 = copy x
     storage_live(_7)
     _7 = &(*x)
-    _4 = (move _5)<'93>(move _6, move _7)
+    _4 = (move _5)<'92>(move _6, move _7)
     ↳⚡ storage_dead(_8)
         storage_dead(x)
         unwind_continue

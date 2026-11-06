@@ -96,7 +96,7 @@ fn main()
     let mut _6: &'10 i32; // anonymous local
     let mut _7: fn(&'8 (dyn Trait<Item = bool> + '9)); // anonymous local
     let mut _8: &'11 i32; // anonymous local
-    let mut _9: &'22 i32; // anonymous local
+    let mut _9: &'20 i32; // anonymous local
     let mut _10: i32; // anonymous local
 
     storage_live(_8)
@@ -118,11 +118,7 @@ fn main()
     storage_dead(_2)
     fake_read(a)
     set a := &'14 (dyn Trait<Item = bool> + '15)
-    set '14 :> '16
-    set '16 :> '14
-    set '15 :> '17
-    set '17 :> '15
-    set '17 :> '16
+    set '15 :> '14
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
