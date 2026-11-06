@@ -105,7 +105,6 @@ where
     TraitClause2: ([T]: core::ops::index::Index<I>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 #[lang_item(IndexMut)]
@@ -126,7 +125,6 @@ where
     TraitClause2: ([T]: core::ops::index::IndexMut<I>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::ImpliedClause1::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 pub fn core::array::{[T; N]}::as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
@@ -337,7 +335,6 @@ where
     TraitClause2: (I: core::slice::index::SliceIndex<[T]>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl core::ops::index::Index<I> for [T]}
@@ -362,7 +359,6 @@ where
     TraitClause2: (I: core::slice::index::SliceIndex<[T]>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl core::ops::index::IndexMut<I> for [T]}

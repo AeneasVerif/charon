@@ -35,7 +35,6 @@ where
     TraitClause2: ([T]: Index<I>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 // Full name: core::option::Option
@@ -105,7 +104,6 @@ where
     TraitClause2: (I: SliceIndex<[T]>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::Output: '_0),
-    Outlives2: (I: '_0),
 {
     let mut _0: &'1 TraitClause2::Output; // return
     let self: &'3 [T]; // arg #1

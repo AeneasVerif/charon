@@ -140,7 +140,7 @@ pub trait WithAssoc<Self>
 }
 
 // Full name: test_crate::associated_type
-pub fn associated_type<T>(_1: fn<'a where TraitClause1::Assoc: 'a, T: 'a>(&'a TraitClause1::Assoc))
+pub fn associated_type<T>(_1: fn<'a where TraitClause1::Assoc: 'a>(&'a TraitClause1::Assoc))
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithAssoc),

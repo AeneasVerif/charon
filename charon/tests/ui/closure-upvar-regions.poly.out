@@ -417,7 +417,6 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithItem),
     Outlives0: (TraitClause1::Item: '_1),
-    Outlives1: (T: '_1),
 {
   _0: &'_1 TraitClause1::Item,
 }
@@ -428,7 +427,6 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithItem),
     Outlives0: (TraitClause1::Item: 'a),
-    Outlives1: (T: 'a),
 {
     let mut _0: test_crate::generic_assoc_closure::{closure}<'8, '9, T>[TraitClause0, TraitClause1]; // return
     let x: &'10 TraitClause1::Item; // arg #1
@@ -445,12 +443,10 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithItem),
     Outlives0: (TraitClause1::Item: '_1),
-    Outlives1: (T: '_1),
-    Outlives2: ('_0: '_2),
-    Outlives3: ('_1: '_2),
-    Outlives4: (T: '_2),
-    Outlives5: (TraitClause1::Item: '_0),
-    Outlives6: (T: '_0),
+    Outlives1: ('_0: '_2),
+    Outlives2: ('_1: '_2),
+    Outlives3: (T: '_2),
+    Outlives4: (TraitClause1::Item: '_0),
 {
     let mut _0: &'1 TraitClause1::Item; // return
     let mut _1: &'10 test_crate::generic_assoc_closure::{closure}<'_0, '_1, T>[TraitClause0, TraitClause1]; // arg #1
@@ -466,7 +462,6 @@ where
 struct test_crate::captured_assoc_closure::{closure}<'_0, '_1>
 where
     Outlives0: (u8: '_1),
-    Outlives1: ((): '_1),
 {
   _0: test_crate::generic_assoc_closure::{closure}<'_1, '_1, ()>[{built_in impl Sized for ()}, impl_WithItem_for_unit],
 }
@@ -475,7 +470,6 @@ where
 pub fn captured_assoc_closure<'a>(x: &'a u8) -> test_crate::captured_assoc_closure::{closure}<'a, 'a>
 where
     Outlives0: (u8: 'a),
-    Outlives1: ((): 'a),
 {
     let mut _0: test_crate::captured_assoc_closure::{closure}<'15, '16>; // return
     let x: &'17 u8; // arg #1
@@ -501,9 +495,8 @@ where
 extern "rust-call" fn {impl Fn<()> for test_crate::captured_assoc_closure::{closure}<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::captured_assoc_closure::{closure}<'_0, '_1>, tupled_args: ()) -> &'_0 u8
 where
     Outlives0: (u8: '_1),
-    Outlives1: ((): '_1),
-    Outlives2: ('_0: '_2),
-    Outlives3: ('_1: '_2),
+    Outlives1: ('_0: '_2),
+    Outlives2: ('_1: '_2),
 {
     let mut _0: &'1 u8; // return
     let mut _1: &'17 test_crate::captured_assoc_closure::{closure}<'_0, '_1>; // arg #1

@@ -610,7 +610,6 @@ where
     TraitClause5: (A: Allocator),
     Outlives0: (Args: '_0),
     Outlives1: (TraitClause4::Output: '_0),
-    Outlives2: (F: '_0),
 {
     let mut ret: (); // return
     let mut dyn_self: &'_0 mut (dyn FnOnce<Args, Output = TraitClause4::Output> + '0); // arg #1

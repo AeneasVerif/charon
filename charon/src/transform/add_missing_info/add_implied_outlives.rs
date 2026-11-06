@@ -120,6 +120,18 @@ impl VisitAstMut for OutlivesGatherer<'_> {
         match ty.kind() {
             TyKind::TypeVar(_) | TyKind::TraitType(..) => {
                 self.add_outliving_region(&Region::Lub(ty.clone()));
+                // `T::Assoc: 'a` does not imply `T: 'a`. We temporarily remove `shorter_region`
+                // from all binders while we visit the type.
+                let shorter_regions = self
+                    .binders
+                    .iter_mut()
+                    .map(|binder| binder.shorter_region.take())
+                    .collect_vec();
+                let result = self.visit_inner(ty);
+                for (binder, shorter) in self.binders.iter_mut().zip(shorter_regions) {
+                    binder.shorter_region = shorter;
+                }
+                return result;
             }
             TyKind::Adt(type_ref) => {
                 if let Some(decl) = self.type_decls.get(type_ref.id) {

@@ -64,7 +64,6 @@ where
     TraitClause2: ([T]: IndexMut<I>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::ImpliedClause1::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 struct (_,)<A> {
@@ -341,7 +340,6 @@ where
     TraitClause2: (I: SliceIndex<[T]>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl Index<I> for [T]}
@@ -367,7 +365,6 @@ where
     TraitClause2: (I: SliceIndex<[T]>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl IndexMut<I> for [T]}
