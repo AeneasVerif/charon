@@ -1611,6 +1611,9 @@ and type_decl = {
       (** The layout of the type for each target. Information may be partial
           because of generics or dynamically-sized types. If we cannot compute a
           layout, the target has no entry. *)
+  monomorphic_layouts : (generic_args * target_layouts) list;
+      (** The layouts of the monomorphic instances of this type that were
+          reached while translating. *)
   ptr_metadata : ptr_metadata;
       (** The metadata associated with a pointer to the type. *)
   marker_traits : implements_marker_traits option;

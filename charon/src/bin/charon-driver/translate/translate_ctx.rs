@@ -147,6 +147,8 @@ pub struct TranslateCtx<'tcx> {
     pub cached_item_metas: HashMap<TransItemSource<'tcx>, ItemMeta>,
     /// Compute which lifetimes are used in a `&'a mut T`. This is a global fixpoint analysis.
     pub lt_mutability_computer: LifetimeMutabilityComputer,
+    /// The layouts of the monomorphic instances of the type declarations, for `--monomorphic-layouts`.
+    pub monomorphic_layouts: SeqHashMap<TypeDeclRef, Layout>,
 }
 
 /// Tracks whether a method is used (i.e. called or (non-opaquely) implemented).
@@ -190,6 +192,9 @@ pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     pub binding_levels: BindingStack<BindingLevel<'tcx>>,
     /// When `Some`, translate any erased lifetime to a fresh `Region::Body` lifetime.
     pub lifetime_freshener: Option<IndexMap<RegionId, ()>>,
+    /// Whether we're translating the field types of a type instance for `--monomorphic-layouts`,
+    /// which records their layouts itself.
+    pub translating_instance_fields: bool,
 }
 
 /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
@@ -241,6 +246,17 @@ impl<'tcx> TranslateCtx<'tcx> {
     /// Used for computing names, for associated items, and for various checks.
     pub fn poly_hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef<'tcx>>, Error> {
         self.hax_def_for_item(&RustcItem::Poly(def_id.clone()))
+    }
+
+    /// Return the monomorphic definition for this item. Use with care, prefer `hax_def` whenever
+    /// possible.
+    ///
+    /// Used for computing monomorphic layouts in polymorphic mode.
+    pub fn mono_hax_def(
+        &mut self,
+        item: &hax::ItemRef<'tcx>,
+    ) -> Result<Arc<hax::FullDef<'tcx>>, Error> {
+        self.hax_def_for_item(&RustcItem::Mono(item.clone()))
     }
 
     /// Return the definition for this item. This uses the polymorphic or monomorphic definition
@@ -305,6 +321,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             error_on_trait_proof_error: true,
             binding_levels: Default::default(),
             lifetime_freshener: None,
+            translating_instance_fields: false,
         }
     }
 

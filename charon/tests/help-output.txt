@@ -48,6 +48,9 @@ Options:
           - all:          Monomorphize any item instantiated with `&mut`
           - except-types: Monomorphize all non-typedecl items instantiated with `&mut`
 
+      --monomorphic-layouts
+          Record the layouts of encountered monomorphic type declarations in `TypeDecl::monomorphic_layouts`. Useful to retrieve real layouts in polymorphic contexts
+
       --start-from <START_FROM>
           A list of item paths to use as starting points for the translation. We will translate these items and any items they refer to, according to the opacity rules. When absent, we start from the path `crate` (which translates the whole crate)
 

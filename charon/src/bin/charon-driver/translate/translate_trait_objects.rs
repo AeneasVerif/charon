@@ -594,6 +594,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             },
             kind,
             layout,
+            monomorphic_layouts: Default::default(),
             // A vtable struct is always sized
             ptr_metadata: PtrMetadata::None,
             marker_traits: Some(Box::new(ImplementsMarkerTraits {

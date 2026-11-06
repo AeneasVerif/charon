@@ -5,6 +5,7 @@ use serde_state::{DeserializeState, SerializeState};
 
 use crate::ast::*;
 use crate::ids::IndexVec;
+use crate::utils::serialize_map_to_array::SeqHashMapToArray;
 
 /// A type declaration.
 ///
@@ -34,6 +35,9 @@ pub struct TypeDecl {
     /// The layout of the type for each target. Information may be partial because of generics or
     /// dynamically-sized types. If we cannot compute a layout, the target has no entry.
     pub layout: TargetLayouts,
+    /// The layouts of the monomorphic instances of this type that were reached while translating.
+    #[serde(with = "SeqHashMapToArray::<GenericArgs, TargetLayouts>")]
+    pub monomorphic_layouts: SeqHashMap<GenericArgs, TargetLayouts>,
     /// The metadata associated with a pointer to the type.
     pub ptr_metadata: PtrMetadata,
     /// Which built-in marker traits are implemented by this type. This is only known for
