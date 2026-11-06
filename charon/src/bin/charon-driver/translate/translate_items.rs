@@ -456,7 +456,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             Err(err) => TypeDeclKind::Error(err.msg),
         };
         let layout = TargetLayouts(
-            self.translate_layout(span, def, &kind)
+            self.translate_layout(span, def.this(), Some(&kind))
                 .into_iter()
                 .map(|l| (self.get_target_triple(), l))
                 .collect(),
