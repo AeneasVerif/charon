@@ -170,6 +170,32 @@ fn workspace_caching(dir: &Path) -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Check that a relative `--dest-file` is resolved against the directory charon was run from,
+/// not the directory of the `--manifest-path` crate.
+fn dest_file_with_manifest_path(crate_dir: &Path) -> anyhow::Result<()> {
+    let tmp = tempfile::tempdir()?;
+    let run_dir = tmp.path().join("run");
+    std::fs::create_dir(&run_dir)?;
+    let output = Command::cargo_bin("charon")?
+        .current_dir(&run_dir)
+        // A dedicated target dir, so that we don't race the other tests.
+        .env("CARGO_TARGET_DIR", tmp.path().join("target"))
+        .args(["cargo", "--dest-file", "out.llbc", "--", "--manifest-path"])
+        .arg(crate_dir.join("Cargo.toml"))
+        .output()?;
+    let stderr = String::from_utf8(output.stderr)?;
+    ensure!(output.status.success(), "charon failed:\n{stderr}");
+    ensure!(
+        run_dir.join("out.llbc").exists(),
+        "`out.llbc` was not written to the directory charon ran in:\n{stderr}"
+    );
+    ensure!(
+        !crate_dir.join("out.llbc").exists(),
+        "`out.llbc` was written next to the manifest instead"
+    );
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let root: PathBuf = PathBuf::from(TESTS_DIR).canonicalize()?;
     let mktest = |name: &str,
@@ -304,6 +330,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             &[],
             Success,
         ),
+        {
+            let dir = root.join("unsafe_");
+            Trial::test("dest-file-with-manifest-path", move || {
+                dest_file_with_manifest_path(&dir).map_err(|err| err.into())
+            })
+        },
         issue_1298,
         mktest(
             "test-attributes",

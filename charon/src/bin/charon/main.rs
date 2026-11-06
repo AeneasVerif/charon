@@ -213,10 +213,19 @@ fn translate_multi_target(
 }
 
 fn translate_with_cargo(
-    options: CliOpts,
+    mut options: CliOpts,
     mut cargo_args: Vec<String>,
 ) -> anyhow::Result<ExitStatus> {
     ensure_rustup();
+    // Cargo runs the driver from the workspace root, which `--manifest-path` can move away from
+    // where charon was run. Resolve the output paths now so they stay relative to charon's
+    // working directory, as documented.
+    options.dest_dir = Some(std::path::absolute(
+        options.dest_dir.as_deref().unwrap_or(".".as_ref()),
+    )?);
+    if let Some(dest_file) = &mut options.dest_file {
+        *dest_file = std::path::absolute(&*dest_file)?;
+    }
     let target = match arg_values(&cargo_args, "--target").collect_vec().as_slice() {
         [target] => target.to_string(),
         // We resolve a single sysroot for all the crates we build.
