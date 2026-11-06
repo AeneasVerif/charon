@@ -318,7 +318,8 @@ and borrowck_statement_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* place = place_of_postcard ctx st in
          let* ty = ty_of_postcard ctx st in
          let* variance = variance_of_postcard ctx st in
-         Ok (SetType (place, ty, variance))
+         let* temporary = bool_of_postcard ctx st in
+         Ok (SetType (place, ty, variance, temporary))
      | 2 ->
          let* _0 = ty_of_postcard ctx st in
          let* _1 = region_of_postcard ctx st in

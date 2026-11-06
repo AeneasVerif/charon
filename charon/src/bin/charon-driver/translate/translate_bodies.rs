@@ -1728,6 +1728,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         place,
                         ty,
                         variance,
+                        temporary: false,
                     }),
                 ));
                 self.statements.extend(

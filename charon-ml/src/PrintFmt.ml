@@ -1780,7 +1780,7 @@ let pp_borrowck_statement (env : fmt_env) (fmt : Format.formatter)
     (statement : borrowck_statement) : unit =
   match statement with
   | FakeRead place -> Format.fprintf fmt "fake_read(%a)" (pp_place env) place
-  | SetType (place, ty, variance) ->
+  | SetType (place, ty, variance, temporary) ->
       let relation =
         match variance with
         | Covariant -> "<="
@@ -1788,7 +1788,8 @@ let pp_borrowck_statement (env : fmt_env) (fmt : Format.formatter)
         | Invariant -> "=="
         | Bivariant | VaUnknown -> assert false
       in
-      Format.fprintf fmt "set_type(typeof(%a) %s %s)" (pp_place env) place
+      let name = if temporary then "check_type" else "set_type" in
+      Format.fprintf fmt "%s(typeof(%a) %s %s)" name (pp_place env) place
         relation (ty_to_string env ty)
   | SetOutlives (ty, region) ->
       Format.fprintf fmt "set_outlives(%s, %s)" (ty_to_string env ty)

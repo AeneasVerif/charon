@@ -225,6 +225,9 @@ pub enum BorrowckStatement {
         ty: Ty,
         #[serde_state(stateless)]
         variance: Variance,
+        /// Whether this type relation holds for the whole rest of the function, or just at this
+        /// point.
+        temporary: bool,
     },
     /// Require a type to outlive a region. For example, the `'a` bound in
     /// `let x: impl Copy + 'a = value` produces `SetOutlives(typeof(x), 'a)`.

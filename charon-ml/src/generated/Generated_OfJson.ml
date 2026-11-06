@@ -362,12 +362,19 @@ and borrowck_statement_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc
         [
           ( "SetType",
-            `Assoc [ ("place", place); ("ty", ty); ("variance", variance) ] );
+            `Assoc
+              [
+                ("place", place);
+                ("ty", ty);
+                ("variance", variance);
+                ("temporary", temporary);
+              ] );
         ] ->
         let* place = place_of_json ctx place in
         let* ty = ty_of_json ctx ty in
         let* variance = variance_of_json ctx variance in
-        Ok (SetType (place, ty, variance))
+        let* temporary = bool_of_json ctx temporary in
+        Ok (SetType (place, ty, variance, temporary))
     | `Assoc [ ("SetOutlives", `List [ _0; _1 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
         let* _1 = region_of_json ctx _1 in

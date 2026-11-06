@@ -156,14 +156,16 @@ and assertion = {
 (** Statements that only affect borrow-checking. They are no-ops at runtime. *)
 and borrowck_statement =
   | FakeRead of place  (** Acts like a read of the place. *)
-  | SetType of place * ty * variance
+  | SetType of place * ty * variance * bool
       (** Relate the type of a place to the provided type. For example,
           [let x: Self = value] produces [SetType] for [x] and [Self].
 
           Fields:
           - [place]
           - [ty]
-          - [variance] *)
+          - [variance]
+          - [temporary]: Whether this type relation holds for the whole rest of
+            the function, or just at this point. *)
   | SetOutlives of ty * region
       (** Require a type to outlive a region. For example, the ['a] bound in
           [let x: impl Copy + 'a = value] produces [SetOutlives(typeof(x), 'a)].

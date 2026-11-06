@@ -2444,6 +2444,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for BorrowckStatement {
                 place,
                 ty,
                 variance,
+                temporary,
             } => {
                 let relation = match variance {
                     Variance::Covariant => "<=",
@@ -2452,9 +2453,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for BorrowckStatement {
                     Variance::Bivariant => panic!("bivariant SetType statement"),
                     Variance::Unknown => panic!("SetType statement with unknown variance"),
                 };
+                let name = if *temporary { "check_type" } else { "set_type" };
                 write!(
                     f,
-                    "set_type(typeof({}) {relation} {})",
+                    "{name}(typeof({}) {relation} {})",
                     place.with_ctx(ctx),
                     ty.with_ctx(ctx)
                 )
