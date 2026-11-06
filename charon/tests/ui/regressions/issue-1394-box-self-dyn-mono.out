@@ -139,7 +139,7 @@ fn main()
     storage_dead(_3)
     storage_dead(_2)
     fake_read(b)
-    set_type(typeof(b) == Box::<(dyn Trait), Global>)
+    set b := Box::<(dyn Trait), Global>
     storage_live(_4)
     storage_live(_5)
     _5 = move b

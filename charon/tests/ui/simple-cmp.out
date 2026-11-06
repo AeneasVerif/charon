@@ -30,11 +30,11 @@ fn main()
     storage_live(x)
     x = const 11i32
     fake_read(x)
-    set_type(typeof(x) == i32)
+    set x := i32
     storage_live(y)
     y = const 22i32
     fake_read(y)
-    set_type(typeof(y) == i32)
+    set y := i32
     storage_live(_3)
     storage_live(_4)
     _4 = &x

@@ -327,7 +327,7 @@ pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u
                 unwind_continue
         },
     }
-    set_type(typeof(_3) <= &'8 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}])
+    set _3 :< &'8 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]
     storage_live(x)
     x = &((*_3) as variant Either::Left)._0._0
     storage_dead(_3)
@@ -385,7 +385,7 @@ where
     storage_live(value_2)
     value_2 = move value_1
     fake_read(value_2)
-    set_type(typeof(value_2) == Self)
+    set value_2 := Self
     _0 = move value_2
     conditional_drop[{built_in impl Destruct for Self}::drop_glue<'0>] value_2
     ↳⚡ conditional_drop[{built_in impl Destruct for Self}::drop_glue<'2>] value_1
@@ -412,7 +412,7 @@ pub fn impl_trait_binding(value_1: u32) -> u32
     storage_live(value_2)
     value_2 = copy value_1
     fake_read(value_2)
-    set_type(typeof(value_2) == u32)
+    set value_2 := u32
     predicate_holds({built_in impl Sized for u32})
     predicate_holds(impl_Copy_for_u32)
     _0 = copy value_2
@@ -433,7 +433,7 @@ pub fn nested_impl_trait(value_1: Box<u32>[{built_in impl MetaSized for u32}, {b
     storage_live(value_2)
     value_2 = move value_1
     fake_read(value_2)
-    set_type(typeof(value_2) == Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}])
+    set value_2 := Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}]
     predicate_holds({built_in impl Sized for u32})
     predicate_holds(impl_Copy_for_u32)
     _0 = ()
@@ -463,7 +463,7 @@ pub fn multiple_impl_traits(value_1: (u32, String))
     storage_live(value_2)
     value_2 = move value_1
     fake_read(value_2)
-    set_type(typeof(value_2) == (u32, String))
+    set value_2 := (u32, String)
     predicate_holds({built_in impl Sized for u32})
     predicate_holds(impl_Copy_for_u32)
     predicate_holds({built_in impl Sized for String})
@@ -497,10 +497,10 @@ where
     storage_live(value_2)
     value_2 = copy value_1
     fake_read(value_2)
-    set_type(typeof(value_2) == &'16 u32)
+    set value_2 := &'16 u32
     predicate_holds({built_in impl Sized for &'7 u32})
     predicate_holds({impl Copy for &'_0 T}<'14, u32>)
-    set_outlives(&'15 u32, 'b)
+    set &'15 u32 :> 'b
     _0 = ()
     storage_dead(value_2)
     storage_dead(value_1)
@@ -524,7 +524,7 @@ pub fn set_type_self<'_0>(self: Foo<'_0>)
     storage_live(x)
     x = move self
     fake_read(x)
-    set_type(typeof(x) == Foo<'3>)
+    set x := Foo<'3>
     _0 = ()
     storage_dead(x)
     storage_dead(self)

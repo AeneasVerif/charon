@@ -85,7 +85,7 @@ fn main()
     _0 = ()
     storage_live(_1)
     _1 = ()
-    set_type(typeof(_1) <= ())
+    set _1 :< ()
     storage_dead(_1)
     _0 = ()
     return

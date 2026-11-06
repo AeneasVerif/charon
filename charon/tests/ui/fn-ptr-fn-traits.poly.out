@@ -937,7 +937,7 @@ pub fn test<'a>(x: &'a u32) -> &'a u32
     storage_live(f)
     f = fn_def_to_fn_ptr(const identity<'9>)
     fake_read(f)
-    set_type(typeof(f) == fn<'b>(Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32])
+    set f := fn<'b>(Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]
     storage_live(_3)
     storage_live(_4)
     _4 = copy f
@@ -988,7 +988,7 @@ pub fn test_const(x: ConstAdt<3usize>) -> ConstAdt<3usize>
     storage_live(f)
     f = fn_def_to_fn_ptr(const const_identity<3usize>)
     fake_read(f)
-    set_type(typeof(f) == fn(ConstAdt<3usize>) -> ConstAdt<3usize>)
+    set f := fn(ConstAdt<3usize>) -> ConstAdt<3usize>
     storage_live(_3)
     _3 = copy f
     storage_live(_4)
@@ -1029,7 +1029,7 @@ pub fn test_free_region<'a>(x: &'a u32) -> &'a u32
     storage_live(f)
     f = fn_def_to_fn_ptr(const ref_identity<'16>)
     fake_read(f)
-    set_type(typeof(f) == fn(&'17 u32) -> &'18 u32)
+    set f := fn(&'17 u32) -> &'18 u32
     storage_live(_3)
     storage_live(_4)
     _4 = copy f
@@ -1085,7 +1085,7 @@ pub fn test_freshen_whole_adt<'a>(x: Plain<u32>[{built_in impl Sized for u32}], 
     storage_live(f)
     f = fn_def_to_fn_ptr(const ignore_plain<'7>)
     fake_read(f)
-    set_type(typeof(f) == fn<'b>(Plain<u32>[{built_in impl Sized for u32}], &'b u32) -> &'b u32)
+    set f := fn<'b>(Plain<u32>[{built_in impl Sized for u32}], &'b u32) -> &'b u32
     storage_live(_4)
     storage_live(_5)
     _5 = copy f
@@ -1133,7 +1133,7 @@ pub fn test_const_under_binder<'a>(x: [&'a u8; 3usize]) -> [&'a u8; 3usize]
     storage_live(f)
     f = fn_def_to_fn_ptr(const array_identity<'42>)
     fake_read(f)
-    set_type(typeof(f) == fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize])
+    set f := fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize]
     storage_live(_3)
     _3 = copy f
     storage_live(_4)
@@ -1238,7 +1238,7 @@ pub fn test_fn_ptr_regions<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'b u8, &'a u8)
     storage_live(f)
     f = fn_def_to_fn_ptr(const swap<'34, '35>)
     fake_read(f)
-    set_type(typeof(f) == fn<'c, 'd>(&'c u8, &'d u8) -> (&'d u8, &'c u8))
+    set f := fn<'c, 'd>(&'c u8, &'d u8) -> (&'d u8, &'c u8)
     storage_live(_4)
     _4 = copy f
     storage_live(_5)
@@ -1295,7 +1295,7 @@ pub fn test_dyn_fn(x: u32) -> u32
     storage_live(fn_ptr)
     fn_ptr = fn_def_to_fn_ptr(const increment)
     fake_read(fn_ptr)
-    set_type(typeof(fn_ptr) == fn(u32) -> u32)
+    set fn_ptr := fn(u32) -> u32
     storage_live(dyn_fn)
     storage_live(_4)
     storage_live(_5)
@@ -1304,7 +1304,7 @@ pub fn test_dyn_fn(x: u32) -> u32
     dyn_fn = unsize_cast<&'10 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '11), &{impl Fn<(A,)> for fn(A) -> B}::{vtable}<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]>(move _4)
     storage_dead(_4)
     fake_read(dyn_fn)
-    set_type(typeof(dyn_fn) == &'12 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '13))
+    set dyn_fn := &'12 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '13)
     storage_dead(_5)
     storage_live(_6)
     _6 = &(*dyn_fn) with_metadata(read dyn_fn.metadata)
@@ -1341,7 +1341,7 @@ pub fn test_dyn_fn_mut(x: u32) -> u32
     storage_live(fn_ptr)
     fn_ptr = fn_def_to_fn_ptr(const increment)
     fake_read(fn_ptr)
-    set_type(typeof(fn_ptr) == fn(u32) -> u32)
+    set fn_ptr := fn(u32) -> u32
     storage_live(dyn_fn)
     storage_live(_4)
     storage_live(_5)
@@ -1350,7 +1350,7 @@ pub fn test_dyn_fn_mut(x: u32) -> u32
     dyn_fn = unsize_cast<&'10 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '11), &{impl FnMut<(A,)> for fn(A) -> B}::{vtable}<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]>(move _4)
     storage_dead(_4)
     fake_read(dyn_fn)
-    set_type(typeof(dyn_fn) == &'12 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '13))
+    set dyn_fn := &'12 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '13)
     storage_dead(_5)
     storage_live(_6)
     _6 = &mut (*dyn_fn) with_metadata(read dyn_fn.metadata)

@@ -1783,16 +1783,16 @@ let pp_borrowck_statement (env : fmt_env) (fmt : Format.formatter)
   | SetType (place, ty, variance, temporary) ->
       let relation =
         match variance with
-        | Covariant -> "<="
-        | Contravariant -> ">="
-        | Invariant -> "=="
+        | Covariant -> ":<"
+        | Invariant -> ":="
+        | Contravariant -> ":>"
         | Bivariant | VaUnknown -> assert false
       in
-      let name = if temporary then "check_type" else "set_type" in
-      Format.fprintf fmt "%s(typeof(%a) %s %s)" name (pp_place env) place
-        relation (ty_to_string env ty)
+      let name = if temporary then "set_here" else "set" in
+      Format.fprintf fmt "%s %a %s %s" name (pp_place env) place relation
+        (ty_to_string env ty)
   | SetOutlives (ty, region) ->
-      Format.fprintf fmt "set_outlives(%s, %s)" (ty_to_string env ty)
+      Format.fprintf fmt "set %s :> %s" (ty_to_string env ty)
         (region_to_string env region)
   | PredicateHolds predicate ->
       Format.fprintf fmt "predicate_holds(%a)"

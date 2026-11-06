@@ -242,7 +242,7 @@ fn main()
     _2 = from_raw_parts<[u32], [u32; 2usize]>[{built_in impl Sized for [u32; 2usize]}, {impl#7}<[u32; 2usize]>[{built_in impl Pointee for [u32; 2usize] where Metadata  = ()}]](move _3, const 2usize)
     ↳⚡ unwind_continue
     storage_dead(_3)
-    set_type(typeof(_2) <= *const [u32])
+    set _2 :< *const [u32]
     storage_dead(_2)
     _0 = ()
     storage_dead(a)

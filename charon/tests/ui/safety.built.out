@@ -1102,7 +1102,7 @@ fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
         storage_dead(x)
         unwind_continue
     storage_dead(_6)
-    set_type(typeof(_5) <= i32)
+    set _5 :< i32
     storage_dead(_5)
     storage_live(_7)
     storage_live(_8)
@@ -1118,7 +1118,7 @@ fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
         unwind_continue
     storage_dead(_9)
     storage_dead(_8)
-    set_type(typeof(_7) <= &'27 u32)
+    set _7 :< &'27 u32
     storage_dead(_7)
     storage_live(_10)
     storage_live(_11)

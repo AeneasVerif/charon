@@ -124,7 +124,7 @@ fn foo()
     slice = unsize_cast<&'16 [bool], 1usize>(move _4)
     storage_dead(_4)
     fake_read(slice)
-    set_type(typeof(slice) == &'17 [bool])
+    set slice := &'17 [bool]
     storage_dead(_5)
     storage_live(_6)
     storage_live(_7)

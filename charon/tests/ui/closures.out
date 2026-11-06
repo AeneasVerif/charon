@@ -662,7 +662,7 @@ pub fn test_closure_u32(x: u32) -> u32
     f = fn_def_to_fn_ptr(const test_crate::test_closure_u32::{closure}::{as_fn})
     storage_dead(_3)
     fake_read(f)
-    set_type(typeof(f) == fn(u32) -> u32)
+    set f := fn(u32) -> u32
     storage_live(_4)
     _4 = copy f
     storage_live(_5)
@@ -801,7 +801,7 @@ pub fn test_closure_u32s(x: u32) -> u32
     f = fn_def_to_fn_ptr(const test_crate::test_closure_u32s::{closure}::{as_fn})
     storage_dead(_3)
     fake_read(f)
-    set_type(typeof(f) == fn(u32, u32) -> u32)
+    set f := fn(u32, u32) -> u32
     storage_live(_4)
     _4 = copy f
     storage_live(_5)
@@ -925,7 +925,7 @@ pub fn test_closure_ref_u32<'a>(x: &'a u32) -> &'a u32
     f = fn_def_to_fn_ptr(const test_crate::test_closure_ref_u32::{closure}::{as_fn}<'6>)
     storage_dead(_3)
     fake_read(f)
-    set_type(typeof(f) == fn<'_0_1>(&'_0_1 u32) -> &'_0_1 u32)
+    set f := fn<'_0_1>(&'_0_1 u32) -> &'_0_1 u32
     storage_live(_4)
     storage_live(_5)
     _5 = copy f
@@ -1068,7 +1068,7 @@ where
     f = fn_def_to_fn_ptr(const test_crate::test_closure_ref_param::{closure}::{as_fn}<'6, T>[TraitClause0])
     storage_dead(_3)
     fake_read(f)
-    set_type(typeof(f) == fn<'_0_1>(&'_0_1 T) -> &'_0_1 T)
+    set f := fn<'_0_1>(&'_0_1 T) -> &'_0_1 T
     storage_live(_4)
     storage_live(_5)
     _5 = copy f
@@ -1228,7 +1228,7 @@ where
     f = fn_def_to_fn_ptr(const test_crate::test_closure_ref_early_bound::{closure}::{as_fn}<'16, '19, '21, T>[TraitClause0, TraitClause1])
     storage_dead(_3)
     fake_read(f)
-    set_type(typeof(f) == fn<'_0_1>(&'_0_1 T) -> &'_0_1 T)
+    set f := fn<'_0_1>(&'_0_1 T) -> &'_0_1 T
     storage_live(_4)
     storage_live(_5)
     _5 = copy f
@@ -1358,7 +1358,7 @@ pub fn test_map_option2(x: Option<u32>[{built_in impl Sized for u32}]) -> Option
     f = fn_def_to_fn_ptr(const test_crate::test_map_option2::{closure}::{as_fn})
     storage_dead(_3)
     fake_read(f)
-    set_type(typeof(f) == fn(u32) -> u32)
+    set f := fn(u32) -> u32
     storage_live(_4)
     _4 = copy x
     storage_live(_5)
@@ -1681,7 +1681,7 @@ pub fn test_id_clone(x: u32) -> u32
     storage_live(f)
     f = fn_def_to_fn_ptr(const id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32])
     fake_read(f)
-    set_type(typeof(f) == fn(u32) -> u32)
+    set f := fn(u32) -> u32
     storage_live(_3)
     _3 = copy f
     storage_live(_4)
@@ -1712,7 +1712,7 @@ where
     storage_live(f)
     f = fn_def_to_fn_ptr(const id_clone<T>[TraitClause0, TraitClause1])
     fake_read(f)
-    set_type(typeof(f) == fn(T) -> T)
+    set f := fn(T) -> T
     storage_live(_3)
     _3 = copy f
     storage_live(_4)
@@ -2051,7 +2051,7 @@ pub fn test_regions_casted<'a>(x: &'a u32) -> u32
     f = fn_def_to_fn_ptr(const test_crate::test_regions_casted::{closure}::{as_fn}<'24, '26>)
     storage_dead(_3)
     fake_read(f)
-    set_type(typeof(f) == fn<'_0_1>(&'_0_1 &'31 u32) -> u32)
+    set f := fn<'_0_1>(&'_0_1 &'31 u32) -> u32
     storage_live(_4)
     _4 = copy f
     storage_live(_5)

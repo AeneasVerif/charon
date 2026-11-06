@@ -94,7 +94,7 @@ fn main()
     ↳⚡ undefined_behavior
     storage_dead(_2)
     fake_read(slice)
-    set_type(typeof(slice) == &'27 [i32])
+    set slice := &'27 [i32]
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)

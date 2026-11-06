@@ -264,7 +264,7 @@ fn main()
     ptr = null<()>[impl_Thin_for_T<()>[{built_in impl Pointee for () where Metadata  = ()}]]()
     ↳⚡ unwind_continue
     fake_read(ptr)
-    set_type(typeof(ptr) == *const ())
+    set ptr := *const ()
     _0 = ()
     storage_dead(ptr)
     return

@@ -693,7 +693,7 @@ fn main()
         storage_live(a);
         a = [const 1u32, const 2u32, const 3u32, const 4u32, const 5u32];
         fake_read(a);
-        set_type(typeof(a) == [u32; 5usize]);
+        set a := [u32; 5usize];
         storage_live(b);
         storage_live(_3);
         storage_live(_4);
@@ -702,7 +702,7 @@ fn main()
         b = unsize_cast<&'13 [u32], 5usize>(move _3);
         storage_dead(_3);
         fake_read(b);
-        set_type(typeof(b) == &'14 [u32]);
+        set b := &'14 [u32];
         storage_dead(_4);
         storage_live(res);
         storage_live(_6);

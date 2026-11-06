@@ -15,7 +15,7 @@ pub fn shift_u32(a: u32) -> u32
     storage_live(i)
     i = const 16usize
     fake_read(i)
-    set_type(typeof(i) == usize)
+    set i := usize
     storage_live(t)
     storage_live(_4)
     _4 = copy a
@@ -51,7 +51,7 @@ pub fn shift_i32(a: i32) -> i32
     storage_live(i)
     i = const 16isize
     fake_read(i)
-    set_type(typeof(i) == isize)
+    set i := isize
     storage_live(t)
     storage_live(_4)
     _4 = copy a

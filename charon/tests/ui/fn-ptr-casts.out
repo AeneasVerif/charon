@@ -91,13 +91,13 @@ fn from_fn_def<'a>(x: &'a u8) -> &'a u8
     storage_live(f)
     f = fn_def_to_fn_ptr(const identity<'14>)
     fake_read(f)
-    set_type(typeof(f) == fn<'b>(&'b u8) -> &'b u8)
+    set f := fn<'b>(&'b u8) -> &'b u8
     storage_live(g)
     storage_live(_11)
     _11 = fn_def_to_fn_ptr(const with_early_and_late<'28, '36>[{built_in impl Sized for &'30 u8}])
     g = fn_ptr_to_unsafe(move _11)
     fake_read(g)
-    set_type(typeof(g) == unsafe fn<'b>(&'40 u8, &'b u8) -> &'b u8)
+    set g := unsafe fn<'b>(&'40 u8, &'b u8) -> &'b u8
     storage_live(_4)
     storage_live(_5)
     _5 = copy g
@@ -147,7 +147,7 @@ fn from_inline_const<'a>(x: &'a u8) -> &'a u8
     storage_live(f)
     f = fn_def_to_fn_ptr(const identity<'6>)
     fake_read(f)
-    set_type(typeof(f) == fn<'b>(&'b u8) -> &'b u8)
+    set f := fn<'b>(&'b u8) -> &'b u8
     storage_live(_3)
     storage_live(_4)
     _4 = copy f
@@ -287,7 +287,7 @@ fn from_closure<'a>(x: &'a u8) -> &'a u8
     f = fn_ptr_to_unsafe(move _8)
     storage_dead(_3)
     fake_read(f)
-    set_type(typeof(f) == unsafe fn<'b>(&'68 u8, &'b u8) -> &'b u8)
+    set f := unsafe fn<'b>(&'68 u8, &'b u8) -> &'b u8
     storage_live(_4)
     storage_live(_5)
     _5 = copy f
@@ -325,7 +325,7 @@ fn from_fn_ptr(f: fn<'a, 'b>(&'a u8, &'b u8) -> &'a u8)
     _3 = copy f
     _2 = fn_ptr_to_unsafe(move _3)
     storage_dead(_3)
-    set_type(typeof(_2) <= unsafe fn<'x, 'y>(&'y u8, &'x u8) -> &'y u8)
+    set _2 :< unsafe fn<'x, 'y>(&'y u8, &'x u8) -> &'y u8
     storage_dead(_2)
     _0 = ()
     storage_dead(f)
@@ -347,7 +347,7 @@ fn nested_binder(f: fn<'a>(fn<'b>(&'a u8, &'b u8)))
     _3 = copy f
     _2 = fn_ptr_to_unsafe(move _3)
     storage_dead(_3)
-    set_type(typeof(_2) <= unsafe fn<'x>(fn<'y>(&'x u8, &'y u8)))
+    set _2 :< unsafe fn<'x>(fn<'y>(&'x u8, &'y u8))
     storage_dead(_2)
     _0 = ()
     storage_dead(f)
@@ -369,7 +369,7 @@ fn nested_binder_swapped(f: fn<'a, 'b>(fn<'c>(&'a (), &'b (), &'c ())))
     _3 = copy f
     _2 = fn_ptr_to_unsafe(move _3)
     storage_dead(_3)
-    set_type(typeof(_2) <= unsafe fn<'x, 'y>(fn<'z>(&'y (), &'x (), &'z ())))
+    set _2 :< unsafe fn<'x, 'y>(fn<'z>(&'y (), &'x (), &'z ()))
     storage_dead(_2)
     _0 = ()
     storage_dead(f)
@@ -391,7 +391,7 @@ fn doubly_nested_binder(f: fn<'a>(fn<'b>(fn<'c>(&'a (), &'b (), &'c ()))))
     _3 = copy f
     _2 = fn_ptr_to_unsafe(move _3)
     storage_dead(_3)
-    set_type(typeof(_2) <= unsafe fn<'x>(fn<'y>(fn<'z>(&'x (), &'y (), &'z ()))))
+    set _2 :< unsafe fn<'x>(fn<'y>(fn<'z>(&'x (), &'y (), &'z ())))
     storage_dead(_2)
     _0 = ()
     storage_dead(f)

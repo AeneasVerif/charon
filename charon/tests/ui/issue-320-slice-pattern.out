@@ -282,7 +282,7 @@ fn slice_pat1()
     array = repeat<i32, 4usize>[{built_in impl Sized for i32}, impl_Clone_for_i32](const 0i32)
     ↳⚡ undefined_behavior
     fake_read(array)
-    set_type(typeof(array) == [i32; 4usize])
+    set array := [i32; 4usize]
     storage_live(_a)
     storage_live(_5)
     _5 = &array
@@ -362,7 +362,7 @@ fn slice_pat2()
     _2 = &(*_6)
     array_ref = &(*_2)
     fake_read(array_ref)
-    set_type(typeof(array_ref) == &'10 [i32; 4usize])
+    set array_ref := &'10 [i32; 4usize]
     storage_dead(_2)
     storage_live(_a)
     storage_live(_10)
@@ -463,7 +463,7 @@ fn slice_pat3()
     ↳⚡ undefined_behavior
     storage_dead(_2)
     fake_read(slice)
-    set_type(typeof(slice) == &'12 [i32])
+    set slice := &'12 [i32]
     storage_dead(_3)
     _8 = noretag copy slice.metadata
     _7 = move _8

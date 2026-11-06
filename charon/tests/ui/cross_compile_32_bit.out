@@ -44,11 +44,11 @@ fn main()
     storage_live(x)
     x = const 52usize
     fake_read(x)
-    set_type(typeof(x) == usize)
+    set x := usize
     storage_live(y)
     y = read MAX
     fake_read(y)
-    set_type(typeof(y) == usize)
+    set y := usize
     storage_live(z)
     storage_live(_4)
     _4 = copy y

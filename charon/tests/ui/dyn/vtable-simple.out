@@ -182,7 +182,7 @@ where
     x = unsize_cast<&'13 mut (dyn Modifiable<T> + '14), &impl_Modifiable_for_i32::{vtable}<T>[TraitClause0, TraitClause1]>(move _3)
     storage_dead(_3)
     fake_read(x)
-    set_type(typeof(x) == &'15 mut (dyn Modifiable<T> + '16))
+    set x := &'15 mut (dyn Modifiable<T> + '16)
     storage_dead(_4)
     storage_live(_6)
     _6 = &two-phase-mut (*x) with_metadata(read x.metadata)
