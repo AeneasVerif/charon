@@ -144,8 +144,8 @@ fn main()
     storage_live(_5)
     _5 = move b
     storage_live(_6)
-    _6 = cast<fn(Box::<(dyn Trait), Global>)>(copy (*_5.metadata).method_method)
-    _4 = (copy _6)(move _5)
+    _6 = cast<fn(Box::<(dyn Trait), Global>)>(read (*_5.metadata).method_method)
+    _4 = (read _6)(move _5)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Trait), Global>}::drop_glue::<(dyn Trait), Global><'3>] _5
         ↳⚡ storage_dead(_6)
             unwind_terminate

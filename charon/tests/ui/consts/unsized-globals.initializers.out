@@ -157,12 +157,12 @@ pub fn TUPLE() -> &'static (u8, [u8])
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = copy WRAP
-    _3 = &raw const (*_4) with_metadata(copy _4.metadata)
+    _4 = read WRAP
+    _3 = &raw const (*_4) with_metadata(read _4.metadata)
     _2 = cast<*const (u8, [u8])>(move _3)
     storage_dead(_3)
-    _1 = &(*_2) with_metadata(copy _2.metadata)
-    _0 = &(*_1) with_metadata(copy _1.metadata)
+    _1 = &(*_2) with_metadata(read _2.metadata)
+    _0 = &(*_1) with_metadata(read _1.metadata)
     storage_dead(_4)
     storage_dead(_1)
     return
@@ -185,12 +185,12 @@ pub fn STR_TAIL() -> &'static Wrap<str>[{built_in impl MetaSized for str}]
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = copy WRAP
-    _3 = &raw const (*_4) with_metadata(copy _4.metadata)
+    _4 = read WRAP
+    _3 = &raw const (*_4) with_metadata(read _4.metadata)
     _2 = cast<*const Wrap<str>[{built_in impl MetaSized for str}]>(move _3)
     storage_dead(_3)
-    _1 = &(*_2) with_metadata(copy _2.metadata)
-    _0 = &(*_1) with_metadata(copy _1.metadata)
+    _1 = &(*_2) with_metadata(read _2.metadata)
+    _0 = &(*_1) with_metadata(read _1.metadata)
     storage_dead(_4)
     storage_dead(_1)
     return
@@ -205,7 +205,7 @@ pub fn NESTED() -> (u8, &'static Outer<[u16]>[{built_in impl MetaSized for [u16]
     let mut _0: (u8, &'2 Outer<[u16]>[{built_in impl MetaSized for [u16]}]); // return
 
     storage_live(_0)
-    _0 = (const 7u8, copy OUTER)
+    _0 = (const 7u8, read OUTER)
     return
 }
 
@@ -218,7 +218,7 @@ pub fn STATIC() -> &'static Outer<[u16]>[{built_in impl MetaSized for [u16]}]
     let mut _0: &'1 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // return
 
     storage_live(_0)
-    _0 = copy OUTER
+    _0 = read OUTER
     return
 }
 
@@ -233,8 +233,8 @@ pub fn INTERIOR() -> &'static Wrap<[u16]>[{built_in impl MetaSized for [u16]}]
 
     storage_live(_0)
     storage_live(_1)
-    _1 = &(*STATIC).w with_metadata(copy STATIC.metadata)
-    _0 = &(*_1) with_metadata(copy _1.metadata)
+    _1 = &(*STATIC).w with_metadata(read STATIC.metadata)
+    _0 = &(*_1) with_metadata(read _1.metadata)
     storage_dead(_1)
     return
 }
@@ -485,7 +485,7 @@ pub fn EMPTY() -> &'static [u8]
     _2 = cast_with_exposed<*const u8>(const 1usize)
     _1 = from_raw_parts<'3, u8>[{built_in impl Sized for u8}](move _2, const 0usize)
     ↳⚡ unwind_continue
-    _0 = &(*_1) with_metadata(copy _1.metadata)
+    _0 = &(*_1) with_metadata(read _1.metadata)
     storage_dead(_2)
     storage_dead(_1)
     return

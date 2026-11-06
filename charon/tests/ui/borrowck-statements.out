@@ -48,6 +48,17 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::impls::{impl Clone for usize}::clone
+pub fn impl_Clone_for_usize::clone<'_0>(_1: &'_0 usize) -> usize
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for usize}
+impl "impl_Clone_for_usize" Clone for usize {
+    proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
+    fn clone<'_0_1> = impl_Clone_for_usize::clone<'_0_1>
+    non-dyn-compatible
+}
+
 // Full name: core::clone::impls::{impl Clone for u32}::clone
 pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
 = <opaque>
@@ -84,6 +95,13 @@ pub trait Copy<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for usize}
+impl "impl_Copy_for_usize" Copy for usize {
+    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
+    proof ImpliedClause1: (usize: Clone) = impl_Clone_for_usize
     non-dyn-compatible
 }
 
@@ -499,10 +517,10 @@ where
     storage_live(value_2)
     value_2 = copy value_1
     fake_read(value_2)
-    set_type(typeof(value_2) == &'13 u32)
-    predicate_holds({built_in impl Sized for &'4 u32})
-    predicate_holds({impl Copy for &'_0 T}<'11, u32>)
-    set_outlives(&'12 u32, 'b)
+    set_type(typeof(value_2) == &'16 u32)
+    predicate_holds({built_in impl Sized for &'7 u32})
+    predicate_holds({impl Copy for &'_0 T}<'14, u32>)
+    set_outlives(&'15 u32, 'b)
     _0 = ()
     storage_dead(value_2)
     storage_dead(value_1)

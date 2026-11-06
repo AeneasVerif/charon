@@ -103,6 +103,12 @@ pub fn test_dyn_fn(x: u32) -> u32 {
     dyn_fn(x)
 }
 
+pub fn test_dyn_fn_mut(x: u32) -> u32 {
+    let mut fn_ptr: fn(u32) -> u32 = increment;
+    let dyn_fn: &mut dyn FnMut(u32) -> u32 = &mut fn_ptr;
+    dyn_fn(x)
+}
+
 trait Family {
     type Member<'a>;
 }

@@ -14,6 +14,80 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for u64}::clone
+pub fn impl_Clone_for_u64::clone<'_0>(_1: &'_0 u64) -> u64
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u64}
+impl "impl_Clone_for_u64" Clone for u64 {
+    proof ImpliedClause0: (u64: Sized) = {built_in impl Sized for u64}
+    fn clone<'_0_1> = impl_Clone_for_u64::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for bool}::clone
+pub fn impl_Clone_for_bool::clone<'_0>(_1: &'_0 bool) -> bool
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for bool}
+impl "impl_Clone_for_bool" Clone for bool {
+    proof ImpliedClause0: (bool: Sized) = {built_in impl Sized for bool}
+    fn clone<'_0_1> = impl_Clone_for_bool::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for u32}::clone
+pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u32}
+impl "impl_Clone_for_u32" Clone for u32 {
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
+    fn clone<'_0_1> = impl_Clone_for_u32::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for u64}
+impl "impl_Copy_for_u64" Copy for u64 {
+    proof ImpliedClause0: (u64: MetaSized) = {built_in impl MetaSized for u64}
+    proof ImpliedClause1: (u64: Clone) = impl_Clone_for_u64
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for bool}
+impl "impl_Copy_for_bool" Copy for bool {
+    proof ImpliedClause0: (bool: MetaSized) = {built_in impl MetaSized for bool}
+    proof ImpliedClause1: (bool: Clone) = impl_Clone_for_bool
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for u32}
+impl "impl_Copy_for_u32" Copy for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
+    non-dyn-compatible
+}
+
 struct () {}
 
 // Full name: core::marker::Destruct
@@ -1444,7 +1518,7 @@ where
     let mut _0: usize; // return
 
     storage_live(_0)
-    _0 = copy impl_Trait_for_Wrapper::LEN<T>[TraitClause0, TraitClause1]
+    _0 = read impl_Trait_for_Wrapper::LEN<T>[TraitClause0, TraitClause1]
     return
 }
 
@@ -1490,7 +1564,7 @@ where
     let mut _0: Result<T, i32>[TraitClause0, {built_in impl Sized for i32}]; // return
 
     storage_live(_0)
-    _0 = copy FOO<T, U>[TraitClause0, TraitClause1, TraitClause2]
+    _0 = read FOO<T, U>[TraitClause0, TraitClause1, TraitClause2]
     return
 }
 
@@ -1504,7 +1578,7 @@ where
     let mut _0: Result<U, i32>[TraitClause1, {built_in impl Sized for i32}]; // return
 
     storage_live(_0)
-    _0 = copy FOO<U, T>[TraitClause1, TraitClause0, TraitClause2]
+    _0 = read FOO<U, T>[TraitClause1, TraitClause0, TraitClause2]
     return
 }
 

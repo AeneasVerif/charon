@@ -154,7 +154,7 @@ fn use_foo()
     _5 = &foo
     _4 = get_ty<'6>(move _5)
     ↳⚡ unwind_continue
-    _3 = &(*_4) with_metadata(copy _4.metadata)
+    _3 = &(*_4) with_metadata(read _4.metadata)
     storage_dead(_5)
     _2 = impl_Clone_for_u32::clone<'9>(move _3)
     ↳⚡ unwind_continue
@@ -238,7 +238,7 @@ where
     ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'6>] foo
         ↳⚡ unwind_terminate
         unwind_continue
-    _3 = &(*_4) with_metadata(copy _4.metadata)
+    _3 = &(*_4) with_metadata(read _4.metadata)
     storage_dead(_5)
     _2 = TraitClause1::ImpliedClause2::ImpliedClause2::clone<'7>(move _3)
     ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'6>] foo

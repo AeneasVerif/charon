@@ -71,9 +71,8 @@ fn transform_constant_expr(
     mut val: ConstantExpr,
 ) -> Operand {
     let rval = match val.kind() {
-        // Here we use a copy, rather than a move -- moving a global would leave it uninitialized.
         ConstantExprKind::Global(global_ref) => {
-            return Operand::Copy(Place::new_global(global_ref.clone(), val.ty().clone()));
+            return Operand::Read(Place::new_global(global_ref.clone(), val.ty().clone()));
         }
         ConstantExprKind::PtrNoProvenance(ptr) => {
             let usize_ty = Ty::mk_usize();

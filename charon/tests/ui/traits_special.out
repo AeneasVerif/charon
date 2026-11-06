@@ -14,6 +14,44 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for bool}::clone
+pub fn clone<'_0>(_1: &'_0 bool) -> bool
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for bool}
+impl "impl_Clone_for_bool" Clone for bool {
+    proof ImpliedClause0: (bool: Sized) = {built_in impl Sized for bool}
+    fn clone<'_0_1> = clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for bool}
+impl "impl_Copy_for_bool" Copy for bool {
+    proof ImpliedClause0: (bool: MetaSized) = {built_in impl MetaSized for bool}
+    proof ImpliedClause1: (bool: Clone) = impl_Clone_for_bool
+    non-dyn-compatible
+}
+
 // Full name: core::result::Result
 #[diagnostic_item("Result")]
 pub enum Result<T, E>

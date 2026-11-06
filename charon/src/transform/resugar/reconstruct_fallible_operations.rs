@@ -129,10 +129,10 @@ fn make_unop_overflow_panic<T: BodyVisitable>(
 }
 
 /// Check if the two operands are equivalent: either they're the same constant, or they represent
-/// the same place (regardless of whether the operand is a move or a copy)
+/// the same place (regardless of whether the operand is a move or a copy).
 fn equiv_op(op_l: &Operand, op_r: &Operand) -> bool {
     match (op_l, op_r) {
-        (Operand::Copy(l) | Operand::Move(l), Operand::Copy(r) | Operand::Move(r)) => l == r,
+        (Operand::Copy(l, _) | Operand::Move(l), Operand::Copy(r, _) | Operand::Move(r)) => l == r,
         (Operand::Const(l), Operand::Const(r)) => l == r,
         _ => false,
     }
@@ -178,14 +178,14 @@ fn remove_dynamic_checks(
         //   assert(move b == true)
         [
             Statement {
-                kind: StatementKind::Assign(len, Rvalue::Use(Operand::Copy(len_op), _)),
+                kind: StatementKind::Assign(len, Rvalue::Use(Operand::Copy(len_op, _), _)),
                 ..
             },
             Statement {
                 kind:
                     StatementKind::Assign(
                         is_in_bounds,
-                        Rvalue::BinaryOp(BinOp::Lt, _, Operand::Copy(lt_op2)),
+                        Rvalue::BinaryOp(BinOp::Lt, _, Operand::Copy(lt_op2, _)),
                     ),
                 ..
             },
@@ -227,14 +227,14 @@ fn remove_dynamic_checks(
                 ..
             },
             Statement {
-                kind: StatementKind::Assign(len, Rvalue::Use(Operand::Copy(len_op), _)),
+                kind: StatementKind::Assign(len, Rvalue::Use(Operand::Copy(len_op, _), _)),
                 ..
             },
             Statement {
                 kind:
                     StatementKind::Assign(
                         is_in_bounds,
-                        Rvalue::BinaryOp(BinOp::Lt, _, Operand::Copy(lt_op2)),
+                        Rvalue::BinaryOp(BinOp::Lt, _, Operand::Copy(lt_op2, _)),
                     ),
                 ..
             },
@@ -638,7 +638,7 @@ fn reconstruct_overflow_calls(ctx: &TransformCtx, body: &mut ExprBody) {
             }
         });
         block.dyn_visit_in_body(|operand: &Operand| {
-            if let Operand::Move(place) | Operand::Copy(place) = operand
+            if let Operand::Move(place) | Operand::Copy(place, _) = operand
                 && let Some((base, ProjectionElem::Field(None, field))) = place.as_projection()
                 && let Some(local) = base.as_local()
                 && field.index() == 0

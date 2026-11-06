@@ -77,6 +77,46 @@ where
     Outlives2: (I: '_0),
 = <opaque>
 
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::array::{impl Clone for [T; N]}::clone
+pub fn impl_Clone_for_array::clone<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+    Outlives0: (T: '_0),
+= <opaque>
+
+// Full name: core::array::{impl Clone for [T; N]}
+impl<T, const N : usize> "impl_Clone_for_array" Clone for [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+{
+    proof ImpliedClause0: ([T; N]: Sized) = {built_in impl Sized for [T; N]}
+    fn clone<'_0_1> = impl_Clone_for_array::clone<'_0_1, T, N>[TraitClause0, TraitClause1]
+    non-dyn-compatible
+}
+
+// Full name: core::array::{impl Copy for [T; N]}
+impl<T, const N : usize> "impl_Copy_for_array" Copy for [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
+{
+    proof ImpliedClause0: ([T; N]: MetaSized) = {built_in impl MetaSized for [T; N]}
+    proof ImpliedClause1: ([T; N]: Clone) = impl_Clone_for_array<T, N>[TraitClause0, TraitClause1::ImpliedClause1]
+    non-dyn-compatible
+}
+
 // Full name: core::array::{[T; N]}::as_slice
 pub fn as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
 where
@@ -99,6 +139,31 @@ pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
 impl "impl_Clone_for_u32" Clone for u32 {
     proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
     fn clone<'_0_1> = impl_Clone_for_u32::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for usize}::clone
+pub fn impl_Clone_for_usize::clone<'_0>(_1: &'_0 usize) -> usize
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for usize}
+impl "impl_Clone_for_usize" Clone for usize {
+    proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
+    fn clone<'_0_1> = impl_Clone_for_usize::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for u32}
+impl "impl_Copy_for_u32" Copy for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for usize}
+impl "impl_Copy_for_usize" Copy for usize {
+    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
+    proof ImpliedClause1: (usize: Clone) = impl_Clone_for_usize
     non-dyn-compatible
 }
 
@@ -381,7 +446,7 @@ where
             break 0
         } else {
             storage_live(_10)
-            _10 = &mut (*_1) with_metadata(copy _1.metadata)
+            _10 = &mut (*_1) with_metadata(read _1.metadata)
             storage_live(_11)
             _11 = impl_SliceIndex_slice_for_usize::index_mut<'_, T>[TraitClause0](copy _3, move _10)
             ↳⚡ undefined_behavior
@@ -394,7 +459,7 @@ where
                         break 0
                     } else {
                         storage_live(_8)
-                        _8 = &mut (*_1) with_metadata(copy _1.metadata)
+                        _8 = &mut (*_1) with_metadata(read _1.metadata)
                         storage_live(_9)
                         _9 = impl_SliceIndex_slice_for_usize::index_mut<'_, T>[TraitClause0](copy _3, move _8)
                         ↳⚡ undefined_behavior
@@ -536,7 +601,7 @@ where
     _2 = as_mut_slice<'_, T, 32usize>[TraitClause0](move _3)
     ↳⚡ undefined_behavior
     storage_dead(_3)
-    _0 = &mut (*_2) with_metadata(copy _2.metadata)
+    _0 = &mut (*_2) with_metadata(read _2.metadata)
     storage_dead(_2)
     storage_dead(s)
     return
@@ -611,7 +676,7 @@ where
 
     storage_live(_0)
     storage_live(_2)
-    _2 = &(*s) with_metadata(copy s.metadata)
+    _2 = &(*s) with_metadata(read s.metadata)
     _0 = len<'4, T>[TraitClause0](move _2)
     ↳⚡ storage_dead(s)
         unwind_continue
@@ -767,7 +832,7 @@ where
     storage_live(_4)
     _4 = copy i
     storage_live(_5)
-    _5 = &(*s) with_metadata(copy s.metadata)
+    _5 = &(*s) with_metadata(read s.metadata)
     storage_live(_6)
     _6 = impl_SliceIndex_slice_for_usize::index<'_, T>[TraitClause0](copy _4, move _5)
     ↳⚡ undefined_behavior
@@ -803,7 +868,7 @@ where
     storage_live(_5)
     _5 = copy i
     storage_live(_6)
-    _6 = &mut (*s) with_metadata(copy s.metadata)
+    _6 = &mut (*s) with_metadata(read s.metadata)
     storage_live(_7)
     _7 = impl_SliceIndex_slice_for_usize::index_mut<'_, T>[TraitClause0](copy _5, move _6)
     ↳⚡ undefined_behavior
@@ -838,7 +903,7 @@ pub fn slice_subslice_shared_<'_0>(x: &'_0 [u32], y: usize, z: usize) -> &'_0 [u
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = &(*x) with_metadata(copy x.metadata)
+    _6 = &(*x) with_metadata(read x.metadata)
     storage_live(_7)
     storage_live(_8)
     _8 = copy y
@@ -854,8 +919,8 @@ pub fn slice_subslice_shared_<'_0>(x: &'_0 [u32], y: usize, z: usize) -> &'_0 [u
         unwind_continue
     storage_dead(_7)
     storage_dead(_6)
-    _4 = &(*_5) with_metadata(copy _5.metadata)
-    _0 = &(*_4) with_metadata(copy _4.metadata)
+    _4 = &(*_5) with_metadata(read _5.metadata)
+    _0 = &(*_4) with_metadata(read _4.metadata)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(z)
@@ -884,7 +949,7 @@ pub fn slice_subslice_mut_<'_0>(x: &'_0 mut [u32], y: usize, z: usize) -> &'_0 m
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = &mut (*x) with_metadata(copy x.metadata)
+    _7 = &mut (*x) with_metadata(read x.metadata)
     storage_live(_8)
     storage_live(_9)
     _9 = copy y
@@ -900,9 +965,9 @@ pub fn slice_subslice_mut_<'_0>(x: &'_0 mut [u32], y: usize, z: usize) -> &'_0 m
         unwind_continue
     storage_dead(_8)
     storage_dead(_7)
-    _5 = &mut (*_6) with_metadata(copy _6.metadata)
-    _4 = &mut (*_5) with_metadata(copy _5.metadata)
-    _0 = &mut (*_4) with_metadata(copy _4.metadata)
+    _5 = &mut (*_6) with_metadata(read _6.metadata)
+    _4 = &mut (*_5) with_metadata(read _5.metadata)
+    _0 = &mut (*_4) with_metadata(read _4.metadata)
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
@@ -944,7 +1009,7 @@ pub fn array_to_slice_mut_<'_0>(x: &'_0 mut [u32; 32usize]) -> &'_0 mut [u32]
     _2 = as_mut_slice<'_, u32, 32usize>[{built_in impl Sized for u32}](move _3)
     ↳⚡ undefined_behavior
     storage_dead(_3)
-    _0 = &mut (*_2) with_metadata(copy _2.metadata)
+    _0 = &mut (*_2) with_metadata(read _2.metadata)
     storage_dead(_2)
     storage_dead(x)
     return
@@ -984,8 +1049,8 @@ pub fn array_subslice_shared_<'_0>(x: &'_0 [u32; 32usize], y: usize, z: usize) -
         unwind_continue
     storage_dead(_7)
     storage_dead(_6)
-    _4 = &(*_5) with_metadata(copy _5.metadata)
-    _0 = &(*_4) with_metadata(copy _4.metadata)
+    _4 = &(*_5) with_metadata(read _5.metadata)
+    _0 = &(*_4) with_metadata(read _4.metadata)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(z)
@@ -1030,9 +1095,9 @@ pub fn array_subslice_mut_<'_0>(x: &'_0 mut [u32; 32usize], y: usize, z: usize) 
         unwind_continue
     storage_dead(_8)
     storage_dead(_7)
-    _5 = &mut (*_6) with_metadata(copy _6.metadata)
-    _4 = &mut (*_5) with_metadata(copy _5.metadata)
-    _0 = &mut (*_4) with_metadata(copy _4.metadata)
+    _5 = &mut (*_6) with_metadata(read _6.metadata)
+    _4 = &mut (*_5) with_metadata(read _5.metadata)
+    _0 = &mut (*_4) with_metadata(read _4.metadata)
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
@@ -1060,7 +1125,7 @@ where
     storage_live(_3)
     _3 = const 0usize
     storage_live(_4)
-    _4 = &(*s) with_metadata(copy s.metadata)
+    _4 = &(*s) with_metadata(read s.metadata)
     storage_live(_5)
     _5 = impl_SliceIndex_slice_for_usize::index<'_, T>[TraitClause0](copy _3, move _4)
     ↳⚡ undefined_behavior
@@ -1274,13 +1339,13 @@ pub fn incr_slice_self<'_0>(s: &'_0 mut [u32])
     storage_live(_2)
     _2 = const 0usize
     storage_live(_4)
-    _4 = &(*s) with_metadata(copy s.metadata)
+    _4 = &(*s) with_metadata(read s.metadata)
     storage_live(_5)
     _5 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _2, move _4)
     ↳⚡ undefined_behavior
     _3 = copy (*_5) panic.+ const 1u32
     storage_live(_6)
-    _6 = &mut (*s) with_metadata(copy s.metadata)
+    _6 = &mut (*s) with_metadata(read s.metadata)
     storage_live(_7)
     _7 = impl_SliceIndex_slice_for_usize::index_mut<'_, u32>[{built_in impl Sized for u32}](copy _2, move _6)
     ↳⚡ undefined_behavior
@@ -1574,7 +1639,7 @@ pub fn index_slice_u32_0<'_0>(x: &'_0 [u32]) -> u32
     storage_live(_2)
     _2 = const 0usize
     storage_live(_3)
-    _3 = &(*x) with_metadata(copy x.metadata)
+    _3 = &(*x) with_metadata(read x.metadata)
     storage_live(_4)
     _4 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _2, move _3)
     ↳⚡ undefined_behavior
@@ -1599,7 +1664,7 @@ pub fn index_mut_slice_u32_0<'_0>(x: &'_0 mut [u32]) -> u32
     storage_live(_2)
     _2 = const 0usize
     storage_live(_3)
-    _3 = &(*x) with_metadata(copy x.metadata)
+    _3 = &(*x) with_metadata(read x.metadata)
     storage_live(_4)
     _4 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _2, move _3)
     ↳⚡ undefined_behavior
@@ -1833,7 +1898,7 @@ pub fn update_mut_slice<'_0>(x: &'_0 mut [u32])
     storage_live(_2)
     _2 = const 0usize
     storage_live(_3)
-    _3 = &mut (*x) with_metadata(copy x.metadata)
+    _3 = &mut (*x) with_metadata(read x.metadata)
     storage_live(_4)
     _4 = impl_SliceIndex_slice_for_usize::index_mut<'_, u32>[{built_in impl Sized for u32}](copy _2, move _3)
     ↳⚡ undefined_behavior
@@ -1945,8 +2010,8 @@ pub fn range_all()
     ↳⚡ unwind_continue
     storage_dead(_7)
     storage_dead(_6)
-    _4 = &mut (*_5) with_metadata(copy _5.metadata)
-    _3 = &two-phase-mut (*_4) with_metadata(copy _4.metadata)
+    _4 = &mut (*_5) with_metadata(read _5.metadata)
+    _3 = &two-phase-mut (*_4) with_metadata(read _4.metadata)
     _2 = update_mut_slice<'9>(move _3)
     ↳⚡ unwind_continue
     storage_dead(_3)
@@ -2106,7 +2171,7 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
         _5 = copy i
         storage_live(_6)
         storage_live(_7)
-        _7 = &(*s) with_metadata(copy s.metadata)
+        _7 = &(*s) with_metadata(read s.metadata)
         _6 = len<'4, u32>[{built_in impl Sized for u32}](move _7)
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
@@ -2124,7 +2189,7 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
         storage_live(_9)
         _9 = copy i
         storage_live(_12)
-        _12 = &(*s) with_metadata(copy s.metadata)
+        _12 = &(*s) with_metadata(read s.metadata)
         storage_live(_13)
         _13 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _9, move _12)
         ↳⚡ undefined_behavior
@@ -2192,7 +2257,7 @@ pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = &(*s) with_metadata(copy s.metadata)
+    _6 = &(*s) with_metadata(read s.metadata)
     _5 = len<'7, u32>[{built_in impl Sized for u32}](move _6)
     ↳⚡ storage_dead(_21)
         storage_dead(_20)
@@ -2203,7 +2268,7 @@ pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
     storage_dead(_6)
     storage_live(_7)
     storage_live(_8)
-    _8 = &(*s2) with_metadata(copy s2.metadata)
+    _8 = &(*s2) with_metadata(read s2.metadata)
     _7 = len<'9, u32>[{built_in impl Sized for u32}](move _8)
     ↳⚡ storage_dead(_21)
         storage_dead(_20)
@@ -2227,7 +2292,7 @@ pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
         _11 = copy i
         storage_live(_12)
         storage_live(_13)
-        _13 = &(*s) with_metadata(copy s.metadata)
+        _13 = &(*s) with_metadata(read s.metadata)
         _12 = len<'13, u32>[{built_in impl Sized for u32}](move _13)
         ↳⚡ storage_dead(_21)
             storage_dead(_20)
@@ -2248,7 +2313,7 @@ pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
         storage_live(_16)
         _16 = copy i
         storage_live(_22)
-        _22 = &(*s) with_metadata(copy s.metadata)
+        _22 = &(*s) with_metadata(read s.metadata)
         storage_live(_23)
         _23 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _16, move _22)
         ↳⚡ undefined_behavior
@@ -2257,7 +2322,7 @@ pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
         storage_live(_18)
         _18 = copy i
         storage_live(_24)
-        _24 = &(*s2) with_metadata(copy s2.metadata)
+        _24 = &(*s2) with_metadata(read s2.metadata)
         storage_live(_25)
         _25 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _18, move _24)
         ↳⚡ undefined_behavior
@@ -2324,7 +2389,7 @@ pub fn f0()
     storage_live(_5)
     _5 = const 0usize
     storage_live(_6)
-    _6 = &mut (*s) with_metadata(copy s.metadata)
+    _6 = &mut (*s) with_metadata(read s.metadata)
     storage_live(_7)
     _7 = impl_SliceIndex_slice_for_usize::index_mut<'_, u32>[{built_in impl Sized for u32}](copy _5, move _6)
     ↳⚡ undefined_behavior
@@ -2417,8 +2482,8 @@ pub fn f4<'_0>(x: &'_0 [u32; 32usize], y: usize, z: usize) -> &'_0 [u32]
         unwind_continue
     storage_dead(_7)
     storage_dead(_6)
-    _4 = &(*_5) with_metadata(copy _5.metadata)
-    _0 = &(*_4) with_metadata(copy _4.metadata)
+    _4 = &(*_5) with_metadata(read _5.metadata)
+    _0 = &(*_4) with_metadata(read _4.metadata)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(z)
@@ -2487,7 +2552,7 @@ pub fn f3() -> u32
     _11 = &(*_12)
     _10 = f4<'12>(move _11, const 16usize, const 18usize)
     ↳⚡ unwind_continue
-    _9 = &(*_10) with_metadata(copy _10.metadata)
+    _9 = &(*_10) with_metadata(read _10.metadata)
     storage_dead(_11)
     _0 = sum2<'15, '16>(move _6, move _9)
     ↳⚡ unwind_continue
@@ -2639,7 +2704,7 @@ pub fn zero_slice<'_0>(a: &'_0 mut [u8])
     set_type(typeof(i) == usize)
     storage_live(len)
     storage_live(_4)
-    _4 = &(*a) with_metadata(copy a.metadata)
+    _4 = &(*a) with_metadata(read a.metadata)
     len = len<'5, u8>[{built_in impl Sized for u8}](move _4)
     ↳⚡ storage_dead(_9)
         storage_dead(a)
@@ -2659,7 +2724,7 @@ pub fn zero_slice<'_0>(a: &'_0 mut [u8])
             storage_live(_8)
             _8 = copy i
             storage_live(_10)
-            _10 = &mut (*a) with_metadata(copy a.metadata)
+            _10 = &mut (*a) with_metadata(read a.metadata)
             storage_live(_11)
             _11 = impl_SliceIndex_slice_for_usize::index_mut<'_, u8>[{built_in impl Sized for u8}](copy _8, move _10)
             ↳⚡ undefined_behavior
@@ -2704,7 +2769,7 @@ pub fn iter_mut_slice<'_0>(a: &'_0 mut [u8])
     _0 = ()
     storage_live(len)
     storage_live(_3)
-    _3 = &(*a) with_metadata(copy a.metadata)
+    _3 = &(*a) with_metadata(read a.metadata)
     len = len<'5, u8>[{built_in impl Sized for u8}](move _3)
     ↳⚡ storage_dead(_8)
         storage_dead(a)
@@ -2776,7 +2841,7 @@ pub fn sum_mut_slice<'_0>(a: &'_0 mut [u32]) -> u32
         _5 = copy i
         storage_live(_6)
         storage_live(_7)
-        _7 = &(*a) with_metadata(copy a.metadata)
+        _7 = &(*a) with_metadata(read a.metadata)
         _6 = len<'5, u32>[{built_in impl Sized for u32}](move _7)
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
@@ -2794,7 +2859,7 @@ pub fn sum_mut_slice<'_0>(a: &'_0 mut [u32]) -> u32
         storage_live(_9)
         _9 = copy i
         storage_live(_12)
-        _12 = &(*a) with_metadata(copy a.metadata)
+        _12 = &(*a) with_metadata(read a.metadata)
         storage_live(_13)
         _13 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _9, move _12)
         ↳⚡ undefined_behavior
@@ -2966,7 +3031,7 @@ fn slice_pattern_4<'_0>(x: &'_0 [()])
     }
     storage_live(_named)
     storage_live(_7)
-    _7 = &(*x) with_metadata(copy x.metadata)
+    _7 = &(*x) with_metadata(read x.metadata)
     storage_live(_8)
     _8 = impl_SliceIndex_slice_for_usize::index<'_, ()>[{built_in impl Sized for ()}](const 0usize, move _7)
     ↳⚡ undefined_behavior

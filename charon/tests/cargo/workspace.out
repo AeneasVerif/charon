@@ -53,7 +53,7 @@ where
     _0 = ()
     storage_live(_3)
     storage_live(_4)
-    _4 = &(*source) with_metadata(copy source.metadata)
+    _4 = &(*source) with_metadata(read source.metadata)
     _3 = TraitClause0::clone<'5>(move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)
@@ -64,6 +64,24 @@ where
     _0 = ()
     storage_dead(_3)
     return
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for u32}
+impl "impl_Clone_for_u32" Clone for u32 {
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
+    fn clone<'_0_1> = clone<'_0_1>
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (u32: Destruct)> = clone_from<'_0_1, '_1_1, u32>[impl_Clone_for_u32, TraitClause0_1]
+    non-dyn-compatible
 }
 
 // Full name: core::clone::impls::{impl Clone for u32}::clone
@@ -77,11 +95,10 @@ pub fn clone<'_0>(self: &'_0 u32) -> u32
     return
 }
 
-// Full name: core::clone::impls::{impl Clone for u32}
-impl "impl_Clone_for_u32" Clone for u32 {
-    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
-    fn clone<'_0_1> = clone<'_0_1>
-    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (u32: Destruct)> = clone_from<'_0_1, '_1_1, u32>[impl_Clone_for_u32, TraitClause0_1]
+// Full name: core::marker::{impl Copy for u32}
+impl "impl_Copy_for_u32" Copy for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
     non-dyn-compatible
 }
 
@@ -93,16 +110,6 @@ where
   _1: B,
 }
 
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
 // Full name: core::intrinsics::add_with_overflow
 #[rustc_intrinsic]
 pub fn add_with_overflow<T>(x_1: T, y_2: T) -> (T, bool)
@@ -110,13 +117,6 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
 = <intrinsic:add_with_overflow>
-
-// Full name: core::marker::{impl Copy for u32}
-impl "impl_Copy_for_u32" Copy for u32 {
-    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
-    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
-    non-dyn-compatible
-}
 
 // Full name: crate1::random_number
 pub fn random_number() -> u32

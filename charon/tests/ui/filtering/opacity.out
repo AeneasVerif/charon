@@ -14,6 +14,27 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for u32}::clone
+pub fn clone<'_0>(_1: &'_0 u32) -> u32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u32}
+impl "impl_Clone_for_u32" Clone for u32 {
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
+    fn clone<'_0_1> = clone<'_0_1>
+    non-dyn-compatible
+}
+
 // Full name: core::convert::From
 #[lang_item(From)]
 #[diagnostic_item("From")]
@@ -70,6 +91,23 @@ pub fn core::num::{u32}::MIN() -> u32
 
 pub const core::num::{u32}::MIN: u32 = core::num::{u32}::MIN()
 
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for u32}
+impl "impl_Copy_for_u32" Copy for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
+    non-dyn-compatible
+}
+
 // Full name: core::convert::num::{impl From<u32> for u64}::from
 pub fn from(small: u32) -> u64
 {
@@ -91,9 +129,9 @@ pub fn from(small: u32) -> u64
     if move _2 {
         storage_live(_3)
         storage_live(_4)
-        _4 = cast<i128>(copy core::num::{u64}::MIN)
+        _4 = cast<i128>(read core::num::{u64}::MIN)
         storage_live(_5)
-        _5 = cast<i128>(copy core::num::{u32}::MIN)
+        _5 = cast<i128>(read core::num::{u32}::MIN)
         _3 = move _4 <= move _5
         assert(move _3 == true) else panic(core::panicking::panic)
         ↳⚡ unwind_continue
@@ -108,9 +146,9 @@ pub fn from(small: u32) -> u64
     if move _6 {
         storage_live(_7)
         storage_live(_8)
-        _8 = cast<u128>(copy core::num::{u32}::MAX)
+        _8 = cast<u128>(read core::num::{u32}::MAX)
         storage_live(_9)
-        _9 = cast<u128>(copy core::num::{u64}::MAX)
+        _9 = cast<u128>(read core::num::{u64}::MAX)
         _7 = move _8 <= move _9
         assert(move _7 == true) else panic(core::panicking::panic)
         ↳⚡ unwind_continue

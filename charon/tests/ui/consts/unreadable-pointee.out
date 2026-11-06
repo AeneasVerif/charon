@@ -65,10 +65,10 @@ pub fn HUGE() -> Wrapper
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)
-    _4 = copy test_crate::HUGE::{promoted_const}
+    _4 = read test_crate::HUGE::{promoted_const}
     _3 = &(*_4)
     _2 = &raw const (*_3)
-    _1 = slice_from_raw_parts<u8>[{built_in impl Sized for u8}](move _2, copy MAX)
+    _1 = slice_from_raw_parts<u8>[{built_in impl Sized for u8}](move _2, read MAX)
     ↳⚡ unwind_continue
     storage_dead(_2)
     _0 = Wrapper { _0: move _1 }

@@ -103,7 +103,7 @@ impl VisitBody for GatherCandidates<'_> {
     fn visit_ullbc_terminator(&mut self, terminator: &Terminator) -> ControlFlow<Self::Break> {
         // Find branches over booleans with drops in one of the branches.
         if let TerminatorKind::Switch { data, branches } = &terminator.kind
-            && let SwitchScrutinee::Value(Operand::Copy(flag_place) | Operand::Move(flag_place)) =
+            && let SwitchScrutinee::Value(Operand::Copy(flag_place, _) | Operand::Move(flag_place)) =
                 &data.scrutinee
             && let Some(flag) = flag_place.as_local()
             && !matches!(&self.flag_statuses[flag], FlagStatus::Discarded)
@@ -359,7 +359,7 @@ impl<'a, 'b> CheckFlagCorrectness<'a, 'b> {
         mut state: AnalysisState,
     ) -> Option<Vec<(BlockId, AnalysisState)>> {
         if let TerminatorKind::Switch { data, branches } = &block.terminator.kind
-            && let SwitchScrutinee::Value(Operand::Copy(flag_place) | Operand::Move(flag_place)) =
+            && let SwitchScrutinee::Value(Operand::Copy(flag_place, _) | Operand::Move(flag_place)) =
                 &data.scrutinee
             && flag_place.as_local() == Some(flag)
         {

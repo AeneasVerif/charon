@@ -51,6 +51,20 @@ enum Foo {
   B,
 }
 
+// Full name: test_crate::{impl Copy for Foo}
+impl "impl_Copy_for_Foo" Copy for Foo {
+    proof ImpliedClause0: (Foo: MetaSized) = {built_in impl MetaSized for Foo}
+    proof ImpliedClause1: (Foo: Clone) = impl_Clone_for_Foo
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Clone for Foo}
+impl "impl_Clone_for_Foo" Clone for Foo {
+    proof ImpliedClause0: (Foo: Sized) = {built_in impl Sized for Foo}
+    fn clone<'_0_1> = clone<'_0_1>
+    non-dyn-compatible
+}
+
 // Full name: test_crate::{impl Clone for Foo}::clone
 #[inline(hint)]
 pub fn clone<'_0>(self: &'_0 Foo) -> Foo
@@ -62,20 +76,6 @@ pub fn clone<'_0>(self: &'_0 Foo) -> Foo
     _0 = copy (*self)
     storage_dead(self)
     return
-}
-
-// Full name: test_crate::{impl Clone for Foo}
-impl "impl_Clone_for_Foo" Clone for Foo {
-    proof ImpliedClause0: (Foo: Sized) = {built_in impl Sized for Foo}
-    fn clone<'_0_1> = clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: test_crate::{impl Copy for Foo}
-impl "impl_Copy_for_Foo" Copy for Foo {
-    proof ImpliedClause0: (Foo: MetaSized) = {built_in impl MetaSized for Foo}
-    proof ImpliedClause1: (Foo: Clone) = impl_Clone_for_Foo
-    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl TrivialClone for Foo}

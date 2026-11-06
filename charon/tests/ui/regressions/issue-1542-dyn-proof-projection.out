@@ -16,6 +16,54 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
+#[diagnostic_item("noop_method_clone")]
+pub fn clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
+where
+    Outlives0: ('_0: '_1),
+    Outlives1: (T: '_0),
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}
+impl<'_0, T> Clone for &'_0 T
+where
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
+    fn clone<'_0_1> = clone<'_0, '_0_1, T>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for &'_0 T}
+impl<'_0, T> Copy for &'_0 T
+where
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (&'_0 T: MetaSized) = {built_in impl MetaSized for &'_0 T}
+    proof ImpliedClause1: (&'_0 T: Clone) = {impl Clone for &'_0 T}<'_, T>
+    non-dyn-compatible
+}
+
 struct () {}
 
 // Full name: core::marker::Destruct
@@ -128,7 +176,7 @@ fn pass_to_wrap<'_0>(p: &'_0 (dyn Trait + '_0))
     _4 = copy p
     _3 = Wrap { _0: move _4 }
     storage_dead(_4)
-    _2 = use_trait<Wrap<&'75 (dyn Trait + '70)>[{built_in impl Sized for &'75 (dyn Trait + '76)}]>[{built_in impl Sized for Wrap<&'75 (dyn Trait + '98)>[{built_in impl Sized for &'75 (dyn Trait + '104)}]}, impl_Trait_for_Wrap<&'75 (dyn Trait + '190)>[{built_in impl Sized for &'75 (dyn Trait + '195)}, {impl Deref for &'_0 T}<'75, (dyn Trait + '212)>[{built_in impl MetaSized for (dyn Trait + '214)}], Trait<(dyn Trait + '218)>]](move _3)
+    _2 = use_trait<Wrap<&'82 (dyn Trait + '77)>[{built_in impl Sized for &'82 (dyn Trait + '83)}]>[{built_in impl Sized for Wrap<&'82 (dyn Trait + '105)>[{built_in impl Sized for &'82 (dyn Trait + '111)}]}, impl_Trait_for_Wrap<&'82 (dyn Trait + '197)>[{built_in impl Sized for &'82 (dyn Trait + '202)}, {impl Deref for &'_0 T}<'82, (dyn Trait + '219)>[{built_in impl MetaSized for (dyn Trait + '221)}], Trait<(dyn Trait + '225)>]](move _3)
     ↳⚡ storage_dead(p)
         unwind_continue
     storage_dead(_3)

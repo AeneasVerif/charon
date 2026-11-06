@@ -58,7 +58,8 @@ let switch_as_if (data : switch_data) : (branch_id * branch_id) option =
   | SwitchValue op ->
       let ty =
         match op with
-        | Expressions.Copy p | Expressions.Move p -> p.ty
+        | Expressions.Copy (p, _) | Expressions.Read p | Expressions.Move p ->
+            p.ty
         | Expressions.Constant cv -> cv.ty
       in
       if ty <> TScalar TBool then None

@@ -14,6 +14,54 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
+#[diagnostic_item("noop_method_clone")]
+pub fn clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
+where
+    Outlives0: ('_0: '_1),
+    Outlives1: (T: '_0),
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}
+impl<'_0, T> Clone for &'_0 T
+where
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
+    fn clone<'_0_1> = clone<'_0, '_0_1, T>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for &'_0 T}
+impl<'_0, T> Copy for &'_0 T
+where
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (&'_0 T: MetaSized) = {built_in impl MetaSized for &'_0 T}
+    proof ImpliedClause1: (&'_0 T: Clone) = {impl Clone for &'_0 T}<'_, T>
+    non-dyn-compatible
+}
+
 struct () {}
 
 // Full name: core::marker::Destruct
@@ -119,7 +167,7 @@ pub fn to_bytes_by_ref<'b>(s: &'b u32) -> &'b [u8; 4usize]
     // Here `convert` is given generics `<&'_ u32, &'_ [u8; 4]>`, which loses the information
     // that the lifetime is the same by virtue of the trait impl.
     _3 = copy s
-    _2 = convert<&'9 u32, &'9 [u8; 4usize]>[{built_in impl Sized for &'9 u32}, {built_in impl Sized for &'9 [u8; 4usize]}, {impl Convert<&'a [u8; 4usize]> for &'a u32}<'9>](move _3)
+    _2 = convert<&'12 u32, &'12 [u8; 4usize]>[{built_in impl Sized for &'12 u32}, {built_in impl Sized for &'12 [u8; 4usize]}, {impl Convert<&'a [u8; 4usize]> for &'a u32}<'12>](move _3)
     ↳⚡ storage_dead(s)
         unwind_continue
     _0 = &(*_2)

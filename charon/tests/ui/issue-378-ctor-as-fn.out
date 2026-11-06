@@ -14,6 +14,26 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
 // Full name: core::option::Option
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
@@ -139,8 +159,8 @@ fn main()
     let mut _15: &'6 i32; // anonymous local
     let _16: &'7 i32; // anonymous local
     let mut _17: &'8 i32; // anonymous local
-    let mut _18: &'13 i32; // anonymous local
-    let mut _19: &'15 i32; // anonymous local
+    let mut _18: &'27 i32; // anonymous local
+    let mut _19: &'29 i32; // anonymous local
     let mut _20: i32; // anonymous local
 
     storage_live(_0)
@@ -214,7 +234,7 @@ fn main()
     _17 = move _18
     _16 = &(*_17)
     _15 = &(*_16)
-    _13 = Variant<'14, i32>[{built_in impl Sized for i32}](move _15)
+    _13 = Variant<'28, i32>[{built_in impl Sized for i32}](move _15)
     ↳⚡ storage_dead(_17)
         unwind_continue
     storage_dead(_15)

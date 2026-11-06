@@ -41,7 +41,7 @@
 //! }
 //! ```
 
-use crate::hax;
+use crate::hax::{self, UnderOwnerState};
 use itertools::Itertools;
 use std::mem;
 
@@ -498,7 +498,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             CallableKind::FnDef => {
                 self.translate_fn_def_method_body(span, callable.item(), signature)
             }
-            CallableKind::FnPtr => self.translate_fn_ptr_method_body(span, signature),
+            CallableKind::FnPtr => {
+                self.translate_fn_ptr_method_body(span, callable.item(), signature)
+            }
         }
     }
 
@@ -717,8 +719,19 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     fn translate_fn_ptr_method_body(
         &mut self,
         span: Span,
+        item: &hax::ItemRef<'tcx>,
         signature: &FunSig,
     ) -> Result<Body, Error> {
+        let ty = item
+            .def_id
+            .type_of(&self.hax_state)
+            .instantiate(self.tcx, item.rustc_args(&self.hax_state));
+        let ty = hax::normalize(self.tcx, self.hax_state.typing_env(), ty);
+        let copy_proof =
+            hax::solve_copy(&self.hax_state, ty).expect("function pointers are always Copy");
+        let copy_proof = self
+            .translate_trait_proof(span, &copy_proof)?
+            .no_bound_vars();
         let mut builder = BodyBuilder::new(span, 2);
         let output = builder.new_var(None, signature.output.clone());
         let fn_ptr = builder.new_var(Some("fn_ptr".to_string()), signature.inputs[0].clone());
@@ -728,10 +741,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // `FnOnce::call_once` receives the function pointer directly, whereas `Fn::call` and
         // `FnMut::call_mut` receive it through a shared or mutable reference respectively.
         let fn_ptr = if matches!(fn_ptr.ty().kind(), TyKind::FnPtr(..)) {
-            Operand::Copy(fn_ptr)
+            fn_ptr
         } else {
-            Operand::Copy(fn_ptr.deref())
+            fn_ptr.deref()
         };
+        let fn_ptr = Operand::Copy(fn_ptr, copy_proof);
         let TyKind::FnPtr(fn_sig) = fn_ptr.ty().kind() else {
             unreachable!()
         };

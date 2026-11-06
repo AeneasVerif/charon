@@ -31,6 +31,46 @@ where
     TraitClause1: (T: Clone),
 = <opaque>
 
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::array::{impl Clone for [T; N]}::clone
+pub fn impl_Clone_for_array::clone<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+    Outlives0: (T: '_0),
+= <opaque>
+
+// Full name: core::array::{impl Clone for [T; N]}
+impl<T, const N : usize> "impl_Clone_for_array" Clone for [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+{
+    proof ImpliedClause0: ([T; N]: Sized) = {built_in impl Sized for [T; N]}
+    fn clone<'_0_1> = impl_Clone_for_array::clone<'_0_1, T, N>[TraitClause0, TraitClause1]
+    non-dyn-compatible
+}
+
+// Full name: core::array::{impl Copy for [T; N]}
+impl<T, const N : usize> "impl_Copy_for_array" Copy for [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
+{
+    proof ImpliedClause0: ([T; N]: MetaSized) = {built_in impl MetaSized for [T; N]}
+    proof ImpliedClause1: ([T; N]: Clone) = impl_Clone_for_array<T, N>[TraitClause0, TraitClause1::ImpliedClause1]
+    non-dyn-compatible
+}
+
 // Full name: core::clone::impls::{impl Clone for u32}::clone
 pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
 = <opaque>
@@ -39,6 +79,69 @@ pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
 impl "impl_Clone_for_u32" Clone for u32 {
     proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
     fn clone<'_0_1> = impl_Clone_for_u32::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for usize}::clone
+pub fn impl_Clone_for_usize::clone<'_0>(_1: &'_0 usize) -> usize
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for usize}
+impl "impl_Clone_for_usize" Clone for usize {
+    proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
+    fn clone<'_0_1> = impl_Clone_for_usize::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for bool}::clone
+pub fn impl_Clone_for_bool::clone<'_0>(_1: &'_0 bool) -> bool
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for bool}
+impl "impl_Clone_for_bool" Clone for bool {
+    proof ImpliedClause0: (bool: Sized) = {built_in impl Sized for bool}
+    fn clone<'_0_1> = impl_Clone_for_bool::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for *const T}::clone
+pub fn {impl Clone for *const T}::clone<'_0, T>(_1: &'_0 *const T) -> *const T
+where
+    Outlives0: (T: '_0),
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for *const T}
+impl<T> Clone for *const T {
+    proof ImpliedClause0: (*const T: Sized) = {built_in impl Sized for *const T}
+    fn clone<'_0_1> = {impl Clone for *const T}::clone<'_0_1, T>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for *const T}
+impl<T> Copy for *const T {
+    proof ImpliedClause0: (*const T: MetaSized) = {built_in impl MetaSized for *const T}
+    proof ImpliedClause1: (*const T: Clone) = {impl Clone for *const T}<T>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for u32}
+impl "impl_Copy_for_u32" Copy for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for usize}
+impl "impl_Copy_for_usize" Copy for usize {
+    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
+    proof ImpliedClause1: (usize: Clone) = impl_Clone_for_usize
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for bool}
+impl "impl_Copy_for_bool" Copy for bool {
+    proof ImpliedClause0: (bool: MetaSized) = {built_in impl MetaSized for bool}
+    proof ImpliedClause1: (bool: Clone) = impl_Clone_for_bool
     non-dyn-compatible
 }
 
@@ -133,10 +236,10 @@ fn literal_casts()
     _3 = cast<f64>(const 0u64)
     storage_dead(_3)
     storage_live(_4)
-    _4 = cast<u64>(copy MIN)
+    _4 = cast<u64>(read MIN)
     storage_dead(_4)
     storage_live(_5)
-    _5 = cast<f64>(copy MAX)
+    _5 = cast<f64>(read MAX)
     storage_dead(_5)
     _0 = ()
     return

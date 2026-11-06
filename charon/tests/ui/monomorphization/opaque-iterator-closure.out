@@ -1,5 +1,34 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for u32}
+impl "impl_Clone_for_u32" Clone for u32 {
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
+    non-dyn-compatible
+}
+
 // Full name: core::iter::adapters::map::Map::<Range::<u32>, test_crate::main::{closure}<'_>>
 pub opaque type Map::<Range::<u32>, test_crate::main::{closure}<'_>>
 
@@ -14,11 +43,6 @@ pub enum Option::<u32> {
 // Full name: core::iter::adapters::map::{impl Iterator for Map::<Range::<u32>, test_crate::main::{closure}<'_>>}::next::<u32, Range::<u32>, test_crate::main::{closure}<'_>>
 pub fn next::<u32, Range::<u32>, test_crate::main::{closure}<'_>><'_0>(_1: &'_0 mut Map::<Range::<u32>, test_crate::main::{closure}<'_>>) -> Option::<u32>
 = <opaque>
-
-// Full name: core::marker::MetaSized
-#[fundamental]
-#[lang_item(MetaSized)]
-pub trait MetaSized<Self>
 
 // Full name: core::iter::traits::iterator::Iterator
 #[lang_item(Iterator)]
@@ -44,6 +68,23 @@ pub struct Range::<u32> {
 #[diagnostic_item("IteratorMap")]
 pub fn map::<Range::<u32>, u32, test_crate::main::{closure}<'_>>(_1: Range::<u32>, _2: test_crate::main::{closure}<'_>) -> Map::<Range::<u32>, test_crate::main::{closure}<'_>>
 = <opaque>
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for u32}
+impl "impl_Copy_for_u32" Copy for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
+    non-dyn-compatible
+}
 
 // Full name: test_crate::Thing
 struct Thing {}

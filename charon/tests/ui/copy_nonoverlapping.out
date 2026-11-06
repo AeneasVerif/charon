@@ -61,7 +61,7 @@ where
     _0 = ()
     storage_live(_3)
     storage_live(_4)
-    _4 = &(*source) with_metadata(copy source.metadata)
+    _4 = &(*source) with_metadata(read source.metadata)
     _3 = TraitClause0::clone<'5>(move _4)
     ↳⚡ storage_dead(source)
         storage_dead(self)
@@ -80,8 +80,26 @@ where
     return
 }
 
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for usize}
+impl "impl_Clone_for_usize" Clone for usize {
+    proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
+    fn clone<'_0_1> = impl_Clone_for_usize::clone<'_0_1>
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (usize: Destruct)> = impl_Clone_for_usize::clone_from<'_0_1, '_1_1>[TraitClause0_1]
+    non-dyn-compatible
+}
+
 // Full name: core::clone::impls::{impl Clone for usize}::clone
-pub fn clone<'_0>(self: &'_0 usize) -> usize
+pub fn impl_Clone_for_usize::clone<'_0>(self: &'_0 usize) -> usize
 {
     let mut _0: usize; // return
     let self: &'1 usize; // arg #1
@@ -108,7 +126,7 @@ where
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source)
-    _3 = clone<'5>(move _4)
+    _3 = impl_Clone_for_usize::clone<'5>(move _4)
     ↳⚡ storage_dead(source)
         storage_dead(self)
         unwind_continue
@@ -126,11 +144,265 @@ where
     return
 }
 
-// Full name: core::clone::impls::{impl Clone for usize}
-impl "impl_Clone_for_usize" Clone for usize {
-    proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
-    fn clone<'_0_1> = clone<'_0_1>
-    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (usize: Destruct)> = impl_Clone_for_usize::clone_from<'_0_1, '_1_1>[TraitClause0_1]
+// Full name: core::marker::{impl Copy for usize}
+impl "impl_Copy_for_usize" Copy for usize {
+    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
+    proof ImpliedClause1: (usize: Clone) = impl_Clone_for_usize
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for bool}
+impl "impl_Clone_for_bool" Clone for bool {
+    proof ImpliedClause0: (bool: Sized) = {built_in impl Sized for bool}
+    fn clone<'_0_1> = impl_Clone_for_bool::clone<'_0_1>
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (bool: Destruct)> = impl_Clone_for_bool::clone_from<'_0_1, '_1_1>[TraitClause0_1]
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for bool}::clone
+pub fn impl_Clone_for_bool::clone<'_0>(self: &'_0 bool) -> bool
+{
+    let mut _0: bool; // return
+    let self: &'1 bool; // arg #1
+
+    storage_live(_0)
+    _0 = copy (*self)
+    storage_dead(self)
+    return
+}
+
+// Full name: core::clone::impls::{impl Clone for bool}::clone_from
+pub fn impl_Clone_for_bool::clone_from<'_0, '_1>(self: &'_0 mut bool, source: &'_1 bool)
+where
+    TraitClause0: (bool: Destruct),
+{
+    let mut _0: (); // return
+    let self: &'1 mut bool; // arg #1
+    let source: &'3 bool; // arg #2
+    let mut _3: bool; // anonymous local
+    let mut _4: &'4 bool; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &(*source)
+    _3 = impl_Clone_for_bool::clone<'5>(move _4)
+    ↳⚡ storage_dead(source)
+        storage_dead(self)
+        unwind_continue
+    storage_dead(_4)
+    drop[TraitClause0::drop_glue<'6>] (*self)
+    ↳⚡ (*self) = move _3
+        storage_dead(source)
+        storage_dead(self)
+        unwind_continue
+    (*self) = move _3
+    _0 = ()
+    storage_dead(_3)
+    storage_dead(source)
+    storage_dead(self)
+    return
+}
+
+// Full name: core::marker::{impl Copy for bool}
+impl "impl_Copy_for_bool" Copy for bool {
+    proof ImpliedClause0: (bool: MetaSized) = {built_in impl MetaSized for bool}
+    proof ImpliedClause1: (bool: Clone) = impl_Clone_for_bool
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for *const T}
+impl<T> Clone for *const T {
+    proof ImpliedClause0: (*const T: Sized) = {built_in impl Sized for *const T}
+    fn clone<'_0_1> = {impl Clone for *const T}::clone<'_0_1, T>
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (*const T: Destruct)> = {impl Clone for *const T}::clone_from<'_0_1, '_1_1, T>[TraitClause0_1]
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for *const T}::clone_from
+pub fn {impl Clone for *const T}::clone_from<'_0, '_1, T>(self: &'_0 mut *const T, source: &'_1 *const T)
+where
+    TraitClause0: (*const T: Destruct),
+    Outlives0: (T: '_0),
+    Outlives1: (T: '_1),
+{
+    let mut _0: (); // return
+    let self: &'1 mut *const T; // arg #1
+    let source: &'3 *const T; // arg #2
+    let mut _3: *const T; // anonymous local
+    let mut _4: &'4 *const T; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &(*source)
+    _3 = {impl Clone for *const T}::clone<'5, T>(move _4)
+    ↳⚡ storage_dead(source)
+        storage_dead(self)
+        unwind_continue
+    storage_dead(_4)
+    drop[TraitClause0::drop_glue<'6>] (*self)
+    ↳⚡ (*self) = move _3
+        storage_dead(source)
+        storage_dead(self)
+        unwind_continue
+    (*self) = move _3
+    _0 = ()
+    storage_dead(_3)
+    storage_dead(source)
+    storage_dead(self)
+    return
+}
+
+// Full name: core::clone::impls::{impl Clone for *const T}::clone
+pub fn {impl Clone for *const T}::clone<'_0, T>(self: &'_0 *const T) -> *const T
+where
+    Outlives0: (T: '_0),
+{
+    let mut _0: *const T; // return
+    let self: &'1 *const T; // arg #1
+
+    storage_live(_0)
+    _0 = copy (*self)
+    storage_dead(self)
+    return
+}
+
+// Full name: core::marker::{impl Copy for *const T}
+impl<T> Copy for *const T {
+    proof ImpliedClause0: (*const T: MetaSized) = {built_in impl MetaSized for *const T}
+    proof ImpliedClause1: (*const T: Clone) = {impl Clone for *const T}<T>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for *mut T}
+impl<T> Clone for *mut T {
+    proof ImpliedClause0: (*mut T: Sized) = {built_in impl Sized for *mut T}
+    fn clone<'_0_1> = {impl Clone for *mut T}::clone<'_0_1, T>
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (*mut T: Destruct)> = {impl Clone for *mut T}::clone_from<'_0_1, '_1_1, T>[TraitClause0_1]
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for *mut T}::clone_from
+pub fn {impl Clone for *mut T}::clone_from<'_0, '_1, T>(self: &'_0 mut *mut T, source: &'_1 *mut T)
+where
+    TraitClause0: (*mut T: Destruct),
+    Outlives0: (T: '_0),
+    Outlives1: (T: '_1),
+{
+    let mut _0: (); // return
+    let self: &'1 mut *mut T; // arg #1
+    let source: &'3 *mut T; // arg #2
+    let mut _3: *mut T; // anonymous local
+    let mut _4: &'4 *mut T; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &(*source)
+    _3 = {impl Clone for *mut T}::clone<'5, T>(move _4)
+    ↳⚡ storage_dead(source)
+        storage_dead(self)
+        unwind_continue
+    storage_dead(_4)
+    drop[TraitClause0::drop_glue<'6>] (*self)
+    ↳⚡ (*self) = move _3
+        storage_dead(source)
+        storage_dead(self)
+        unwind_continue
+    (*self) = move _3
+    _0 = ()
+    storage_dead(_3)
+    storage_dead(source)
+    storage_dead(self)
+    return
+}
+
+// Full name: core::clone::impls::{impl Clone for *mut T}::clone
+pub fn {impl Clone for *mut T}::clone<'_0, T>(self: &'_0 *mut T) -> *mut T
+where
+    Outlives0: (T: '_0),
+{
+    let mut _0: *mut T; // return
+    let self: &'1 *mut T; // arg #1
+
+    storage_live(_0)
+    _0 = copy (*self)
+    storage_dead(self)
+    return
+}
+
+// Full name: core::marker::{impl Copy for *mut T}
+impl<T> Copy for *mut T {
+    proof ImpliedClause0: (*mut T: MetaSized) = {built_in impl MetaSized for *mut T}
+    proof ImpliedClause1: (*mut T: Clone) = {impl Clone for *mut T}<T>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
+#[diagnostic_item("noop_method_clone")]
+pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(self: &'_1 &'_0 T) -> &'_0 T
+where
+    Outlives0: ('_0: '_1),
+    Outlives1: (T: '_0),
+{
+    let mut _0: &'1 T; // return
+    let self: &'4 &'5 T; // arg #1
+
+    storage_live(_0)
+    _0 = &(*(*self)) with_metadata(read (*self).metadata)
+    storage_dead(self)
+    return
+}
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}::clone_from
+pub fn {impl Clone for &'_0 T}::clone_from<'_0, '_1, '_2, T>(self: &'_1 mut &'_0 T, source: &'_2 &'_0 T)
+where
+    TraitClause0: (&'_0 T: Destruct),
+    Outlives0: ('_0: '_1),
+    Outlives1: (T: '_0),
+    Outlives2: ('_0: '_2),
+{
+    let mut _0: (); // return
+    let self: &'1 mut &'_0 T; // arg #1
+    let source: &'3 &'_0 T; // arg #2
+    let mut _3: &'_0 T; // anonymous local
+    let mut _4: &'4 &'_0 T; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &(*source)
+    _3 = {impl Clone for &'_0 T}::clone<'_0, '5, T>(move _4)
+    ↳⚡ storage_dead(source)
+        storage_dead(self)
+        unwind_continue
+    storage_dead(_4)
+    drop[TraitClause0::drop_glue<'6>] (*self)
+    ↳⚡ (*self) = move _3
+        storage_dead(source)
+        storage_dead(self)
+        unwind_continue
+    (*self) = move _3
+    _0 = ()
+    storage_dead(_3)
+    storage_dead(source)
+    storage_dead(self)
+    return
+}
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}
+impl<'_0, T> Clone for &'_0 T
+where
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
+    fn clone<'_0_1> = {impl Clone for &'_0 T}::clone<'_0, '_0_1, T>
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (&'_0 T: Destruct)> = {impl Clone for &'_0 T}::clone_from<'_0, '_0_1, '_1_1, T>[TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -167,16 +439,6 @@ pub struct Location<'a> {
 pub fn caller_location() -> &'static Location<'static>
 = <intrinsic:caller_location>
 
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
 // Full name: core::intrinsics::ctpop
 #[rustc_intrinsic]
 pub fn ctpop<T>(x_1: T) -> u32
@@ -203,10 +465,13 @@ where
     TraitClause0: (T: Sized),
 = <intrinsic:copy_nonoverlapping>
 
-// Full name: core::marker::{impl Copy for usize}
-impl "impl_Copy_for_usize" Copy for usize {
-    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
-    proof ImpliedClause1: (usize: Clone) = impl_Clone_for_usize
+// Full name: core::marker::{impl Copy for &'_0 T}
+impl<'_0, T> Copy for &'_0 T
+where
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (&'_0 T: MetaSized) = {built_in impl MetaSized for &'_0 T}
+    proof ImpliedClause1: (&'_0 T: Clone) = {impl Clone for &'_0 T}<'_, T>
     non-dyn-compatible
 }
 
@@ -413,7 +678,7 @@ fn core::panic::panic_info::{PanicInfo<'a>}::new<'a>(message: &'a Arguments<'a>,
     storage_live(_5)
     _5 = copy location
     storage_live(_6)
-    _6 = &(*message) with_metadata(copy message.metadata)
+    _6 = &(*message) with_metadata(read message.metadata)
     storage_live(_7)
     _7 = copy can_unwind
     storage_live(_8)
@@ -468,7 +733,7 @@ fn core::panicking::panic_nounwind_fmt::runtime<'_0>(fmt: Arguments<'_0>, force_
         storage_live(_6)
         storage_live(_7)
         _7 = &fmt
-        _6 = &(*_7) with_metadata(copy _7.metadata)
+        _6 = &(*_7) with_metadata(read _7.metadata)
         storage_live(_8)
         _8 = caller<'22>()
         ↳⚡ storage_dead(_11)
@@ -530,7 +795,7 @@ pub fn panic_nounwind_fmt<'_0>(fmt: Arguments<'_0>, force_no_backtrace: bool) ->
     _3 = (move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
-    _0 = core::panicking::panic_nounwind_fmt::runtime<'19>(move _3._0, move _3._1)
+    _0 = core::panicking::panic_nounwind_fmt::runtime<'22>(move _3._0, move _3._1)
     ↳⚡ storage_dead(_3)
         storage_dead(force_no_backtrace)
         storage_dead(fmt)
@@ -568,7 +833,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
         storage_live(_5)
         storage_live(_6)
         storage_live(_7)
-        _7 = &(*msg) with_metadata(copy msg.metadata)
+        _7 = &(*msg) with_metadata(read msg.metadata)
         _6 = from_str<'6>(move _7)
         ↳⚡ storage_dead(_6)
             storage_dead(_5)
@@ -681,7 +946,7 @@ pub fn core::num::{isize}::MAX() -> isize
 
     storage_live(_0)
     storage_live(_1)
-    _1 = copy core::num::{usize}::MAX panic.>> const 1i32
+    _1 = read core::num::{usize}::MAX panic.>> const 1i32
     _0 = cast<isize>(move _1)
     storage_dead(_1)
     return
@@ -723,7 +988,7 @@ where
             storage_live(n)
             n = copy _1
             storage_live(_3)
-            _3 = cast<usize>(copy core::num::{isize}::MAX)
+            _3 = cast<usize>(read core::num::{isize}::MAX)
             storage_live(_4)
             _4 = copy n
             _0 = move _3 panic./ move _4
@@ -734,7 +999,7 @@ where
             return
         },
     }
-    _0 = copy core::num::{usize}::MAX
+    _0 = read core::num::{usize}::MAX
     storage_dead(_1)
     return
 }
@@ -915,7 +1180,7 @@ where
     let mut _0: usize; // return
 
     storage_live(_0)
-    _0 = copy SIZE<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
+    _0 = read SIZE<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
     return
 }
 
@@ -927,7 +1192,7 @@ where
     let mut _0: usize; // return
 
     storage_live(_0)
-    _0 = copy ALIGN<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
+    _0 = read ALIGN<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
     return
 }
 

@@ -55,6 +55,46 @@ where
     Outlives2: (I: '_0),
 = <opaque>
 
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::array::{impl Clone for [T; N]}::clone
+pub fn impl_Clone_for_array::clone<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+    Outlives0: (T: '_0),
+= <opaque>
+
+// Full name: core::array::{impl Clone for [T; N]}
+impl<T, const N : usize> "impl_Clone_for_array" Clone for [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+{
+    proof ImpliedClause0: ([T; N]: Sized) = {built_in impl Sized for [T; N]}
+    fn clone<'_0_1> = impl_Clone_for_array::clone<'_0_1, T, N>[TraitClause0, TraitClause1]
+    non-dyn-compatible
+}
+
+// Full name: core::array::{impl Copy for [T; N]}
+impl<T, const N : usize> "impl_Copy_for_array" Copy for [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
+{
+    proof ImpliedClause0: ([T; N]: MetaSized) = {built_in impl MetaSized for [T; N]}
+    proof ImpliedClause1: ([T; N]: Clone) = impl_Clone_for_array<T, N>[TraitClause0, TraitClause1::ImpliedClause1]
+    non-dyn-compatible
+}
+
 // Full name: core::array::{[T; N]}::as_slice
 pub fn as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
 where
@@ -63,13 +103,56 @@ where
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}::clone
-pub fn clone<'_0>(_1: &'_0 i32) -> i32
+pub fn impl_Clone_for_i32::clone<'_0>(_1: &'_0 i32) -> i32
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}
 impl "impl_Clone_for_i32" Clone for i32 {
     proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
-    fn clone<'_0_1> = clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_i32::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for usize}::clone
+pub fn impl_Clone_for_usize::clone<'_0>(_1: &'_0 usize) -> usize
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for usize}
+impl "impl_Clone_for_usize" Clone for usize {
+    proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
+    fn clone<'_0_1> = impl_Clone_for_usize::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for u32}::clone
+pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u32}
+impl "impl_Clone_for_u32" Clone for u32 {
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
+    fn clone<'_0_1> = impl_Clone_for_u32::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for i32}
+impl "impl_Copy_for_i32" Copy for i32 {
+    proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
+    proof ImpliedClause1: (i32: Clone) = impl_Clone_for_i32
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for usize}
+impl "impl_Copy_for_usize" Copy for usize {
+    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
+    proof ImpliedClause1: (usize: Clone) = impl_Clone_for_usize
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for u32}
+impl "impl_Copy_for_u32" Copy for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
     non-dyn-compatible
 }
 
@@ -429,7 +512,7 @@ fn slice_pat3()
     let mut _12: usize; // anonymous local
     let mut _13: usize; // anonymous local
     let mut _14: &'10 [i32; 4usize]; // anonymous local
-    let mut _15: &'15 [i32; 4usize]; // anonymous local
+    let mut _15: &'18 [i32; 4usize]; // anonymous local
     let mut _16: [i32; 4usize]; // anonymous local
     let mut _17: &'_ [i32]; // anonymous local
     let mut _18: &'_ i32; // anonymous local
@@ -475,33 +558,33 @@ fn slice_pat3()
     ↳⚡ unwind_continue
     storage_live(_a)
     storage_live(_17)
-    _17 = &(*slice) with_metadata(copy slice.metadata)
+    _17 = &(*slice) with_metadata(read slice.metadata)
     storage_live(_18)
     _18 = impl_SliceIndex_slice_for_usize::index<'_, i32>[{built_in impl Sized for i32}](const 0usize, move _17)
     ↳⚡ undefined_behavior
     _a = &(*_18)
     storage_live(_b)
     storage_live(_12)
-    _12 = copy slice.metadata ub.- const 1usize
+    _12 = read slice.metadata ub.- const 1usize
     storage_live(_13)
-    _13 = copy _12 ub.- const 1usize
+    _13 = read _12 ub.- const 1usize
     storage_live(_19)
-    _19 = &(*slice) with_metadata(copy slice.metadata)
+    _19 = &(*slice) with_metadata(read slice.metadata)
     storage_live(_20)
-    _20 = copy slice.metadata ub.- const 1usize
+    _20 = read slice.metadata ub.- const 1usize
     storage_live(_21)
-    _21 = Range { start: const 1usize, end: copy _20 }
+    _21 = Range { start: const 1usize, end: read _20 }
     storage_live(_22)
     _22 = impl_SliceIndex_slice_for_Range_usize::index<'_, i32>[{built_in impl Sized for i32}](move _21, move _19)
     ↳⚡ undefined_behavior
-    _b = &(*_22) with_metadata(copy _13)
+    _b = &(*_22) with_metadata(read _13)
     storage_live(_c)
     storage_live(_23)
-    _23 = &(*slice) with_metadata(copy slice.metadata)
+    _23 = &(*slice) with_metadata(read slice.metadata)
     storage_live(_24)
-    _24 = copy slice.metadata ub.- const 1usize
+    _24 = read slice.metadata ub.- const 1usize
     storage_live(_25)
-    _25 = impl_SliceIndex_slice_for_usize::index<'_, i32>[{built_in impl Sized for i32}](copy _24, move _23)
+    _25 = impl_SliceIndex_slice_for_usize::index<'_, i32>[{built_in impl Sized for i32}](read _24, move _23)
     ↳⚡ undefined_behavior
     _c = &(*_25)
     _0 = ()
@@ -568,7 +651,7 @@ fn slice_pat4<'_0>(x: &'_0 [u32])
     }
     storage_live(_y)
     storage_live(_7)
-    _7 = &(*x) with_metadata(copy x.metadata)
+    _7 = &(*x) with_metadata(read x.metadata)
     storage_live(_8)
     _8 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](const 0usize, move _7)
     ↳⚡ undefined_behavior
@@ -612,7 +695,7 @@ fn slice_pat5<'_0>(x: &'_0 Unsized)
     storage_live(_6)
     _0 = ()
     _ = (*x)._0
-    _3 = &raw const (*x)._0 with_metadata(copy x.metadata)
+    _3 = &raw const (*x)._0 with_metadata(read x.metadata)
     _4 = noretag copy _3.metadata
     _2 = move _4
     _5 = const 1usize
@@ -632,7 +715,7 @@ fn slice_pat5<'_0>(x: &'_0 Unsized)
     }
     storage_live(_y)
     storage_live(_8)
-    _8 = &(*x)._0 with_metadata(copy x.metadata)
+    _8 = &(*x)._0 with_metadata(read x.metadata)
     storage_live(_9)
     _9 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](const 0usize, move _8)
     ↳⚡ undefined_behavior

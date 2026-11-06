@@ -680,7 +680,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
 
     fn operand(&self, span: Span, operand: &Operand) -> Result<mini::ValueExpr> {
         Ok(match operand {
-            Operand::Copy(place) | Operand::Move(place) => {
+            Operand::Copy(place, _) | Operand::Read(place) | Operand::Move(place) => {
                 // Charon translates dyn dispatch to a vtable-field read. MiniRust vtables are
                 // opaque, so read the method through its lookup operation.
                 if let PlaceKind::Projection(vtable, ProjectionElem::Field(None, field)) =

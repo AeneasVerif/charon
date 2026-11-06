@@ -21,6 +21,54 @@ where
     Outlives0: (T: '_0),
 = <opaque>
 
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
+#[diagnostic_item("noop_method_clone")]
+pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
+where
+    Outlives0: ('_0: '_1),
+    Outlives1: (T: '_0),
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}
+impl<'_0, T> Clone for &'_0 T
+where
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
+    fn clone<'_0_1> = {impl Clone for &'_0 T}::clone<'_0, '_0_1, T>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for &'_0 T}
+impl<'_0, T> Copy for &'_0 T
+where
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (&'_0 T: MetaSized) = {built_in impl MetaSized for &'_0 T}
+    proof ImpliedClause1: (&'_0 T: Clone) = {impl Clone for &'_0 T}<'_, T>
+    non-dyn-compatible
+}
+
 // Full name: core::option::Option
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
@@ -100,7 +148,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = copy slice
-    _2 = into_iter<'68, T>[TraitClause0](move _3)
+    _2 = into_iter<'71, T>[TraitClause0](move _3)
     ↳⚡ storage_dead(slice)
         unwind_continue
     storage_dead(_3)
@@ -112,7 +160,7 @@ where
         storage_live(_7)
         _7 = &mut iter
         _6 = &two-phase-mut (*_7)
-        _5 = next<'70, '72, T>[TraitClause0](move _6)
+        _5 = next<'73, '75, T>[TraitClause0](move _6)
         ↳⚡ storage_dead(slice)
             unwind_continue
         storage_dead(_6)
@@ -137,7 +185,7 @@ where
         storage_live(_14)
         storage_live(_15)
         _15 = &(*args_11._0)
-        _14 = new_debug<'83, '96, &'85 T>[{built_in impl Sized for &'87 T}, {impl#8}<'94, T>[TraitClause1]](move _15)
+        _14 = new_debug<'89, '102, &'91 T>[{built_in impl Sized for &'93 T}, {impl#9}<'100, T>[TraitClause1]](move _15)
         ↳⚡ storage_dead(slice)
             unwind_continue
         storage_dead(_15)
@@ -154,14 +202,14 @@ where
         storage_live(_19)
         _19 = &args_13
         _18 = &(*_19)
-        _10 = new<'103, 7usize, 1usize>(move _16, move _18)
+        _10 = new<'109, 7usize, 1usize>(move _16, move _18)
         ↳⚡ storage_dead(slice)
             unwind_continue
         storage_dead(_19)
         storage_dead(_18)
         storage_dead(_17)
         storage_dead(_16)
-        _9 = _eprint<'105>(move _10)
+        _9 = _eprint<'111>(move _10)
         ↳⚡ storage_dead(slice)
             unwind_continue
         storage_dead(_10)
@@ -215,7 +263,7 @@ fn main()
     _2 = as_slice<'_, i32, 3usize>[{built_in impl Sized for i32}](move _3)
     ↳⚡ undefined_behavior
     storage_dead(_3)
-    _1 = debug_slice<'9, i32>[{built_in impl Sized for i32}, {impl#9}](move _2)
+    _1 = debug_slice<'9, i32>[{built_in impl Sized for i32}, {impl#10}](move _2)
     ↳⚡ storage_dead(_5)
         unwind_continue
     storage_dead(_2)

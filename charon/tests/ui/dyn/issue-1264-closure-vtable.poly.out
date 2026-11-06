@@ -16,9 +16,47 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
 struct () {}
 
 vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
+
+// Full name: core::clone::impls::{impl Clone for u32}::clone
+pub fn clone<'_0>(_1: &'_0 u32) -> u32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u32}
+impl "impl_Clone_for_u32" Clone for u32 {
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
+    fn clone<'_0_1> = clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for u32}
+impl "impl_Copy_for_u32" Copy for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
+    non-dyn-compatible
+}
 
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
@@ -1224,10 +1262,10 @@ fn main()
     storage_dead(_3)
     storage_live(_y_4)
     storage_live(_5)
-    _5 = &(*f) with_metadata(copy f.metadata)
+    _5 = &(*f) with_metadata(read f.metadata)
     storage_live(_6)
     _6 = (const 1u32,)
-    _y_4 = (copy (*_5.metadata).method_call)<'83>(move _5, move _6)
+    _y_4 = (read (*_5.metadata).method_call)<'83>(move _5, move _6)
     ↳⚡ storage_dead(_31)
         storage_dead(_30)
         storage_dead(_29)
@@ -1256,10 +1294,10 @@ fn main()
     storage_dead(_10)
     storage_live(_y_13)
     storage_live(_14)
-    _14 = &(*g) with_metadata(copy g.metadata)
+    _14 = &(*g) with_metadata(read g.metadata)
     storage_live(_15)
     _15 = (const 2u32,)
-    _y_13 = (copy (*_14.metadata).method_call)<'110>(move _14, move _15)
+    _y_13 = (read (*_14.metadata).method_call)<'110>(move _14, move _15)
     ↳⚡ storage_dead(_31)
         storage_dead(_30)
         storage_dead(_29)
@@ -1407,7 +1445,7 @@ fn main()
     storage_dead(_23)
     storage_live(_y_24)
     storage_live(_25)
-    _25 = &(*k) with_metadata(copy k.metadata)
+    _25 = &(*k) with_metadata(read k.metadata)
     storage_live(_26)
     storage_live(_27)
     storage_live(_28)
@@ -1415,7 +1453,7 @@ fn main()
     _28 = &(*_29)
     _27 = &(*_28)
     _26 = (move _27,)
-    _y_24 = (copy (*_25.metadata).method_call)<'177>(move _25, move _26)
+    _y_24 = (read (*_25.metadata).method_call)<'177>(move _25, move _26)
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'192, (dyn FnOnce<(), Output = u32> + '187), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = u32> + '187)}, {built_in impl Sized for Global}]] _w
         ↳⚡ storage_dead(_31)
             storage_dead(_30)

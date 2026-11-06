@@ -176,6 +176,21 @@ where
     TraitClause0: (I: Iterator<Clause0_Item>),
 = <opaque>
 
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for usize}
+impl "impl_Copy_for_usize" Copy for usize {
+    proof ImpliedClause0: (usize: Clone) = impl_Clone_for_usize
+    non-dyn-compatible
+}
+
 // Full name: test_crate::iter
 fn iter(n: usize)
 {

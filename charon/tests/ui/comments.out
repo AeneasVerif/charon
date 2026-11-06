@@ -66,6 +66,35 @@ impl "impl_Clone_for_u32" Clone for u32 {
     non-dyn-compatible
 }
 
+// Full name: core::clone::impls::{impl Clone for usize}::clone
+pub fn impl_Clone_for_usize::clone<'_0>(_1: &'_0 usize) -> usize
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for usize}
+impl "impl_Clone_for_usize" Clone for usize {
+    proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
+    fn clone<'_0_1> = impl_Clone_for_usize::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
+#[diagnostic_item("noop_method_clone")]
+pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
+where
+    Outlives0: ('_0: '_1),
+    Outlives1: (T: '_0),
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}
+impl<'_0, T> Clone for &'_0 T
+where
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
+    fn clone<'_0_1> = {impl Clone for &'_0 T}::clone<'_0, '_0_1, T>
+    non-dyn-compatible
+}
+
 // Full name: core::default::Default
 #[diagnostic_item("Default")]
 pub trait Default<Self>
@@ -78,6 +107,40 @@ pub trait Default<Self>
 // Full name: core::default::{impl Default for u32}::default
 pub fn impl_Default_for_u32::default() -> u32
 = <opaque>
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for u32}
+impl "impl_Copy_for_u32" Copy for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for usize}
+impl "impl_Copy_for_usize" Copy for usize {
+    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
+    proof ImpliedClause1: (usize: Clone) = impl_Clone_for_usize
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for &'_0 T}
+impl<'_0, T> Copy for &'_0 T
+where
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (&'_0 T: MetaSized) = {built_in impl MetaSized for &'_0 T}
+    proof ImpliedClause1: (&'_0 T: Clone) = {impl Clone for &'_0 T}<'_, T>
+    non-dyn-compatible
+}
 
 struct () {}
 
@@ -317,7 +380,7 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
         _9 = copy i
         storage_live(_10)
         storage_live(_11)
-        _11 = &(*s) with_metadata(copy s.metadata)
+        _11 = &(*s) with_metadata(read s.metadata)
         _10 = len<'4, u32>[{built_in impl Sized for u32}](move _11)
         ↳⚡ storage_dead(_24)
             storage_dead(_20)
@@ -339,7 +402,7 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
         // Add to running sum
         _13 = copy i
         storage_live(_25)
-        _25 = &(*s) with_metadata(copy s.metadata)
+        _25 = &(*s) with_metadata(read s.metadata)
         storage_live(_26)
         _26 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _13, move _25)
         ↳⚡ undefined_behavior
@@ -536,7 +599,7 @@ fn foo()
     let mut _31: Option<Arguments<'30>>[{built_in impl Sized for Arguments<'30>}]; // anonymous local
     let mut _32: &'34 u32; // anonymous local
     let mut _33: &'35 u32; // anonymous local
-    let mut _34: &'56 u32; // anonymous local
+    let mut _34: &'62 u32; // anonymous local
     let mut _35: u32; // anonymous local
     let mut _36: &'_ [u32; 10usize]; // anonymous local
     let mut _37: &'_ u32; // anonymous local
@@ -756,7 +819,7 @@ pub fn thing()
     storage_live(x)
     storage_live(_2)
     // This comment belongs above the assignment to `x` and not above intermediate computations.
-    _2 = copy CONSTANT panic.>> const 3i32
+    _2 = read CONSTANT panic.>> const 3i32
     _3 = copy _2 panic.+ const 12u32
     x = move _3
     storage_dead(_2)

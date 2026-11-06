@@ -34,7 +34,7 @@ fn main()
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = copy IS_ZST::<()>
+    _1 = read IS_ZST::<()>
     storage_dead(_1)
     _0 = ()
     return

@@ -1,6 +1,6 @@
 //! Reconstruct places that rustc split with `CopyForDeref` in elaborated MIR.
 //!
-//! A statement like `*tuple.1 = x` can become `_tmp = noretag copy tuple.1; *_tmp = x`.
+//! A statement like `*tuple.1 = x` can become `_tmp = noretag read tuple.1; *_tmp = x`.
 //! The copy only reads the pointer; we put the dereference back on `tuple.1`. This also
 //! applies to shared references and boxes, and to reads of pointer metadata.
 use std::ops::ControlFlow;
@@ -66,7 +66,10 @@ impl VisitBody for UseCollector<'_> {
             let info = &mut self.copies[local];
             if info.assignment.is_some() {
                 info.invalid = true;
-            } else if let Rvalue::Use(Operand::Copy(source), WithRetag::No) = rvalue
+            } else if let Rvalue::Use(
+                Operand::Copy(source, _) | Operand::Read(source),
+                WithRetag::No,
+            ) = rvalue
                 && (matches!(source.ty().kind(), TyKind::Ref(..)) || source.ty().is_box())
                 && !info.invalid
             {

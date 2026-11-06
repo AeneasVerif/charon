@@ -47,6 +47,62 @@ pub unsafe trait Allocator<Self>
     vtable: core::alloc::Allocator::{vtable}
 }
 
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for u64}::clone
+pub fn impl_Clone_for_u64::clone<'_0>(_1: &'_0 u64) -> u64
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u64}
+impl "impl_Clone_for_u64" Clone for u64 {
+    proof ImpliedClause0: (u64: Sized) = {built_in impl Sized for u64}
+    fn clone<'_0_1> = impl_Clone_for_u64::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for usize}::clone
+pub fn impl_Clone_for_usize::clone<'_0>(_1: &'_0 usize) -> usize
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for usize}
+impl "impl_Clone_for_usize" Clone for usize {
+    proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
+    fn clone<'_0_1> = impl_Clone_for_usize::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for u64}
+impl "impl_Copy_for_u64" Copy for u64 {
+    proof ImpliedClause0: (u64: MetaSized) = {built_in impl MetaSized for u64}
+    proof ImpliedClause1: (u64: Clone) = impl_Clone_for_u64
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for usize}
+impl "impl_Copy_for_usize" Copy for usize {
+    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
+    proof ImpliedClause1: (usize: Clone) = impl_Clone_for_usize
+    non-dyn-compatible
+}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -191,14 +247,14 @@ pub fn f<'_0>(ctx: &'_0 mut [u64])
     _0 = ()
     storage_live(acc)
     storage_live(_3)
-    _3 = &two-phase-mut (*ctx) with_metadata(copy ctx.metadata)
+    _3 = &two-phase-mut (*ctx) with_metadata(read ctx.metadata)
     acc = split_at_mut<'19, u64>[{built_in impl Sized for u64}](move _3, const 0usize)
     ↳⚡ unwind_continue
     storage_dead(_3)
     storage_live(_4)
     _4 = const 0usize
     storage_live(_5)
-    _5 = &mut (*acc._1) with_metadata(copy acc._1.metadata)
+    _5 = &mut (*acc._1) with_metadata(read acc._1.metadata)
     storage_live(_6)
     _6 = impl_SliceIndex_slice_for_usize::index_mut<'_, u64>[{built_in impl Sized for u64}](copy _4, move _5)
     ↳⚡ undefined_behavior

@@ -14,6 +14,44 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for i32}::clone
+pub fn clone<'_0>(_1: &'_0 i32) -> i32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for i32}
+impl "impl_Clone_for_i32" Clone for i32 {
+    proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
+    fn clone<'_0_1> = clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for i32}
+impl "impl_Copy_for_i32" Copy for i32 {
+    proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
+    proof ImpliedClause1: (i32: Clone) = impl_Clone_for_i32
+    non-dyn-compatible
+}
+
 // Full name: core::mem::maybe_uninit::MaybeUninit
 #[lang_item(MaybeUninit)]
 pub opaque type MaybeUninit<T>
@@ -64,7 +102,7 @@ pub fn promoted_scalar() -> &'static i32
     storage_live(_0)
     storage_live(_2)
     storage_live(_1)
-    _2 = copy test_crate::promoted_scalar::{promoted_const}
+    _2 = read test_crate::promoted_scalar::{promoted_const}
     _1 = &(*_2)
     _0 = &(*_1)
     storage_dead(_1)
@@ -84,7 +122,7 @@ pub fn promoted_array() -> &'static [i32; 3usize]
     storage_live(_0)
     storage_live(_2)
     storage_live(_1)
-    _2 = copy test_crate::promoted_array::{promoted_const}
+    _2 = read test_crate::promoted_array::{promoted_const}
     _1 = &(*_2)
     _0 = &(*_1)
     storage_dead(_1)
@@ -107,7 +145,7 @@ pub fn promoted_local() -> i32
     storage_live(_3)
     storage_live(r)
     _2 = const 2i32 panic.+ const 3i32
-    _3 = copy test_crate::promoted_local::{promoted_const}
+    _3 = read test_crate::promoted_local::{promoted_const}
     r = &(*_3)
     fake_read(r)
     _0 = copy (*r)
@@ -182,7 +220,7 @@ pub fn promoted_bools() -> &'static [bool; 2usize]
     storage_live(_0)
     storage_live(_2)
     storage_live(_1)
-    _2 = copy test_crate::promoted_bools::{promoted_const}
+    _2 = read test_crate::promoted_bools::{promoted_const}
     _1 = &(*_2)
     _0 = &(*_1)
     storage_dead(_1)
@@ -202,7 +240,7 @@ pub fn promoted_chars() -> &'static [char; 2usize]
     storage_live(_0)
     storage_live(_2)
     storage_live(_1)
-    _2 = copy test_crate::promoted_chars::{promoted_const}
+    _2 = read test_crate::promoted_chars::{promoted_const}
     _1 = &(*_2)
     _0 = &(*_1)
     storage_dead(_1)
@@ -222,7 +260,7 @@ pub fn promoted_str() -> &'static str
     _1 = &raw const test_crate::{promoted_const#2}
     storage_live(_2)
     _2 = unsize_cast<*const str, 5usize>(move _1)
-    _0 = &(*_2) with_metadata(copy _2.metadata)
+    _0 = &(*_2) with_metadata(read _2.metadata)
     storage_dead(_2)
     storage_dead(_1)
     return

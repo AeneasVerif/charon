@@ -19,7 +19,7 @@ fn inherent::<u8>() -> u8
     let mut _0: u8; // return
 
     storage_live(_0)
-    _0 = copy test_crate::{Wrapper<T>[TraitClause0]}::inherent::VALUE
+    _0 = read test_crate::{Wrapper<T>[TraitClause0]}::inherent::VALUE
     return
 }
 
@@ -42,7 +42,7 @@ fn method::<u16>() -> u8
     let mut _0: u8; // return
 
     storage_live(_0)
-    _0 = copy impl_Trait_for_Wrapper::method::VALUE
+    _0 = read impl_Trait_for_Wrapper::method::VALUE
     return
 }
 

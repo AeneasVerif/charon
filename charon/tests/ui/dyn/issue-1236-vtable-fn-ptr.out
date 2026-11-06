@@ -129,10 +129,10 @@ fn main()
         storage_dead(_4);
         storage_live(_5);
         storage_live(_6);
-        _6 = &(*some_foo) with_metadata(copy some_foo.metadata);
+        _6 = &(*some_foo) with_metadata(read some_foo.metadata);
         storage_live(_7);
-        _7 = cast<fn(&'8 (dyn Foo + '9))>(copy (*_6.metadata).method_foo);
-        _5 = (copy _7)(move _6) -> bb1 (unwind: bb2);
+        _7 = cast<fn(&'8 (dyn Foo + '9))>(read (*_6.metadata).method_foo);
+        _5 = (read _7)(move _6) -> bb1 (unwind: bb2);
     }
 
     bb1: {

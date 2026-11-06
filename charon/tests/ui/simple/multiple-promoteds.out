@@ -1,5 +1,67 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
+#[diagnostic_item("noop_method_clone")]
+pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
+where
+    Outlives0: ('_0: '_1),
+    Outlives1: (T: '_0),
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}
+impl<'_0, T> Clone for &'_0 T
+where
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
+    fn clone<'_0_1> = {impl Clone for &'_0 T}::clone<'_0, '_0_1, T>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for &'_0 T}
+impl<'_0, T> Copy for &'_0 T
+where
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (&'_0 T: MetaSized) = {built_in impl MetaSized for &'_0 T}
+    proof ImpliedClause1: (&'_0 T: Clone) = {impl Clone for &'_0 T}<'_, T>
+    non-dyn-compatible
+}
+
 // Full name: core::ops::arith::{impl Add<&'_0 u32> for &'_1 u32}::add
 #[track_caller]
 pub fn add<'_0, '_1>(_1: &'_1 u32, _2: &'_0 u32) -> u32
@@ -21,10 +83,10 @@ fn six() -> u32
     let mut _8: &'6 u32; // anonymous local
     let mut _9: &'7 u32; // anonymous local
     let mut _10: &'8 u32; // anonymous local
-    let mut _11: &'11 u32; // anonymous local
+    let mut _11: &'17 u32; // anonymous local
     let mut _12: u32; // anonymous local
     let mut _13: u32; // anonymous local
-    let mut _14: &'12 u32; // anonymous local
+    let mut _14: &'18 u32; // anonymous local
     let mut _15: u32; // anonymous local
     let mut _16: u32; // anonymous local
 
@@ -61,7 +123,7 @@ fn six() -> u32
     _5 = copy x
     storage_live(_6)
     _6 = copy y
-    _0 = add<'9, '10>(move _5, move _6)
+    _0 = add<'15, '16>(move _5, move _6)
     ↳⚡ storage_dead(_8)
         storage_dead(_7)
         storage_dead(_4)

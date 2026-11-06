@@ -151,6 +151,16 @@ impl core::clone::Clone for usize {
     non-dyn-compatible
 }
 
+pub fn core::clone::impls::{impl core::clone::Clone for u16}::clone<'_0>(_1: &'_0 u16) -> u16
+= <opaque>
+
+// Full name: core::clone::impls::{impl core::clone::Clone for u16}
+impl core::clone::Clone for u16 {
+    proof ImpliedClause0: (u16: core::marker::Sized) = {built_in impl core::marker::Sized for u16}
+    fn clone<'_0_1> = core::clone::impls::{impl core::clone::Clone for u16}::clone<'_0_1>
+    non-dyn-compatible
+}
+
 #[lang_item(PartialEq)]
 #[diagnostic_item("PartialEq")]
 pub trait core::cmp::PartialEq<Self, Rhs>
@@ -308,6 +318,20 @@ where
     TraitClause0: (I: core::marker::Sized),
     TraitClause1: (I: core::iter::traits::iterator::Iterator),
 = <opaque>
+
+// Full name: core::marker::{impl core::marker::Copy for usize}
+impl core::marker::Copy for usize {
+    proof ImpliedClause0: (usize: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for usize}
+    proof ImpliedClause1: (usize: core::clone::Clone) = core::clone::impls::{impl core::clone::Clone for usize}
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl core::marker::Copy for u16}
+impl core::marker::Copy for u16 {
+    proof ImpliedClause0: (u16: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for u16}
+    proof ImpliedClause1: (u16: core::clone::Clone) = core::clone::impls::{impl core::clone::Clone for u16}
+    non-dyn-compatible
+}
 
 pub fn core::num::{u16}::wrapping_add(_1: u16, _2: u16) -> u16
 = <opaque>
@@ -910,7 +934,7 @@ fn test_crate::poly_element_ntt_layer::x86_64-apple-darwin<'_0, '_1>(a: &'_0 mut
     storage_live(_0)
     _0 = ()
     storage_live(_3)
-    _3 = test_crate::cpu_features_present(copy test_crate::SYMCRYPT_CPU_FEATURE_SSE2)
+    _3 = test_crate::cpu_features_present(read test_crate::SYMCRYPT_CPU_FEATURE_SSE2)
     ↳⚡ storage_dead(b)
         storage_dead(a)
         unwind_continue
@@ -969,7 +993,7 @@ fn test_crate::poly_element_ntt_layer::aarch64-apple-darwin<'_0, '_1>(a: &'_0 mu
     storage_live(_0)
     _0 = ()
     storage_live(_3)
-    _3 = test_crate::cpu_features_present(copy test_crate::SYMCRYPT_CPU_FEATURE_NEON)
+    _3 = test_crate::cpu_features_present(read test_crate::SYMCRYPT_CPU_FEATURE_NEON)
     ↳⚡ storage_dead(b)
         storage_dead(a)
         unwind_continue

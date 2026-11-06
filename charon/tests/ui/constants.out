@@ -14,6 +14,62 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for u32}::clone
+pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u32}
+impl "impl_Clone_for_u32" Clone for u32 {
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
+    fn clone<'_0_1> = impl_Clone_for_u32::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for i32}::clone
+pub fn impl_Clone_for_i32::clone<'_0>(_1: &'_0 i32) -> i32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for i32}
+impl "impl_Clone_for_i32" Clone for i32 {
+    proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
+    fn clone<'_0_1> = impl_Clone_for_i32::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for u32}
+impl "impl_Copy_for_u32" Copy for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for i32}
+impl "impl_Copy_for_i32" Copy for i32 {
+    proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
+    proof ImpliedClause1: (i32: Clone) = impl_Clone_for_i32
+    non-dyn-compatible
+}
+
 struct () {}
 
 // Full name: core::marker::Destruct
@@ -58,7 +114,7 @@ pub fn X1() -> u32
     let mut _0: u32; // return
 
     storage_live(_0)
-    _0 = copy MAX
+    _0 = read MAX
     return
 }
 
@@ -284,7 +340,7 @@ pub fn unwrap_y() -> i32
 
     storage_live(_0)
     storage_live(_1)
-    _1 = copy Y
+    _1 = read Y
     _0 = copy _1.value
     storage_dead(_1)
     return
@@ -323,7 +379,7 @@ pub fn get_z1() -> i32
     let mut _0: i32; // return
 
     storage_live(_0)
-    _0 = copy Z1
+    _0 = read Z1
     return
 }
 
@@ -372,7 +428,7 @@ pub fn Q2() -> i32
     let mut _0: i32; // return
 
     storage_live(_0)
-    _0 = copy Q1
+    _0 = read Q1
     return
 }
 
@@ -385,7 +441,7 @@ pub fn Q3() -> i32
     let mut _0: i32; // return
 
     storage_live(_0)
-    _0 = add(copy Q2, const 3i32)
+    _0 = add(read Q2, const 3i32)
     ↳⚡ unwind_continue
     return
 }
@@ -405,10 +461,10 @@ pub fn get_z2() -> i32
     storage_live(_2)
     _2 = get_z1()
     ↳⚡ unwind_continue
-    _1 = add(move _2, copy Q3)
+    _1 = add(move _2, read Q3)
     ↳⚡ unwind_continue
     storage_dead(_2)
-    _0 = add(copy Q1, move _1)
+    _0 = add(read Q1, move _1)
     ↳⚡ unwind_continue
     storage_dead(_1)
     return
@@ -451,7 +507,7 @@ pub fn S3() -> Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Size
     let mut _0: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
 
     storage_live(_0)
-    _0 = copy P3
+    _0 = read P3
     return
 }
 
@@ -506,7 +562,7 @@ where
     let mut _0: usize; // return
 
     storage_live(_0)
-    _0 = copy LEN<T, N>[TraitClause0]
+    _0 = read LEN<T, N>[TraitClause0]
     return
 }
 

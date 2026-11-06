@@ -111,7 +111,9 @@ impl<'a> PythonTranspiler<'a> {
 
     fn operand(&self, operand: &Operand) -> String {
         match operand {
-            Operand::Copy(place) | Operand::Move(place) => self.place(place),
+            Operand::Copy(place, _) | Operand::Read(place) | Operand::Move(place) => {
+                self.place(place)
+            }
             Operand::Const(constant) => self.constant(constant),
         }
     }

@@ -465,7 +465,7 @@ impl VisitBodyMut for IndexVisitor<'_, '_> {
     fn visit_operand(&mut self, x: &mut Operand) -> ControlFlow<Infallible> {
         match x {
             Operand::Move(_) => self.visit_inner_with_mutability(x, true),
-            Operand::Copy(_) => self.visit_inner_with_mutability(x, false),
+            Operand::Copy(..) | Operand::Read(_) => self.visit_inner_with_mutability(x, false),
             Operand::Const(..) => self.visit_inner(x),
         }
     }

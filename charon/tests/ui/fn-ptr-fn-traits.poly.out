@@ -16,9 +16,105 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
 struct () {}
 
 vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
+
+// Full name: core::array::{impl Clone for [T; N]}::clone
+pub fn impl_Clone_for_array::clone<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+    Outlives0: (T: '_0),
+= <opaque>
+
+// Full name: core::array::{impl Clone for [T; N]}
+impl<T, const N : usize> "impl_Clone_for_array" Clone for [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+{
+    proof ImpliedClause0: ([T; N]: Sized) = {built_in impl Sized for [T; N]}
+    fn clone<'_0_1> = impl_Clone_for_array::clone<'_0_1, T, N>[TraitClause0, TraitClause1]
+    non-dyn-compatible
+}
+
+// Full name: core::array::{impl Copy for [T; N]}
+impl<T, const N : usize> "impl_Copy_for_array" Copy for [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
+{
+    proof ImpliedClause0: ([T; N]: MetaSized) = {built_in impl MetaSized for [T; N]}
+    proof ImpliedClause1: ([T; N]: Clone) = impl_Clone_for_array<T, N>[TraitClause0, TraitClause1::ImpliedClause1]
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for u32}::clone
+pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u32}
+impl "impl_Clone_for_u32" Clone for u32 {
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
+    fn clone<'_0_1> = impl_Clone_for_u32::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
+#[diagnostic_item("noop_method_clone")]
+pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
+where
+    Outlives0: ('_0: '_1),
+    Outlives1: (T: '_0),
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}
+impl<'_0, T> Clone for &'_0 T
+where
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
+    fn clone<'_0_1> = {impl Clone for &'_0 T}::clone<'_0, '_0_1, T>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for u32}
+impl "impl_Copy_for_u32" Copy for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for &'_0 T}
+impl<'_0, T> Copy for &'_0 T
+where
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (&'_0 T: MetaSized) = {built_in impl MetaSized for &'_0 T}
+    proof ImpliedClause1: (&'_0 T: Clone) = {impl Clone for &'_0 T}<'_, T>
+    non-dyn-compatible
+}
 
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
@@ -1035,7 +1131,7 @@ pub fn test_free_region<'a>(x: &'a u32) -> &'a u32
     _4 = copy f
     storage_live(_5)
     _5 = &(*x)
-    _3 = generic_call_once<fn(&'22 u32) -> &'23 u32, &'25 u32, &'26 u32>[{built_in impl Sized for fn(&'30 u32) -> &'31 u32}, {built_in impl Sized for &'25 u32}, {built_in impl Sized for &'26 u32}, {impl FnOnce<(A,)> for fn(A) -> B}<&'25 u32, &'63 u32>[{built_in impl Sized for &'25 u32}, {built_in impl Sized for &'63 u32}]](move _4, move _5)
+    _3 = generic_call_once<fn(&'57 u32) -> &'58 u32, &'60 u32, &'61 u32>[{built_in impl Sized for fn(&'65 u32) -> &'66 u32}, {built_in impl Sized for &'60 u32}, {built_in impl Sized for &'61 u32}, {impl FnOnce<(A,)> for fn(A) -> B}<&'60 u32, &'98 u32>[{built_in impl Sized for &'60 u32}, {built_in impl Sized for &'98 u32}]](move _4, move _5)
     ↳⚡ storage_dead(x)
         unwind_continue
     _0 = &(*_3)
@@ -1138,7 +1234,7 @@ pub fn test_const_under_binder<'a>(x: [&'a u8; 3usize]) -> [&'a u8; 3usize]
     _3 = copy f
     storage_live(_4)
     _4 = copy x
-    _0 = generic_call_once<fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize], [&'79 u8; 3usize], [&'83 u8; 3usize]>[{built_in impl Sized for fn<'_0_2>([&'_0_2 u8; 3usize]) -> [&'_0_2 u8; 3usize]}, {built_in impl Sized for [&'79 u8; 3usize]}, {built_in impl Sized for [&'83 u8; 3usize]}, {impl FnOnce<([&'_0 A; C2],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3]}<'79, u8, u8, 3usize, 3usize>[for<'_0_2> {built_in impl Sized for [&'_0_2 u8; 3usize]}, for<'_0_2> {built_in impl Sized for [&'_0_2 u8; 3usize]}]](move _3, move _4)
+    _0 = generic_call_once<fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize], [&'185 u8; 3usize], [&'189 u8; 3usize]>[{built_in impl Sized for fn<'_0_2>([&'_0_2 u8; 3usize]) -> [&'_0_2 u8; 3usize]}, {built_in impl Sized for [&'185 u8; 3usize]}, {built_in impl Sized for [&'189 u8; 3usize]}, {impl FnOnce<([&'_0 A; C2],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3]}<'185, u8, u8, 3usize, 3usize>[for<'_0_2> {built_in impl Sized for [&'_0_2 u8; 3usize]}, for<'_0_2> {built_in impl Sized for [&'_0_2 u8; 3usize]}]](move _3, move _4)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_4)
@@ -1245,7 +1341,7 @@ pub fn test_fn_ptr_regions<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'b u8, &'a u8)
     _5 = &(*x)
     storage_live(_6)
     _6 = &(*y)
-    _0 = generic_call_once2<fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_1_1 u8, &'_0_1 u8), &'55 u8, &'56 u8, (&'65 u8, &'66 u8)>[{built_in impl Sized for fn<'_0_2, '_1_2>(&'_0_2 u8, &'_1_2 u8) -> (&'_1_2 u8, &'_0_2 u8)}, {built_in impl Sized for &'55 u8}, {built_in impl Sized for &'56 u8}, {built_in impl Sized for (&'65 u8, &'66 u8)}, {impl FnOnce<(&'_0 A, &'_1 B)> for fn<'_0_1, '_1_1 where A: '_0_1, B: '_1_1, C: '_1_1, D: '_0_1>(&'_0_1 A, &'_1_1 B) -> (&'_1_1 C, &'_0_1 D)}<'55, '56, u8, u8, u8, u8>[for<'_0_2, '_1_2> {built_in impl Sized for &'_0_2 u8}, for<'_0_2, '_1_2> {built_in impl Sized for &'_1_2 u8}, for<'_0_2, '_1_2> {built_in impl Sized for (&'_1_2 u8, &'_0_2 u8)}]](move _4, move _5, move _6)
+    _0 = generic_call_once2<fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_1_1 u8, &'_0_1 u8), &'111 u8, &'112 u8, (&'121 u8, &'122 u8)>[{built_in impl Sized for fn<'_0_2, '_1_2>(&'_0_2 u8, &'_1_2 u8) -> (&'_1_2 u8, &'_0_2 u8)}, {built_in impl Sized for &'111 u8}, {built_in impl Sized for &'112 u8}, {built_in impl Sized for (&'121 u8, &'122 u8)}, {impl FnOnce<(&'_0 A, &'_1 B)> for fn<'_0_1, '_1_1 where A: '_0_1, B: '_1_1, C: '_1_1, D: '_0_1>(&'_0_1 A, &'_1_1 B) -> (&'_1_1 C, &'_0_1 D)}<'111, '112, u8, u8, u8, u8>[for<'_0_2, '_1_2> {built_in impl Sized for &'_0_2 u8}, for<'_0_2, '_1_2> {built_in impl Sized for &'_1_2 u8}, for<'_0_2, '_1_2> {built_in impl Sized for (&'_1_2 u8, &'_0_2 u8)}]](move _4, move _5, move _6)
     ↳⚡ storage_dead(y)
         storage_dead(x)
         unwind_continue
@@ -1307,12 +1403,58 @@ pub fn test_dyn_fn(x: u32) -> u32
     set_type(typeof(dyn_fn) == &'12 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '13))
     storage_dead(_5)
     storage_live(_6)
-    _6 = &(*dyn_fn) with_metadata(copy dyn_fn.metadata)
+    _6 = &(*dyn_fn) with_metadata(read dyn_fn.metadata)
     storage_live(_7)
     storage_live(_8)
     _8 = copy x
     _7 = (move _8,)
-    _0 = (copy (*_6.metadata).method_call)<'17>(move _6, move _7)
+    _0 = (read (*_6.metadata).method_call)<'17>(move _6, move _7)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(dyn_fn)
+    storage_dead(fn_ptr)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::test_dyn_fn_mut
+pub fn test_dyn_fn_mut(x: u32) -> u32
+{
+    let mut _0: u32; // return
+    let x: u32; // arg #1
+    let mut fn_ptr: fn(u32) -> u32; // local
+    let dyn_fn: &'3 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '4); // local
+    let mut _4: &'6 mut fn(u32) -> u32; // anonymous local
+    let mut _5: &'7 mut fn(u32) -> u32; // anonymous local
+    let mut _6: &'8 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '9); // anonymous local
+    let mut _7: (u32,); // anonymous local
+    let mut _8: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(fn_ptr)
+    fn_ptr = fn_def_to_fn_ptr(const increment)
+    fake_read(fn_ptr)
+    set_type(typeof(fn_ptr) == fn(u32) -> u32)
+    storage_live(dyn_fn)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &mut fn_ptr
+    _4 = &mut (*_5)
+    dyn_fn = unsize_cast<&'10 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '11), &{impl FnMut<(A,)> for fn(A) -> B}::{vtable}<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]>(move _4)
+    storage_dead(_4)
+    fake_read(dyn_fn)
+    set_type(typeof(dyn_fn) == &'12 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '13))
+    storage_dead(_5)
+    storage_live(_6)
+    _6 = &mut (*dyn_fn) with_metadata(read dyn_fn.metadata)
+    storage_live(_7)
+    storage_live(_8)
+    _8 = copy x
+    _7 = (move _8,)
+    _0 = (read (*_6.metadata).method_call_mut)<'17>(move _6, move _7)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_8)

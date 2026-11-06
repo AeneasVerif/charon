@@ -7,9 +7,25 @@ opaque type core::marker::MetaSized::{vtable}
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
-struct () {}
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
 
-vtable core::marker::MetaSized::{vtable}::<D>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    non-dyn-compatible
+}
+
+struct () {}
 
 struct test_crate::Sub::{vtable} {
   size: usize,
@@ -23,6 +39,31 @@ trait Sub<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     vtable: test_crate::Sub::{vtable}
+}
+
+// Full name: core::clone::impls::{impl Clone for *const (dyn Sub)}
+impl Clone for *const (dyn Sub) {
+    proof ImpliedClause0: (*const (dyn Sub): Sized) = {built_in impl Sized for *const (dyn Sub)}
+    non-dyn-compatible
+}
+
+vtable core::marker::MetaSized::{vtable}::<D>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for *const (dyn Sub)}
+impl Copy for *const (dyn Sub) {
+    proof ImpliedClause0: (*const (dyn Sub): MetaSized) = {built_in impl MetaSized for *const (dyn Sub)}
+    proof ImpliedClause1: (*const (dyn Sub): Clone) = {impl Clone for *const (dyn Sub)}
+    non-dyn-compatible
 }
 
 // Full name: test_crate::D
@@ -142,7 +183,7 @@ fn main()
     storage_dead(_7)
     set_type(typeof(_6) == *const (dyn Sub + '16))
     _5 = copy _6
-    _4 = unsize_cast<*const (dyn Sub + '17),  at []>(move _5)
+    _4 = unsize_cast<*const (dyn Sub + '20),  at []>(move _5)
     storage_dead(_5)
     _3 = Wrapper::<(dyn Sub)> { _0: move _4 }
     storage_dead(_4)
@@ -161,11 +202,11 @@ fn main()
     storage_live(_15)
     _15 = &d
     _14 = &raw const (*_15)
-    _13 = unsize_cast<*const (dyn Sub + '18), &impl_Sub_for_D::{vtable}>(move _14)
+    _13 = unsize_cast<*const (dyn Sub + '21), &impl_Sub_for_D::{vtable}>(move _14)
     storage_dead(_14)
-    set_type(typeof(_13) == *const (dyn Sub + '19))
+    set_type(typeof(_13) == *const (dyn Sub + '22))
     _12 = copy _13
-    _11 = unsize_cast<*const (dyn Sub + '20),  at []>(move _12)
+    _11 = unsize_cast<*const (dyn Sub + '26),  at []>(move _12)
     storage_dead(_12)
     _10 = Wrapper::<(dyn Sub)> { _0: move _11 }
     storage_dead(_11)
@@ -184,11 +225,11 @@ fn main()
     storage_live(_22)
     _22 = &d
     _21 = &raw const (*_22)
-    _20 = unsize_cast<*const (dyn Sub + '21), &impl_Sub_for_D::{vtable}>(move _21)
+    _20 = unsize_cast<*const (dyn Sub + '27), &impl_Sub_for_D::{vtable}>(move _21)
     storage_dead(_21)
-    set_type(typeof(_20) == *const (dyn Sub + '22))
+    set_type(typeof(_20) == *const (dyn Sub + '28))
     _19 = copy _20
-    _18 = unsize_cast<*const (dyn Sub + '23),  at []>(move _19)
+    _18 = unsize_cast<*const (dyn Sub + '32),  at []>(move _19)
     storage_dead(_19)
     _17 = Wrapper::<(dyn Sub)> { _0: move _18 }
     storage_dead(_18)

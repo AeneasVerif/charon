@@ -81,6 +81,17 @@ impl "impl_Clone_for_usize" Clone for usize {
     non-dyn-compatible
 }
 
+// Full name: core::clone::impls::{impl Clone for bool}::clone
+pub fn impl_Clone_for_bool::clone<'_0>(_1: &'_0 bool) -> bool
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for bool}
+impl "impl_Clone_for_bool" Clone for bool {
+    proof ImpliedClause0: (bool: Sized) = {built_in impl Sized for bool}
+    fn clone<'_0_1> = impl_Clone_for_bool::clone<'_0_1>
+    non-dyn-compatible
+}
+
 // Full name: core::cmp::PartialEq
 #[lang_item(PartialEq)]
 #[diagnostic_item("PartialEq")]
@@ -365,6 +376,44 @@ where
     TraitClause0: (I: Sized),
     TraitClause1: (I: Iterator),
 = <opaque>
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for u32}
+impl "impl_Copy_for_u32" Copy for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for usize}
+impl "impl_Copy_for_usize" Copy for usize {
+    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
+    proof ImpliedClause1: (usize: Clone) = impl_Clone_for_usize
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for bool}
+impl "impl_Copy_for_bool" Copy for bool {
+    proof ImpliedClause0: (bool: MetaSized) = {built_in impl MetaSized for bool}
+    proof ImpliedClause1: (bool: Clone) = impl_Clone_for_bool
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for i32}
+impl "impl_Copy_for_i32" Copy for i32 {
+    proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
+    proof ImpliedClause1: (i32: Clone) = impl_Clone_for_i32
+    non-dyn-compatible
+}
 
 // Full name: core::slice::index::SliceIndex
 #[diagnostic_item("SliceIndex")]

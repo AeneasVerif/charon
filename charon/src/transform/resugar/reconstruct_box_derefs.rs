@@ -17,8 +17,10 @@ pub struct Transform;
 /// ```
 /// Returns `*b`
 fn box_pointee_pointer_assignment(rvalue: &Rvalue) -> Option<Place> {
-    let Rvalue::UnaryOp(UnOp::Cast(CastKind::Transmute(raw_ptr_ty)), Operand::Copy(hidden_pointer)) =
-        &rvalue
+    let Rvalue::UnaryOp(
+        UnOp::Cast(CastKind::Transmute(raw_ptr_ty)),
+        Operand::Copy(hidden_pointer, _),
+    ) = &rvalue
     else {
         return None;
     };

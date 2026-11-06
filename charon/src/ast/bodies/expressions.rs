@@ -76,9 +76,17 @@ pub enum Rvalue {
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(state_implements = DedupSerializerState)] // Avoid corecursive impls due to perfect derive
 pub enum Operand {
-    Copy(Place),
+    /// Copy the value inside this place. The `TraitRef` proves that its type implements `Copy`.
+    Copy(Place, TraitRef),
+    /// Read the value inside this place. This is allowed for non-`Copy` values, and only used when
+    /// it is sound to do so.
+    ///
+    /// Used for MIR's `CopyForDeref`, reading the value of named constants, and reads introduced
+    /// by Charon such as pointer metadata.
+    Read(Place),
+    /// Move the value out of this place.
     Move(Place),
-    /// Constant value (including constant and static variables)
+    /// Use the value of this constant.
     #[cfg_attr(feature = "charon_on_charon", charon::rename("Constant"))]
     Const(ConstantExpr),
 }
@@ -339,7 +347,7 @@ impl Operand {
 
     pub fn ty(&self) -> &Ty {
         match self {
-            Operand::Copy(place) | Operand::Move(place) => place.ty(),
+            Operand::Copy(place, _) | Operand::Read(place) | Operand::Move(place) => place.ty(),
             Operand::Const(constant_expr) => constant_expr.ty(),
         }
     }

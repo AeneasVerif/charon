@@ -1,12 +1,5 @@
 # Final LLBC before serialization:
 
-opaque type core::marker::MetaSized::{vtable}
-
-// Full name: core::marker::MetaSized
-#[fundamental]
-#[lang_item(MetaSized)]
-pub trait MetaSized<Self>
-
 struct () {}
 
 // Full name: core::marker::Destruct
@@ -14,6 +7,32 @@ struct () {}
 pub trait Destruct<Self>
 {
     fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    proof ImpliedClause1: (Self: Destruct)
     non-dyn-compatible
 }
 
@@ -32,6 +51,32 @@ trait T<Self>
     vtable: test_crate::T::{vtable}
 }
 
+// Full name: core::clone::impls::{impl Clone for *mut (dyn T)}
+impl Clone for *mut (dyn T) {
+    proof ImpliedClause0: (*mut (dyn T): Sized) = {built_in impl Sized for *mut (dyn T)}
+    proof ImpliedClause1: (*mut (dyn T): Destruct) = {built_in impl Destruct for *mut (dyn T)}
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    proof ImpliedClause2: (Self: Destruct)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for *mut (dyn T)}
+impl Copy for *mut (dyn T) {
+    proof ImpliedClause0: (*mut (dyn T): MetaSized) = {built_in impl MetaSized for *mut (dyn T)}
+    proof ImpliedClause1: (*mut (dyn T): Clone) = {impl Clone for *mut (dyn T)}
+    proof ImpliedClause2: (*mut (dyn T): Destruct) = {built_in impl Destruct for *mut (dyn T)}
+    non-dyn-compatible
+}
+
 // Full name: core::ptr::drop_glue::<(dyn T)>
 #[lang_item(DropGlue)]
 unsafe fn drop_glue::<(dyn T)><'_0>(_1: &'_0 mut (dyn T))
@@ -45,11 +90,11 @@ unsafe fn drop_glue::<(dyn T)><'_0>(_1: &'_0 mut (dyn T))
     storage_live(ret)
     ret = ()
     storage_live(drop_arg)
-    drop_arg = &mut (*_1) with_metadata(copy _1.metadata)
+    drop_arg = &mut (*_1) with_metadata(read _1.metadata)
     storage_live(drop_ret)
     storage_live(_4)
-    _4 = cast<unsafe fn(&'_ mut (dyn T + '2))>(copy (*drop_arg.metadata).drop)
-    drop_ret = (copy _4)(move drop_arg)
+    _4 = cast<unsafe fn(&'_ mut (dyn T + '2))>(read (*drop_arg.metadata).drop)
+    drop_ret = (read _4)(move drop_arg)
     ↳⚡ unwind_continue
     return
 }
@@ -67,8 +112,8 @@ pub unsafe fn drop_in_place::<(dyn T)>(to_drop: *mut (dyn T))
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = &mut (*to_drop) with_metadata(copy to_drop.metadata)
-    _2 = &two-phase-mut (*_3) with_metadata(copy _3.metadata)
+    _3 = &mut (*to_drop) with_metadata(read to_drop.metadata)
+    _2 = &two-phase-mut (*_3) with_metadata(read _3.metadata)
     _0 = drop_glue::<(dyn T)><'10>(move _2)
     ↳⚡ unwind_continue
     storage_dead(_3)

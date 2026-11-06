@@ -1,5 +1,15 @@
 # Final LLBC before serialization:
 
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
@@ -14,11 +24,180 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
 {
-    fn drop_glue<'_0_1>;
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (Self: Destruct)> = core::clone::Clone::clone_from<'_0_1, '_1_1, Self>[Self, TraitClause0_1]
+    non-dyn-compatible
+}
+
+pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(self: &'_0 mut Self, source: &'_1 Self)
+where
+    TraitClause0: (Self: Clone),
+    TraitClause1: (Self: Destruct),
+    Outlives0: (Self: '_0),
+    Outlives1: (Self: '_1),
+{
+    let mut _0: (); // return
+    let self: &'1 mut Self; // arg #1
+    let source: &'3 Self; // arg #2
+    let mut _3: Self; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_3)
+    _3 = TraitClause0::clone<'4>(move source)
+    ↳⚡ storage_dead(source)
+        storage_dead(self)
+        unwind_continue
+    drop[TraitClause1::drop_glue<'5>] (*self)
+    ↳⚡ (*self) = move _3
+        storage_dead(source)
+        storage_dead(self)
+        unwind_continue
+    (*self) = move _3
+    storage_dead(_3)
+    storage_dead(source)
+    storage_dead(self)
+    return
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for u32}
+impl "impl_Clone_for_u32" Clone for u32 {
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
+    fn clone<'_0_1> = impl_Clone_for_u32::clone<'_0_1>
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (u32: Destruct)> = impl_Clone_for_u32::clone_from<'_0_1, '_1_1>[TraitClause0_1]
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for u32}::clone
+pub fn impl_Clone_for_u32::clone<'_0>(self: &'_0 u32) -> u32
+{
+    let mut _0: u32; // return
+    let self: &'1 u32; // arg #1
+
+    storage_live(_0)
+    _0 = copy (*self)
+    storage_dead(self)
+    return
+}
+
+// Full name: core::clone::impls::{impl Clone for u32}::clone_from
+pub fn impl_Clone_for_u32::clone_from<'_0, '_1>(self: &'_0 mut u32, source: &'_1 u32)
+where
+    TraitClause0: (u32: Destruct),
+{
+    let mut _0: (); // return
+    let self: &'1 mut u32; // arg #1
+    let source: &'3 u32; // arg #2
+    let mut _3: u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_3)
+    _3 = impl_Clone_for_u32::clone<'4>(move source)
+    ↳⚡ storage_dead(source)
+        storage_dead(self)
+        unwind_continue
+    drop[TraitClause0::drop_glue<'5>] (*self)
+    ↳⚡ (*self) = move _3
+        storage_dead(source)
+        storage_dead(self)
+        unwind_continue
+    (*self) = move _3
+    storage_dead(_3)
+    storage_dead(source)
+    storage_dead(self)
+    return
+}
+
+// Full name: core::marker::{impl Copy for u32}
+impl "impl_Copy_for_u32" Copy for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}
+impl<'_0, T> Clone for &'_0 T
+where
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
+    fn clone<'_0_1> = {impl Clone for &'_0 T}::clone<'_0, '_0_1, T>
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (&'_0 T: Destruct)> = {impl Clone for &'_0 T}::clone_from<'_0, '_0_1, '_1_1, T>[TraitClause0_1]
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}::clone_from
+pub fn {impl Clone for &'_0 T}::clone_from<'_0, '_1, '_2, T>(self: &'_1 mut &'_0 T, source: &'_2 &'_0 T)
+where
+    TraitClause0: (&'_0 T: Destruct),
+    Outlives0: ('_0: '_1),
+    Outlives1: (T: '_0),
+    Outlives2: ('_0: '_2),
+{
+    let mut _0: (); // return
+    let self: &'1 mut &'_0 T; // arg #1
+    let source: &'3 &'_0 T; // arg #2
+    let mut _3: &'_0 T; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_3)
+    _3 = {impl Clone for &'_0 T}::clone<'_0, '4, T>(move source)
+    ↳⚡ storage_dead(source)
+        storage_dead(self)
+        unwind_continue
+    drop[TraitClause0::drop_glue<'5>] (*self)
+    ↳⚡ (*self) = move _3
+        storage_dead(source)
+        storage_dead(self)
+        unwind_continue
+    (*self) = move _3
+    storage_dead(_3)
+    storage_dead(source)
+    storage_dead(self)
+    return
+}
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
+#[diagnostic_item("noop_method_clone")]
+pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(self: &'_1 &'_0 T) -> &'_0 T
+where
+    Outlives0: ('_0: '_1),
+    Outlives1: (T: '_0),
+{
+    let mut _0: &'1 T; // return
+    let self: &'4 &'5 T; // arg #1
+
+    storage_live(_0)
+    _0 = noretag copy (*self)
+    storage_dead(self)
+    return
+}
+
+// Full name: core::marker::{impl Copy for &'_0 T}
+impl<'_0, T> Copy for &'_0 T
+where
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (&'_0 T: MetaSized) = {built_in impl MetaSized for &'_0 T}
+    proof ImpliedClause1: (&'_0 T: Clone) = {impl Clone for &'_0 T}<'_, T>
     non-dyn-compatible
 }
 
@@ -31,6 +210,280 @@ where
 {
   Ok { _0: T },
   Err { _0: E },
+}
+
+// Full name: core::result::Result::{impl Destruct for Result<T, E>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn drop_glue<'_0, T, E>(_1: &'_0 mut Result<T, E>[TraitClause0, TraitClause1])
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+    Outlives0: (T: '_0),
+    Outlives1: (E: '_0),
+{
+    let mut _0: (); // return
+    let _1: &'1 mut Result<T, E>[TraitClause0, TraitClause1]; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    match (*_1) {
+        Result::Ok => {
+        },
+        _ => {
+            drop[{built_in impl Destruct for E}::drop_glue<'3>] ((*_1) as variant Result::Err)._0
+            ↳⚡ storage_dead(_1)
+                unwind_continue
+            storage_dead(_1)
+            return
+        },
+    }
+    drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1) as variant Result::Ok)._0
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    return
+}
+
+// Full name: core::result::{impl Clone for Result<T, E>[TraitClause0, TraitClause1]}::clone_from
+pub fn impl_Clone_for_Result::clone_from<'_0, '_1, T, E>(self: &'_0 mut Result<T, E>[TraitClause0, TraitClause1], source: &'_1 Result<T, E>[TraitClause0, TraitClause1])
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+    TraitClause2: (T: Clone),
+    TraitClause3: (E: Clone),
+    Outlives0: (T: '_0),
+    Outlives1: (E: '_0),
+    Outlives2: (T: '_1),
+    Outlives3: (E: '_1),
+{
+    let mut _0: (); // return
+    let self: &'1 mut Result<T, E>[TraitClause0, TraitClause1]; // arg #1
+    let source: &'3 Result<T, E>[TraitClause0, TraitClause1]; // arg #2
+    let to_3: &'5 mut T; // local
+    let from_4: &'7 T; // local
+    let to_5: &'9 mut E; // local
+    let from_6: &'11 E; // local
+    let mut _7: Result<T, E>[TraitClause0, TraitClause1]; // anonymous local
+    let x_8: &'12 T; // local
+    let mut _9: T; // anonymous local
+    let x_10: &'13 E; // local
+    let mut _11: E; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    match (*self) {
+        Result::Ok => {
+            match (*source) {
+                Result::Ok => {
+                    storage_live(to_3)
+                    to_3 = &mut ((*self) as variant Result::Ok)._0
+                    storage_live(from_4)
+                    from_4 = &((*source) as variant Result::Ok)._0
+                    _0 = TraitClause2::clone_from<'14, '15>[{built_in impl Destruct for T}](move to_3, move from_4)
+                    ↳⚡ storage_dead(source)
+                        storage_dead(self)
+                        unwind_continue
+                    storage_dead(from_4)
+                    storage_dead(to_3)
+                    storage_dead(source)
+                    storage_dead(self)
+                    return
+                },
+                Result::Err => {
+                    storage_live(_7)
+                    match (*source) {
+                        Result::Ok => {
+                            storage_live(x_8)
+                            x_8 = &((*source) as variant Result::Ok)._0
+                            storage_live(_9)
+                            _9 = TraitClause2::clone<'18>(move x_8)
+                            ↳⚡ storage_dead(source)
+                                storage_dead(self)
+                                unwind_continue
+                            _7 = Result::Ok { _0: move _9 }
+                            storage_dead(_9)
+                            storage_dead(x_8)
+                            drop[drop_glue<'20, T, E>[TraitClause0, TraitClause1]] (*self)
+                            ↳⚡ (*self) = move _7
+                                storage_dead(source)
+                                storage_dead(self)
+                                unwind_continue
+                            (*self) = move _7
+                            storage_dead(_7)
+                            storage_dead(source)
+                            storage_dead(self)
+                            return
+                        },
+                        Result::Err => {
+                            storage_live(x_10)
+                            x_10 = &((*source) as variant Result::Err)._0
+                            storage_live(_11)
+                            _11 = TraitClause3::clone<'19>(move x_10)
+                            ↳⚡ storage_dead(source)
+                                storage_dead(self)
+                                unwind_continue
+                            _7 = Result::Err { _0: move _11 }
+                            storage_dead(_11)
+                            storage_dead(x_10)
+                            drop[drop_glue<'20, T, E>[TraitClause0, TraitClause1]] (*self)
+                            ↳⚡ (*self) = move _7
+                                storage_dead(source)
+                                storage_dead(self)
+                                unwind_continue
+                            (*self) = move _7
+                            storage_dead(_7)
+                            storage_dead(source)
+                            storage_dead(self)
+                            return
+                        },
+                    }
+                },
+            }
+        },
+        Result::Err => {
+            match (*source) {
+                Result::Err => {
+                    storage_live(to_5)
+                    to_5 = &mut ((*self) as variant Result::Err)._0
+                    storage_live(from_6)
+                    from_6 = &((*source) as variant Result::Err)._0
+                    _0 = TraitClause3::clone_from<'16, '17>[{built_in impl Destruct for E}](move to_5, move from_6)
+                    ↳⚡ storage_dead(source)
+                        storage_dead(self)
+                        unwind_continue
+                    storage_dead(from_6)
+                    storage_dead(to_5)
+                    storage_dead(source)
+                    storage_dead(self)
+                    return
+                },
+                Result::Ok => {
+                    storage_live(_7)
+                    match (*source) {
+                        Result::Ok => {
+                            storage_live(x_8)
+                            x_8 = &((*source) as variant Result::Ok)._0
+                            storage_live(_9)
+                            _9 = TraitClause2::clone<'18>(move x_8)
+                            ↳⚡ storage_dead(source)
+                                storage_dead(self)
+                                unwind_continue
+                            _7 = Result::Ok { _0: move _9 }
+                            storage_dead(_9)
+                            storage_dead(x_8)
+                            drop[drop_glue<'20, T, E>[TraitClause0, TraitClause1]] (*self)
+                            ↳⚡ (*self) = move _7
+                                storage_dead(source)
+                                storage_dead(self)
+                                unwind_continue
+                            (*self) = move _7
+                            storage_dead(_7)
+                            storage_dead(source)
+                            storage_dead(self)
+                            return
+                        },
+                        Result::Err => {
+                            storage_live(x_10)
+                            x_10 = &((*source) as variant Result::Err)._0
+                            storage_live(_11)
+                            _11 = TraitClause3::clone<'19>(move x_10)
+                            ↳⚡ storage_dead(source)
+                                storage_dead(self)
+                                unwind_continue
+                            _7 = Result::Err { _0: move _11 }
+                            storage_dead(_11)
+                            storage_dead(x_10)
+                            drop[drop_glue<'20, T, E>[TraitClause0, TraitClause1]] (*self)
+                            ↳⚡ (*self) = move _7
+                                storage_dead(source)
+                                storage_dead(self)
+                                unwind_continue
+                            (*self) = move _7
+                            storage_dead(_7)
+                            storage_dead(source)
+                            storage_dead(self)
+                            return
+                        },
+                    }
+                },
+            }
+        },
+    }
+    undefined_behavior
+}
+
+// Full name: core::result::{impl Clone for Result<T, E>[TraitClause0, TraitClause1]}::clone
+pub fn impl_Clone_for_Result::clone<'_0, T, E>(self: &'_0 Result<T, E>[TraitClause0, TraitClause1]) -> Result<T, E>[TraitClause0, TraitClause1]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+    TraitClause2: (T: Clone),
+    TraitClause3: (E: Clone),
+    Outlives0: (T: '_0),
+    Outlives1: (E: '_0),
+{
+    let mut _0: Result<T, E>[TraitClause0, TraitClause1]; // return
+    let self: &'1 Result<T, E>[TraitClause0, TraitClause1]; // arg #1
+    let x_2: &'3 T; // local
+    let mut _3: T; // anonymous local
+    let x_4: &'5 E; // local
+    let mut _5: E; // anonymous local
+
+    storage_live(_0)
+    match (*self) {
+        Result::Ok => {
+        },
+        Result::Err => {
+            storage_live(x_4)
+            x_4 = &((*self) as variant Result::Err)._0
+            storage_live(_5)
+            _5 = TraitClause3::clone<'7>(move x_4)
+            ↳⚡ storage_dead(self)
+                unwind_continue
+            _0 = Result::Err { _0: move _5 }
+            storage_dead(_5)
+            storage_dead(x_4)
+            storage_dead(self)
+            return
+        },
+    }
+    storage_live(x_2)
+    x_2 = &((*self) as variant Result::Ok)._0
+    storage_live(_3)
+    _3 = TraitClause2::clone<'6>(move x_2)
+    ↳⚡ storage_dead(self)
+        unwind_continue
+    _0 = Result::Ok { _0: move _3 }
+    storage_dead(_3)
+    storage_dead(x_2)
+    storage_dead(self)
+    return
+}
+
+// Full name: core::result::{impl Clone for Result<T, E>[TraitClause0, TraitClause1]}
+impl<T, E> "impl_Clone_for_Result" Clone for Result<T, E>[TraitClause0, TraitClause1]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+    TraitClause2: (T: Clone),
+    TraitClause3: (E: Clone),
+{
+    proof ImpliedClause0: (Result<T, E>[TraitClause0, TraitClause1]: Sized) = {built_in impl Sized for Result<T, E>[TraitClause0, TraitClause1]}
+    fn clone<'_0_1> = impl_Clone_for_Result::clone<'_0_1, T, E>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (Result<T, E>[TraitClause0, TraitClause1]: Destruct)> = impl_Clone_for_Result::clone_from<'_0_1, '_1_1, T, E>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
+    non-dyn-compatible
+}
+
+// Full name: core::result::{impl Copy for Result<T, E>[TraitClause0, TraitClause1]}
+impl<T, E> "impl_Copy_for_Result" Copy for Result<T, E>[TraitClause0, TraitClause1]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+    TraitClause2: (T: Copy),
+    TraitClause3: (E: Copy),
+{
+    proof ImpliedClause0: (Result<T, E>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for Result<T, E>[TraitClause0, TraitClause1]}
+    proof ImpliedClause1: (Result<T, E>[TraitClause0, TraitClause1]: Clone) = impl_Clone_for_Result<T, E>[TraitClause0, TraitClause1, TraitClause2::ImpliedClause1, TraitClause3::ImpliedClause1]
+    non-dyn-compatible
 }
 
 struct str {
@@ -57,7 +510,7 @@ where
     let mut _3: !; // anonymous local
     let mut _4: &'3 (dyn Debug + '4); // anonymous local
     let _5: &'6 E; // anonymous local
-    let mut _6: &'14 str; // anonymous local
+    let mut _6: &'17 str; // anonymous local
 
     storage_live(t)
     storage_live(_3)
@@ -73,8 +526,8 @@ where
             _4 = unsize_cast<&'7 (dyn Debug + '8), &vtable_of(TraitClause2)>(copy _5)
             storage_live(_6)
             _6 = &core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap::{promoted_const} with_metadata(const 43usize)
-            _3 = unwrap_failed<'11, '12>(move _6, move _4)
-            ↳⚡ drop[{built_in impl Destruct for E}::drop_glue<'15>] e
+            _3 = unwrap_failed<'14, '15>(move _6, move _4)
+            ↳⚡ drop[{built_in impl Destruct for E}::drop_glue<'18>] e
                 ↳⚡ storage_dead(_5)
                     storage_dead(_4)
                     storage_dead(_3)
@@ -109,7 +562,7 @@ fn test_crate::unwrap(res: Result<u32, u32>[{built_in impl Sized for u32}, {buil
     storage_live(_0)
     storage_live(_2)
     _2 = copy res
-    _0 = core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {impl#6}](move _2)
+    _0 = core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {impl#8}](move _2)
     ↳⚡ storage_dead(res)
         unwind_continue
     storage_dead(_2)

@@ -1631,7 +1631,8 @@ and pp_binop (fmt : Format.formatter) (binop : binop) : unit =
 
 and pp_operand (env : fmt_env) (fmt : Format.formatter) (op : operand) : unit =
   match op with
-  | Copy p -> Format.fprintf fmt "copy %s" (place_to_string env p)
+  | Read p -> Format.fprintf fmt "read %s" (place_to_string env p)
+  | Copy (p, _) -> Format.fprintf fmt "copy %s" (place_to_string env p)
   | Move p -> Format.fprintf fmt "move %s" (place_to_string env p)
   | Constant cv ->
       Format.fprintf fmt "const %s" (constant_expr_to_string env cv)
@@ -1640,7 +1641,7 @@ and operand_to_string env op = pp_to_string (fun fmt -> pp_operand env fmt op)
 
 and operand_ty (op : operand) : ty =
   match op with
-  | Copy p | Move p -> p.ty
+  | Copy (p, _) | Read p | Move p -> p.ty
   | Constant cv -> cv.ty
 
 and pp_aggregate (env : fmt_env) (agg : aggregate_kind) (fmt : Format.formatter)
