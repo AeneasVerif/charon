@@ -1204,6 +1204,11 @@ type Str = str
 //     discriminator: _,
 //     inhabited: true,
 //     variants: [
+//         _: {
+//             offset of _0: 0,
+//             inhabited: true,
+//             tagger: [],
+//         },
 //     ],
 //     repr(Rust),
 

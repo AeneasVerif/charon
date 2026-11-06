@@ -1,5 +1,6 @@
 use itertools::Itertools;
 use rustc_middle::ty;
+use rustc_middle::ty::TypeVisitableExt;
 use rustc_span::sym;
 use rustc_trait_elaboration::ItemId;
 use std::ops::ControlFlow;
@@ -715,10 +716,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub fn translate_layout(
         &mut self,
         span: Span,
-        def: &hax::FullDef<'tcx>,
-        kind: &TypeDeclKind,
+        item: &hax::ItemRef<'tcx>,
+        fallback: Option<&TypeDeclKind>,
     ) -> Option<Layout> {
-        let item = def.this();
         use rustc_abi as r_abi;
 
         fn translate_variant_layout_data(
@@ -864,7 +864,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         let tcx = self.t_ctx.tcx;
         let hax_state = self.hax_state_with_id();
-        assert_eq!(hax_state.owner(), item.def_id);
+        let args = item.rustc_args(hax_state);
+        assert!(hax_state.owner() == item.def_id || !args.has_non_region_param());
         let ty_env = hax_state.typing_env();
         let ty = item
             .def_id
@@ -874,13 +875,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let pseudo_input = ty_env.as_query_input(ty);
         let ptr_size = self.translated.the_target_information().target_pointer_size;
 
-        let repr = match &def.kind {
+        let repr = match &self.poly_hax_def(&item.def_id).ok()?.kind {
             hax::FullDefKind::Adt(adt) => self.translate_repr_options(adt.repr()),
             _ => ReprOptions::default(),
         };
         let ty_layout = match tcx.layout_of(pseudo_input) {
             Ok(layout) => layout,
-            Err(_) => return Layout::for_type(&self.translated, kind, repr),
+            Err(_) => return Layout::for_type(&self.translated, fallback?, repr),
         };
         let rustc_variant_inhabited = |id| match ty.kind() {
             ty::Adt(adt, args) if adt.is_enum() => adt
@@ -898,15 +899,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let align = Size::from_expr(align.normalize(Some(&self.translated), None, false));
         let layout = ty_layout.layout;
 
-        let num_variants = match kind {
-            TypeDeclKind::Struct(_) | TypeDeclKind::Union(_) => 1,
-            TypeDeclKind::Enum(variants) => variants.len(),
-            _ => match ty.variant_range(self.t_ctx.tcx) {
-                Some(range) => range.end.index(),
-                None => match layout.fields() {
-                    r_abi::FieldsShape::Arbitrary { .. } | r_abi::FieldsShape::Union(_) => 1,
-                    r_abi::FieldsShape::Primitive | r_abi::FieldsShape::Array { .. } => 0,
-                },
+        let num_variants = match ty.variant_range(self.t_ctx.tcx) {
+            Some(range) => range.end.index(),
+            None => match layout.fields() {
+                r_abi::FieldsShape::Arbitrary { .. } | r_abi::FieldsShape::Union(_) => 1,
+                r_abi::FieldsShape::Array { .. } if ty.is_str() => 1,
+                r_abi::FieldsShape::Primitive | r_abi::FieldsShape::Array { .. } => 0,
             },
         };
         let mut variant_layouts: IndexVec<VariantId, Option<VariantLayout>> =
@@ -1089,10 +1087,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         variant_layouts[variant_id] =
                             translate_variant_layout_data(&layout, variant_inhabited, vec![]);
                     }
-                    r_abi::FieldsShape::Array { .. }
-                        if matches!(ty.kind(), ty::Str)
-                            && matches!(kind, TypeDeclKind::Struct(_)) =>
-                    {
+                    r_abi::FieldsShape::Array { .. } if ty.is_str() => {
                         // Charon models `str` as a struct containing a single `[u8]` field.
                         variant_layouts[variant_id] = Some(VariantLayout {
                             field_offsets: [OffsetExpr::new(0)].into(),
@@ -1107,7 +1102,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             r_abi::Variants::Empty => None,
         };
 
-        let union_chunks = kind.is_union().then(|| {
+        let union_chunks = ty.is_union().then(|| {
             let mut markers = vec![false; ty_layout.size.bytes_usize()];
             mark_data_bytes(&layout_cx, ty_layout, &mut markers);
             let mut chunks = vec![];
