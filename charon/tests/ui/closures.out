@@ -1,77 +1,27 @@
 # Final LLBC before serialization:
 
+struct (_,)<A> {
+  _0: A,
+}
+
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
-// Full name: core::marker::Sized
-#[fundamental]
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
-// Full name: core::clone::Clone
-#[lang_item(Clone)]
-#[diagnostic_item("Clone")]
-pub trait Clone<Self>
-{
-    proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
-// Full name: core::array::{impl Clone for [T; N]}::clone
-pub fn impl_Clone_for_array::clone<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> [T; N]
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: Clone),
-    Outlives0: (T: '_0),
-= <opaque>
-
-// Full name: core::array::{impl Clone for [T; N]}
-impl<T, const N : usize> "impl_Clone_for_array" Clone for [T; N]
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: Clone),
-{
-    proof ImpliedClause0: ([T; N]: Sized) = {built_in impl Sized for [T; N]}
-    fn clone<'_0_1> = impl_Clone_for_array::clone<'_0_1, T, N>[TraitClause0, TraitClause1]
-    non-dyn-compatible
-}
-
-// Full name: core::array::{impl Copy for [T; N]}
-impl<T, const N : usize> "impl_Copy_for_array" Copy for [T; N]
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: Copy),
-{
-    proof ImpliedClause0: ([T; N]: MetaSized) = {built_in impl MetaSized for [T; N]}
-    proof ImpliedClause1: ([T; N]: Clone) = impl_Clone_for_array<T, N>[TraitClause0, TraitClause1::ImpliedClause1]
-    non-dyn-compatible
-}
-
-struct (_,)<A> {
-  _0: A,
-}
-
 // Full name: core::marker::Tuple
 #[fundamental]
 #[lang_item(Tuple)]
 pub trait Tuple<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
@@ -125,6 +75,16 @@ where
     TraitClause6: (T: Destruct),
 = <opaque>
 
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
 // Full name: core::clone::impls::{impl Clone for u32}::clone
 pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
 = <opaque>
@@ -133,77 +93,6 @@ pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
 impl "impl_Clone_for_u32" Clone for u32 {
     proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
     fn clone<'_0_1> = impl_Clone_for_u32::clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for i32}::clone
-pub fn impl_Clone_for_i32::clone<'_0>(_1: &'_0 i32) -> i32
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for i32}
-impl "impl_Clone_for_i32" Clone for i32 {
-    proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
-    fn clone<'_0_1> = impl_Clone_for_i32::clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for usize}::clone
-pub fn impl_Clone_for_usize::clone<'_0>(_1: &'_0 usize) -> usize
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for usize}
-impl "impl_Clone_for_usize" Clone for usize {
-    proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
-    fn clone<'_0_1> = impl_Clone_for_usize::clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
-#[diagnostic_item("noop_method_clone")]
-pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
-where
-    Outlives0: ('_0: '_1),
-    Outlives1: (T: '_0),
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for &'_0 T}
-impl<'_0, T> Clone for &'_0 T
-where
-    Outlives0: (T: '_0),
-{
-    proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
-    fn clone<'_0_1> = {impl Clone for &'_0 T}::clone<'_0, '_0_1, T>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for u32}
-impl "impl_Copy_for_u32" Copy for u32 {
-    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
-    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for i32}
-impl "impl_Copy_for_i32" Copy for i32 {
-    proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
-    proof ImpliedClause1: (i32: Clone) = impl_Clone_for_i32
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for usize}
-impl "impl_Copy_for_usize" Copy for usize {
-    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
-    proof ImpliedClause1: (usize: Clone) = impl_Clone_for_usize
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for &'_0 T}
-impl<'_0, T> Copy for &'_0 T
-where
-    Outlives0: (T: '_0),
-{
-    proof ImpliedClause0: (&'_0 T: MetaSized) = {built_in impl MetaSized for &'_0 T}
-    proof ImpliedClause1: (&'_0 T: Clone) = {impl Clone for &'_0 T}<'_, T>
     non-dyn-compatible
 }
 
@@ -229,38 +118,6 @@ where
 {
   None,
   Some { _0: T },
-}
-
-// Full name: core::option::{impl Clone for Option<T>[TraitClause0]}::clone
-pub fn impl_Clone_for_Option::clone<'_0, T>(_1: &'_0 Option<T>[TraitClause0]) -> Option<T>[TraitClause0]
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: Clone),
-    TraitClause2: (T: Destruct),
-    Outlives0: (T: '_0),
-= <opaque>
-
-// Full name: core::option::{impl Clone for Option<T>[TraitClause0]}
-impl<T> "impl_Clone_for_Option" Clone for Option<T>[TraitClause0]
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: Clone),
-    TraitClause2: (T: Destruct),
-{
-    proof ImpliedClause0: (Option<T>[TraitClause0]: Sized) = {built_in impl Sized for Option<T>[TraitClause0]}
-    fn clone<'_0_1> = impl_Clone_for_Option::clone<'_0_1, T>[TraitClause0, TraitClause1, TraitClause2]
-    non-dyn-compatible
-}
-
-// Full name: core::option::{impl Copy for Option<T>[TraitClause0]}
-impl<T> "impl_Copy_for_Option" Copy for Option<T>[TraitClause0]
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: Copy),
-{
-    proof ImpliedClause0: (Option<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Option<T>[TraitClause0]}
-    proof ImpliedClause1: (Option<T>[TraitClause0]: Clone) = impl_Clone_for_Option<T>[TraitClause0, TraitClause1::ImpliedClause1, {built_in impl Destruct for T}]
-    non-dyn-compatible
 }
 
 // Full name: core::option::Option::{impl Destruct for Option<T>[TraitClause0]}::drop_glue

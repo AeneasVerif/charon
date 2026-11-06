@@ -391,6 +391,16 @@ impl VisitAst for DepsForItem<'_> {
     fn visit_trait_impl_source(&mut self, _: &TraitImplSource) -> ControlFlow<Self::Break> {
         Continue(())
     }
+
+    fn visit_operand(&mut self, operand: &Operand) -> ControlFlow<Self::Break> {
+        match operand {
+            // HACK: Ignore `Copy` proofs to avoid making a cycle between `Clone` and `Copy` when
+            // both are derived. This is for Aeneas, which doesn't support such a cycle, and
+            // ignores the `Copy` proof anyway.
+            Operand::Copy(place, _) => place.drive(self),
+            _ => self.visit_inner(operand),
+        }
+    }
 }
 
 fn compute_declarations_graph(ctx: &TransformCtx) -> DiGraphMap<ItemId, ()> {

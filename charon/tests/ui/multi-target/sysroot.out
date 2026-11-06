@@ -1,52 +1,5 @@
 pub opaque type core::ascii::EscapeDefault
 
-#[fundamental]
-#[lang_item(MetaSized)]
-pub trait core::marker::MetaSized<Self>
-
-#[fundamental]
-#[lang_item(Sized)]
-pub trait core::marker::Sized<Self>
-{
-    proof ImpliedClause0: (Self: core::marker::MetaSized)
-    non-dyn-compatible
-}
-
-#[lang_item(Clone)]
-#[diagnostic_item("Clone")]
-pub trait core::clone::Clone<Self>
-{
-    proof ImpliedClause0: (Self: core::marker::Sized)
-    fn clone<'_0_1>;
-    non-dyn-compatible
-}
-
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait core::marker::Copy<Self>
-{
-    proof ImpliedClause0: (Self: core::marker::MetaSized)
-    proof ImpliedClause1: (Self: core::clone::Clone)
-    non-dyn-compatible
-}
-
-pub fn core::clone::impls::{impl core::clone::Clone for u8}::clone<'_0>(_1: &'_0 u8) -> u8
-= <opaque>
-
-// Full name: core::clone::impls::{impl core::clone::Clone for u8}
-impl core::clone::Clone for u8 {
-    proof ImpliedClause0: (u8: core::marker::Sized) = {built_in impl core::marker::Sized for u8}
-    fn clone<'_0_1> = core::clone::impls::{impl core::clone::Clone for u8}::clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl core::marker::Copy for u8}
-impl core::marker::Copy for u8 {
-    proof ImpliedClause0: (u8: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for u8}
-    proof ImpliedClause1: (u8: core::clone::Clone) = core::clone::impls::{impl core::clone::Clone for u8}
-    non-dyn-compatible
-}
-
 fn core::ascii::{core::ascii::EscapeDefault}::new(_1: u8) -> core::ascii::EscapeDefault
 = <opaque>
 

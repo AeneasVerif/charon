@@ -1,65 +1,6 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
-#[fundamental]
-#[lang_item(MetaSized)]
-pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[fundamental]
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
-// Full name: core::clone::Clone
-#[lang_item(Clone)]
-#[diagnostic_item("Clone")]
-pub trait Clone<Self>
-{
-    proof ImpliedClause0: (Self: Sized)
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for usize}
-impl "impl_Clone_for_usize" Clone for usize {
-    proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
-    non-dyn-compatible
-}
-
 struct () {}
-
-// Full name: core::clone::impls::{impl Clone for *const ()}
-impl Clone for *const () {
-    proof ImpliedClause0: (*const (): Sized) = {built_in impl Sized for *const ()}
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for usize}
-impl "impl_Copy_for_usize" Copy for usize {
-    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
-    proof ImpliedClause1: (usize: Clone) = impl_Clone_for_usize
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for *const ()}
-impl Copy for *const () {
-    proof ImpliedClause0: (*const (): MetaSized) = {built_in impl MetaSized for *const ()}
-    proof ImpliedClause1: (*const (): Clone) = {impl Clone for *const ()}
-    non-dyn-compatible
-}
 
 // Full name: core::ptr::metadata::from_raw_parts::<u8, ()>
 pub fn from_raw_parts::<u8, ()>(data_pointer: *const (), metadata: ()) -> *const u8

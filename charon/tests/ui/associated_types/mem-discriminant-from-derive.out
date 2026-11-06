@@ -1,58 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
-#[fundamental]
-#[lang_item(MetaSized)]
-pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[fundamental]
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
-// Full name: core::clone::Clone
-#[lang_item(Clone)]
-#[diagnostic_item("Clone")]
-pub trait Clone<Self>
-{
-    proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for isize}::clone
-pub fn impl_Clone_for_isize::clone<'_0>(_1: &'_0 isize) -> isize
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for isize}
-impl "impl_Clone_for_isize" Clone for isize {
-    proof ImpliedClause0: (isize: Sized) = {built_in impl Sized for isize}
-    fn clone<'_0_1> = impl_Clone_for_isize::clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
-#[diagnostic_item("noop_method_clone")]
-pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
-where
-    Outlives0: ('_0: '_1),
-    Outlives1: (T: '_0),
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for &'_0 T}
-impl<'_0, T> Clone for &'_0 T
-where
-    Outlives0: (T: '_0),
-{
-    proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
-    fn clone<'_0_1> = {impl Clone for &'_0 T}::clone<'_0, '_0_1, T>
-    non-dyn-compatible
-}
-
 // Full name: core::cmp::PartialEq
 #[lang_item(PartialEq)]
 #[diagnostic_item("PartialEq")]
@@ -82,39 +29,26 @@ where
     Outlives3: (B: '_0),
 = <opaque>
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
 // Full name: core::marker::StructuralPartialEq
 #[lang_item(StructuralPeq)]
 pub trait StructuralPartialEq<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     vtable: core::marker::StructuralPartialEq::{vtable}
-}
-
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for isize}
-impl "impl_Copy_for_isize" Copy for isize {
-    proof ImpliedClause0: (isize: MetaSized) = {built_in impl MetaSized for isize}
-    proof ImpliedClause1: (isize: Clone) = impl_Clone_for_isize
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for &'_0 T}
-impl<'_0, T> Copy for &'_0 T
-where
-    Outlives0: (T: '_0),
-{
-    proof ImpliedClause0: (&'_0 T: MetaSized) = {built_in impl MetaSized for &'_0 T}
-    proof ImpliedClause1: (&'_0 T: Clone) = {impl Clone for &'_0 T}<'_, T>
-    non-dyn-compatible
 }
 
 struct () {}

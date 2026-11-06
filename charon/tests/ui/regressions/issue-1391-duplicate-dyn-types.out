@@ -7,25 +7,9 @@ opaque type core::marker::MetaSized::{vtable}
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
-// Full name: core::marker::Sized
-#[fundamental]
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
-// Full name: core::clone::Clone
-#[lang_item(Clone)]
-#[diagnostic_item("Clone")]
-pub trait Clone<Self>
-{
-    proof ImpliedClause0: (Self: Sized)
-    non-dyn-compatible
-}
-
 struct () {}
+
+vtable core::marker::MetaSized::{vtable}::<D>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
 
 struct test_crate::Sub::{vtable} {
   size: usize,
@@ -39,31 +23,6 @@ trait Sub<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     vtable: test_crate::Sub::{vtable}
-}
-
-// Full name: core::clone::impls::{impl Clone for *const (dyn Sub)}
-impl Clone for *const (dyn Sub) {
-    proof ImpliedClause0: (*const (dyn Sub): Sized) = {built_in impl Sized for *const (dyn Sub)}
-    non-dyn-compatible
-}
-
-vtable core::marker::MetaSized::{vtable}::<D>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
-
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for *const (dyn Sub)}
-impl Copy for *const (dyn Sub) {
-    proof ImpliedClause0: (*const (dyn Sub): MetaSized) = {built_in impl MetaSized for *const (dyn Sub)}
-    proof ImpliedClause1: (*const (dyn Sub): Clone) = {impl Clone for *const (dyn Sub)}
-    non-dyn-compatible
 }
 
 // Full name: test_crate::D

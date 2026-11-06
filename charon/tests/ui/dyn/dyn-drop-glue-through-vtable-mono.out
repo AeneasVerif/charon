@@ -1,15 +1,5 @@
 # Final LLBC before serialization:
 
-struct () {}
-
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1>;
-    non-dyn-compatible
-}
-
 opaque type core::marker::MetaSized::{vtable}
 
 // Full name: core::marker::MetaSized
@@ -17,22 +7,13 @@ opaque type core::marker::MetaSized::{vtable}
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
-// Full name: core::marker::Sized
-#[fundamental]
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
+struct () {}
 
-// Full name: core::clone::Clone
-#[lang_item(Clone)]
-#[diagnostic_item("Clone")]
-pub trait Clone<Self>
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
 {
-    proof ImpliedClause0: (Self: Sized)
-    proof ImpliedClause1: (Self: Destruct)
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
 
@@ -49,32 +30,6 @@ trait T<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Destruct)
     vtable: test_crate::T::{vtable}
-}
-
-// Full name: core::clone::impls::{impl Clone for *mut (dyn T)}
-impl Clone for *mut (dyn T) {
-    proof ImpliedClause0: (*mut (dyn T): Sized) = {built_in impl Sized for *mut (dyn T)}
-    proof ImpliedClause1: (*mut (dyn T): Destruct) = {built_in impl Destruct for *mut (dyn T)}
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    proof ImpliedClause2: (Self: Destruct)
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for *mut (dyn T)}
-impl Copy for *mut (dyn T) {
-    proof ImpliedClause0: (*mut (dyn T): MetaSized) = {built_in impl MetaSized for *mut (dyn T)}
-    proof ImpliedClause1: (*mut (dyn T): Clone) = {impl Clone for *mut (dyn T)}
-    proof ImpliedClause2: (*mut (dyn T): Destruct) = {built_in impl Destruct for *mut (dyn T)}
-    non-dyn-compatible
 }
 
 // Full name: core::ptr::drop_glue::<(dyn T)>

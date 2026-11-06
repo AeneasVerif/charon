@@ -28,107 +28,9 @@ pub trait Sized<Self>
 pub fn index::<u32, RangeFull, 2usize><'_0>(_1: &'_0 [u32; 2usize], _2: RangeFull) -> &'_0 [u32]
 = <opaque>
 
-// Full name: core::clone::Clone
-#[lang_item(Clone)]
-#[diagnostic_item("Clone")]
-pub trait Clone<Self>
-{
-    proof ImpliedClause0: (Self: Sized)
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for usize}
-impl "impl_Clone_for_usize" Clone for usize {
-    proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for *const u32}
-impl Clone for *const u32 {
-    proof ImpliedClause0: (*const u32: Sized) = {built_in impl Sized for *const u32}
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for *const [u32]}
-impl Clone for *const [u32] {
-    proof ImpliedClause0: (*const [u32]: Sized) = {built_in impl Sized for *const [u32]}
-    non-dyn-compatible
-}
-
-struct test_crate::Trait::{vtable} {
-  size: usize,
-  align: usize,
-  drop: *const (),
-  super_trait_0: &'static core::marker::MetaSized::{vtable},
-}
-
-// Full name: test_crate::Trait
-trait Trait<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    vtable: test_crate::Trait::{vtable}
-}
-
-// Full name: core::clone::impls::{impl Clone for *const (dyn Trait)}
-impl Clone for *const (dyn Trait) {
-    proof ImpliedClause0: (*const (dyn Trait): Sized) = {built_in impl Sized for *const (dyn Trait)}
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for *const u32}
-impl Copy for *const u32 {
-    proof ImpliedClause0: (*const u32: MetaSized) = {built_in impl MetaSized for *const u32}
-    proof ImpliedClause1: (*const u32: Clone) = {impl Clone for *const u32}
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for *const [u32]}
-impl Copy for *const [u32] {
-    proof ImpliedClause0: (*const [u32]: MetaSized) = {built_in impl MetaSized for *const [u32]}
-    proof ImpliedClause1: (*const [u32]: Clone) = {impl Clone for *const [u32]}
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for usize}
-impl "impl_Copy_for_usize" Copy for usize {
-    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
-    proof ImpliedClause1: (usize: Clone) = impl_Clone_for_usize
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for *const (dyn Trait)}
-impl Copy for *const (dyn Trait) {
-    proof ImpliedClause0: (*const (dyn Trait): MetaSized) = {built_in impl MetaSized for *const (dyn Trait)}
-    proof ImpliedClause1: (*const (dyn Trait): Clone) = {impl Clone for *const (dyn Trait)}
-    non-dyn-compatible
-}
-
 // Full name: core::ptr::metadata::DynMetadata::<(dyn Trait)>
 #[lang_item(DynMetadata)]
 pub opaque type DynMetadata::<(dyn Trait)>
-
-// Full name: core::ptr::metadata::{impl Clone for DynMetadata::<(dyn Trait)>}
-impl Clone for DynMetadata::<(dyn Trait)> {
-    proof ImpliedClause0: (DynMetadata::<(dyn Trait)>: Sized) = {built_in impl Sized for DynMetadata::<(dyn Trait)>}
-    non-dyn-compatible
-}
-
-// Full name: core::ptr::metadata::{impl Copy for DynMetadata::<(dyn Trait)>}
-impl Copy for DynMetadata::<(dyn Trait)> {
-    proof ImpliedClause0: (DynMetadata::<(dyn Trait)>: MetaSized) = {built_in impl MetaSized for DynMetadata::<(dyn Trait)>}
-    proof ImpliedClause1: (DynMetadata::<(dyn Trait)>: Clone) = {impl Clone for DynMetadata::<(dyn Trait)>}
-    non-dyn-compatible
-}
 
 // Full name: test_crate::metadata::<u32>
 pub fn metadata::<u32>(ptr: *const u32)
@@ -161,6 +63,20 @@ pub fn metadata::<[u32]>(ptr: *const [u32]) -> usize
     storage_dead(_2)
     storage_dead(ptr)
     return
+}
+
+struct test_crate::Trait::{vtable} {
+  size: usize,
+  align: usize,
+  drop: *const (),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: test_crate::Trait
+trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: test_crate::Trait::{vtable}
 }
 
 // Full name: test_crate::metadata::<(dyn Trait)>

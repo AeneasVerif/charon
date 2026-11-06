@@ -18,44 +18,6 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::clone::Clone
-#[lang_item(Clone)]
-#[diagnostic_item("Clone")]
-pub trait Clone<Self>
-{
-    proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for usize}::clone
-pub fn impl_Clone_for_usize::clone<'_0>(_1: &'_0 usize) -> usize
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for usize}
-impl "impl_Clone_for_usize" Clone for usize {
-    proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
-    fn clone<'_0_1> = impl_Clone_for_usize::clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for usize}
-impl "impl_Copy_for_usize" Copy for usize {
-    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
-    proof ImpliedClause1: (usize: Clone) = impl_Clone_for_usize
-    non-dyn-compatible
-}
-
 struct () {}
 
 // Full name: core::marker::Destruct
@@ -176,47 +138,9 @@ where
 // Full name: core::num::niche_types::UsizeNoHighBit
 pub opaque type UsizeNoHighBit
 
-// Full name: core::num::niche_types::{impl Clone for UsizeNoHighBit}::clone
-pub fn impl_Clone_for_UsizeNoHighBit::clone<'_0>(_1: &'_0 UsizeNoHighBit) -> UsizeNoHighBit
-= <opaque>
-
-// Full name: core::num::niche_types::{impl Clone for UsizeNoHighBit}
-impl "impl_Clone_for_UsizeNoHighBit" Clone for UsizeNoHighBit {
-    proof ImpliedClause0: (UsizeNoHighBit: Sized) = {built_in impl Sized for UsizeNoHighBit}
-    fn clone<'_0_1> = impl_Clone_for_UsizeNoHighBit::clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::num::niche_types::{impl Copy for UsizeNoHighBit}
-impl "impl_Copy_for_UsizeNoHighBit" Copy for UsizeNoHighBit {
-    proof ImpliedClause0: (UsizeNoHighBit: MetaSized) = {built_in impl MetaSized for UsizeNoHighBit}
-    proof ImpliedClause1: (UsizeNoHighBit: Clone) = impl_Clone_for_UsizeNoHighBit
-    non-dyn-compatible
-}
-
 // Full name: core::ptr::non_null::NonNull
 #[lang_item(NonNull)]
 pub opaque type NonNull<T>
-
-// Full name: core::ptr::non_null::{impl Clone for NonNull<T>}::clone
-pub fn impl_Clone_for_NonNull::clone<'_0, T>(_1: &'_0 NonNull<T>) -> NonNull<T>
-where
-    Outlives0: (T: '_0),
-= <opaque>
-
-// Full name: core::ptr::non_null::{impl Clone for NonNull<T>}
-impl<T> "impl_Clone_for_NonNull" Clone for NonNull<T> {
-    proof ImpliedClause0: (NonNull<T>: Sized) = {built_in impl Sized for NonNull<T>}
-    fn clone<'_0_1> = impl_Clone_for_NonNull::clone<'_0_1, T>
-    non-dyn-compatible
-}
-
-// Full name: core::ptr::non_null::{impl Copy for NonNull<T>}
-impl<T> "impl_Copy_for_NonNull" Copy for NonNull<T> {
-    proof ImpliedClause0: (NonNull<T>: MetaSized) = {built_in impl MetaSized for NonNull<T>}
-    proof ImpliedClause1: (NonNull<T>: Clone) = impl_Clone_for_NonNull<T>
-    non-dyn-compatible
-}
 
 // Full name: core::ptr::unique::Unique
 pub opaque type Unique<T>

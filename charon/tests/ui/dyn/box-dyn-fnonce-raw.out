@@ -1,70 +1,19 @@
 # Final LLBC before serialization:
 
+// Full name: core::alloc::layout::Layout
+#[lang_item(AllocLayout)]
+pub opaque type Layout
+
+// Full name: core::alloc::layout::{Layout}::size
+pub fn size<'_0>(_1: &'_0 Layout) -> usize
+= <opaque>
+
 opaque type core::marker::MetaSized::{vtable}
 
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[fundamental]
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
-// Full name: core::clone::Clone
-#[lang_item(Clone)]
-#[diagnostic_item("Clone")]
-pub trait Clone<Self>
-{
-    proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
-struct () {}
-
-vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
-
-// Full name: core::alloc::layout::Layout
-#[lang_item(AllocLayout)]
-pub opaque type Layout
-
-// Full name: core::alloc::layout::{impl Clone for Layout}::clone
-pub fn impl_Clone_for_Layout::clone<'_0>(_1: &'_0 Layout) -> Layout
-= <opaque>
-
-// Full name: core::alloc::layout::{impl Clone for Layout}
-impl "impl_Clone_for_Layout" Clone for Layout {
-    proof ImpliedClause0: (Layout: Sized) = {built_in impl Sized for Layout}
-    fn clone<'_0_1> = impl_Clone_for_Layout::clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::alloc::layout::{impl Copy for Layout}
-impl "impl_Copy_for_Layout" Copy for Layout {
-    proof ImpliedClause0: (Layout: MetaSized) = {built_in impl MetaSized for Layout}
-    proof ImpliedClause1: (Layout: Clone) = impl_Clone_for_Layout
-    non-dyn-compatible
-}
-
-// Full name: core::alloc::layout::{Layout}::size
-pub fn size<'_0>(_1: &'_0 Layout) -> usize
-= <opaque>
 
 // Full name: core::alloc::layout::{Layout}::for_value_raw
 pub unsafe fn for_value_raw<T>(_1: *const T) -> Layout
@@ -74,6 +23,17 @@ where
 
 // Full name: core::alloc::AllocError
 pub struct AllocError {}
+
+struct () {}
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
 
 // Full name: core::result::Result
 #[diagnostic_item("Result")]
@@ -90,6 +50,8 @@ where
 #[lang_item(NonNull)]
 pub opaque type NonNull<T>
 
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
+
 // Full name: core::alloc::Allocator
 pub unsafe trait Allocator<Self>
 {
@@ -97,44 +59,6 @@ pub unsafe trait Allocator<Self>
     fn allocate<'_0_1>;
     fn deallocate<'_0_1>;
     vtable: core::alloc::Allocator::{vtable}
-}
-
-// Full name: core::clone::impls::{impl Clone for bool}::clone
-pub fn impl_Clone_for_bool::clone<'_0>(_1: &'_0 bool) -> bool
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for bool}
-impl "impl_Clone_for_bool" Clone for bool {
-    proof ImpliedClause0: (bool: Sized) = {built_in impl Sized for bool}
-    fn clone<'_0_1> = impl_Clone_for_bool::clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for *mut T}::clone
-pub fn {impl Clone for *mut T}::clone<'_0, T>(_1: &'_0 *mut T) -> *mut T
-where
-    Outlives0: (T: '_0),
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for *mut T}
-impl<T> Clone for *mut T {
-    proof ImpliedClause0: (*mut T: Sized) = {built_in impl Sized for *mut T}
-    fn clone<'_0_1> = {impl Clone for *mut T}::clone<'_0_1, T>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for bool}
-impl "impl_Copy_for_bool" Copy for bool {
-    proof ImpliedClause0: (bool: MetaSized) = {built_in impl MetaSized for bool}
-    proof ImpliedClause1: (bool: Clone) = impl_Clone_for_bool
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for *mut T}
-impl<T> Copy for *mut T {
-    proof ImpliedClause0: (*mut T: MetaSized) = {built_in impl MetaSized for *mut T}
-    proof ImpliedClause1: (*mut T: Clone) = {impl Clone for *mut T}<T>
-    non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct
@@ -289,26 +213,6 @@ where
     TraitClause0: (T: Sized),
 = <opaque>
 
-// Full name: core::ptr::non_null::{impl Clone for NonNull<T>}::clone
-pub fn impl_Clone_for_NonNull::clone<'_0, T>(_1: &'_0 NonNull<T>) -> NonNull<T>
-where
-    Outlives0: (T: '_0),
-= <opaque>
-
-// Full name: core::ptr::non_null::{impl Clone for NonNull<T>}
-impl<T> "impl_Clone_for_NonNull" Clone for NonNull<T> {
-    proof ImpliedClause0: (NonNull<T>: Sized) = {built_in impl Sized for NonNull<T>}
-    fn clone<'_0_1> = impl_Clone_for_NonNull::clone<'_0_1, T>
-    non-dyn-compatible
-}
-
-// Full name: core::ptr::non_null::{impl Copy for NonNull<T>}
-impl<T> "impl_Copy_for_NonNull" Copy for NonNull<T> {
-    proof ImpliedClause0: (NonNull<T>: MetaSized) = {built_in impl MetaSized for NonNull<T>}
-    proof ImpliedClause1: (NonNull<T>: Clone) = impl_Clone_for_NonNull<T>
-    non-dyn-compatible
-}
-
 // Full name: core::ptr::unique::Unique
 pub opaque type Unique<T>
 
@@ -325,26 +229,6 @@ pub fn cast<T, U>(_1: Unique<T>) -> Unique<U>
 where
     TraitClause0: (U: Sized),
 = <opaque>
-
-// Full name: core::ptr::unique::{impl Clone for Unique<T>}::clone
-pub fn impl_Clone_for_Unique::clone<'_0, T>(_1: &'_0 Unique<T>) -> Unique<T>
-where
-    Outlives0: (T: '_0),
-= <opaque>
-
-// Full name: core::ptr::unique::{impl Clone for Unique<T>}
-impl<T> "impl_Clone_for_Unique" Clone for Unique<T> {
-    proof ImpliedClause0: (Unique<T>: Sized) = {built_in impl Sized for Unique<T>}
-    fn clone<'_0_1> = impl_Clone_for_Unique::clone<'_0_1, T>
-    non-dyn-compatible
-}
-
-// Full name: core::ptr::unique::{impl Copy for Unique<T>}
-impl<T> "impl_Copy_for_Unique" Copy for Unique<T> {
-    proof ImpliedClause0: (Unique<T>: MetaSized) = {built_in impl MetaSized for Unique<T>}
-    proof ImpliedClause1: (Unique<T>: Clone) = impl_Clone_for_Unique<T>
-    non-dyn-compatible
-}
 
 // Full name: alloc::alloc::Global
 #[lang_item(GlobalAlloc)]

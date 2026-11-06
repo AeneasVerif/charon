@@ -60,70 +60,6 @@ pub unsafe trait TrivialClone<Self>
     non-dyn-compatible
 }
 
-// Full name: core::clone::impls::{impl Clone for u32}::clone
-pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for u32}
-impl "impl_Clone_for_u32" Clone for u32 {
-    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
-    fn clone<'_0_1> = impl_Clone_for_u32::clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for usize}::clone
-pub fn impl_Clone_for_usize::clone<'_0>(_1: &'_0 usize) -> usize
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for usize}
-impl "impl_Clone_for_usize" Clone for usize {
-    proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
-    fn clone<'_0_1> = impl_Clone_for_usize::clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for u64}::clone
-pub fn impl_Clone_for_u64::clone<'_0>(_1: &'_0 u64) -> u64
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for u64}
-impl "impl_Clone_for_u64" Clone for u64 {
-    proof ImpliedClause0: (u64: Sized) = {built_in impl Sized for u64}
-    fn clone<'_0_1> = impl_Clone_for_u64::clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for *const T}::clone
-pub fn {impl Clone for *const T}::clone<'_0, T>(_1: &'_0 *const T) -> *const T
-where
-    Outlives0: (T: '_0),
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for *const T}
-impl<T> Clone for *const T {
-    proof ImpliedClause0: (*const T: Sized) = {built_in impl Sized for *const T}
-    fn clone<'_0_1> = {impl Clone for *const T}::clone<'_0_1, T>
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
-#[diagnostic_item("noop_method_clone")]
-pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
-where
-    Outlives0: ('_0: '_1),
-    Outlives1: (T: '_0),
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for &'_0 T}
-impl<'_0, T> Clone for &'_0 T
-where
-    Outlives0: (T: '_0),
-{
-    proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
-    fn clone<'_0_1> = {impl Clone for &'_0 T}::clone<'_0, '_0_1, T>
-    non-dyn-compatible
-}
-
 // Full name: core::cmp::PartialEq
 #[lang_item(PartialEq)]
 #[diagnostic_item("PartialEq")]
@@ -264,44 +200,6 @@ pub trait Copy<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for u32}
-impl "impl_Copy_for_u32" Copy for u32 {
-    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
-    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for usize}
-impl "impl_Copy_for_usize" Copy for usize {
-    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
-    proof ImpliedClause1: (usize: Clone) = impl_Clone_for_usize
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for *const T}
-impl<T> Copy for *const T {
-    proof ImpliedClause0: (*const T: MetaSized) = {built_in impl MetaSized for *const T}
-    proof ImpliedClause1: (*const T: Clone) = {impl Clone for *const T}<T>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for u64}
-impl "impl_Copy_for_u64" Copy for u64 {
-    proof ImpliedClause0: (u64: MetaSized) = {built_in impl MetaSized for u64}
-    proof ImpliedClause1: (u64: Clone) = impl_Clone_for_u64
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for &'_0 T}
-impl<'_0, T> Copy for &'_0 T
-where
-    Outlives0: (T: '_0),
-{
-    proof ImpliedClause0: (&'_0 T: MetaSized) = {built_in impl MetaSized for &'_0 T}
-    proof ImpliedClause1: (&'_0 T: Clone) = {impl Clone for &'_0 T}<'_, T>
     non-dyn-compatible
 }
 
@@ -732,13 +630,6 @@ union Foo {
   two: [u32; 2usize],
 }
 
-// Full name: test_crate::{impl Clone for Foo}
-impl "impl_Clone_for_Foo" Clone for Foo {
-    proof ImpliedClause0: (Foo: Sized) = {built_in impl Sized for Foo}
-    fn clone<'_0_1> = impl_Clone_for_Foo::clone<'_0_1>
-    non-dyn-compatible
-}
-
 // Full name: test_crate::{impl Clone for Foo}::clone
 #[inline(hint)]
 pub fn impl_Clone_for_Foo::clone<'_0>(self: &'_0 Foo) -> Foo
@@ -752,16 +643,23 @@ pub fn impl_Clone_for_Foo::clone<'_0>(self: &'_0 Foo) -> Foo
     return
 }
 
-// Full name: test_crate::{impl Copy for Foo}
-impl "impl_Copy_for_Foo" Copy for Foo {
-    proof ImpliedClause0: (Foo: MetaSized) = {built_in impl MetaSized for Foo}
-    proof ImpliedClause1: (Foo: Clone) = impl_Clone_for_Foo
+// Full name: test_crate::{impl Clone for Foo}
+impl "impl_Clone_for_Foo" Clone for Foo {
+    proof ImpliedClause0: (Foo: Sized) = {built_in impl Sized for Foo}
+    fn clone<'_0_1> = impl_Clone_for_Foo::clone<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl TrivialClone for Foo}
 // unsafe to declare
 unsafe impl "impl_TrivialClone_for_Foo" TrivialClone for Foo {
+    proof ImpliedClause0: (Foo: MetaSized) = {built_in impl MetaSized for Foo}
+    proof ImpliedClause1: (Foo: Clone) = impl_Clone_for_Foo
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Copy for Foo}
+impl "impl_Copy_for_Foo" Copy for Foo {
     proof ImpliedClause0: (Foo: MetaSized) = {built_in impl MetaSized for Foo}
     proof ImpliedClause1: (Foo: Clone) = impl_Clone_for_Foo
     non-dyn-compatible

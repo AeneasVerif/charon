@@ -3,31 +3,6 @@
 // Full name: core::alloc::AllocError
 pub struct AllocError {}
 
-// Full name: core::alloc::{impl Copy for AllocError}
-impl "impl_Copy_for_AllocError" Copy for AllocError {
-    proof ImpliedClause0: (AllocError: MetaSized) = {built_in impl MetaSized for AllocError}
-    proof ImpliedClause1: (AllocError: Clone) = impl_Clone_for_AllocError
-    non-dyn-compatible
-}
-
-// Full name: core::alloc::{impl Clone for AllocError}
-impl "impl_Clone_for_AllocError" Clone for AllocError {
-    proof ImpliedClause0: (AllocError: Sized) = {built_in impl Sized for AllocError}
-    fn clone<'_0_1> = impl_Clone_for_AllocError::clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::alloc::{impl Clone for AllocError}::clone
-pub fn impl_Clone_for_AllocError::clone<'_0>(self: &'_0 AllocError) -> AllocError
-{
-    let mut _0: AllocError; // return
-    let self: &'1 AllocError; // arg #1
-
-    storage_live(_0)
-    _0 = copy (*self)
-    return
-}
-
 struct () {}
 
 // Full name: core::result::Result
@@ -58,33 +33,6 @@ pub unsafe trait Allocator<Self>
     fn grow_zeroed<'_0_1> = grow_zeroed<'_0_1, Self>[Self]
     fn shrink<'_0_1> = shrink<'_0_1, Self>[Self]
     vtable: core::alloc::Allocator::{vtable}
-}
-
-// Full name: core::ptr::non_null::{impl Clone for NonNull<T>}
-impl<T> "impl_Clone_for_NonNull" Clone for NonNull<T> {
-    proof ImpliedClause0: (NonNull<T>: Sized) = {built_in impl Sized for NonNull<T>}
-    fn clone<'_0_1> = impl_Clone_for_NonNull::clone<'_0_1, T>
-    non-dyn-compatible
-}
-
-// Full name: core::ptr::non_null::{impl Clone for NonNull<T>}::clone
-pub fn impl_Clone_for_NonNull::clone<'_0, T>(self: &'_0 NonNull<T>) -> NonNull<T>
-where
-    Outlives0: (T: '_0),
-{
-    let mut _0: NonNull<T>; // return
-    let self: &'1 NonNull<T>; // arg #1
-
-    storage_live(_0)
-    _0 = copy (*self)
-    return
-}
-
-// Full name: core::ptr::non_null::{impl Copy for NonNull<T>}
-impl<T> "impl_Copy_for_NonNull" Copy for NonNull<T> {
-    proof ImpliedClause0: (NonNull<T>: MetaSized) = {built_in impl MetaSized for NonNull<T>}
-    proof ImpliedClause1: (NonNull<T>: Clone) = impl_Clone_for_NonNull<T>
-    non-dyn-compatible
 }
 
 pub fn core::ptr::non_null::{NonNull<T>}::as_ptr<T>(self: NonNull<T>) -> *mut T
@@ -1970,33 +1918,6 @@ pub unsafe fn core::ptr::non_null::{NonNull<T>}::new_unchecked<T>(ptr: *mut T) -
 pub struct Unique<T> {
   pointer: NonNull<T>,
   _marker: PhantomData<T>,
-}
-
-// Full name: core::ptr::unique::{impl Clone for Unique<T>}
-impl<T> "impl_Clone_for_Unique" Clone for Unique<T> {
-    proof ImpliedClause0: (Unique<T>: Sized) = {built_in impl Sized for Unique<T>}
-    fn clone<'_0_1> = impl_Clone_for_Unique::clone<'_0_1, T>
-    non-dyn-compatible
-}
-
-// Full name: core::ptr::unique::{impl Clone for Unique<T>}::clone
-pub fn impl_Clone_for_Unique::clone<'_0, T>(self: &'_0 Unique<T>) -> Unique<T>
-where
-    Outlives0: (T: '_0),
-{
-    let mut _0: Unique<T>; // return
-    let self: &'1 Unique<T>; // arg #1
-
-    storage_live(_0)
-    _0 = copy (*self)
-    return
-}
-
-// Full name: core::ptr::unique::{impl Copy for Unique<T>}
-impl<T> "impl_Copy_for_Unique" Copy for Unique<T> {
-    proof ImpliedClause0: (Unique<T>: MetaSized) = {built_in impl MetaSized for Unique<T>}
-    proof ImpliedClause1: (Unique<T>: Clone) = impl_Clone_for_Unique<T>
-    non-dyn-compatible
 }
 
 pub fn core::ptr::unique::{Unique<T>}::as_non_null_ptr<T>(self: Unique<T>) -> NonNull<T>

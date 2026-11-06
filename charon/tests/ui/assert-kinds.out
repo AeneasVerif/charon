@@ -24,17 +24,6 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
-// Full name: core::clone::impls::{impl Clone for usize}::clone
-pub fn impl_Clone_for_usize::clone<'_0>(_1: &'_0 usize) -> usize
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for usize}
-impl "impl_Clone_for_usize" Clone for usize {
-    proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
-    fn clone<'_0_1> = impl_Clone_for_usize::clone<'_0_1>
-    non-dyn-compatible
-}
-
 // Full name: core::clone::impls::{impl Clone for i32}::clone
 pub fn impl_Clone_for_i32::clone<'_0>(_1: &'_0 i32) -> i32
 = <opaque>
@@ -43,17 +32,6 @@ pub fn impl_Clone_for_i32::clone<'_0>(_1: &'_0 i32) -> i32
 impl "impl_Clone_for_i32" Clone for i32 {
     proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
     fn clone<'_0_1> = impl_Clone_for_i32::clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for i8}::clone
-pub fn impl_Clone_for_i8::clone<'_0>(_1: &'_0 i8) -> i8
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for i8}
-impl "impl_Clone_for_i8" Clone for i8 {
-    proof ImpliedClause0: (i8: Sized) = {built_in impl Sized for i8}
-    fn clone<'_0_1> = impl_Clone_for_i8::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -83,24 +61,10 @@ where
     TraitClause1: (T: Copy),
 = <intrinsic:mul_with_overflow>
 
-// Full name: core::marker::{impl Copy for usize}
-impl "impl_Copy_for_usize" Copy for usize {
-    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
-    proof ImpliedClause1: (usize: Clone) = impl_Clone_for_usize
-    non-dyn-compatible
-}
-
 // Full name: core::marker::{impl Copy for i32}
 impl "impl_Copy_for_i32" Copy for i32 {
     proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
     proof ImpliedClause1: (i32: Clone) = impl_Clone_for_i32
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for i8}
-impl "impl_Copy_for_i8" Copy for i8 {
-    proof ImpliedClause0: (i8: MetaSized) = {built_in impl MetaSized for i8}
-    proof ImpliedClause1: (i8: Clone) = impl_Clone_for_i8
     non-dyn-compatible
 }
 

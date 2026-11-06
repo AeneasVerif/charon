@@ -1,57 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
-#[fundamental]
-#[lang_item(MetaSized)]
-pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[fundamental]
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
-// Full name: core::clone::Clone
-#[lang_item(Clone)]
-#[diagnostic_item("Clone")]
-pub trait Clone<Self>
-{
-    proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for char}::clone
-pub fn clone<'_0>(_1: &'_0 char) -> char
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for char}
-impl "impl_Clone_for_char" Clone for char {
-    proof ImpliedClause0: (char: Sized) = {built_in impl Sized for char}
-    fn clone<'_0_1> = clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for char}
-impl "impl_Copy_for_char" Copy for char {
-    proof ImpliedClause0: (char: MetaSized) = {built_in impl MetaSized for char}
-    proof ImpliedClause1: (char: Clone) = impl_Clone_for_char
-    non-dyn-compatible
-}
-
 struct () {}
 
 // Full name: test_crate::main

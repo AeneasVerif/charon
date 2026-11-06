@@ -71,24 +71,6 @@ where
     return
 }
 
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for u8}
-impl "impl_Clone_for_u8" Clone for u8 {
-    proof ImpliedClause0: (u8: Sized) = {built_in impl Sized for u8}
-    fn clone<'_0_1> = impl_Clone_for_u8::clone<'_0_1>
-    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (u8: Destruct)> = impl_Clone_for_u8::clone_from<'_0_1, '_1_1>[TraitClause0_1]
-    non-dyn-compatible
-}
-
 // Full name: core::clone::impls::{impl Clone for u8}::clone
 pub fn impl_Clone_for_u8::clone<'_0>(self: &'_0 u8) -> u8
 {
@@ -135,71 +117,11 @@ where
     return
 }
 
-// Full name: core::marker::{impl Copy for u8}
-impl "impl_Copy_for_u8" Copy for u8 {
-    proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
-    proof ImpliedClause1: (u8: Clone) = impl_Clone_for_u8
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for bool}
-impl "impl_Clone_for_bool" Clone for bool {
-    proof ImpliedClause0: (bool: Sized) = {built_in impl Sized for bool}
-    fn clone<'_0_1> = impl_Clone_for_bool::clone<'_0_1>
-    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (bool: Destruct)> = impl_Clone_for_bool::clone_from<'_0_1, '_1_1>[TraitClause0_1]
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for bool}::clone
-pub fn impl_Clone_for_bool::clone<'_0>(self: &'_0 bool) -> bool
-{
-    let mut _0: bool; // return
-    let self: &'1 bool; // arg #1
-
-    storage_live(_0)
-    _0 = copy (*self)
-    storage_dead(self)
-    return
-}
-
-// Full name: core::clone::impls::{impl Clone for bool}::clone_from
-pub fn impl_Clone_for_bool::clone_from<'_0, '_1>(self: &'_0 mut bool, source: &'_1 bool)
-where
-    TraitClause0: (bool: Destruct),
-{
-    let mut _0: (); // return
-    let self: &'1 mut bool; // arg #1
-    let source: &'3 bool; // arg #2
-    let mut _3: bool; // anonymous local
-    let mut _4: &'4 bool; // anonymous local
-
-    storage_live(_0)
-    _0 = ()
-    storage_live(_3)
-    storage_live(_4)
-    _4 = &(*source)
-    _3 = impl_Clone_for_bool::clone<'5>(move _4)
-    ↳⚡ storage_dead(source)
-        storage_dead(self)
-        unwind_continue
-    storage_dead(_4)
-    drop[TraitClause0::drop_glue<'6>] (*self)
-    ↳⚡ (*self) = move _3
-        storage_dead(source)
-        storage_dead(self)
-        unwind_continue
-    (*self) = move _3
-    _0 = ()
-    storage_dead(_3)
-    storage_dead(source)
-    storage_dead(self)
-    return
-}
-
-// Full name: core::marker::{impl Copy for bool}
-impl "impl_Copy_for_bool" Copy for bool {
-    proof ImpliedClause0: (bool: MetaSized) = {built_in impl MetaSized for bool}
-    proof ImpliedClause1: (bool: Clone) = impl_Clone_for_bool
+// Full name: core::clone::impls::{impl Clone for u8}
+impl "impl_Clone_for_u8" Clone for u8 {
+    proof ImpliedClause0: (u8: Sized) = {built_in impl Sized for u8}
+    fn clone<'_0_1> = impl_Clone_for_u8::clone<'_0_1>
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (u8: Destruct)> = impl_Clone_for_u8::clone_from<'_0_1, '_1_1>[TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -209,6 +131,16 @@ where
 {
   _0: A,
   _1: B,
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
 }
 
 // Full name: core::intrinsics::add_with_overflow
@@ -225,6 +157,13 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
 = <intrinsic:saturating_add>
+
+// Full name: core::marker::{impl Copy for u8}
+impl "impl_Copy_for_u8" Copy for u8 {
+    proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
+    proof ImpliedClause1: (u8: Clone) = impl_Clone_for_u8
+    non-dyn-compatible
+}
 
 // Full name: core::num::{u8}::wrapping_add
 pub fn wrapping_add(self: u8, rhs: u8) -> u8

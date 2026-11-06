@@ -16,78 +16,7 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::clone::Clone
-#[lang_item(Clone)]
-#[diagnostic_item("Clone")]
-pub trait Clone<Self>
-{
-    proof ImpliedClause0: (Self: Sized)
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
-// Full name: core::array::{impl Clone for [&'_ u8; 3usize]}
-impl "impl_Clone_for_array" Clone for [&'_ u8; 3usize] {
-    proof ImpliedClause0: ([&'_ u8; 3usize]: Sized) = {built_in impl Sized for [&'_ u8; 3usize]}
-    non-dyn-compatible
-}
-
-// Full name: core::array::{impl Copy for [&'_ u8; 3usize]}
-impl "impl_Copy_for_array" Copy for [&'_ u8; 3usize] {
-    proof ImpliedClause0: ([&'_ u8; 3usize]: MetaSized) = {built_in impl MetaSized for [&'_ u8; 3usize]}
-    proof ImpliedClause1: ([&'_ u8; 3usize]: Clone) = impl_Clone_for_array
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for u32}
-impl "impl_Clone_for_u32" Clone for u32 {
-    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for &'_ u32}
-impl Clone for &'_ u32 {
-    proof ImpliedClause0: (&'_ u32: Sized) = {built_in impl Sized for &'_ u32}
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for &'_ u8}
-impl Clone for &'_ u8 {
-    proof ImpliedClause0: (&'_ u8: Sized) = {built_in impl Sized for &'_ u8}
-    non-dyn-compatible
-}
-
 vtable core::marker::MetaSized::{vtable}::<fn(u32) -> u32>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
-
-// Full name: core::marker::{impl Copy for u32}
-impl "impl_Copy_for_u32" Copy for u32 {
-    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
-    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for &'_ u32}
-impl Copy for &'_ u32 {
-    proof ImpliedClause0: (&'_ u32: MetaSized) = {built_in impl MetaSized for &'_ u32}
-    proof ImpliedClause1: (&'_ u32: Clone) = {impl Clone for &'_ u32}
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for &'_ u8}
-impl Copy for &'_ u8 {
-    proof ImpliedClause0: (&'_ u8: MetaSized) = {built_in impl MetaSized for &'_ u8}
-    proof ImpliedClause1: (&'_ u8: Clone) = {impl Clone for &'_ u8}
-    non-dyn-compatible
-}
 
 // Full name: core::marker::Tuple
 #[fundamental]

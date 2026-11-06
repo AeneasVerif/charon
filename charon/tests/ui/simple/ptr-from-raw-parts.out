@@ -42,19 +42,6 @@ impl "impl_Clone_for_u32" Clone for u32 {
     non-dyn-compatible
 }
 
-// Full name: core::clone::impls::{impl Clone for *const T}::clone
-pub fn {impl Clone for *const T}::clone<'_0, T>(_1: &'_0 *const T) -> *const T
-where
-    Outlives0: (T: '_0),
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for *const T}
-impl<T> Clone for *const T {
-    proof ImpliedClause0: (*const T: Sized) = {built_in impl Sized for *const T}
-    fn clone<'_0_1> = {impl Clone for *const T}::clone<'_0_1, T>
-    non-dyn-compatible
-}
-
 // Full name: core::cmp::PartialEq
 #[lang_item(PartialEq)]
 #[diagnostic_item("PartialEq")]
@@ -194,13 +181,6 @@ pub trait Copy<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for *const T}
-impl<T> Copy for *const T {
-    proof ImpliedClause0: (*const T: MetaSized) = {built_in impl MetaSized for *const T}
-    proof ImpliedClause1: (*const T: Clone) = {impl Clone for *const T}<T>
     non-dyn-compatible
 }
 

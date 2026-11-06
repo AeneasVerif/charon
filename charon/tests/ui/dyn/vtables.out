@@ -41,69 +41,6 @@ impl "impl_Clone_for_i32" Clone for i32 {
     non-dyn-compatible
 }
 
-// Full name: core::clone::impls::{impl Clone for i64}::clone
-pub fn impl_Clone_for_i64::clone<'_0>(_1: &'_0 i64) -> i64
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for i64}
-impl "impl_Clone_for_i64" Clone for i64 {
-    proof ImpliedClause0: (i64: Sized) = {built_in impl Sized for i64}
-    fn clone<'_0_1> = impl_Clone_for_i64::clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
-#[diagnostic_item("noop_method_clone")]
-pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
-where
-    Outlives0: ('_0: '_1),
-    Outlives1: (T: '_0),
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for &'_0 T}
-impl<'_0, T> Clone for &'_0 T
-where
-    Outlives0: (T: '_0),
-{
-    proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
-    fn clone<'_0_1> = {impl Clone for &'_0 T}::clone<'_0, '_0_1, T>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for i32}
-impl "impl_Copy_for_i32" Copy for i32 {
-    proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
-    proof ImpliedClause1: (i32: Clone) = impl_Clone_for_i32
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for i64}
-impl "impl_Copy_for_i64" Copy for i64 {
-    proof ImpliedClause0: (i64: MetaSized) = {built_in impl MetaSized for i64}
-    proof ImpliedClause1: (i64: Clone) = impl_Clone_for_i64
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for &'_0 T}
-impl<'_0, T> Copy for &'_0 T
-where
-    Outlives0: (T: '_0),
-{
-    proof ImpliedClause0: (&'_0 T: MetaSized) = {built_in impl MetaSized for &'_0 T}
-    proof ImpliedClause1: (&'_0 T: Clone) = {impl Clone for &'_0 T}<'_, T>
-    non-dyn-compatible
-}
-
 // Full name: core::option::Option
 #[lang_item(Option)]
 #[diagnostic_item("Option")]

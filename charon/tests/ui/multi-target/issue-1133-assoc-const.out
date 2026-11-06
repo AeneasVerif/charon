@@ -32,58 +32,6 @@ where
     Outlives2: (I: '_0),
 = <opaque>
 
-#[lang_item(Clone)]
-#[diagnostic_item("Clone")]
-pub trait core::clone::Clone<Self>
-{
-    proof ImpliedClause0: (Self: core::marker::Sized)
-    fn clone<'_0_1>;
-    non-dyn-compatible
-}
-
-pub fn core::clone::impls::{impl core::clone::Clone for usize}::clone<'_0>(_1: &'_0 usize) -> usize
-= <opaque>
-
-// Full name: core::clone::impls::{impl core::clone::Clone for usize}
-impl core::clone::Clone for usize {
-    proof ImpliedClause0: (usize: core::marker::Sized) = {built_in impl core::marker::Sized for usize}
-    fn clone<'_0_1> = core::clone::impls::{impl core::clone::Clone for usize}::clone<'_0_1>
-    non-dyn-compatible
-}
-
-pub fn core::clone::impls::{impl core::clone::Clone for u32}::clone<'_0>(_1: &'_0 u32) -> u32
-= <opaque>
-
-// Full name: core::clone::impls::{impl core::clone::Clone for u32}
-impl core::clone::Clone for u32 {
-    proof ImpliedClause0: (u32: core::marker::Sized) = {built_in impl core::marker::Sized for u32}
-    fn clone<'_0_1> = core::clone::impls::{impl core::clone::Clone for u32}::clone<'_0_1>
-    non-dyn-compatible
-}
-
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait core::marker::Copy<Self>
-{
-    proof ImpliedClause0: (Self: core::marker::MetaSized)
-    proof ImpliedClause1: (Self: core::clone::Clone)
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl core::marker::Copy for usize}
-impl core::marker::Copy for usize {
-    proof ImpliedClause0: (usize: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for usize}
-    proof ImpliedClause1: (usize: core::clone::Clone) = core::clone::impls::{impl core::clone::Clone for usize}
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl core::marker::Copy for u32}
-impl core::marker::Copy for u32 {
-    proof ImpliedClause0: (u32: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for u32}
-    proof ImpliedClause1: (u32: core::clone::Clone) = core::clone::impls::{impl core::clone::Clone for u32}
-    non-dyn-compatible
-}
-
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum core::option::Option<T>
