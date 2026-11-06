@@ -485,6 +485,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             kind,
             src,
             layout,
+            monomorphic_layouts: Default::default(),
             ptr_metadata,
             marker_traits,
         })

@@ -153,6 +153,10 @@ impl GenericArgs {
     pub fn has_explicits(&self) -> bool {
         !self.regions.is_empty() || !self.types.is_empty() || !self.const_generics.is_empty()
     }
+    /// Whether this has any explicit arguments other than regions (types or const generics).
+    pub fn has_non_lt_explicits(&self) -> bool {
+        !self.types.is_empty() || !self.const_generics.is_empty()
+    }
     /// Whether this has any implicit arguments (trait refs).
     pub fn has_implicits(&self) -> bool {
         !self.trait_refs.is_empty()
