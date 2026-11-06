@@ -369,10 +369,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         if item.has_non_lt_param {
             return;
         }
-        // Skip opaques, which would otherwise ICE.
-        if item.rustc_args(self.hax_state_with_id()).has_opaque_types() {
-            return;
-        }
 
         // Translate without recording the layouts of the types in the arguments, as we instead
         // follow the fields stored inline (see below).
