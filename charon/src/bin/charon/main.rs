@@ -213,10 +213,18 @@ fn translate_multi_target(
 }
 
 fn translate_with_cargo(
-    options: CliOpts,
+    mut options: CliOpts,
     mut cargo_args: Vec<String>,
 ) -> anyhow::Result<ExitStatus> {
     ensure_rustup();
+    // Cargo controls the directory where the driver is run, so we resolve these paths relative to
+    // the current directory.
+    options.dest_dir = Some(std::path::absolute(
+        options.dest_dir.as_deref().unwrap_or(".".as_ref()),
+    )?);
+    if let Some(dest_file) = &mut options.dest_file {
+        *dest_file = std::path::absolute(&*dest_file)?;
+    }
     let target = match arg_values(&cargo_args, "--target").collect_vec().as_slice() {
         [target] => target.to_string(),
         // We resolve a single sysroot for all the crates we build.
