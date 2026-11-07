@@ -262,10 +262,10 @@ where
 // Full name: test_crate::destructure
 pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]) -> &'a u32
 {
-    let mut _0: &'1 u32; // return
-    let input: &'3 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // arg #1
-    let x: &'4 u32; // local
-    let mut _3: &'5 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // anonymous local
+    let mut _0: &'3 u32; // return
+    let input: &'5 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // arg #1
+    let x: &'6 u32; // local
+    let mut _3: &'7 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -280,7 +280,7 @@ pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u
                 unwind_continue
         },
     }
-    set _3 :< &'7 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]
+    set _3 :< &'1 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]
     storage_live(x)
     x = &((*_3) as variant Either::Left)._0._0
     storage_dead(_3)
@@ -453,17 +453,17 @@ where
     Outlives0: ('a: 'b),
 {
     let mut _0: (); // return
-    let value_1: &'1 u32; // arg #1
-    let value_2: &'2 u32; // local
+    let value_1: &'3 u32; // arg #1
+    let value_2: &'4 u32; // local
 
     storage_live(_0)
     _0 = ()
-    set '3 :> 'b
-    set '4 :> 'b
+    set '0 :> 'b
+    set '1 :> 'b
     storage_live(value_2)
     value_2 = copy value_1
     fake_read(value_2)
-    set value_2 := &'4 u32
+    set value_2 := &'1 u32
     _0 = ()
     storage_dead(value_2)
     storage_dead(value_1)
@@ -498,8 +498,8 @@ pub fn set_type_self<'_0>(self: Foo<'_0>)
 pub fn explicit_lifetimes<'a>(value: (&'static u32, &'a u32, &'a u32))
 {
     let mut _0: (); // return
-    let value: (&'16 u32, &'17 u32, &'18 u32); // arg #1
-    let x: (&'25 u32, &'26 u32, &'27 u32); // local
+    let value: (&'40 u32, &'41 u32, &'42 u32); // arg #1
+    let x: (&'49 u32, &'50 u32, &'51 u32); // local
 
     storage_live(_0)
     _0 = ()
@@ -550,17 +550,17 @@ where
     Outlives0: ('a: 'static),
 {
     let mut _0: (); // return
-    let value: StaticCopy<'1>; // arg #1
-    let x: StaticCopy<'2>; // local
+    let value: StaticCopy<'3>; // arg #1
+    let x: StaticCopy<'4>; // local
 
     storage_live(_0)
     _0 = ()
-    set '3 :> 'static
-    set '4 :> 'static
+    set '0 :> 'static
+    set '1 :> 'static
     storage_live(x)
     x = copy value
     fake_read(x)
-    set x := StaticCopy<'4>
+    set x := StaticCopy<'1>
     _0 = ()
     storage_dead(x)
     storage_dead(value)
@@ -573,17 +573,17 @@ where
     Outlives0: ('a: 'static),
 {
     let mut _0: (); // return
-    let value: Box<StaticCopy<'6>>[{built_in impl MetaSized for StaticCopy<'6>}, {built_in impl Sized for Global}]; // arg #1
-    let x: Box<StaticCopy<'9>>[{built_in impl MetaSized for StaticCopy<'9>}, {built_in impl Sized for Global}]; // local
+    let value: Box<StaticCopy<'8>>[{built_in impl MetaSized for StaticCopy<'8>}, {built_in impl Sized for Global}]; // arg #1
+    let x: Box<StaticCopy<'11>>[{built_in impl MetaSized for StaticCopy<'11>}, {built_in impl Sized for Global}]; // local
 
     storage_live(_0)
     _0 = ()
-    set '12 :> 'static
-    set '13 :> 'static
+    set '0 :> 'static
+    set '1 :> 'static
     storage_live(x)
     x = move value
     fake_read(x)
-    set x := Box<StaticCopy<'13>>[{built_in impl MetaSized for StaticCopy<'13>}, {built_in impl Sized for Global}]
+    set x := Box<StaticCopy<'1>>[{built_in impl MetaSized for StaticCopy<'1>}, {built_in impl Sized for Global}]
     _0 = ()
     conditional_drop[impl_Destruct_for_Box::drop_glue<'28, StaticCopy<'23>, Global>[{built_in impl MetaSized for StaticCopy<'23>}, {built_in impl Sized for Global}]] x
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'58, StaticCopy<'53>, Global>[{built_in impl MetaSized for StaticCopy<'53>}, {built_in impl Sized for Global}]] value

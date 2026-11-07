@@ -679,13 +679,13 @@ fn main()
 {
     let mut _0: (); // return
     let a: [u32; 5usize]; // local
-    let b: &'1 [u32]; // local
-    let mut _3: &'3 [u32; 5usize]; // anonymous local
-    let _4: &'4 [u32; 5usize]; // anonymous local
+    let b: &'3 [u32]; // local
+    let mut _3: &'5 [u32; 5usize]; // anonymous local
+    let _4: &'6 [u32; 5usize]; // anonymous local
     let res: Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]; // local
-    let mut _6: &'5 [u32]; // anonymous local
-    let mut _7: &'6 [u32; 5usize]; // anonymous local
-    let mut _8: {closure}<'12>; // anonymous local
+    let mut _6: &'7 [u32]; // anonymous local
+    let mut _7: &'8 [u32; 5usize]; // anonymous local
+    let mut _8: {closure}<'14>; // anonymous local
 
     bb0: {
         storage_live(_0);
@@ -702,7 +702,7 @@ fn main()
         b = unsize_cast<&'15 [u32], 5usize>(move _3);
         storage_dead(_3);
         fake_read(b);
-        set b := &'14 [u32];
+        set b := &'1 [u32];
         storage_dead(_4);
         storage_live(res);
         storage_live(_6);

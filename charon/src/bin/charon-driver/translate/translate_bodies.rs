@@ -63,6 +63,7 @@ impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
         drop_kind: DropKind,
     ) -> Result<Self, Error> {
         i_ctx.lifetime_freshener = (!i_ctx.options.erase_body_lifetimes).then(IndexMap::new);
+        let user_type_annotations = UserTypeAnnotations::new(i_ctx, body)?;
 
         // Translate the local variables.
         let mut locals = Locals {
@@ -91,7 +92,6 @@ impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
             locals_map.insert(index.as_usize(), local_id);
         }
 
-        let user_type_annotations = UserTypeAnnotations::new(i_ctx, body)?;
         Ok(BodyTransCtx {
             i_ctx,
             local_decls: &body.local_decls,

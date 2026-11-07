@@ -56,14 +56,14 @@ where
     Outlives0: ('_0: '_2),
     Outlives1: ('_1: '_2),
 {
-    let mut _0: test_crate::main::{closure}::{closure}<'50, '51>; // return
-    let mut _1: &'141 test_crate::main::{closure}<'_0, '_1>; // arg #1
+    let mut _0: test_crate::main::{closure}::{closure}<'57, '58>; // return
+    let mut _1: &'148 test_crate::main::{closure}<'_0, '_1>; // arg #1
     let mut tupled_args: (); // arg #2
-    let i: bar<&'142 ()>[{built_in impl Sized for &'142 ()}]; // local
+    let i: bar<&'149 ()>[{built_in impl Sized for &'149 ()}]; // local
 
     storage_live(_0)
     storage_live(i)
-    i = const bar<&'152 ()>[{built_in impl Sized for &'152 ()}]
+    i = const bar<&'6 ()>[{built_in impl Sized for &'6 ()}]
     fake_read(i)
     _0 = test_crate::main::{closure}::{closure} { _0: copy i }
     storage_dead(i)

@@ -141,10 +141,10 @@ where
 fn main()
 {
     let mut _0: (); // return
-    let _m: &'3 (dyn Broken<Assoc = ()> + '4); // local
-    let mut _2: &'6 (); // anonymous local
-    let _3: &'7 (); // anonymous local
-    let mut _4: &'8 (); // anonymous local
+    let _m: &'7 (dyn Broken<Assoc = ()> + '8); // local
+    let mut _2: &'10 (); // anonymous local
+    let _3: &'11 (); // anonymous local
+    let mut _4: &'12 (); // anonymous local
     let mut _5: &'13 (); // anonymous local
     let mut _6: &'16 (); // anonymous local
     let mut _7: (); // anonymous local
@@ -158,8 +158,8 @@ fn main()
     storage_live(_0)
     storage_live(_4)
     _0 = ()
-    set '10 :> '9
-    set '12 :> '11
+    set '1 :> '0
+    set '3 :> '2
     storage_live(_m)
     storage_live(_2)
     storage_live(_3)
@@ -169,7 +169,7 @@ fn main()
     _m = unsize_cast<&'14 (dyn Broken<Assoc = ()> + '15), &impl_Broken_for_T::{vtable}<()>[{built_in impl Sized for ()}]>(move _2)
     storage_dead(_2)
     fake_read(_m)
-    set _m := &'11 (dyn Broken<Assoc = ()> + '12)
+    set _m := &'2 (dyn Broken<Assoc = ()> + '3)
     storage_dead(_3)
     _0 = ()
     storage_dead(_m)

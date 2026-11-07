@@ -37,7 +37,7 @@ pub const test_crate::panic2::{promoted_const}: str = "O no!" with_metadata(5usi
 fn panic2()
 {
     let mut _0: (); // return
-    let mut _1: Arguments<'1>; // anonymous local
+    let mut _1: Arguments<'2>; // anonymous local
     let mut _2: &'7 str; // anonymous local
 
     storage_live(_0)
@@ -45,7 +45,7 @@ fn panic2()
     storage_live(_1)
     storage_live(_2)
     _2 = &test_crate::panic2::{promoted_const} with_metadata(const 5usize)
-    _1 = from_str<'2>(move _2)
+    _1 = from_str<'0>(move _2)
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_2)
@@ -60,7 +60,7 @@ pub const test_crate::panic3::{promoted_const}: str = "O no!" with_metadata(5usi
 fn panic3()
 {
     let mut _0: (); // return
-    let mut _1: Arguments<'1>; // anonymous local
+    let mut _1: Arguments<'2>; // anonymous local
     let mut _2: &'7 str; // anonymous local
 
     storage_live(_0)
@@ -68,7 +68,7 @@ fn panic3()
     storage_live(_1)
     storage_live(_2)
     _2 = &test_crate::panic3::{promoted_const} with_metadata(const 5usize)
-    _1 = from_str_nonconst<'2>(move _2)
+    _1 = from_str_nonconst<'0>(move _2)
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_2)
@@ -101,7 +101,7 @@ fn panic5()
 {
     let mut _0: (); // return
     let mut _1: bool; // anonymous local
-    let mut _2: Arguments<'1>; // anonymous local
+    let mut _2: Arguments<'2>; // anonymous local
     let mut _3: &'7 str; // anonymous local
 
     storage_live(_0)
@@ -113,7 +113,7 @@ fn panic5()
         storage_live(_2)
         storage_live(_3)
         _3 = &test_crate::panic5::{promoted_const} with_metadata(const 13usize)
-        _2 = from_str<'2>(move _3)
+        _2 = from_str<'0>(move _3)
         ↳⚡ storage_dead(_2)
             unwind_continue
         storage_dead(_3)
@@ -145,7 +145,7 @@ pub const test_crate::panic7::{promoted_const}: str = "internal error: entered u
 fn panic7()
 {
     let mut _0: (); // return
-    let mut _1: Arguments<'1>; // anonymous local
+    let mut _1: Arguments<'2>; // anonymous local
     let mut _2: &'7 str; // anonymous local
 
     storage_live(_0)
@@ -153,7 +153,7 @@ fn panic7()
     storage_live(_1)
     storage_live(_2)
     _2 = &test_crate::panic7::{promoted_const} with_metadata(const 58usize)
-    _1 = from_str_nonconst<'2>(move _2)
+    _1 = from_str_nonconst<'0>(move _2)
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_2)

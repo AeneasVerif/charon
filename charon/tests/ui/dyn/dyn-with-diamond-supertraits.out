@@ -537,12 +537,12 @@ impl "impl_Join_i32_for_i32" Join<i32> for i32 {
 fn main()
 {
     let mut _0: (); // return
-    let v: &'3 (dyn Join<i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::Left = i32, ImpliedClause2::Right = i32> + '4); // local
-    let mut _2: &'6 i32; // anonymous local
-    let _3: &'7 i32; // anonymous local
+    let v: &'7 (dyn Join<i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::Left = i32, ImpliedClause2::Right = i32> + '8); // local
+    let mut _2: &'10 i32; // anonymous local
+    let _3: &'11 i32; // anonymous local
     let mut _4: (i32, i32); // anonymous local
-    let mut _5: &'8 (dyn Join<i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::Left = i32, ImpliedClause2::Right = i32> + '9); // anonymous local
-    let mut _6: &'10 i32; // anonymous local
+    let mut _5: &'12 (dyn Join<i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::Left = i32, ImpliedClause2::Right = i32> + '13); // anonymous local
+    let mut _6: &'14 i32; // anonymous local
     let mut _7: &'15 i32; // anonymous local
     let mut _8: &'26 i32; // anonymous local
     let mut _9: i32; // anonymous local
@@ -556,8 +556,8 @@ fn main()
     storage_live(_0)
     storage_live(_6)
     _0 = ()
-    set '12 :> '11
-    set '14 :> '13
+    set '1 :> '0
+    set '3 :> '2
     storage_live(v)
     storage_live(_2)
     storage_live(_3)
@@ -567,7 +567,7 @@ fn main()
     v = unsize_cast<&'16 (dyn Join<i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::Left = i32, ImpliedClause2::Right = i32> + '17), &impl_Join_i32_for_i32::{vtable}>(move _2)
     storage_dead(_2)
     fake_read(v)
-    set v := &'13 (dyn Join<i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::Left = i32, ImpliedClause2::Right = i32> + '14)
+    set v := &'2 (dyn Join<i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::Left = i32, ImpliedClause2::Right = i32> + '3)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)

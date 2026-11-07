@@ -18,11 +18,11 @@ pub trait Sized<Self>
 
 struct () {}
 
+vtable core::marker::MetaSized::{vtable}::<test_crate::main::{closure#2}>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
+
 vtable core::marker::MetaSized::{vtable}::<test_crate::main::{closure}>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
 
 vtable core::marker::MetaSized::{vtable}::<test_crate::main::{closure#1}<'_>>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
-
-vtable core::marker::MetaSized::{vtable}::<test_crate::main::{closure#2}>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
 
 vtable core::marker::MetaSized::{vtable}::<test_crate::main::{closure#3}>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
 
@@ -1066,40 +1066,40 @@ impl Fn<(u32,)> for test_crate::main::{closure} {
 fn main()
 {
     let mut _0: (); // return
-    let f: &'3 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '4); // local
-    let mut _2: &'6 test_crate::main::{closure}; // anonymous local
-    let _3: &'7 test_crate::main::{closure}; // anonymous local
+    let f: &'23 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '24); // local
+    let mut _2: &'26 test_crate::main::{closure}; // anonymous local
+    let _3: &'27 test_crate::main::{closure}; // anonymous local
     let _y_4: u32; // local
-    let mut _5: &'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9); // anonymous local
+    let mut _5: &'28 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '29); // anonymous local
     let mut _6: (u32,); // anonymous local
     let captured: u32; // local
-    let g: &'10 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '11); // local
-    let mut _9: &'15 test_crate::main::{closure#1}<'16>; // anonymous local
-    let _10: &'17 test_crate::main::{closure#1}<'18>; // anonymous local
-    let _11: test_crate::main::{closure#1}<'19>; // anonymous local
-    let mut _12: &'21 u32; // anonymous local
+    let g: &'30 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '31); // local
+    let mut _9: &'35 test_crate::main::{closure#1}<'36>; // anonymous local
+    let _10: &'37 test_crate::main::{closure#1}<'38>; // anonymous local
+    let _11: test_crate::main::{closure#1}<'39>; // anonymous local
+    let mut _12: &'41 u32; // anonymous local
     let _y_13: u32; // local
-    let mut _14: &'22 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '23); // anonymous local
+    let mut _14: &'42 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '43); // anonymous local
     let mut _15: (u32,); // anonymous local
     let d: Droppable; // local
     let _h: Box::<(dyn FnOnce<(), Output = Droppable>), Global>; // local
     let mut _18: Box::<test_crate::main::{closure#2}, Global>; // anonymous local
     let mut _19: test_crate::main::{closure#2}; // anonymous local
     let _w: Box::<(dyn FnOnce<(), Output = u32>), Global>; // local
-    let k: &'28 (dyn for<'_0_2> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '29); // local
-    let mut _22: &'32 test_crate::main::{closure#3}; // anonymous local
-    let _23: &'33 test_crate::main::{closure#3}; // anonymous local
+    let k: &'48 (dyn for<'_0_2> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '49); // local
+    let mut _22: &'52 test_crate::main::{closure#3}; // anonymous local
+    let _23: &'53 test_crate::main::{closure#3}; // anonymous local
     let _y_24: u32; // local
-    let mut _25: &'34 (dyn for<'_0_2> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '35); // anonymous local
+    let mut _25: &'54 (dyn for<'_0_2> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '55); // anonymous local
     let mut _26: (&'_ u32,); // anonymous local
-    let mut _27: &'37 u32; // anonymous local
-    let _28: &'38 u32; // anonymous local
-    let mut _29: &'39 u32; // anonymous local
-    let mut _30: &'40 test_crate::main::{closure#3}; // anonymous local
-    let mut _31: &'41 test_crate::main::{closure}; // anonymous local
-    let mut _32: fn(&'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9), (u32,)) -> u32; // anonymous local
-    let mut _33: fn(&'22 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '23), (u32,)) -> u32; // anonymous local
-    let mut _34: fn(&'34 (dyn for<'_0_3> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '35), (&'_ u32,)) -> u32; // anonymous local
+    let mut _27: &'57 u32; // anonymous local
+    let _28: &'58 u32; // anonymous local
+    let mut _29: &'59 u32; // anonymous local
+    let mut _30: &'60 test_crate::main::{closure#3}; // anonymous local
+    let mut _31: &'61 test_crate::main::{closure}; // anonymous local
+    let mut _32: fn(&'28 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '29), (u32,)) -> u32; // anonymous local
+    let mut _33: fn(&'42 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '43), (u32,)) -> u32; // anonymous local
+    let mut _34: fn(&'54 (dyn for<'_0_3> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '55), (&'_ u32,)) -> u32; // anonymous local
     let mut _35: &'62 test_crate::main::{closure}; // anonymous local
     let mut _36: &'91 test_crate::main::{closure#3}; // anonymous local
     let mut _37: &'101 u32; // anonymous local
@@ -1121,17 +1121,17 @@ fn main()
     storage_live(_30)
     storage_live(_31)
     _0 = ()
-    set '43 :> '42
-    set '45 :> '44
+    set '1 :> '0
+    set '3 :> '2
     // A closure with captured state.
-    set '47 :> '46
-    set '49 :> '48
+    set '5 :> '4
+    set '7 :> '6
     // Built but not called: the drop shim must drop the captured state.
     // A closure with a higher-ranked signature.
-    set '56 :> '55
-    set '54 :> '55
-    set '61 :> '60
-    set '59 :> '60
+    set '14 :> '13
+    set '12 :> '13
+    set '19 :> '18
+    set '17 :> '18
     storage_live(f)
     storage_live(_2)
     storage_live(_3)
@@ -1141,7 +1141,7 @@ fn main()
     f = unsize_cast<&'63 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '64), &{impl Fn<(u32,)> for test_crate::main::{closure}}::{vtable}>(move _2)
     storage_dead(_2)
     fake_read(f)
-    set f := &'44 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '45)
+    set f := &'2 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '3)
     storage_dead(_3)
     storage_live(_y_4)
     storage_live(_5)
@@ -1149,7 +1149,7 @@ fn main()
     storage_live(_6)
     _6 = (const 1u32,)
     storage_live(_32)
-    _32 = cast<fn(&'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9), (u32,)) -> u32>(read (*_5.metadata).method_call)
+    _32 = cast<fn(&'28 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '29), (u32,)) -> u32>(read (*_5.metadata).method_call)
     _y_4 = (read _32)(move _5, move _6)
     ↳⚡ storage_dead(_31)
         storage_dead(_30)
@@ -1174,7 +1174,7 @@ fn main()
     g = unsize_cast<&'75 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '76), &{impl Fn<(u32,)> for test_crate::main::{closure#1}<'_0>}::{vtable}<'80>>(move _9)
     storage_dead(_9)
     fake_read(g)
-    set g := &'48 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '49)
+    set g := &'6 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '7)
     storage_dead(_10)
     storage_live(_y_13)
     storage_live(_14)
@@ -1182,7 +1182,7 @@ fn main()
     storage_live(_15)
     _15 = (const 2u32,)
     storage_live(_33)
-    _33 = cast<fn(&'22 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '23), (u32,)) -> u32>(read (*_14.metadata).method_call)
+    _33 = cast<fn(&'42 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '43), (u32,)) -> u32>(read (*_14.metadata).method_call)
     _y_13 = (read _33)(move _14, move _15)
     ↳⚡ storage_dead(_31)
         storage_dead(_30)
@@ -1343,7 +1343,7 @@ fn main()
     k = unsize_cast<&'92 (dyn for<'_0_2> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '93), &{impl Fn<(&'_ u32,)> for test_crate::main::{closure#3}}::{vtable}<'97>>(move _22)
     storage_dead(_22)
     fake_read(k)
-    set k := &'60 (dyn for<'_0_2> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '61)
+    set k := &'18 (dyn for<'_0_2> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '19)
     storage_dead(_23)
     storage_live(_y_24)
     storage_live(_25)
@@ -1356,7 +1356,7 @@ fn main()
     _27 = &(*_28)
     _26 = (move _27,)
     storage_live(_34)
-    _34 = cast<fn(&'34 (dyn for<'_0_3> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '35), (&'_ u32,)) -> u32>(read (*_25.metadata).method_call)
+    _34 = cast<fn(&'54 (dyn for<'_0_3> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '55), (&'_ u32,)) -> u32>(read (*_25.metadata).method_call)
     _y_24 = (read _34)(move _25, move _26)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn FnOnce<(), Output = u32>), Global>}::drop_glue::<(dyn FnOnce<(), Output = u32>), Global><'112>] _w
         ↳⚡ storage_dead(_31)

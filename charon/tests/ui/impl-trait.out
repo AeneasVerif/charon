@@ -315,12 +315,12 @@ pub fn use_wrap()
 {
     let mut _0: (); // return
     let f: {closure}<u32>[{built_in impl Sized for u32}]; // local
-    let mut _2: WrapClone<&'11 u32>[{built_in impl Sized for &'11 u32}, {impl Clone for &'_0 T}<'11, u32>]; // anonymous local
+    let mut _2: WrapClone<&'29 u32>[{built_in impl Sized for &'29 u32}, {impl Clone for &'_0 T}<'29, u32>]; // anonymous local
     let mut _3: {closure}<u32>[{built_in impl Sized for u32}]; // anonymous local
-    let mut _4: (&'18 u32,); // anonymous local
-    let mut _5: &'19 u32; // anonymous local
-    let _6: &'20 u32; // anonymous local
-    let mut _7: &'21 u32; // anonymous local
+    let mut _4: (&'36 u32,); // anonymous local
+    let mut _5: &'37 u32; // anonymous local
+    let _6: &'38 u32; // anonymous local
+    let mut _7: &'39 u32; // anonymous local
     let mut _8: &'40 u32; // anonymous local
     let mut _9: &'55 u32; // anonymous local
     let mut _10: u32; // anonymous local
@@ -355,7 +355,7 @@ pub fn use_wrap()
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
-    set _2 :< WrapClone<&'39 u32>[{built_in impl Sized for &'39 u32}, {impl Clone for &'_0 T}<'39, u32>]
+    set _2 :< WrapClone<&'17 u32>[{built_in impl Sized for &'17 u32}, {impl Clone for &'_0 T}<'17, u32>]
     storage_dead(_6)
     storage_dead(_2)
     _0 = ()

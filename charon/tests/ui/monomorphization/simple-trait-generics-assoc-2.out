@@ -160,20 +160,20 @@ impl "impl_Trait_bool_for_bool" Trait<bool> for bool {
 fn main()
 {
     let mut _0: (); // return
-    let a: &'3 (dyn Trait<usize, Item = bool> + '4); // local
-    let mut _2: &'6 i32; // anonymous local
-    let _3: &'7 i32; // anonymous local
+    let a: &'11 (dyn Trait<usize, Item = bool> + '12); // local
+    let mut _2: &'14 i32; // anonymous local
+    let _3: &'15 i32; // anonymous local
     let _4: (); // anonymous local
-    let mut _5: &'8 (dyn Trait<usize, Item = bool> + '9); // anonymous local
-    let b: &'13 (dyn Trait<bool, Item = usize> + '14); // local
-    let mut _7: &'16 bool; // anonymous local
-    let _8: &'17 bool; // anonymous local
+    let mut _5: &'16 (dyn Trait<usize, Item = bool> + '17); // anonymous local
+    let b: &'21 (dyn Trait<bool, Item = usize> + '22); // local
+    let mut _7: &'24 bool; // anonymous local
+    let _8: &'25 bool; // anonymous local
     let _9: (); // anonymous local
-    let mut _10: &'18 (dyn Trait<bool, Item = usize> + '19); // anonymous local
-    let mut _11: &'20 bool; // anonymous local
-    let mut _12: &'21 i32; // anonymous local
-    let mut _13: fn(&'8 (dyn Trait<usize, Item = bool> + '9)); // anonymous local
-    let mut _14: fn(&'18 (dyn Trait<bool, Item = usize> + '19)); // anonymous local
+    let mut _10: &'26 (dyn Trait<bool, Item = usize> + '27); // anonymous local
+    let mut _11: &'28 bool; // anonymous local
+    let mut _12: &'29 i32; // anonymous local
+    let mut _13: fn(&'16 (dyn Trait<usize, Item = bool> + '17)); // anonymous local
+    let mut _14: fn(&'26 (dyn Trait<bool, Item = usize> + '27)); // anonymous local
     let mut _15: &'30 i32; // anonymous local
     let mut _16: &'41 bool; // anonymous local
     let mut _17: &'52 i32; // anonymous local
@@ -191,10 +191,10 @@ fn main()
     storage_live(_11)
     storage_live(_12)
     _0 = ()
-    set '23 :> '22
-    set '25 :> '24
-    set '27 :> '26
-    set '29 :> '28
+    set '1 :> '0
+    set '3 :> '2
+    set '5 :> '4
+    set '7 :> '6
     storage_live(a)
     storage_live(_2)
     storage_live(_3)
@@ -204,13 +204,13 @@ fn main()
     a = unsize_cast<&'31 (dyn Trait<usize, Item = bool> + '32), &impl_Trait_usize_for_i32::{vtable}>(move _2)
     storage_dead(_2)
     fake_read(a)
-    set a := &'24 (dyn Trait<usize, Item = bool> + '25)
+    set a := &'2 (dyn Trait<usize, Item = bool> + '3)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*a) with_metadata(read a.metadata)
     storage_live(_13)
-    _13 = cast<fn(&'8 (dyn Trait<usize, Item = bool> + '9))>(read (*_5.metadata).method_comsume)
+    _13 = cast<fn(&'16 (dyn Trait<usize, Item = bool> + '17))>(read (*_5.metadata).method_comsume)
     _4 = (read _13)(move _5)
     ↳⚡ storage_dead(_12)
         storage_dead(_11)
@@ -232,13 +232,13 @@ fn main()
     b = unsize_cast<&'42 (dyn Trait<bool, Item = usize> + '43), &impl_Trait_bool_for_bool::{vtable}>(move _7)
     storage_dead(_7)
     fake_read(b)
-    set b := &'28 (dyn Trait<bool, Item = usize> + '29)
+    set b := &'6 (dyn Trait<bool, Item = usize> + '7)
     storage_dead(_8)
     storage_live(_9)
     storage_live(_10)
     _10 = &(*b) with_metadata(read b.metadata)
     storage_live(_14)
-    _14 = cast<fn(&'18 (dyn Trait<bool, Item = usize> + '19))>(read (*_10.metadata).method_comsume)
+    _14 = cast<fn(&'26 (dyn Trait<bool, Item = usize> + '27))>(read (*_10.metadata).method_comsume)
     _9 = (read _14)(move _10)
     ↳⚡ storage_dead(_12)
         storage_dead(_11)

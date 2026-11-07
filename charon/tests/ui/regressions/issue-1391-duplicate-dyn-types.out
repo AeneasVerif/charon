@@ -104,25 +104,25 @@ fn main()
     let d: D; // local
     let _2: (); // anonymous local
     let mut _3: Wrapper::<(dyn Sub)>; // anonymous local
-    let mut _4: *const (dyn Sub + '2); // anonymous local
-    let mut _5: *const (dyn Sub + '3); // anonymous local
-    let mut _6: *const (dyn Sub + '4); // anonymous local
+    let mut _4: *const (dyn Sub + '5); // anonymous local
+    let mut _5: *const (dyn Sub + '6); // anonymous local
+    let mut _6: *const (dyn Sub + '7); // anonymous local
     let mut _7: *const D; // anonymous local
-    let _8: &'6 D; // anonymous local
+    let _8: &'9 D; // anonymous local
     let _9: (); // anonymous local
     let mut _10: Wrapper::<(dyn Sub)>; // anonymous local
-    let mut _11: *const (dyn Sub + '7); // anonymous local
-    let mut _12: *const (dyn Sub + '8); // anonymous local
-    let mut _13: *const (dyn Sub + '9); // anonymous local
+    let mut _11: *const (dyn Sub + '10); // anonymous local
+    let mut _12: *const (dyn Sub + '11); // anonymous local
+    let mut _13: *const (dyn Sub + '12); // anonymous local
     let mut _14: *const D; // anonymous local
-    let _15: &'10 D; // anonymous local
+    let _15: &'13 D; // anonymous local
     let _16: (); // anonymous local
     let mut _17: Wrapper::<(dyn Sub)>; // anonymous local
-    let mut _18: *const (dyn Sub + '11); // anonymous local
-    let mut _19: *const (dyn Sub + '12); // anonymous local
-    let mut _20: *const (dyn Sub + '13); // anonymous local
+    let mut _18: *const (dyn Sub + '14); // anonymous local
+    let mut _19: *const (dyn Sub + '15); // anonymous local
+    let mut _20: *const (dyn Sub + '16); // anonymous local
     let mut _21: *const D; // anonymous local
-    let _22: &'14 D; // anonymous local
+    let _22: &'17 D; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -140,7 +140,7 @@ fn main()
     _7 = &raw const (*_8)
     _6 = unsize_cast<*const (dyn Sub + '18), &impl_Sub_for_D::{vtable}>(move _7)
     storage_dead(_7)
-    set _6 := *const (dyn Sub + '15)
+    set _6 := *const (dyn Sub + '0)
     _5 = copy _6
     _4 = unsize_cast<*const (dyn Sub + '22),  at []>(move _5)
     storage_dead(_5)
@@ -163,7 +163,7 @@ fn main()
     _14 = &raw const (*_15)
     _13 = unsize_cast<*const (dyn Sub + '23), &impl_Sub_for_D::{vtable}>(move _14)
     storage_dead(_14)
-    set _13 := *const (dyn Sub + '16)
+    set _13 := *const (dyn Sub + '1)
     _12 = copy _13
     _11 = unsize_cast<*const (dyn Sub + '27),  at []>(move _12)
     storage_dead(_12)
@@ -186,7 +186,7 @@ fn main()
     _21 = &raw const (*_22)
     _20 = unsize_cast<*const (dyn Sub + '28), &impl_Sub_for_D::{vtable}>(move _21)
     storage_dead(_21)
-    set _20 := *const (dyn Sub + '17)
+    set _20 := *const (dyn Sub + '2)
     _19 = copy _20
     _18 = unsize_cast<*const (dyn Sub + '32),  at []>(move _19)
     storage_dead(_19)

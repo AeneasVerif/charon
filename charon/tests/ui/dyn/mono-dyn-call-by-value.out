@@ -178,7 +178,7 @@ fn main()
     let mut _2: Box::<(), Global>; // anonymous local
     let mut _3: (); // anonymous local
     let _4: (); // anonymous local
-    let mut _5: &'3 (dyn T + '4); // anonymous local
+    let mut _5: &'7 (dyn T + '8); // anonymous local
     let _6: (); // anonymous local
     let mut _7: Box::<(dyn T), Global>; // anonymous local
     let f: Box::<Foo::<(dyn T)>, Global>; // local
@@ -186,13 +186,13 @@ fn main()
     let mut _10: Foo::<()>; // anonymous local
     let mut _11: (); // anonymous local
     let _12: (); // anonymous local
-    let mut _13: &'5 (dyn T + '6); // anonymous local
+    let mut _13: &'9 (dyn T + '10); // anonymous local
     let _14: (); // anonymous local
-    let mut _15: (dyn T + '7); // anonymous local
-    let mut _16: fn(&'3 (dyn T + '4)); // anonymous local
+    let mut _15: (dyn T + '11); // anonymous local
+    let mut _16: fn(&'7 (dyn T + '8)); // anonymous local
     let mut _17: *mut (dyn T + '27); // anonymous local
     let mut _18: fn(*mut (dyn T + '27)); // anonymous local
-    let mut _19: fn(&'5 (dyn T + '6)); // anonymous local
+    let mut _19: fn(&'9 (dyn T + '10)); // anonymous local
     let mut _20: *mut (dyn T + '38); // anonymous local
     let mut _21: fn(*mut (dyn T + '38)); // anonymous local
 
@@ -215,7 +215,7 @@ fn main()
     storage_live(_5)
     _5 = &(*b) with_metadata(read b.metadata)
     storage_live(_16)
-    _16 = cast<fn(&'3 (dyn T + '4))>(read (*_5.metadata).method_by_ref)
+    _16 = cast<fn(&'7 (dyn T + '8))>(read (*_5.metadata).method_by_ref)
     _4 = (read _16)(move _5)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'21>] b
         ↳⚡ unwind_terminate
@@ -265,7 +265,7 @@ fn main()
     storage_live(_13)
     _13 = &(*f)._0 with_metadata(read f.metadata)
     storage_live(_19)
-    _19 = cast<fn(&'5 (dyn T + '6))>(read (*_13.metadata).method_by_ref)
+    _19 = cast<fn(&'9 (dyn T + '10))>(read (*_13.metadata).method_by_ref)
     _12 = (read _19)(move _13)
     ↳⚡ conditional_drop[{impl Destruct for Box::<Foo::<(dyn T)>, Global>}::drop_glue::<Foo::<(dyn T)>, Global><'37>] f
         ↳⚡ unwind_terminate

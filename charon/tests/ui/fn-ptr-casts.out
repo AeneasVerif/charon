@@ -74,17 +74,17 @@ where
 // Full name: test_crate::from_fn_def
 fn from_fn_def<'a>(x: &'a u8) -> &'a u8
 {
-    let mut _0: &'1 u8; // return
-    let x: &'2 u8; // arg #1
+    let mut _0: &'8 u8; // return
+    let x: &'9 u8; // arg #1
     let f: fn<'b>(&'b u8) -> &'b u8; // local
-    let g: unsafe fn<'b>(&'5 u8, &'b u8) -> &'b u8; // local
-    let _4: &'6 u8; // anonymous local
-    let mut _5: unsafe fn<'b>(&'7 u8, &'b u8) -> &'b u8; // anonymous local
-    let mut _6: &'8 u8; // anonymous local
-    let mut _7: &'9 u8; // anonymous local
-    let _8: &'10 u8; // anonymous local
+    let g: unsafe fn<'b>(&'12 u8, &'b u8) -> &'b u8; // local
+    let _4: &'13 u8; // anonymous local
+    let mut _5: unsafe fn<'b>(&'14 u8, &'b u8) -> &'b u8; // anonymous local
+    let mut _6: &'15 u8; // anonymous local
+    let mut _7: &'16 u8; // anonymous local
+    let _8: &'17 u8; // anonymous local
     let mut _9: fn<'b>(&'b u8) -> &'b u8; // anonymous local
-    let mut _10: &'11 u8; // anonymous local
+    let mut _10: &'18 u8; // anonymous local
     let mut _11: fn<'b>(&'47 u8, &'b u8) -> &'b u8; // anonymous local
 
     storage_live(_0)

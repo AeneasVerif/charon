@@ -1377,10 +1377,10 @@ pub fn const_array() -> [u32; 2usize]
 pub fn const_slice()
 {
     let mut _0: (); // return
-    let mut _1: &'1 [u32]; // anonymous local
-    let mut _2: &'3 [u32; 2usize]; // anonymous local
-    let _3: &'4 [u32; 2usize]; // anonymous local
-    let mut _4: &'5 [u32; 2usize]; // anonymous local
+    let mut _1: &'3 [u32]; // anonymous local
+    let mut _2: &'5 [u32; 2usize]; // anonymous local
+    let _3: &'6 [u32; 2usize]; // anonymous local
+    let mut _4: &'7 [u32; 2usize]; // anonymous local
     let mut _5: &'8 [u32; 2usize]; // anonymous local
     let mut _6: &'10 [u32; 2usize]; // anonymous local
     let mut _7: [u32; 2usize]; // anonymous local
@@ -1404,7 +1404,7 @@ pub fn const_slice()
     _1 = as_slice<'_, u32, 2usize>[{built_in impl Sized for u32}](move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
-    set _1 :< &'7 [u32]
+    set _1 :< &'1 [u32]
     storage_dead(_3)
     storage_dead(_1)
     _0 = ()
@@ -2294,9 +2294,9 @@ pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
 pub fn f0()
 {
     let mut _0: (); // return
-    let s: &'1 mut [u32]; // local
-    let mut _2: &'3 mut [u32; 2usize]; // anonymous local
-    let mut _3: &'4 mut [u32; 2usize]; // anonymous local
+    let s: &'3 mut [u32]; // local
+    let mut _2: &'5 mut [u32; 2usize]; // anonymous local
+    let mut _3: &'6 mut [u32; 2usize]; // anonymous local
     let mut _4: [u32; 2usize]; // anonymous local
     let _5: usize; // anonymous local
     let mut _6: &'_ mut [u32]; // anonymous local
@@ -2315,7 +2315,7 @@ pub fn f0()
     ↳⚡ undefined_behavior
     storage_dead(_2)
     fake_read(s)
-    set s := &'6 mut [u32]
+    set s := &'1 mut [u32]
     storage_dead(_3)
     storage_live(_5)
     _5 = const 0usize

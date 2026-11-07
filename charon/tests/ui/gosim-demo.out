@@ -74,30 +74,30 @@ where
     Outlives0: (T: '_0),
 {
     let mut _0: (); // return
-    let slice: &'1 [T]; // arg #1
-    let mut _2: Iter<'3, T>[TraitClause0]; // anonymous local
-    let mut _3: &'4 [T]; // anonymous local
-    let mut iter: Iter<'5, T>[TraitClause0]; // local
-    let mut _5: Option<&'14 T>[{built_in impl Sized for &'14 T}]; // anonymous local
-    let mut _6: &'20 mut Iter<'21, T>[TraitClause0]; // anonymous local
-    let mut _7: &'22 mut Iter<'23, T>[TraitClause0]; // anonymous local
-    let x: &'24 T; // local
+    let slice: &'13 [T]; // arg #1
+    let mut _2: Iter<'15, T>[TraitClause0]; // anonymous local
+    let mut _3: &'16 [T]; // anonymous local
+    let mut iter: Iter<'17, T>[TraitClause0]; // local
+    let mut _5: Option<&'26 T>[{built_in impl Sized for &'26 T}]; // anonymous local
+    let mut _6: &'32 mut Iter<'33, T>[TraitClause0]; // anonymous local
+    let mut _7: &'34 mut Iter<'35, T>[TraitClause0]; // anonymous local
+    let x: &'36 T; // local
     let _9: (); // anonymous local
-    let mut _10: Arguments<'26>; // anonymous local
-    let args_11: (&'31 &'32 T,); // local
-    let mut _12: &'33 &'34 T; // anonymous local
-    let args_13: [Argument<'43>; 1usize]; // local
-    let mut _14: Argument<'47>; // anonymous local
-    let mut _15: &'48 &'49 T; // anonymous local
-    let mut _16: &'51 [u8; 7usize]; // anonymous local
-    let _17: &'52 [u8; 7usize]; // anonymous local
-    let mut _18: &'58 [Argument<'59>; 1usize]; // anonymous local
-    let _19: &'63 [Argument<'64>; 1usize]; // anonymous local
+    let mut _10: Arguments<'38>; // anonymous local
+    let args_11: (&'43 &'44 T,); // local
+    let mut _12: &'45 &'46 T; // anonymous local
+    let args_13: [Argument<'55>; 1usize]; // local
+    let mut _14: Argument<'59>; // anonymous local
+    let mut _15: &'60 &'61 T; // anonymous local
+    let mut _16: &'63 [u8; 7usize]; // anonymous local
+    let _17: &'64 [u8; 7usize]; // anonymous local
+    let mut _18: &'70 [Argument<'71>; 1usize]; // anonymous local
+    let _19: &'75 [Argument<'76>; 1usize]; // anonymous local
     let mut _20: [u8; 7usize]; // anonymous local
 
     storage_live(_0)
     _0 = ()
-    set 'lub<T> :> '78
+    set 'lub<T> :> '10
     storage_live(_2)
     storage_live(_3)
     _3 = copy slice
@@ -138,7 +138,7 @@ where
         storage_live(_14)
         storage_live(_15)
         _15 = &(*args_11._0)
-        _14 = new_debug<'77, '142, &'78 T>[{built_in impl Sized for &'78 T}, {impl#6}<'76, T>[TraitClause1]](move _15)
+        _14 = new_debug<'9, '142, &'10 T>[{built_in impl Sized for &'10 T}, {impl#6}<'8, T>[TraitClause1]](move _15)
         ↳⚡ storage_dead(slice)
             unwind_continue
         storage_dead(_15)
@@ -155,7 +155,7 @@ where
         storage_live(_19)
         _19 = &args_13
         _18 = &(*_19)
-        _10 = new<'79, 7usize, 1usize>(move _16, move _18)
+        _10 = new<'11, 7usize, 1usize>(move _16, move _18)
         ↳⚡ storage_dead(slice)
             unwind_continue
         storage_dead(_19)

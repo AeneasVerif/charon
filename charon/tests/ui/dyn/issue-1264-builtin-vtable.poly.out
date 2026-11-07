@@ -46,10 +46,10 @@ vtable core::marker::Send::{vtable}<Self>: core::marker::Send::{vtable} = core::
 fn main()
 {
     let mut _0: (); // return
-    let _x: &'3 (dyn Send + '4); // local
-    let mut _2: &'6 i32; // anonymous local
-    let _3: &'7 i32; // anonymous local
-    let mut _4: &'8 i32; // anonymous local
+    let _x: &'7 (dyn Send + '8); // local
+    let mut _2: &'10 i32; // anonymous local
+    let _3: &'11 i32; // anonymous local
+    let mut _4: &'12 i32; // anonymous local
     let mut _5: &'13 i32; // anonymous local
     let mut _6: &'16 i32; // anonymous local
     let mut _7: i32; // anonymous local
@@ -63,8 +63,8 @@ fn main()
     storage_live(_0)
     storage_live(_4)
     _0 = ()
-    set '10 :> '9
-    set '12 :> '11
+    set '1 :> '0
+    set '3 :> '2
     storage_live(_x)
     storage_live(_2)
     storage_live(_3)
@@ -74,7 +74,7 @@ fn main()
     _x = unsize_cast<&'14 (dyn Send + '15), &core::marker::Send::{vtable}<i32>>(move _2)
     storage_dead(_2)
     fake_read(_x)
-    set _x := &'11 (dyn Send + '12)
+    set _x := &'2 (dyn Send + '3)
     storage_dead(_3)
     _0 = ()
     storage_dead(_x)

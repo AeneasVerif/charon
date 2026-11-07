@@ -267,24 +267,24 @@ fn main()
 {
     let mut _0: (); // return
     let cat: HouseCat; // local
-    let dyn_cat: &'3 (dyn Cat + '4); // local
-    let mut _3: &'6 HouseCat; // anonymous local
-    let _4: &'7 HouseCat; // anonymous local
-    let dyn_feline: &'11 (dyn Feline + '12); // local
-    let mut _6: &'13 (dyn Cat + '14); // anonymous local
-    let dyn_pettable: &'18 (dyn Pettable + '19); // local
-    let mut _8: &'20 (dyn Cat + '21); // anonymous local
+    let dyn_cat: &'15 (dyn Cat + '16); // local
+    let mut _3: &'18 HouseCat; // anonymous local
+    let _4: &'19 HouseCat; // anonymous local
+    let dyn_feline: &'23 (dyn Feline + '24); // local
+    let mut _6: &'25 (dyn Cat + '26); // anonymous local
+    let dyn_pettable: &'30 (dyn Pettable + '31); // local
+    let mut _8: &'32 (dyn Cat + '33); // anonymous local
     let _9: (); // anonymous local
-    let mut _10: &'22 (dyn Cat + '23); // anonymous local
+    let mut _10: &'34 (dyn Cat + '35); // anonymous local
 
     storage_live(_0)
     _0 = ()
-    set '25 :> '24
-    set '27 :> '26
-    set '29 :> '28
-    set '31 :> '30
-    set '33 :> '32
-    set '35 :> '34
+    set '1 :> '0
+    set '3 :> '2
+    set '5 :> '4
+    set '7 :> '6
+    set '9 :> '8
+    set '11 :> '10
     storage_live(cat)
     cat = HouseCat {  }
     fake_read(cat)
@@ -296,7 +296,7 @@ fn main()
     dyn_cat = unsize_cast<&'36 (dyn Cat + '37), &impl_Cat_for_HouseCat::{vtable}>(move _3)
     storage_dead(_3)
     fake_read(dyn_cat)
-    set dyn_cat := &'26 (dyn Cat + '27)
+    set dyn_cat := &'2 (dyn Cat + '3)
     storage_dead(_4)
     storage_live(dyn_feline)
     storage_live(_6)
@@ -304,14 +304,14 @@ fn main()
     dyn_feline = unsize_cast<&'39 (dyn Feline + '40),  at [5]>(move _6)
     storage_dead(_6)
     fake_read(dyn_feline)
-    set dyn_feline := &'30 (dyn Feline + '31)
+    set dyn_feline := &'6 (dyn Feline + '7)
     storage_live(dyn_pettable)
     storage_live(_8)
     _8 = &(*dyn_cat) with_metadata(read dyn_cat.metadata)
     dyn_pettable = unsize_cast<&'42 (dyn Pettable + '43),  at [6]>(move _8)
     storage_dead(_8)
     fake_read(dyn_pettable)
-    set dyn_pettable := &'34 (dyn Pettable + '35)
+    set dyn_pettable := &'10 (dyn Pettable + '11)
     storage_live(_9)
     storage_live(_10)
     _10 = &(*dyn_cat) with_metadata(read dyn_cat.metadata)

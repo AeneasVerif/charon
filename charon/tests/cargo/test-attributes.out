@@ -510,7 +510,7 @@ fn test_attributes::tests::test_should_panic#1()
 {
     let mut _0: (); // return
     let _1: !; // anonymous local
-    let mut _2: Arguments<'1>; // anonymous local
+    let mut _2: Arguments<'2>; // anonymous local
     let mut _3: &'7 str; // anonymous local
 
     storage_live(_0)
@@ -519,7 +519,7 @@ fn test_attributes::tests::test_should_panic#1()
     storage_live(_2)
     storage_live(_3)
     _3 = &test_attributes::tests::test_should_panic#1::{promoted_const} with_metadata(const 22usize)
-    _2 = from_str<'2>(move _3)
+    _2 = from_str<'0>(move _3)
     ↳⚡ unwind_continue
     _1 = panic_fmt<'11>(move _2)
     ↳⚡ unwind_continue
