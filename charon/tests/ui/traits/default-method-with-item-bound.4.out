@@ -30,7 +30,7 @@ trait Trait<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Item: Sized)
     type Item
-    fn provided<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: Has<Self::Item>), TraitClause2_1: (Self: Exact)>;
+    fn provided<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: Has<Self::Item>), TraitClause2_1: (Self: Exact), Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 

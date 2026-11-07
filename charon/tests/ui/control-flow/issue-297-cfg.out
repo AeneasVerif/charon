@@ -33,7 +33,7 @@ pub trait Iterator<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Item: Sized)
     type Item
-    fn next<'_0_1>;
+    fn next<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 
@@ -258,14 +258,14 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
     storage_live(_5)
     storage_live(_6)
     _6 = &(*a) with_metadata(read a.metadata)
-    _5 = chunks<'28, u8>[{built_in impl Sized for u8}](move _6, const 3usize)
+    _5 = chunks<'30, u8>[{built_in impl Sized for u8}](move _6, const 3usize)
     ↳⚡ storage_dead(_44)
         storage_dead(_37)
         storage_dead(result)
         storage_dead(a)
         unwind_continue
     storage_dead(_6)
-    _4 = into_iter<Chunks<'30, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Chunks<'30, u8>[{built_in impl Sized for u8}]}, impl_Iterator_for_Chunks<'30, u8>[{built_in impl Sized for u8}]](move _5)
+    _4 = into_iter<Chunks<'42, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Chunks<'42, u8>[{built_in impl Sized for u8}]}, impl_Iterator_for_Chunks<'42, u8>[{built_in impl Sized for u8}]](move _5)
     ↳⚡ storage_dead(_44)
         storage_dead(_37)
         storage_dead(result)
@@ -280,7 +280,7 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
         storage_live(_10)
         _10 = &mut iter
         _9 = &two-phase-mut (*_10)
-        _8 = next<'41, '43, u8>[{built_in impl Sized for u8}](move _9)
+        _8 = next<'62, '66, u8>[{built_in impl Sized for u8}](move _9)
         ↳⚡ storage_dead(_44)
             storage_dead(_37)
             storage_dead(result)

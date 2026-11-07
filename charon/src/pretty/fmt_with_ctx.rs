@@ -2444,29 +2444,25 @@ impl<C: AstFormatter> FmtWithCtx<C> for BorrowckStatement {
                 place,
                 ty,
                 variance,
+                temporary,
             } => {
                 let relation = match variance {
-                    Variance::Covariant => "<=",
-                    Variance::Contravariant => ">=",
-                    Variance::Invariant => "==",
+                    Variance::Covariant => ":<",
+                    Variance::Invariant => ":=",
+                    Variance::Contravariant => ":>",
                     Variance::Bivariant => panic!("bivariant SetType statement"),
                     Variance::Unknown => panic!("SetType statement with unknown variance"),
                 };
+                let name = if *temporary { "set_here" } else { "set" };
                 write!(
                     f,
-                    "set_type(typeof({}) {relation} {})",
+                    "{name} {} {relation} {}",
                     place.with_ctx(ctx),
                     ty.with_ctx(ctx)
                 )
             }
-            BorrowckStatement::SetOutlives(ty, region) => write!(
-                f,
-                "set_outlives({}, {})",
-                ty.with_ctx(ctx),
-                region.with_ctx(ctx)
-            ),
-            BorrowckStatement::PredicateHolds(predicate) => {
-                write!(f, "predicate_holds({})", predicate.with_ctx(ctx))
+            BorrowckStatement::SetOutlives(OutlivesPred(lhs, rhs)) => {
+                write!(f, "set {} :> {}", lhs.with_ctx(ctx), rhs.with_ctx(ctx))
             }
         }
     }

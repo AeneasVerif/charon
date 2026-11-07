@@ -22,9 +22,9 @@ pub trait BoolTrait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     #[charon::rename("getTest")]
-    fn get_bool<'_0_1>;
+    fn get_bool<'_0_1, Outlives0: (Self: '_0_1)>;
     #[charon::rename("retTest")]
-    fn ret_true<'_0_1> = test_crate::BoolTrait::ret_true<'_0_1, Self>[Self]
+    fn ret_true<'_0_1, Outlives0: (Self: '_0_1)> = test_crate::BoolTrait::ret_true<'_0_1, Self>[Self]
     vtable: test_crate::BoolTrait::{vtable}
 }
 
@@ -92,7 +92,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &x
-    _2 = get_bool<'4>(move _3)
+    _2 = get_bool<'6>(move _3)
     ↳⚡ storage_dead(x)
         unwind_continue
     if move _2 {
@@ -106,7 +106,7 @@ where
     storage_dead(_3)
     storage_live(_4)
     _4 = &x
-    _0 = impl_BoolTrait_for_bool::ret_true<'6>(move _4)
+    _0 = impl_BoolTrait_for_bool::ret_true<'10>(move _4)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_4)

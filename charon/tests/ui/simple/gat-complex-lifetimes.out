@@ -20,7 +20,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -61,11 +61,11 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = move x
-    _2 = TraitClause1::Type<'32>::ImpliedClause1<'_>::foo(move _3)
-    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::Type<'36>}::drop_glue<'37>] _3
+    _2 = TraitClause1::Type<'34>::ImpliedClause1<'35>::foo(move _3)
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::Type<'59>}::drop_glue<'60>] _3
         ↳⚡ storage_dead(x)
             unwind_terminate
-        conditional_drop[{built_in impl Destruct for TraitClause1::Type<'48>}::drop_glue<'49>] x
+        conditional_drop[{built_in impl Destruct for TraitClause1::Type<'71>}::drop_glue<'72>] x
         ↳⚡ storage_dead(x)
             unwind_terminate
         storage_dead(x)
@@ -73,7 +73,7 @@ where
     _0 = &(*_2)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for TraitClause1::Type<'43>}::drop_glue<'44>] x
+    conditional_drop[{built_in impl Destruct for TraitClause1::Type<'66>}::drop_glue<'67>] x
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(x)

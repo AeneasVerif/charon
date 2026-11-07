@@ -112,9 +112,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
-    /// TODO: the user_ty might be None because hax doesn't extract it (because
-    /// we are translating a [ConstantExpr] instead of a Constant. We need to
-    /// update hax.
+    /// Translate a constant expression.
     pub(crate) fn translate_constant_expr(
         &mut self,
         span: Span,
@@ -160,7 +158,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::ConstantExprKind::Tuple { fields } => {
                 let fields: IndexVec<FieldId, ConstantExpr> = fields
                     .iter()
-                    // TODO: the user_ty is not always None
                     .map(|f| self.translate_constant_expr(span, f))
                     .try_collect()?;
                 ConstantExprKind::Adt(None, fields)

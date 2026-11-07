@@ -483,7 +483,7 @@ pub fn EMPTY() -> &'static [u8]
     storage_live(_1)
     storage_live(_2)
     _2 = cast_with_exposed<*const u8>(const 1usize)
-    _1 = from_raw_parts<'3, u8>[{built_in impl Sized for u8}](move _2, const 0usize)
+    _1 = from_raw_parts<'4, u8>[{built_in impl Sized for u8}](move _2, const 0usize)
     ↳⚡ unwind_continue
     _0 = &(*_1) with_metadata(read _1.metadata)
     storage_dead(_2)
@@ -506,7 +506,7 @@ pub fn inline_const()
     _0 = ()
     storage_live(_1)
     _1 = &test_crate::inline_const::{promoted_const} with_metadata(const 2usize)
-    set_type(typeof(_1) <= &'3 Outer<[u16]>[{built_in impl MetaSized for [u16]}])
+    set _1 :< &'3 Outer<[u16]>[{built_in impl MetaSized for [u16]}]
     storage_dead(_1)
     _0 = ()
     return

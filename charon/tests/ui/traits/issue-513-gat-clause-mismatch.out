@@ -20,7 +20,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -64,7 +64,6 @@ where
     TraitClause1: (T: Trait),
     TraitClause2: (T: Copy),
     Outlives0: (TraitClause1::Type[TraitClause2]: '_0),
-    Outlives1: (T: '_0),
 {
     let mut _0: (); // return
     let mut _1: &'1 TraitClause1::Type[TraitClause2]; // arg #1
@@ -86,7 +85,7 @@ fn main()
     _0 = ()
     storage_live(_1)
     _1 = ()
-    set_type(typeof(_1) <= ())
+    set _1 :< ()
     storage_dead(_1)
     _0 = ()
     return

@@ -5,7 +5,7 @@
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1>;
+    fn eq<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -48,7 +48,7 @@ where
 pub trait PartialOrd<Self, Rhs>
 {
     proof ImpliedClause0: (Self: PartialEq<Rhs>)
-    fn partial_cmp<'_0_1, '_1_1>;
+    fn partial_cmp<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
@@ -96,9 +96,9 @@ fn main()
     let mut _5: &'4 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let mut _6: &'5 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let mut _7: &'6 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let mut _8: &'11 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _8: &'15 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let mut _9: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let mut _10: &'12 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _10: &'16 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let mut _11: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
 
     storage_live(_7)
@@ -124,7 +124,7 @@ fn main()
     storage_live(_3)
     _4 = move _7
     _3 = &(*_4)
-    _1 = impl_PartialEq_Option_for_Option::eq<'9, '10, i32>[{built_in impl Sized for i32}, impl_PartialEq_i32_for_i32](move _2, move _3)
+    _1 = impl_PartialEq_Option_for_Option::eq<'13, '14, i32>[{built_in impl Sized for i32}, impl_PartialEq_i32_for_i32](move _2, move _3)
     ↳⚡ storage_dead(_5)
         storage_dead(_4)
         unwind_continue
@@ -204,7 +204,7 @@ pub fn impl_PartialOrd_Foo_for_Foo::partial_cmp<'_0, '_1>(self: &'_0 Foo, other:
     storage_live(_6)
     _6 = &(*other)._0
     _5 = &(*_6)
-    _0 = impl_PartialOrd_u32_for_u32::partial_cmp<'10, '11>(move _3, move _5)
+    _0 = impl_PartialOrd_u32_for_u32::partial_cmp<'14, '15>(move _3, move _5)
     ↳⚡ storage_dead(other)
         storage_dead(self)
         unwind_continue

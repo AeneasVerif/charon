@@ -20,7 +20,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -49,7 +49,7 @@ trait Iter<Self, Self_Item>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self_Item: Sized)
-    fn map<'_0_1, B, F, TraitClause0_1: (B: Sized), TraitClause1_1: (F: Sized), TraitClause2_1: (F: Apply<Self_Item, B>)> = test_crate::Iter::map<'_0_1, Self, B, F, Self_Item>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    fn map<'_0_1, B, F, TraitClause0_1: (B: Sized), TraitClause1_1: (F: Sized), TraitClause2_1: (F: Apply<Self_Item, B>), Outlives0: (Self: '_0_1)> = test_crate::Iter::map<'_0_1, Self, B, F, Self_Item>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
     non-dyn-compatible
 }
 
@@ -143,7 +143,7 @@ fn g()
     storage_dead(_4)
     storage_live(_5)
     _5 = F {  }
-    _1 = impl_Iter_for_Empty::map<'3, (), (), F>[{built_in impl Sized for ()}, {built_in impl Sized for ()}, {built_in impl Sized for F}, impl_Apply_unit_for_F](move _2, move _5)
+    _1 = impl_Iter_for_Empty::map<'5, (), (), F>[{built_in impl Sized for ()}, {built_in impl Sized for ()}, {built_in impl Sized for F}, impl_Apply_unit_for_F](move _2, move _5)
     ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_2)

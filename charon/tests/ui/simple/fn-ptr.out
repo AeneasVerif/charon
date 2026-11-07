@@ -26,7 +26,7 @@ fn main()
     storage_live(f)
     f = fn_def_to_fn_ptr(const foo)
     fake_read(f)
-    set_type(typeof(f) == fn())
+    set f := fn()
     storage_live(_2)
     storage_live(_3)
     _3 = copy f

@@ -20,7 +20,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -87,7 +87,7 @@ struct () {}
 pub trait Drop<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
+    fn drop<'_0_1, Outlives0: (Self: '_0_1)> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
 
@@ -114,7 +114,7 @@ pub fn impl_Drop_for_Foo::drop<'_0>(self: &'_0 mut Foo)
     let self: &'1 mut Foo; // arg #1
     let _2: (); // anonymous local
     let mut _3: Arguments<'3>; // anonymous local
-    let mut _4: &'6 str; // anonymous local
+    let mut _4: &'9 str; // anonymous local
 
     bb0: {
         storage_live(_0);
@@ -127,7 +127,7 @@ pub fn impl_Drop_for_Foo::drop<'_0>(self: &'_0 mut Foo)
     }
 
     bb1: {
-        _2 = _print<'8>(move _3) -> bb2 (unwind: bb3);
+        _2 = _print<'13>(move _3) -> bb2 (unwind: bb3);
     }
 
     bb2: {
@@ -156,7 +156,7 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut Foo)
         storage_live(_3);
         _0 = ();
         _2 = &mut (*_1);
-        _3 = impl_Drop_for_Foo::drop<'4>(move _2) -> bb1 (unwind: bb2);
+        _3 = impl_Drop_for_Foo::drop<'6>(move _2) -> bb1 (unwind: bb2);
     }
 
     bb1: {

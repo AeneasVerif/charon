@@ -99,8 +99,8 @@ pub opaque type NonNull<T>
 pub unsafe trait Allocator<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn allocate<'_0_1>;
-    fn deallocate<'_0_1>;
+    fn allocate<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn deallocate<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::alloc::Allocator::{vtable}
 }
 
@@ -110,7 +110,7 @@ pub unsafe trait Allocator<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -178,7 +178,7 @@ opaque type core::fmt::Debug::{vtable}
 #[diagnostic_item("Debug")]
 pub trait Debug<Self>
 {
-    fn fmt<'_0_1, '_1_1, '_2_1>;
+    fn fmt<'_0_1, '_1_1, '_2_1, Outlives0: (Self: '_0_1), Outlives1: ('_2_1: '_1_1)>;
     vtable: core::fmt::Debug::{vtable}
 }
 

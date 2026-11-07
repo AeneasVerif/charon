@@ -14,7 +14,7 @@ pub trait Index<Self, Idx>
     proof ImpliedClause2: (Self::Output: MetaSized)
     type Output
     #[track_caller]
-    fn index<'_0_1>;
+    fn index<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
 }
 
@@ -35,7 +35,6 @@ where
     TraitClause2: ([T]: Index<I>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 // Full name: core::option::Option
@@ -57,14 +56,14 @@ pub unsafe trait SliceIndex<Self, T>
     proof ImpliedClause1: (T: MetaSized)
     proof ImpliedClause2: (Self::Output: MetaSized)
     type Output
-    fn get<'_0_1>;
-    fn get_mut<'_0_1>;
+    fn get<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
+    fn get_mut<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     fn get_unchecked;
     fn get_unchecked_mut;
     #[track_caller]
-    fn index<'_0_1>;
+    fn index<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     #[track_caller]
-    fn index_mut<'_0_1>;
+    fn index_mut<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }
 
@@ -76,7 +75,6 @@ where
     TraitClause2: (I: SliceIndex<[T]>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl Index<I> for [T]}

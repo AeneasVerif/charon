@@ -1102,20 +1102,8 @@ impl<'a> ReconstructCtx<'a> {
             }
             src::TerminatorKind::Goto { target } => self.translate_jump(terminator.span, *target),
             src::TerminatorKind::Switch { data, branches } => {
-                let mut branches =
+                let branches =
                     branches.map_ref(|target| self.translate_jump(terminator.span, *target));
-                // If we considered the match to be exhaustive, the fallback block is still in
-                // the list of branches and can be removed.
-                if data.fallback.is_none()
-                    && let Some(last_branch_id) = branches.indices().next_back()
-                    && !data
-                        .branches
-                        .iter()
-                        .map(|(_, branch_id)| *branch_id)
-                        .contains(&last_branch_id)
-                {
-                    branches.pop();
-                }
 
                 // Return
                 let span = combine_span_iter(branches.iter().map(|branch| &branch.span));

@@ -20,7 +20,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -59,7 +59,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -74,7 +74,7 @@ pub trait Foo<Self>
     proof ImpliedClause1: (Self::Type: Sized)
     proof ImpliedClause2: (Self::Type: Clone)
     type Type
-    fn get_ty<'_0_1>;
+    fn get_ty<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Self::Type: '_0_1)>;
     vtable: test_crate::Foo::{vtable}<Self::Type>
 }
 
@@ -152,11 +152,11 @@ fn use_foo()
     storage_live(_4)
     storage_live(_5)
     _5 = &foo
-    _4 = get_ty<'6>(move _5)
+    _4 = get_ty<'8>(move _5)
     ↳⚡ unwind_continue
     _3 = &(*_4) with_metadata(read _4.metadata)
     storage_dead(_5)
-    _2 = impl_Clone_for_u32::clone<'9>(move _3)
+    _2 = impl_Clone_for_u32::clone<'13>(move _3)
     ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_4)
@@ -234,25 +234,25 @@ where
     storage_live(_4)
     storage_live(_5)
     _5 = &foo
-    _4 = TraitClause1::ImpliedClause2::get_ty<'5>(move _5)
-    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'6>] foo
+    _4 = TraitClause1::ImpliedClause2::get_ty<'6>(move _5)
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'7>] foo
         ↳⚡ unwind_terminate
         unwind_continue
     _3 = &(*_4) with_metadata(read _4.metadata)
     storage_dead(_5)
-    _2 = TraitClause1::ImpliedClause2::ImpliedClause2::clone<'7>(move _3)
-    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'6>] foo
+    _2 = TraitClause1::ImpliedClause2::ImpliedClause2::clone<'9>(move _3)
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'7>] foo
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_3)
-    conditional_drop[{built_in impl Destruct for TraitClause1::ImpliedClause2::Type}::drop_glue<'8>] _2
-    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'6>] foo
+    conditional_drop[{built_in impl Destruct for TraitClause1::ImpliedClause2::Type}::drop_glue<'10>] _2
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'7>] foo
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_4)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'9>] foo
+    conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'11>] foo
     ↳⚡ unwind_continue
     storage_dead(foo)
     return
@@ -322,7 +322,7 @@ pub fn use_wrap()
     let _6: &'20 u32; // anonymous local
     let mut _7: &'21 u32; // anonymous local
     let mut _8: &'22 u32; // anonymous local
-    let mut _9: &'37 u32; // anonymous local
+    let mut _9: &'46 u32; // anonymous local
     let mut _10: u32; // anonymous local
 
     storage_live(_0)
@@ -349,13 +349,13 @@ pub fn use_wrap()
     _6 = &(*_7)
     _5 = &(*_6)
     _4 = (move _5,)
-    _2 = call_once<'27, u32>[{built_in impl Sized for u32}](move _3, move _4)
+    _2 = call_once<'28, u32>[{built_in impl Sized for u32}](move _3, move _4)
     ↳⚡ storage_dead(_7)
         unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
-    set_type(typeof(_2) <= WrapClone<&'29 u32>[{built_in impl Sized for &'29 u32}, {impl Clone for &'_0 T}<'29, u32>])
+    set _2 :< WrapClone<&'43 u32>[{built_in impl Sized for &'43 u32}, {impl Clone for &'_0 T}<'43, u32>]
     storage_dead(_6)
     storage_dead(_2)
     _0 = ()

@@ -11,7 +11,7 @@ struct () {}
 pub trait Trait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn method<'_0_1> = test_crate::Trait::method<'_0_1, Self>
+    fn method<'_0_1, Outlives0: (Self: '_0_1)> = test_crate::Trait::method<'_0_1, Self>
     vtable: test_crate::Trait::{vtable}
 }
 

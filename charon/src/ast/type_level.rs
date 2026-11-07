@@ -255,6 +255,57 @@ impl RegionArgs {
     }
 }
 
+impl OutlivesPred {
+    /// Normalize an outlives bound if it can be (e.g. `&'a T: 'b` becomes `'a: 'b` and `T: 'b`).
+    pub fn normalize(&self) -> impl Iterator<Item = Self> + use<'_> {
+        let Self(longer, shorter) = self;
+        let longers: SeqHashSet<_> = if let Region::Lub(ty) = longer
+            && !matches!(ty.kind(), TyKind::TypeVar(_) | TyKind::TraitType(..))
+        {
+            // Collect the regions and param types visible from the outside of this type.
+            #[derive(Visitor, Default)]
+            struct RequireTypeOutlives {
+                regions: SeqHashSet<Region>,
+                binder_depth: DeBruijnId,
+            }
+
+            impl VisitorWithBinderDepth for RequireTypeOutlives {
+                fn binder_depth_mut(&mut self) -> &mut DeBruijnId {
+                    &mut self.binder_depth
+                }
+            }
+
+            impl VisitAst for RequireTypeOutlives {
+                fn visit<U: AstVisitable>(&mut self, value: &U) -> ControlFlow<Self::Break> {
+                    VisitWithBinderDepth::new(self).visit(value)
+                }
+
+                fn enter_region(&mut self, region: &Region) {
+                    if let Some(region) = region.clone().move_from_under_binders(self.binder_depth)
+                    {
+                        self.regions.insert(region);
+                    }
+                }
+
+                fn enter_ty(&mut self, ty: &Ty) {
+                    if matches!(ty.kind(), TyKind::TypeVar(_) | TyKind::TraitType(..)) {
+                        self.enter_region(&Region::Lub(ty.clone()));
+                    }
+                }
+            }
+
+            RequireTypeOutlives::default()
+                .visit_by_val_infallible(ty)
+                .regions
+        } else {
+            [longer.clone()].into()
+        };
+        longers
+            .into_iter()
+            .map(move |longer| OutlivesPred(longer, shorter.clone()))
+    }
+}
+
 impl GenericParams {
     pub fn empty() -> Self {
         Self::default()
@@ -683,43 +734,28 @@ impl<T> RegionBinder<T> {
     }
 }
 
-pub trait HasIdxVecOf<Id: Idx>: std::ops::Index<Id, Output: Sized> {
-    fn get_idx_vec(&self) -> &IndexVec<Id, Self::Output>;
-    fn get_idx_vec_mut(&mut self) -> &mut IndexVec<Id, Self::Output>;
+impl<Id: TypeLevelVar> std::ops::Index<Id> for GenericArgs {
+    type Output = Id::Arg;
+    fn index(&self, index: Id) -> &Self::Output {
+        &Id::get_arg_vec(self)[index]
+    }
 }
-
-/// Delegate `Index` implementations to subfields.
-macro_rules! mk_index_impls {
-    ($ty:ident.$field:ident[$idx:ty]: $output:ty) => {
-        impl std::ops::Index<$idx> for $ty {
-            type Output = $output;
-            fn index(&self, index: $idx) -> &Self::Output {
-                &self.$field[index]
-            }
-        }
-        impl std::ops::IndexMut<$idx> for $ty {
-            fn index_mut(&mut self, index: $idx) -> &mut Self::Output {
-                &mut self.$field[index]
-            }
-        }
-        impl HasIdxVecOf<$idx> for $ty {
-            fn get_idx_vec(&self) -> &IndexVec<$idx, Self::Output> {
-                &self.$field
-            }
-            fn get_idx_vec_mut(&mut self) -> &mut IndexVec<$idx, Self::Output> {
-                &mut self.$field
-            }
-        }
-    };
+impl<Id: TypeLevelVar> std::ops::IndexMut<Id> for GenericArgs {
+    fn index_mut(&mut self, index: Id) -> &mut Self::Output {
+        &mut Id::get_arg_vec_mut(self)[index]
+    }
 }
-mk_index_impls!(GenericArgs.regions[RegionId]: Region);
-mk_index_impls!(GenericArgs.types[TypeVarId]: Ty);
-mk_index_impls!(GenericArgs.const_generics[ConstGenericVarId]: ConstantExpr);
-mk_index_impls!(GenericArgs.trait_refs[TraitClauseId]: PolyTraitRef);
-mk_index_impls!(GenericParams.regions[RegionId]: RegionParam);
-mk_index_impls!(GenericParams.types[TypeVarId]: TypeParam);
-mk_index_impls!(GenericParams.const_generics[ConstGenericVarId]: ConstGenericParam);
-mk_index_impls!(GenericParams.trait_clauses[TraitClauseId]: TraitParam);
+impl<Id: TypeLevelVar> std::ops::Index<Id> for GenericParams {
+    type Output = Id::Param;
+    fn index(&self, index: Id) -> &Self::Output {
+        &Id::get_param_vec(self)[index]
+    }
+}
+impl<Id: TypeLevelVar> std::ops::IndexMut<Id> for GenericParams {
+    fn index_mut(&mut self, index: Id) -> &mut Self::Output {
+        &mut Id::get_param_vec_mut(self)[index]
+    }
+}
 
 impl FromIterator<Region> for RegionArgs {
     fn from_iter<T: IntoIterator<Item = Region>>(iter: T) -> Self {

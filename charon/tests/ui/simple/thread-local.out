@@ -20,7 +20,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -99,7 +99,7 @@ pub unsafe trait DestroyedState<Self>
 {
     proof ImpliedClause0: (Self: Sized)
     proof ImpliedClause1: (Self: Copy)
-    fn register_dtor<'_0_1, T, TraitClause0_1: (T: Sized)>;
+    fn register_dtor<'_0_1, T, TraitClause0_1: (T: Sized), Outlives0: (T: '_0_1), Outlives1: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -230,7 +230,7 @@ extern "rust-call" fn call<'_0, '_1>(_1: &'_1 {closure}, tupled_args: (Option<&'
     _4 = &__RUST_STD_INTERNAL_VAL
     storage_live(_5)
     _5 = move __rust_std_internal_init
-    _0 = get_or_init<'23, '24, u32, !, __rust_std_internal_init_fn>[{built_in impl Sized for u32}, {built_in impl Sized for !}, {impl DestroyedState for !}, {built_in impl Sized for __rust_std_internal_init_fn}, {impl FnOnce<()> for __rust_std_internal_init_fn}](move _4, move _5, const __rust_std_internal_init_fn)
+    _0 = get_or_init<'27, '28, u32, !, __rust_std_internal_init_fn>[{built_in impl Sized for u32}, {built_in impl Sized for !}, {impl DestroyedState for !}, {built_in impl Sized for __rust_std_internal_init_fn}, {impl FnOnce<()> for __rust_std_internal_init_fn}](move _4, move _5, const __rust_std_internal_init_fn)
     ↳⚡ storage_dead(__rust_std_internal_init)
         storage_dead(tupled_args)
         storage_dead(_1)
@@ -276,7 +276,7 @@ extern "rust-call" fn impl_FnOnce_tuple_for_closure::call_once<'_0>(_1: {closure
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = call_mut<'_0, '35>(move _3, move _2)
+    _0 = call_mut<'_0, '57>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)

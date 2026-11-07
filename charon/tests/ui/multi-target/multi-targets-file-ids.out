@@ -28,7 +28,7 @@ pub trait core::marker::Sized<Self>
 pub trait core::clone::Clone<Self>
 {
     proof ImpliedClause0: (Self: core::marker::Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -94,7 +94,7 @@ pub trait core::ops::index::Index<Self, Idx>
     proof ImpliedClause2: (Self::Output: core::marker::MetaSized)
     type Output
     #[track_caller]
-    fn index<'_0_1>;
+    fn index<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
 }
 
@@ -105,7 +105,6 @@ where
     TraitClause2: ([T]: core::ops::index::Index<I>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 #[lang_item(IndexMut)]
@@ -115,7 +114,7 @@ pub trait core::ops::index::IndexMut<Self, Idx>
     proof ImpliedClause1: (Self: core::ops::index::Index<Idx>)
     proof ImpliedClause2: (Idx: core::marker::MetaSized)
     #[track_caller]
-    fn index_mut<'_0_1>;
+    fn index_mut<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Self::ImpliedClause1::Output: '_0_1)>;
     vtable: core::ops::index::IndexMut::{vtable}<Idx, Self::ImpliedClause1::Output>
 }
 
@@ -126,7 +125,6 @@ where
     TraitClause2: ([T]: core::ops::index::IndexMut<I>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::ImpliedClause1::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 pub fn core::array::{[T; N]}::as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
@@ -155,7 +153,7 @@ impl core::clone::Clone for usize {
 #[diagnostic_item("PartialEq")]
 pub trait core::cmp::PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1>;
+    fn eq<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -181,7 +179,7 @@ where
 pub trait core::cmp::PartialOrd<Self, Rhs>
 {
     proof ImpliedClause0: (Self: core::cmp::PartialEq<Rhs>)
-    fn partial_cmp<'_0_1, '_1_1>;
+    fn partial_cmp<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
@@ -218,7 +216,7 @@ pub trait core::iter::range::Step<Self>
     proof ImpliedClause0: (Self: core::marker::Sized)
     proof ImpliedClause1: (Self: core::clone::Clone)
     proof ImpliedClause2: (Self: core::cmp::PartialOrd<Self>)
-    fn steps_between<'_0_1, '_1_1>;
+    fn steps_between<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Self: '_1_1)>;
     fn forward_checked;
     fn forward_overflowing;
     fn backward_checked;
@@ -266,7 +264,7 @@ where
 #[lang_item(Destruct)]
 pub trait core::marker::Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -277,7 +275,7 @@ pub trait core::iter::traits::iterator::Iterator<Self>
     proof ImpliedClause0: (Self: core::marker::MetaSized)
     proof ImpliedClause1: (Self::Item: core::marker::Sized)
     type Item
-    fn next<'_0_1>;
+    fn next<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 
@@ -319,14 +317,14 @@ pub unsafe trait core::slice::index::SliceIndex<Self, T>
     proof ImpliedClause1: (T: core::marker::MetaSized)
     proof ImpliedClause2: (Self::Output: core::marker::MetaSized)
     type Output
-    fn get<'_0_1>;
-    fn get_mut<'_0_1>;
+    fn get<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
+    fn get_mut<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     fn get_unchecked;
     fn get_unchecked_mut;
     #[track_caller]
-    fn index<'_0_1>;
+    fn index<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     #[track_caller]
-    fn index_mut<'_0_1>;
+    fn index_mut<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }
 
@@ -337,7 +335,6 @@ where
     TraitClause2: (I: core::slice::index::SliceIndex<[T]>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl core::ops::index::Index<I> for [T]}
@@ -362,7 +359,6 @@ where
     TraitClause2: (I: core::slice::index::SliceIndex<[T]>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl core::ops::index::IndexMut<I> for [T]}
@@ -504,7 +500,7 @@ fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::store<
     _5 = core::array::{[T; N]}::as_mut_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _6)
     ↳⚡ undefined_behavior
     storage_dead(_6)
-    _4 = core::slice::{[T]}::as_mut_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _5)
+    _4 = core::slice::{[T]}::as_mut_ptr<'9, u16>[{built_in impl core::marker::Sized for u16}](move _5)
     ↳⚡ storage_dead(val)
         storage_dead(dst)
         unwind_continue
@@ -542,7 +538,7 @@ fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::load<'
     _4 = core::array::{[T; N]}::as_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _5)
     ↳⚡ undefined_behavior
     storage_dead(_5)
-    _3 = core::slice::{[T]}::as_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _4)
+    _3 = core::slice::{[T]}::as_ptr<'9, u16>[{built_in impl core::marker::Sized for u16}](move _4)
     ↳⚡ storage_dead(src)
         unwind_continue
     storage_dead(_4)
@@ -613,7 +609,7 @@ fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::store<
     _4 = core::array::{[T; N]}::as_mut_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _5)
     ↳⚡ undefined_behavior
     storage_dead(_5)
-    _3 = core::slice::{[T]}::as_mut_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _4)
+    _3 = core::slice::{[T]}::as_mut_ptr<'9, u16>[{built_in impl core::marker::Sized for u16}](move _4)
     ↳⚡ storage_dead(val)
         storage_dead(dst)
         unwind_continue
@@ -647,7 +643,7 @@ fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::load<'
     _3 = core::array::{[T; N]}::as_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _4)
     ↳⚡ undefined_behavior
     storage_dead(_4)
-    _2 = core::slice::{[T]}::as_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _3)
+    _2 = core::slice::{[T]}::as_ptr<'9, u16>[{built_in impl core::marker::Sized for u16}](move _3)
     ↳⚡ storage_dead(src)
         unwind_continue
     storage_dead(_3)
@@ -694,7 +690,7 @@ where
     storage_live(va)
     storage_live(_4)
     _4 = &(*a)
-    va = TraitClause1::load<'7>(move _4)
+    va = TraitClause1::load<'8>(move _4)
     ↳⚡ storage_dead(b)
         storage_dead(a)
         unwind_continue
@@ -703,7 +699,7 @@ where
     storage_live(vb)
     storage_live(_6)
     _6 = &(*b)
-    vb = TraitClause1::load<'8>(move _6)
+    vb = TraitClause1::load<'10>(move _6)
     ↳⚡ storage_dead(b)
         storage_dead(a)
         unwind_continue
@@ -723,7 +719,7 @@ where
         unwind_continue
     storage_dead(_11)
     storage_dead(_10)
-    _7 = TraitClause1::store<'9>(move _8, move _9)
+    _7 = TraitClause1::store<'12>(move _8, move _9)
     ↳⚡ storage_dead(b)
         storage_dead(a)
         unwind_continue
@@ -781,7 +777,7 @@ fn test_crate::add_scalar<'_0, '_1>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8us
         storage_live(_8)
         _8 = &mut iter
         _7 = &two-phase-mut (*_8)
-        _6 = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[TraitClause0]}::next<'8, usize>[{built_in impl core::marker::Sized for usize}, core::iter::range::{impl core::iter::range::Step for usize}, {built_in impl core::marker::Destruct for usize}](move _7)
+        _6 = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[TraitClause0]}::next<'10, usize>[{built_in impl core::marker::Sized for usize}, core::iter::range::{impl core::iter::range::Step for usize}, {built_in impl core::marker::Destruct for usize}](move _7)
         ↳⚡ storage_dead(b)
             storage_dead(a)
             unwind_continue
@@ -894,7 +890,7 @@ fn test_crate::add_dispatch::x86_64-apple-darwin<'_0, '_1>(a: &'_0 mut [u16; 8us
         _8 = &two-phase-mut (*a)
         storage_live(_9)
         _9 = &(*b)
-        _7 = test_crate::add_scalar<'14, '15>(move _8, move _9)
+        _7 = test_crate::add_scalar<'22, '23>(move _8, move _9)
         ↳⚡ storage_dead(b)
             storage_dead(a)
             unwind_continue
@@ -912,7 +908,7 @@ fn test_crate::add_dispatch::x86_64-apple-darwin<'_0, '_1>(a: &'_0 mut [u16; 8us
     _5 = &two-phase-mut (*a)
     storage_live(_6)
     _6 = &(*b)
-    _4 = test_crate::add_generic<'10, '11, test_crate::x86::Sse2>[{built_in impl core::marker::Sized for test_crate::x86::Sse2}, test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}](move _5, move _6)
+    _4 = test_crate::add_generic<'14, '15, test_crate::x86::Sse2>[{built_in impl core::marker::Sized for test_crate::x86::Sse2}, test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}](move _5, move _6)
     ↳⚡ storage_dead(b)
         storage_dead(a)
         unwind_continue
@@ -953,7 +949,7 @@ fn test_crate::add_dispatch::aarch64-apple-darwin<'_0, '_1>(a: &'_0 mut [u16; 8u
         _8 = &two-phase-mut (*a)
         storage_live(_9)
         _9 = &(*b)
-        _7 = test_crate::add_scalar<'14, '15>(move _8, move _9)
+        _7 = test_crate::add_scalar<'22, '23>(move _8, move _9)
         ↳⚡ storage_dead(b)
             storage_dead(a)
             unwind_continue
@@ -971,7 +967,7 @@ fn test_crate::add_dispatch::aarch64-apple-darwin<'_0, '_1>(a: &'_0 mut [u16; 8u
     _5 = &two-phase-mut (*a)
     storage_live(_6)
     _6 = &(*b)
-    _4 = test_crate::add_generic<'10, '11, test_crate::arm::Neon>[{built_in impl core::marker::Sized for test_crate::arm::Neon}, test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}](move _5, move _6)
+    _4 = test_crate::add_generic<'14, '15, test_crate::arm::Neon>[{built_in impl core::marker::Sized for test_crate::arm::Neon}, test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}](move _5, move _6)
     ↳⚡ storage_dead(b)
         storage_dead(a)
         unwind_continue

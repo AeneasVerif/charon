@@ -15,7 +15,7 @@ pub trait core::marker::Sized<Self>
 pub trait core::clone::Clone<Self>
 {
     proof ImpliedClause0: (Self: core::marker::Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 

@@ -21,7 +21,7 @@ struct () {}
 pub trait Drop<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
+    fn drop<'_0_1, Outlives0: (Self: '_0_1)> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
 
@@ -91,8 +91,8 @@ where
     storage_live(_3)
     _0 = ()
     _2 = &mut (*_1)
-    _3 = impl_Drop_for_Foo::drop<'4, T>[TraitClause0](move _2)
-    ↳⚡ drop[impl_Destruct_for_Vec::drop_glue<'5, T, Global>[TraitClause0, {built_in impl Sized for Global}]] (*_1).vec
+    _3 = impl_Drop_for_Foo::drop<'6, T>[TraitClause0](move _2)
+    ↳⚡ drop[impl_Destruct_for_Vec::drop_glue<'7, T, Global>[TraitClause0, {built_in impl Sized for Global}]] (*_1).vec
         ↳⚡ storage_dead(_3)
             storage_dead(_2)
             storage_dead(_1)
@@ -101,7 +101,7 @@ where
         storage_dead(_2)
         storage_dead(_1)
         unwind_continue
-    drop[impl_Destruct_for_Vec::drop_glue<'6, T, Global>[TraitClause0, {built_in impl Sized for Global}]] (*_1).vec
+    drop[impl_Destruct_for_Vec::drop_glue<'8, T, Global>[TraitClause0, {built_in impl Sized for Global}]] (*_1).vec
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)

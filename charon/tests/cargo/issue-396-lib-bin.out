@@ -66,7 +66,7 @@ where
 #[diagnostic_item("Display")]
 pub trait Display<Self>
 {
-    fn fmt<'_0_1, '_1_1, '_2_1>;
+    fn fmt<'_0_1, '_1_1, '_2_1, Outlives0: (Self: '_0_1), Outlives1: ('_2_1: '_1_1)>;
     vtable: core::fmt::Display::{vtable}
 }
 
@@ -143,7 +143,7 @@ fn main()
     storage_live(_7)
     storage_live(_8)
     _8 = &(*args_3._0)
-    _7 = new_display<'40, '42, u32>[{built_in impl Sized for u32}, impl_Display_for_u32](move _8)
+    _7 = new_display<'41, '49, u32>[{built_in impl Sized for u32}, impl_Display_for_u32](move _8)
     ↳⚡ unwind_continue
     storage_dead(_8)
     args_6 = [move _7]
@@ -159,13 +159,13 @@ fn main()
     storage_live(_12)
     _12 = &args_6
     _11 = &(*_12)
-    _2 = new<'49, 4usize, 1usize>(move _9, move _11)
+    _2 = new<'56, 4usize, 1usize>(move _9, move _11)
     ↳⚡ unwind_continue
     storage_dead(_12)
     storage_dead(_11)
     storage_dead(_10)
     storage_dead(_9)
-    _1 = _print<'51>(move _2)
+    _1 = _print<'63>(move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(args_6)

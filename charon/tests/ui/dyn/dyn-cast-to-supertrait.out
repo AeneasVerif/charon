@@ -23,7 +23,7 @@ struct test_crate::Feline::{vtable} {
 trait Feline<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn hunt<'_0_1>;
+    fn hunt<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Feline::{vtable}
 }
 
@@ -39,7 +39,7 @@ struct test_crate::Pettable::{vtable} {
 trait Pettable<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn pet<'_0_1>;
+    fn pet<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Pettable::{vtable}
 }
 
@@ -59,7 +59,7 @@ trait Cat<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Feline)
     proof ImpliedClause2: (Self: Pettable)
-    fn meow<'_0_1>;
+    fn meow<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Cat::{vtable}
 }
 
@@ -290,7 +290,8 @@ fn main()
     dyn_cat = unsize_cast<&'24 (dyn Cat + '25), &impl_Cat_for_HouseCat::{vtable}>(move _3)
     storage_dead(_3)
     fake_read(dyn_cat)
-    set_type(typeof(dyn_cat) == &'26 (dyn Cat + '27))
+    set '27 :> '26
+    set dyn_cat := &'26 (dyn Cat + '27)
     storage_dead(_4)
     storage_live(dyn_feline)
     storage_live(_6)
@@ -298,18 +299,20 @@ fn main()
     dyn_feline = unsize_cast<&'29 (dyn Feline + '30),  at [5]>(move _6)
     storage_dead(_6)
     fake_read(dyn_feline)
-    set_type(typeof(dyn_feline) == &'31 (dyn Feline + '32))
+    set '32 :> '31
+    set dyn_feline := &'31 (dyn Feline + '32)
     storage_live(dyn_pettable)
     storage_live(_8)
     _8 = &(*dyn_cat) with_metadata(read dyn_cat.metadata)
     dyn_pettable = unsize_cast<&'34 (dyn Pettable + '35),  at [6]>(move _8)
     storage_dead(_8)
     fake_read(dyn_pettable)
-    set_type(typeof(dyn_pettable) == &'36 (dyn Pettable + '37))
+    set '37 :> '36
+    set dyn_pettable := &'36 (dyn Pettable + '37)
     storage_live(_9)
     storage_live(_10)
     _10 = &(*dyn_cat) with_metadata(read dyn_cat.metadata)
-    _9 = takes_pettable<'48, (dyn Cat + '40)>[{built_in impl MetaSized for (dyn Cat + '42)}, Cat<(dyn Cat + '46)>::ImpliedClause2](move _10)
+    _9 = takes_pettable<'63, (dyn Cat + '48)>[{built_in impl MetaSized for (dyn Cat + '50)}, Cat<(dyn Cat + '51)>::ImpliedClause2](move _10)
     ↳⚡ unwind_continue
     storage_dead(_10)
     storage_dead(_9)

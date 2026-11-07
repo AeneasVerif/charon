@@ -45,7 +45,7 @@ fn in_g()
 trait Foo<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn f<'_0_1> = test_crate::Foo::f<'_0_1, Self>[Self]
+    fn f<'_0_1, Outlives0: (Self: '_0_1)> = test_crate::Foo::f<'_0_1, Self>[Self]
     vtable: test_crate::Foo::{vtable}
 }
 

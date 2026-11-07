@@ -26,7 +26,7 @@ fn do_test::<bool>(x: bool)
     _0 = ()
     storage_live(_2)
     _2 = &x
-    _0 = method<'3>(move _2)
+    _0 = method<'5>(move _2)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_2)

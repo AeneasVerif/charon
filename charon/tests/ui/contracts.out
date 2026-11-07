@@ -80,7 +80,7 @@ fn function()
     _3 = &closure
     storage_live(_4)
     _4 = ()
-    _2 = call<'2>(move _3, move _4)
+    _2 = call<'3>(move _3, move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)

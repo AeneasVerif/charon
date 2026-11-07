@@ -16,8 +16,8 @@ struct () {}
 trait test_crate::Trait<Self>
 {
     proof ImpliedClause0: (Self: core::marker::MetaSized)
-    fn method1<'_0_1> = test_crate::Trait::method1<'_0_1, Self>[Self]
-    fn method2<'_0_1> = test_crate::Trait::method2<'_0_1, Self>[Self]
+    fn method1<'_0_1, Outlives0: (Self: '_0_1)> = test_crate::Trait::method1<'_0_1, Self>[Self]
+    fn method2<'_0_1, Outlives0: (Self: '_0_1)> = test_crate::Trait::method2<'_0_1, Self>[Self]
     vtable: test_crate::Trait::{vtable}
 }
 
@@ -65,7 +65,7 @@ where
     _0 = ()
     storage_live(_2)
     _2 = &(*x)
-    _0 = TraitClause1::method1<'3>(move _2)
+    _0 = TraitClause1::method1<'4>(move _2)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_2)
@@ -87,7 +87,7 @@ where
     _0 = ()
     storage_live(_2)
     _2 = &(*x)
-    _0 = TraitClause1::method2<'3>(move _2)
+    _0 = TraitClause1::method2<'4>(move _2)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_2)

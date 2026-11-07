@@ -35,7 +35,7 @@ where
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Send)
-    fn foo<'_0_1>;
+    fn foo<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::MyTrait::{vtable}
 }
 
@@ -113,7 +113,7 @@ fn main()
     let mut _5: &'8 (dyn MyTrait + '9); // anonymous local
     let mut _6: &'10 MyStruct; // anonymous local
     let mut _7: &'11 MyStruct; // anonymous local
-    let mut _8: &'18 MyStruct; // anonymous local
+    let mut _8: &'22 MyStruct; // anonymous local
     let mut _9: MyStruct; // anonymous local
 
     storage_live(_7)
@@ -137,7 +137,7 @@ fn main()
     storage_live(_4)
     storage_live(_5)
     _5 = &(*x) with_metadata(read x.metadata)
-    _4 = (read (*_5.metadata).method_foo)<'17>(move _5)
+    _4 = (read (*_5.metadata).method_foo)<'21>(move _5)
     ↳⚡ storage_dead(_6)
         unwind_continue
     storage_dead(_5)

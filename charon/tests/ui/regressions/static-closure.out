@@ -147,7 +147,7 @@ extern "rust-call" fn impl_Fn_for_closure::call<'_0>(_1: &'_0 test_crate::BAR::{
     let mut _19: Option::<Arguments::<'_>>; // anonymous local
     let mut _20: &'11 i32; // anonymous local
     let mut _21: &'12 i32; // anonymous local
-    let mut _22: &'25 i32; // anonymous local
+    let mut _22: &'31 i32; // anonymous local
     let mut _23: i32; // anonymous local
 
     storage_live(_21)
@@ -224,7 +224,7 @@ extern "rust-call" fn impl_Fn_for_closure::call<'_0>(_1: &'_0 test_crate::BAR::{
     _17 = &(*_18)
     storage_live(_19)
     _19 = Option::<Arguments::<'_>>::None {  }
-    _13 = assert_failed::<i32, i32><'22, '23, '24>(move _14, move _15, move _17, move _19)
+    _13 = assert_failed::<i32, i32><'28, '29, '30>(move _14, move _15, move _17, move _19)
     ↳⚡ storage_dead(_20)
         storage_dead(_19)
         storage_dead(_18)
@@ -275,7 +275,7 @@ extern "rust-call" fn call_once(_1: test_crate::BAR::{closure}, _2: (i32,))
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = call_mut<'3>(move _3, move _2)
+    _0 = call_mut<'5>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -355,7 +355,7 @@ extern "rust-call" fn {impl Fn<(i32,)> for test_crate::foo::{closure}::<u8>}::ca
     let mut _19: Option::<Arguments::<'_>>; // anonymous local
     let mut _20: &'11 i32; // anonymous local
     let mut _21: &'12 i32; // anonymous local
-    let mut _22: &'25 i32; // anonymous local
+    let mut _22: &'31 i32; // anonymous local
     let mut _23: i32; // anonymous local
 
     storage_live(_21)
@@ -432,7 +432,7 @@ extern "rust-call" fn {impl Fn<(i32,)> for test_crate::foo::{closure}::<u8>}::ca
     _17 = &(*_18)
     storage_live(_19)
     _19 = Option::<Arguments::<'_>>::None {  }
-    _13 = assert_failed::<i32, i32><'22, '23, '24>(move _14, move _15, move _17, move _19)
+    _13 = assert_failed::<i32, i32><'28, '29, '30>(move _14, move _15, move _17, move _19)
     ↳⚡ storage_dead(_20)
         storage_dead(_19)
         storage_dead(_18)
@@ -467,7 +467,7 @@ fn foo::<u8>()
     _3 = &c
     storage_live(_4)
     _4 = (const 42i32,)
-    _2 = {impl Fn<(i32,)> for test_crate::foo::{closure}::<u8>}::call::<u8><'3>(move _3, move _4)
+    _2 = {impl Fn<(i32,)> for test_crate::foo::{closure}::<u8>}::call::<u8><'5>(move _3, move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)
@@ -499,14 +499,15 @@ fn main()
     boo = unsize_cast<&'12 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '13), &{impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>>(move _2)
     storage_dead(_2)
     fake_read(boo)
-    set_type(typeof(boo) == &'14 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '15))
+    set '15 :> '14
+    set boo := &'14 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '15)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*boo) with_metadata(read boo.metadata)
     storage_live(_6)
     _6 = (const 42i32,)
-    _4 = Fn<(dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '18), (i32,)>::call<'19>(move _5, move _6)
+    _4 = Fn<(dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '19), (i32,)>::call<'23>(move _5, move _6)
     ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_5)

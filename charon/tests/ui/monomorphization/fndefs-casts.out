@@ -74,7 +74,7 @@ fn takes_closure::<for<'a> foo::<u32><'a>>(c: for<'a> foo::<u32><'a>)
     let _5: &'4 u32; // anonymous local
     let mut _6: &'5 u32; // anonymous local
     let mut _7: &'6 u32; // anonymous local
-    let mut _8: &'14 u32; // anonymous local
+    let mut _8: &'18 u32; // anonymous local
     let mut _9: u32; // anonymous local
 
     storage_live(_7)
@@ -95,7 +95,7 @@ fn takes_closure::<for<'a> foo::<u32><'a>>(c: for<'a> foo::<u32><'a>)
     _5 = &(*_6)
     _4 = &(*_5)
     _3 = (move _4,)
-    _0 = call::<u32><'7, '9>(move _2, move _3)
+    _0 = call::<u32><'9, '13>(move _2, move _3)
     ↳⚡ storage_dead(_6)
         storage_dead(c)
         unwind_continue
@@ -152,15 +152,15 @@ fn main()
     storage_live(fooint1)
     fooint1 = fn_def_to_fn_ptr(const foo::<u8><'15>)
     fake_read(fooint1)
-    set_type(typeof(fooint1) == fn<'_0_1>(&'_0_1 u8))
+    set fooint1 := fn<'_0_1>(&'_0_1 u8)
     storage_live(fooint2)
     fooint2 = fn_def_to_fn_ptr(const foo::<u8><'17>)
     fake_read(fooint2)
-    set_type(typeof(fooint2) == fn<'_0_1>(&'_0_1 u8))
+    set fooint2 := fn<'_0_1>(&'_0_1 u8)
     storage_live(foochar)
     foochar = fn_def_to_fn_ptr(const foo::<char><'20>)
     fake_read(foochar)
-    set_type(typeof(foochar) == fn<'_0_1>(&'_0_1 char))
+    set foochar := fn<'_0_1>(&'_0_1 char)
     storage_live(a)
     a = const 11u8
     fake_read(a)

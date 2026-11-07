@@ -20,7 +20,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -40,7 +40,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -137,7 +137,7 @@ trait X<Self, Self_Assoc>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self_Assoc: Sized)
-    fn method<'_0_1>;
+    fn method<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::X::{vtable}<Self_Assoc>
 }
 
@@ -170,14 +170,14 @@ where
     storage_live(_0)
     storage_live(_2)
     _2 = &x
-    _0 = TraitClause1::ImpliedClause1::method<'2>(move _2)
-    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'3>] x
+    _0 = TraitClause1::ImpliedClause1::method<'3>(move _2)
+    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] x
         ↳⚡ storage_dead(x)
             unwind_terminate
         storage_dead(x)
         unwind_continue
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] x
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] x
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(x)
@@ -197,14 +197,14 @@ where
     storage_live(_0)
     storage_live(_2)
     _2 = &x
-    _0 = TraitClause1::ImpliedClause1::method<'2>(move _2)
-    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'3>] x
+    _0 = TraitClause1::ImpliedClause1::method<'3>(move _2)
+    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] x
         ↳⚡ storage_dead(x)
             unwind_terminate
         storage_dead(x)
         unwind_continue
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] x
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] x
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(x)

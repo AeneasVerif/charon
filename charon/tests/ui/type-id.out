@@ -83,6 +83,7 @@ where
     let mut _0: TypeId; // return
 
     storage_live(_0)
+    set 'lub<T> :> 'static
     _0 = of<T>[TraitClause0::ImpliedClause0]()
     ↳⚡ unwind_continue
     return

@@ -29,10 +29,11 @@ Guidance for AI agents working on Charon.
 - Read the surrounding code before editing. Most problems in this repository already have a nearby
   pattern in another translation pass, AST utility, or normalization pass.
 - We are the owners of this codebase, we can make deep changes if that's the best way to solve
-  a problem.
+  a problem. Imagine you were rewriting the whole codebase from scratch: how might you structure it
+  so that the new feature writes itself?
 - Exercise judgment: sometimes the right fix is downstream (e.g. in aeneas) or upstream (e.g. in
   rustc itself); I don't shy from fixing the bugs where they should be fixed (though well-placed
-  workarounds are often fine).
+  workarounds can on occasion be the better choice).
 - Correctness comes first. We should be very careful when modifying what we got from rustc. Even
   tricky cases should be handled correctly; if in doubt, double-check and add tests.
 - Robustness comes second. Charon should be able to emit an llbc file even in the face of many

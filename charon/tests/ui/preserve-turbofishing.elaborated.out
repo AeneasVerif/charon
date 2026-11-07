@@ -1,0 +1,624 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for u32}::clone
+pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u32}
+impl "impl_Clone_for_u32" Clone for u32 {
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
+    fn clone<'_0_1> = impl_Clone_for_u32::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
+#[diagnostic_item("noop_method_clone")]
+pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
+where
+    Outlives0: ('_0: '_1),
+    Outlives1: (T: '_0),
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for &'_0 T}
+impl<'_0, T> Clone for &'_0 T
+where
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
+    fn clone<'_0_1> = {impl Clone for &'_0 T}::clone<'_0, '_0_1, T>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for u32}
+impl "impl_Copy_for_u32" Copy for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for &'_0 T}
+impl<'_0, T> Copy for &'_0 T
+where
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (&'_0 T: MetaSized) = {built_in impl MetaSized for &'_0 T}
+    proof ImpliedClause1: (&'_0 T: Clone) = {impl Clone for &'_0 T}<'_, T>
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
+    non-dyn-compatible
+}
+
+// Full name: core::option::Option
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
+pub enum Option<T>
+where
+    TraitClause0: (T: Sized),
+{
+  None,
+  Some { _0: T },
+}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+// Full name: test_crate::foo
+pub fn foo<'a>(_1: &'a u32)
+{
+    let mut _0: (); // return
+    let mut _1: &'1 u32; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::bar
+pub fn bar<T>(_1: T)
+where
+    TraitClause0: (T: Sized),
+{
+    let mut _0: (); // return
+    let mut _1: T; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    drop[{built_in impl Destruct for T}::drop_glue<'0>] _1
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::explicit_arguments
+pub fn explicit_arguments(value: &'static u32)
+{
+    let mut _0: (); // return
+    let value: &'1 u32; // arg #1
+    let _2: (); // anonymous local
+    let mut _3: &'2 u32; // anonymous local
+    let _4: (); // anonymous local
+    let mut _5: &'3 u32; // anonymous local
+    let _6: (); // anonymous local
+    let mut _7: Option<&'11 u32>[{built_in impl Sized for &'11 u32}]; // anonymous local
+    let mut _8: &'15 u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy value
+    _2 = foo<'20>(move _3)
+    ↳⚡ storage_dead(value)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = copy value
+    _4 = bar<&'33 u32>[{built_in impl Sized for &'33 u32}](move _5)
+    ↳⚡ storage_dead(value)
+        unwind_continue
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_live(_6)
+    storage_live(_7)
+    storage_live(_8)
+    _8 = &(*value)
+    _7 = Option::Some { _0: move _8 }
+    storage_dead(_8)
+    _6 = bar<Option<&'100 u32>[{built_in impl Sized for &'100 u32}]>[{built_in impl Sized for Option<&'100 u32>[{built_in impl Sized for &'100 u32}]}](move _7)
+    ↳⚡ storage_dead(value)
+        unwind_continue
+    storage_dead(_7)
+    storage_dead(_6)
+    _0 = ()
+    storage_dead(value)
+    return
+}
+
+// Full name: test_crate::function_values
+pub fn function_values(value: &'static u32)
+{
+    let mut _0: (); // return
+    let value: &'1 u32; // arg #1
+    let f_2: foo<'3>; // local
+    let _3: (); // anonymous local
+    let mut _4: foo<'4>; // anonymous local
+    let mut _5: &'5 u32; // anonymous local
+    let f_6: bar<&'14 u32>[{built_in impl Sized for &'14 u32}]; // local
+    let _7: (); // anonymous local
+    let mut _8: bar<&'18 u32>[{built_in impl Sized for &'18 u32}]; // anonymous local
+    let mut _9: &'22 u32; // anonymous local
+    let f_10: fn(&'25 u32); // local
+    let _11: (); // anonymous local
+    let mut _12: fn(&'26 u32); // anonymous local
+    let mut _13: &'27 u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(f_2)
+    f_2 = const foo<'29>
+    storage_live(_3)
+    storage_live(_4)
+    _4 = copy f_2
+    storage_live(_5)
+    _5 = &(*value)
+    _3 = foo<'4>(move _5)
+    ↳⚡ storage_dead(value)
+        unwind_continue
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_live(f_6)
+    f_6 = const bar<&'49 u32>[{built_in impl Sized for &'51 u32}]
+    storage_live(_7)
+    storage_live(_8)
+    _8 = copy f_6
+    storage_live(_9)
+    _9 = &(*value)
+    _7 = bar<&'18 u32>[{built_in impl Sized for &'18 u32}](move _9)
+    ↳⚡ storage_dead(value)
+        unwind_continue
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_live(f_10)
+    f_10 = fn_def_to_fn_ptr(const bar<&'146 u32>[{built_in impl Sized for &'148 u32}])
+    storage_live(_11)
+    storage_live(_12)
+    _12 = copy f_10
+    storage_live(_13)
+    _13 = copy value
+    _11 = (move _12)(move _13)
+    ↳⚡ storage_dead(value)
+        unwind_continue
+    storage_dead(_13)
+    storage_dead(_12)
+    storage_dead(_11)
+    _0 = ()
+    storage_dead(f_10)
+    storage_dead(f_6)
+    storage_dead(f_2)
+    storage_dead(value)
+    return
+}
+
+// Full name: test_crate::named_arguments
+pub fn named_arguments<'a, 'b>(value: &'a u32, other: &'b u32)
+{
+    let mut _0: (); // return
+    let value: &'1 u32; // arg #1
+    let other: &'2 u32; // arg #2
+    let _3: (); // anonymous local
+    let mut _4: (&'11 u32, &'12 u32); // anonymous local
+    let mut _5: &'16 u32; // anonymous local
+    let mut _6: &'17 u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = copy value
+    storage_live(_6)
+    _6 = copy other
+    _4 = (move _5, move _6)
+    storage_dead(_6)
+    storage_dead(_5)
+    _3 = bar<(&'85 u32, &'86 u32)>[{built_in impl Sized for (&'85 u32, &'86 u32)}](move _4)
+    ↳⚡ storage_dead(other)
+        storage_dead(value)
+        unwind_continue
+    storage_dead(_4)
+    storage_dead(_3)
+    _0 = ()
+    storage_dead(other)
+    storage_dead(value)
+    return
+}
+
+// Full name: test_crate::Project
+pub trait Project<'a, Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Output: Sized)
+    type Output
+    vtable: test_crate::Project::{vtable}<'a, Self::Output>
+}
+
+// Full name: test_crate::{impl Project<'a> for &'b u32}
+impl<'a, 'b> Project<'a> for &'b u32
+where
+    Outlives0: ('b: 'a),
+{
+    proof ImpliedClause0: (&'b u32: MetaSized) = {built_in impl MetaSized for &'b u32}
+    proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
+    type Output = u32
+    vtable: lazy
+}
+
+// Full name: test_crate::normalized_argument
+pub fn normalized_argument<'a, 'b>(value: u32)
+where
+    Outlives0: ('b: 'a),
+{
+    let mut _0: (); // return
+    let value: u32; // arg #1
+    let _2: (); // anonymous local
+    let mut _3: u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy value
+    _2 = bar<u32>[{built_in impl Sized for u32}](move _3)
+    ↳⚡ storage_dead(value)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 = ()
+    storage_dead(value)
+    return
+}
+
+// Full name: test_crate::WithConst
+pub struct WithConst<T>
+where
+    TraitClause0: (T: Sized),
+{
+  _0: T,
+}
+
+// Full name: test_crate::{WithConst<T>[TraitClause0]}::NONE
+pub fn NONE<T>() -> Option<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    let mut _0: Option<T>[TraitClause0]; // return
+
+    storage_live(_0)
+    _0 = Option::None {  }
+    return
+}
+
+// Full name: test_crate::{WithConst<T>[TraitClause0]}::NONE
+pub const NONE<T>: Option<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+ = NONE<T>[TraitClause0]()
+
+pub fn test_crate::{WithConst<T>[TraitClause0]}::consume<T, U>(_1: T, _2: U)
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (U: Sized),
+{
+    let mut _0: (); // return
+    let mut _1: T; // arg #1
+    let mut _2: U; // arg #2
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    drop[{built_in impl Destruct for U}::drop_glue<'0>] _2
+    ↳⚡ drop[{built_in impl Destruct for T}::drop_glue<'2>] _1
+        ↳⚡ storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    drop[{built_in impl Destruct for T}::drop_glue<'1>] _1
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::associated_items
+pub fn associated_items(value: &'static u32)
+{
+    let mut _0: (); // return
+    let value: &'1 u32; // arg #1
+    let x: Option<&'9 u32>[{built_in impl Sized for &'9 u32}]; // local
+    let _3: (); // anonymous local
+    let mut _4: &'13 u32; // anonymous local
+    let mut _5: &'14 u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(x)
+    x = read NONE<&'19 u32>[{built_in impl Sized for &'21 u32}]
+    storage_live(_3)
+    storage_live(_4)
+    _4 = copy value
+    storage_live(_5)
+    _5 = copy value
+    _3 = test_crate::{WithConst<T>[TraitClause0]}::consume<&'47 u32, &'48 u32>[{built_in impl Sized for &'47 u32}, {built_in impl Sized for &'48 u32}](move _4, move _5)
+    ↳⚡ storage_dead(value)
+        unwind_continue
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    _0 = ()
+    storage_dead(x)
+    storage_dead(value)
+    return
+}
+
+// Full name: test_crate::Method
+pub trait Method<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    fn consume<T, TraitClause0_1: (T: Sized)>;
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Method for ()}::consume
+pub fn impl_Method_for_unit::consume<T>(self: (), _2: T)
+where
+    TraitClause0: (T: Sized),
+{
+    let mut _0: (); // return
+    let self: (); // arg #1
+    let mut _2: T; // arg #2
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    drop[{built_in impl Destruct for T}::drop_glue<'0>] _2
+    ↳⚡ storage_dead(_2)
+        storage_dead(self)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::{impl Method for ()}
+impl "impl_Method_for_unit" Method for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    fn consume<T, TraitClause0_1: (T: Sized)> = impl_Method_for_unit::consume<T>[TraitClause0_1]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::trait_method
+pub fn trait_method(value: &'static u32)
+{
+    let mut _0: (); // return
+    let value: &'1 u32; // arg #1
+    let _2: (); // anonymous local
+    let mut _3: (); // anonymous local
+    let mut _4: &'2 u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 = ()
+    storage_live(_4)
+    _4 = copy value
+    _2 = impl_Method_for_unit::consume<&'14 u32>[{built_in impl Sized for &'14 u32}](move _3, move _4)
+    ↳⚡ storage_dead(value)
+        unwind_continue
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 = ()
+    storage_dead(value)
+    return
+}
+
+// Full name: test_crate::Record
+pub struct Record<'a, T>
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
+{
+  borrowed: &'a u32,
+  value: T,
+}
+
+// Full name: test_crate::Choice
+pub enum Choice<T>
+where
+    TraitClause0: (T: Sized),
+{
+  Item { value: T },
+}
+
+// Full name: test_crate::Union
+pub union Union<'a> {
+  value: &'a u32,
+}
+
+// Full name: test_crate::explicit_aggregates
+pub fn explicit_aggregates(value: &'static u32)
+{
+    let mut _0: (); // return
+    let value: &'1 u32; // arg #1
+    let record: Record<'13, &'14 u32>[{built_in impl Sized for &'14 u32}, {impl Copy for &'_0 T}<'14, u32>]; // local
+    let mut _3: &'20 u32; // anonymous local
+    let mut _4: &'21 u32; // anonymous local
+    let choice: Choice<&'29 u32>[{built_in impl Sized for &'29 u32}]; // local
+    let mut _6: &'33 u32; // anonymous local
+    let union: Union<'35>; // local
+    let mut _8: &'36 u32; // anonymous local
+    let tuple: WithConst<&'44 u32>[{built_in impl Sized for &'44 u32}]; // local
+    let mut _10: &'48 u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(record)
+    storage_live(_3)
+    _3 = copy value
+    storage_live(_4)
+    _4 = copy value
+    record = Record { borrowed: move _3, value: move _4 }
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_live(choice)
+    storage_live(_6)
+    _6 = copy value
+    choice = Choice::Item { value: move _6 }
+    storage_dead(_6)
+    storage_live(union)
+    storage_live(_8)
+    _8 = copy value
+    union = Union { value: move _8 }
+    storage_dead(_8)
+    storage_live(tuple)
+    storage_live(_10)
+    _10 = copy value
+    tuple = WithConst { _0: move _10 }
+    storage_dead(_10)
+    _0 = ()
+    storage_dead(tuple)
+    storage_dead(union)
+    storage_dead(choice)
+    storage_dead(record)
+    storage_dead(value)
+    return
+}
+
+// Full name: test_crate::named_aggregate
+pub fn named_aggregate<'a, 'b>(value: &'a u32, other: &'b u32)
+{
+    let mut _0: (); // return
+    let value: &'1 u32; // arg #1
+    let other: &'2 u32; // arg #2
+    let record: Record<'14, &'15 u32>[{built_in impl Sized for &'15 u32}, {impl Copy for &'_0 T}<'15, u32>]; // local
+    let mut _4: &'21 u32; // anonymous local
+    let mut _5: &'22 u32; // anonymous local
+    let updated: Record<'23, &'24 u32>[{built_in impl Sized for &'24 u32}, {impl Copy for &'_0 T}<'24, u32>]; // local
+    let mut _7: &'30 u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(record)
+    storage_live(_4)
+    // Infer the second argument while preserving the explicit lifetime.
+    _4 = copy value
+    storage_live(_5)
+    _5 = copy other
+    record = Record { borrowed: move _4, value: move _5 }
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_live(updated)
+    storage_live(_7)
+    _7 = copy value
+    updated = Record { borrowed: move _7, value: copy record.value }
+    storage_dead(_7)
+    _0 = ()
+    storage_dead(updated)
+    storage_dead(record)
+    storage_dead(other)
+    storage_dead(value)
+    return
+}
+
+// Full name: test_crate::normalized_aggregate
+pub fn normalized_aggregate<'a, 'b>(borrowed: &'a u32, value: u32)
+where
+    Outlives0: ('b: 'a),
+{
+    let mut _0: (); // return
+    let borrowed: &'1 u32; // arg #1
+    let value: u32; // arg #2
+    let record: Record<'3, u32>[{built_in impl Sized for u32}, impl_Copy_for_u32]; // local
+    let mut _4: &'4 u32; // anonymous local
+    let mut _5: u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(record)
+    storage_live(_4)
+    // Normalizing the argument must also preserve the constraint `'b: 'a`.
+    _4 = copy borrowed
+    storage_live(_5)
+    _5 = copy value
+    record = Record { borrowed: move _4, value: move _5 }
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = ()
+    storage_dead(record)
+    storage_dead(value)
+    storage_dead(borrowed)
+    return
+}
+
+
+

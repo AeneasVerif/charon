@@ -85,19 +85,19 @@ fn from_fn_def<'a>(x: &'a u8) -> &'a u8
     let _8: &'10 u8; // anonymous local
     let mut _9: fn<'b>(&'b u8) -> &'b u8; // anonymous local
     let mut _10: &'11 u8; // anonymous local
-    let mut _11: fn<'b>(&'39 u8, &'b u8) -> &'b u8; // anonymous local
+    let mut _11: fn<'b>(&'47 u8, &'b u8) -> &'b u8; // anonymous local
 
     storage_live(_0)
     storage_live(f)
     f = fn_def_to_fn_ptr(const identity<'14>)
     fake_read(f)
-    set_type(typeof(f) == fn<'b>(&'b u8) -> &'b u8)
+    set f := fn<'b>(&'b u8) -> &'b u8
     storage_live(g)
     storage_live(_11)
-    _11 = fn_def_to_fn_ptr(const with_early_and_late<'28, '36>[{built_in impl Sized for &'30 u8}])
+    _11 = fn_def_to_fn_ptr(const with_early_and_late<'a, '44>[{built_in impl Sized for &'a u8}])
     g = fn_ptr_to_unsafe(move _11)
     fake_read(g)
-    set_type(typeof(g) == unsafe fn<'b>(&'40 u8, &'b u8) -> &'b u8)
+    set g := unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8
     storage_live(_4)
     storage_live(_5)
     _5 = copy g
@@ -109,14 +109,14 @@ fn from_fn_def<'a>(x: &'a u8) -> &'a u8
     _9 = copy f
     storage_live(_10)
     _10 = &(*x)
-    _8 = (move _9)<'65>(move _10)
+    _8 = (move _9)<'72>(move _10)
     ↳⚡ storage_dead(_11)
         storage_dead(x)
         unwind_continue
     _7 = &(*_8)
     storage_dead(_10)
     storage_dead(_9)
-    _4 = (move _5)<'66>(move _6, move _7)
+    _4 = (move _5)<'73>(move _6, move _7)
     ↳⚡ storage_dead(_11)
         storage_dead(x)
         unwind_continue
@@ -147,7 +147,7 @@ fn from_inline_const<'a>(x: &'a u8) -> &'a u8
     storage_live(f)
     f = fn_def_to_fn_ptr(const identity<'6>)
     fake_read(f)
-    set_type(typeof(f) == fn<'b>(&'b u8) -> &'b u8)
+    set f := fn<'b>(&'b u8) -> &'b u8
     storage_live(_3)
     storage_live(_4)
     _4 = copy f
@@ -227,7 +227,7 @@ extern "rust-call" fn call_once<'_0, '_1>(_1: {closure}<'_0>, _2: (&'_0 u8, &'_1
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = call_mut<'_0, '_1, '95>(move _3, move _2)
+    _0 = call_mut<'_0, '_1, '154>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -287,7 +287,7 @@ fn from_closure<'a>(x: &'a u8) -> &'a u8
     f = fn_ptr_to_unsafe(move _8)
     storage_dead(_3)
     fake_read(f)
-    set_type(typeof(f) == unsafe fn<'b>(&'68 u8, &'b u8) -> &'b u8)
+    set f := unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8
     storage_live(_4)
     storage_live(_5)
     _5 = copy f
@@ -295,7 +295,7 @@ fn from_closure<'a>(x: &'a u8) -> &'a u8
     _6 = copy x
     storage_live(_7)
     _7 = &(*x)
-    _4 = (move _5)<'93>(move _6, move _7)
+    _4 = (move _5)<'92>(move _6, move _7)
     ↳⚡ storage_dead(_8)
         storage_dead(x)
         unwind_continue
@@ -325,7 +325,7 @@ fn from_fn_ptr(f: fn<'a, 'b>(&'a u8, &'b u8) -> &'a u8)
     _3 = copy f
     _2 = fn_ptr_to_unsafe(move _3)
     storage_dead(_3)
-    set_type(typeof(_2) <= unsafe fn<'x, 'y>(&'y u8, &'x u8) -> &'y u8)
+    set _2 :< unsafe fn<'x, 'y>(&'y u8, &'x u8) -> &'y u8
     storage_dead(_2)
     _0 = ()
     storage_dead(f)
@@ -347,7 +347,7 @@ fn nested_binder(f: fn<'a>(fn<'b>(&'a u8, &'b u8)))
     _3 = copy f
     _2 = fn_ptr_to_unsafe(move _3)
     storage_dead(_3)
-    set_type(typeof(_2) <= unsafe fn<'x>(fn<'y>(&'x u8, &'y u8)))
+    set _2 :< unsafe fn<'x>(fn<'y>(&'x u8, &'y u8))
     storage_dead(_2)
     _0 = ()
     storage_dead(f)
@@ -369,7 +369,7 @@ fn nested_binder_swapped(f: fn<'a, 'b>(fn<'c>(&'a (), &'b (), &'c ())))
     _3 = copy f
     _2 = fn_ptr_to_unsafe(move _3)
     storage_dead(_3)
-    set_type(typeof(_2) <= unsafe fn<'x, 'y>(fn<'z>(&'y (), &'x (), &'z ())))
+    set _2 :< unsafe fn<'x, 'y>(fn<'z>(&'y (), &'x (), &'z ()))
     storage_dead(_2)
     _0 = ()
     storage_dead(f)
@@ -391,7 +391,7 @@ fn doubly_nested_binder(f: fn<'a>(fn<'b>(fn<'c>(&'a (), &'b (), &'c ()))))
     _3 = copy f
     _2 = fn_ptr_to_unsafe(move _3)
     storage_dead(_3)
-    set_type(typeof(_2) <= unsafe fn<'x>(fn<'y>(fn<'z>(&'x (), &'y (), &'z ()))))
+    set _2 :< unsafe fn<'x>(fn<'y>(fn<'z>(&'x (), &'y (), &'z ())))
     storage_dead(_2)
     _0 = ()
     storage_dead(f)

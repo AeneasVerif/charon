@@ -11,7 +11,7 @@ pub trait Borrow<Self, Borrowed>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Borrowed: MetaSized)
-    fn borrow<'_0_1>;
+    fn borrow<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Borrowed: '_0_1)>;
     vtable: core::borrow::Borrow::{vtable}<Borrowed>
 }
 
@@ -39,7 +39,7 @@ where
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1>;
+    fn eq<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -82,8 +82,8 @@ pub trait Sized<Self>
 pub trait Hasher<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn finish<'_0_1>;
-    fn write<'_0_1, '_1_1>;
+    fn finish<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn write<'_0_1, '_1_1, Outlives0: (Self: '_0_1)>;
     vtable: core::hash::Hasher::{vtable}
 }
 
@@ -91,7 +91,7 @@ pub trait Hasher<Self>
 #[diagnostic_item("Hash")]
 pub trait Hash<Self>
 {
-    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher)>;
+    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher), Outlives0: (Self: '_0_1), Outlives1: (H: '_1_1)>;
     non-dyn-compatible
 }
 
@@ -103,7 +103,7 @@ pub trait BuildHasher<Self>
     proof ImpliedClause1: (Self::Hasher: Sized)
     proof ImpliedClause2: (Self::Hasher: Hasher)
     type Hasher
-    fn build_hasher<'_0_1>;
+    fn build_hasher<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::hash::BuildHasher::{vtable}<Self::Hasher>
 }
 
@@ -259,10 +259,10 @@ pub fn get_or_insert<'_0>(map: &'_0 mut HashMap<u32, u32, RandomState, Global>[{
     let mut _14: &'26 u32; // anonymous local
     let mut _15: &'27 u32; // anonymous local
     let mut _16: &'28 u32; // anonymous local
-    let mut _17: &'35 u32; // anonymous local
-    let mut _18: &'47 u32; // anonymous local
+    let mut _17: &'41 u32; // anonymous local
+    let mut _18: &'57 u32; // anonymous local
     let mut _19: u32; // anonymous local
-    let mut _20: &'48 u32; // anonymous local
+    let mut _20: &'58 u32; // anonymous local
     let mut _21: u32; // anonymous local
 
     storage_live(_16)
@@ -282,7 +282,7 @@ pub fn get_or_insert<'_0>(map: &'_0 mut HashMap<u32, u32, RandomState, Global>[{
     _15 = move _16
     _5 = &(*_15)
     _4 = &(*_5)
-    _2 = std::collections::hash::map::{HashMap<K, V, S, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::get<'31, '32, u32, u32, RandomState, Global, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}, impl_Eq_for_u32, impl_Hash_for_u32, impl_BuildHasher_for_RandomState, {built_in impl MetaSized for u32}, impl_Borrow_for_T<u32>[{built_in impl MetaSized for u32}], impl_Hash_for_u32, impl_Eq_for_u32](move _3, move _4)
+    _2 = std::collections::hash::map::{HashMap<K, V, S, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::get<'35, '36, u32, u32, RandomState, Global, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}, impl_Eq_for_u32, impl_Hash_for_u32, impl_BuildHasher_for_RandomState, {built_in impl MetaSized for u32}, impl_Borrow_for_T<u32>[{built_in impl MetaSized for u32}], impl_Hash_for_u32, impl_Eq_for_u32](move _3, move _4)
     ↳⚡ storage_dead(_15)
         storage_dead(_14)
         storage_dead(map)
@@ -314,7 +314,7 @@ pub fn get_or_insert<'_0>(map: &'_0 mut HashMap<u32, u32, RandomState, Global>[{
     storage_live(_7)
     storage_live(_8)
     _8 = &two-phase-mut (*map)
-    _7 = insert<'34, u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}, impl_Eq_for_u32, impl_Hash_for_u32, impl_BuildHasher_for_RandomState](move _8, const 22u32, const 33u32)
+    _7 = insert<'40, u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}, impl_Eq_for_u32, impl_Hash_for_u32, impl_BuildHasher_for_RandomState](move _8, const 22u32, const 33u32)
     ↳⚡ storage_dead(_15)
         storage_dead(_14)
         storage_dead(map)
@@ -336,7 +336,7 @@ pub fn get_or_insert<'_0>(map: &'_0 mut HashMap<u32, u32, RandomState, Global>[{
     _14 = move _17
     _13 = &(*_14)
     _12 = &(*_13)
-    _10 = impl_Index_for_HashMap::index<'36, '38, u32, u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl MetaSized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}, impl_Eq_for_u32, impl_Hash_for_u32, impl_Borrow_for_T<u32>[{built_in impl MetaSized for u32}], impl_Eq_for_u32, impl_Hash_for_u32, impl_BuildHasher_for_RandomState](move _11, move _12)
+    _10 = impl_Index_for_HashMap::index<'44, '48, u32, u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl MetaSized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}, impl_Eq_for_u32, impl_Hash_for_u32, impl_Borrow_for_T<u32>[{built_in impl MetaSized for u32}], impl_Eq_for_u32, impl_Hash_for_u32, impl_BuildHasher_for_RandomState](move _11, move _12)
     ↳⚡ storage_dead(_15)
         storage_dead(_14)
         storage_dead(map)

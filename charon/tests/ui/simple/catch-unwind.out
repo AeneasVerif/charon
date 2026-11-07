@@ -18,7 +18,7 @@ where
     Outlives0: (Self: 'static),
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn type_id<'_0_1>;
+    fn type_id<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::any::Any::{vtable}
 }
 

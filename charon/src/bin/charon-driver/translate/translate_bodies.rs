@@ -21,6 +21,7 @@ use rustc_span::{Symbol, sym};
 
 use super::translate_crate::*;
 use super::translate_ctx::*;
+use super::user_type_annotations::UserTypeAnnotations;
 use charon_lib::formatter::{FmtCtx, IntoFormatter, compute_local_names};
 use charon_lib::name_matcher::NamePattern;
 use charon_lib::options::TranslateOptions;
@@ -35,7 +36,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'tctx, 'ictx> {
     /// List of body locals.
     pub local_decls: &'ictx rustc_index::IndexVec<mir::Local, mir::LocalDecl<'tcx>>,
     /// Types supplied explicitly by the user.
-    pub user_type_annotations: ty::CanonicalUserTypeAnnotations<'tcx>,
+    pub user_type_annotations: UserTypeAnnotations<'tcx>,
 
     /// What kind of drops we get in this body.
     pub drop_kind: DropKind,
@@ -60,34 +61,48 @@ impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
         i_ctx: &'ictx mut ItemTransCtx<'tcx, 'tctx>,
         body: &'ictx Rc<mir::Body<'tcx>>,
         drop_kind: DropKind,
-    ) -> Self {
+    ) -> Result<Self, Error> {
         i_ctx.lifetime_freshener = (!i_ctx.options.erase_body_lifetimes).then(IndexMap::new);
-        let mut user_type_annotations = body.user_type_annotations.clone();
-        if let RustcItem::Mono(item) = &i_ctx.item_src.item {
-            // `CanonicalUserTypeAnnotation::user_ty` is deliberately not folded when rustc
-            // instantiates a MIR body, so do the item substitution explicitly.
-            let item = item.clone();
-            let args = item.rustc_args(i_ctx.hax_state_with_id());
-            for annotation in &mut user_type_annotations {
-                annotation.user_ty.value = hax::substitute(
-                    i_ctx.tcx,
-                    hax::UnderOwnerState::typing_env(&i_ctx.hax_state),
-                    Some(args),
-                    annotation.user_ty.value,
-                );
-            }
+        let user_type_annotations = UserTypeAnnotations::new(i_ctx, body);
+
+        // Translate the local variables.
+        let mut locals = Locals {
+            arg_count: body.arg_count,
+            ..Default::default()
+        };
+        let mut locals_map = HashMap::default();
+        // Translate the parameters
+        for (index, var) in body.local_decls.iter_enumerated() {
+            // Find the name of the variable
+            let name = hax::name_of_local(index, &body.var_debug_info);
+
+            // Translate the type
+            let span = i_ctx.translate_span(&var.source_info.span);
+            let ty = i_ctx.translate_rustc_ty(span, &var.ty)?;
+
+            // Add the variable to the environment
+            let local_id = locals.locals.push_with(|index| Local {
+                index,
+                name,
+                span,
+                ty,
+                mutable: var.mutability.is_mut(),
+                drop_flag_for: None,
+            });
+            locals_map.insert(index.as_usize(), local_id);
         }
-        BodyTransCtx {
+
+        Ok(BodyTransCtx {
             i_ctx,
             local_decls: &body.local_decls,
             user_type_annotations,
             drop_kind,
-            locals: Default::default(),
-            locals_map: Default::default(),
+            locals,
+            locals_map,
             blocks: Default::default(),
             blocks_map: Default::default(),
             blocks_stack: Default::default(),
-        }
+        })
     }
 }
 
@@ -288,7 +303,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Stopgap measure because there are still many panics in charon and hax.
         let res = panic::catch_unwind(move || {
             let body = Rc::new({ body }.0);
-            let ctx = BodyTransCtx::new(*ctx, &body, drop_kind);
+            let ctx = BodyTransCtx::new(*ctx, &body, drop_kind)?;
             ctx.translate_body(&body, source_text)
         });
         match res {
@@ -609,43 +624,6 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
         self.locals_map.get(&local.index()).copied()
     }
 
-    pub(crate) fn push_var(
-        &mut self,
-        rid: mir::Local,
-        ty: Ty,
-        name: Option<String>,
-        span: Span,
-        mutable: bool,
-    ) {
-        let local_id = self.locals.locals.push_with(|index| Local {
-            index,
-            name,
-            span,
-            ty,
-            mutable,
-            drop_flag_for: None,
-        });
-        self.locals_map.insert(rid.as_usize(), local_id);
-    }
-
-    /// Translate a function's local variables by adding them in the environment.
-    fn translate_body_locals(&mut self, body: &mir::Body<'tcx>) -> Result<(), Error> {
-        // Translate the parameters
-        for (index, var) in body.local_decls.iter_enumerated() {
-            // Find the name of the variable
-            let name: Option<String> = hax::name_of_local(index, &body.var_debug_info);
-
-            // Translate the type
-            let span = self.translate_span(&var.source_info.span);
-            let ty = self.translate_rustc_ty(span, &var.ty)?;
-
-            // Add the variable to the environment
-            self.push_var(index, ty, name, span, var.mutability.is_mut());
-        }
-
-        Ok(())
-    }
-
     /// Translate a basic block id and register it, if it hasn't been done.
     fn translate_basic_block_id(&mut self, block_id: mir::BasicBlock) -> BlockId {
         match self.blocks_map.get(&block_id) {
@@ -739,11 +717,6 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
         // Compute the span information
         let span = self.translate_span(&mir_body.span);
 
-        // Initialize the local variables
-        trace!("Translating the body locals");
-        self.locals.arg_count = mir_body.arg_count;
-        self.translate_body_locals(mir_body)?;
-
         // Translate the expression body
         trace!("Translating the expression body");
 
@@ -817,146 +790,30 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         ))
     }
 
-    fn apply_user_type_projection(
-        &mut self,
-        span: Span,
-        mut ty: Ty,
-        projections: &[mir::ProjectionElem<(), ()>],
-    ) -> Result<Ty, Error> {
-        let mut downcast = None;
-        for projection in projections {
-            let projection = match projection {
-                mir::ProjectionElem::Deref => ProjectionElem::Deref,
-                mir::ProjectionElem::PhantomDeref => {
-                    raise_error!(
-                        self,
-                        span,
-                        "unsupported phantom dereference in user type projection"
-                    );
-                }
-                mir::ProjectionElem::Field(field, ()) => {
-                    let field = self.translate_field_id(*field);
-                    let TyKind::Adt(type_ref) = ty.kind() else {
-                        raise_error!(self, span, "field projection on unexpected type");
-                    };
-                    match type_ref.as_builtin() {
-                        None => ProjectionElem::Field(downcast.take(), field),
-                        Some(BuiltinAdt::Tuple) => ProjectionElem::Field(None, field),
-                        Some(BuiltinAdt::Box) if field == FieldId::ZERO => ProjectionElem::Deref,
-                        _ => raise_error!(self, span, "field projection on unexpected type"),
-                    }
-                }
-                mir::ProjectionElem::Index(()) => ProjectionElem::Index {
-                    offset: Box::new(Operand::mk_const_unit()),
-                    from_end: false,
-                },
-                mir::ProjectionElem::ConstantIndex { from_end, .. } => ProjectionElem::Index {
-                    offset: Box::new(Operand::mk_const_unit()),
-                    from_end: *from_end,
-                },
-                mir::ProjectionElem::Subslice { from_end, .. } => ProjectionElem::Subslice {
-                    from: Box::new(Operand::mk_const_unit()),
-                    to: Box::new(Operand::mk_const_unit()),
-                    from_end: *from_end,
-                },
-                mir::ProjectionElem::Downcast(_, variant) => {
-                    downcast = Some(self.translate_variant_id(*variant));
-                    continue;
-                }
-                mir::ProjectionElem::OpaqueCast(()) => {
-                    raise_error!(self, span, "unexpected opaque cast in user type projection");
-                }
-                mir::ProjectionElem::UnwrapUnsafeBinder(()) => {
-                    raise_error!(
-                        self,
-                        span,
-                        "unsupported unsafe binder in user type projection"
-                    );
-                }
-            };
-            let Some(next_ty) = projection.project_type(&self.translated, &ty) else {
-                raise_error!(self, span, "invalid user type projection");
-            };
-            ty = next_ty;
+    fn insert_outlives_stmts(&mut self, span: Span, outlives: Vec<OutlivesPred>) {
+        for pred in outlives {
+            for pred in pred.normalize() {
+                self.statements.push(Statement::new(
+                    span,
+                    StatementKind::Borrowck(BorrowckStatement::SetOutlives(pred)),
+                ));
+            }
         }
-        Ok(ty)
     }
 
+    /// Translate this user-provided type annotation. May also register some outlives constraints
+    /// as statements as this point.
     fn translate_user_type_projection(
         &mut self,
         span: Span,
         user_ty: &mir::UserTypeProjection,
-    ) -> Result<(Ty, Vec<BorrowckStatement>), Error> {
-        use rustc_trait_selection::infer::canonical::CanonicalExt;
-
-        let annotation = self.user_type_annotations[user_ty.base].clone();
-        let canonical = *annotation.user_ty;
-
-        let mut facts = Vec::new();
-        if !canonical.value.bounds.is_empty() {
-            let user_ty_before_inference = match canonical.value.kind {
-                ty::UserTypeKind::Ty(ty) => ty,
-                ty::UserTypeKind::TypeOf(def_id, user_args)
-                    if user_args.args.len() == self.tcx.generics_of(def_id).count() =>
-                {
-                    self.tcx
-                        .type_of(def_id)
-                        .instantiate(self.tcx, user_args.args)
-                        .skip_normalization()
-                }
-                // Inherent associated type consts use a special argument format; rustc reconstructs
-                // their impl arguments with inference. Their resulting type is already recorded here.
-                ty::UserTypeKind::TypeOf(..) => annotation.inferred_ty,
-            };
-
-            // Rustc discards the original canonicalization values when it stores this annotation.
-            // Recover just enough of that mapping to instantiate the explicit user bounds. The
-            // place relation below deliberately uses `inferred_ty` directly.
-            let Some(var_values) = hax::rustc::match_canonical_var_values(
-                self.tcx,
-                canonical.var_kinds,
-                user_ty_before_inference,
-                annotation.inferred_ty,
-            ) else {
-                raise_error!(
-                    self,
-                    span,
-                    "could not match a user type annotation with its inferred type"
-                )
-            };
-            let instantiated_user_ty = canonical.instantiate(self.tcx, &var_values);
-
-            for clause in instantiated_user_ty.bounds {
-                if let Some(trait_predicate) = clause.as_trait_clause() {
-                    if trait_predicate.skip_binder().polarity != ty::ClausePolarity::Positive {
-                        raise_error!(self, span, "negative trait bound in a user type annotation")
-                    }
-                    let proof = hax::solve_trait(
-                        &self.hax_state,
-                        trait_predicate.map_bound(|predicate| predicate.trait_ref),
-                    );
-                    facts.push(BorrowckStatement::PredicateHolds(
-                        self.translate_trait_proof(span, &proof)?,
-                    ));
-                } else if let Some(outlives) = clause.as_type_outlives_clause() {
-                    let Some(ty::OutlivesClause(outlived_ty, region)) = outlives.no_bound_vars()
-                    else {
-                        raise_error!(self, span, "higher-ranked outlives user type bound")
-                    };
-                    let outlived_ty = self.translate_rustc_ty(span, &outlived_ty)?;
-                    let region = self.catch_sinto(span, &region)?;
-                    let region = self.translate_region(span, &region)?;
-                    facts.push(BorrowckStatement::SetOutlives(outlived_ty, region));
-                }
-            }
-        }
-
-        // This is the type rustc itself relates the MIR place against. In particular, it has
-        // already revealed local `impl Trait` types and performed type normalization.
-        let ty = self.translate_rustc_ty(span, &annotation.inferred_ty)?;
-        let ty = self.apply_user_type_projection(span, ty, &user_ty.projs)?;
-
-        Ok((ty, facts))
+    ) -> Result<Ty, Error> {
+        let (ty, outlives) = self
+            .b_ctx
+            .user_type_annotations
+            .translate_place_annotation(self.b_ctx.i_ctx, span, user_ty)?;
+        self.insert_outlives_stmts(span, outlives);
+        Ok(ty)
     }
 
     fn translate_thread_local_ref(
@@ -1199,8 +1056,22 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 Operand::Move(p)
             }
             mir::Operand::Constant(const_op) => {
+                let annotated_ty = if let Some(base) = const_op.user_ty
+                    && !self.user_type_annotations.is_empty()
+                {
+                    let ty = self.translate_user_type_projection(
+                        span,
+                        &mir::UserTypeProjection {
+                            base,
+                            projs: vec![],
+                        },
+                    )?;
+                    Some(ty)
+                } else {
+                    None
+                };
                 let const_op = self.catch_sinto(span, &const_op)?;
-                match &const_op.kind {
+                let operand = match &const_op.kind {
                     hax::ConstOperandKind::Value(constant) => {
                         let constant = self.translate_constant_expr(span, constant)?;
                         Operand::Const(constant)
@@ -1214,6 +1085,36 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         );
                         Operand::Const(constant)
                     }
+                };
+                if let Some(annotated_ty) = annotated_ty
+                    && annotated_ty != *operand.ty()
+                {
+                    if let TyKind::FnDef(fn_ptr) = annotated_ty.kind() {
+                        // The function type is a singleton hence determines the value uniquely.
+                        // Prefer using the annotated type to preserve explicit turbofishing
+                        // choices.
+                        let fn_ptr = self.erase_region_binder(fn_ptr.clone());
+                        Operand::Const(ConstantExpr::new(
+                            ConstantExprKind::FnDef(fn_ptr),
+                            annotated_ty,
+                        ))
+                    } else {
+                        // For other constants, add the type annotation as a separate constraint.
+                        let place = self.fresh_var(None, operand.ty().clone());
+                        self.insert_assn_stmt(place.clone(), Rvalue::Use(operand, WithRetag::No));
+                        self.statements.push(Statement::new(
+                            span,
+                            StatementKind::Borrowck(BorrowckStatement::SetType {
+                                place: place.clone(),
+                                ty: annotated_ty,
+                                variance: Variance::Invariant,
+                                temporary: true,
+                            }),
+                        ));
+                        Operand::Move(place)
+                    }
+                } else {
+                    operand
                 }
             }
             mir::Operand::RuntimeChecks(check) => {
@@ -1546,13 +1447,36 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                             operands_t,
                         ))
                     }
-                    mir::AggregateKind::Adt(def_id, variant_idx, generics, _, field_index) => {
+                    mir::AggregateKind::Adt(
+                        def_id,
+                        variant_idx,
+                        generics,
+                        user_ty,
+                        field_index,
+                    ) => {
                         use ty::AdtKind;
                         trace!("{:?}", rvalue);
 
                         let adt_kind = self.tcx.adt_def(*def_id).adt_kind();
-                        let item = hax::translate_item_ref(&self.hax_state, *def_id, generics);
-                        let tref = self.translate_type_decl_ref(span, &item)?;
+                        let tref = if let Some(user_ty) = *user_ty
+                            && !self.user_type_annotations.is_empty()
+                        {
+                            // Use the type annotation if there is one.
+                            let ty = self.translate_user_type_projection(
+                                span,
+                                &mir::UserTypeProjection {
+                                    base: user_ty,
+                                    projs: vec![],
+                                },
+                            )?;
+                            let TyKind::Adt(tref) = ty.kind() else {
+                                raise_error!(self, span, "aggregate annotation has non-ADT type");
+                            };
+                            tref.clone()
+                        } else {
+                            let item = hax::translate_item_ref(&self.hax_state, *def_id, generics);
+                            self.translate_type_decl_ref(span, &item)?
+                        };
                         let variant_id = match adt_kind {
                             AdtKind::Struct | AdtKind::Union => None,
                             AdtKind::Enum => Some(self.translate_variant_id(*variant_idx)),
@@ -1721,20 +1645,16 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     ty::Variance::Bivariant => return Ok(()),
                 };
                 let place = self.translate_place(span, place)?;
-                let (ty, facts) = self.translate_user_type_projection(span, user_ty)?;
+                let ty = self.translate_user_type_projection(span, user_ty)?;
                 self.statements.push(Statement::new(
                     span,
                     StatementKind::Borrowck(BorrowckStatement::SetType {
                         place,
                         ty,
                         variance,
+                        temporary: false,
                     }),
                 ));
-                self.statements.extend(
-                    facts
-                        .into_iter()
-                        .map(|fact| Statement::new(span, StatementKind::Borrowck(fact))),
-                );
                 None
             }
             // Used for coverage instrumentation.
@@ -2084,35 +2004,28 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         let lval = self.translate_place(span, destination)?;
         let on_unwind = self.translate_unwind_action(span, unwind);
         // Translate the function operand.
-        let fn_operand = match op_ty.kind() {
-            ty::TyKind::FnDef(def_id, generics) => {
-                // The type of the value is one of the singleton types that corresponds to each function,
-                // which is enough information.
-                //
-                // note: loss of precision, we erase the bound vars.
-                let generics = hax::erase_free_regions(tcx, generics.skip_binder());
-                let item = &hax::translate_item_ref(&self.hax_state, *def_id, generics);
-                trace!("func: {:?}", item.def_id);
-                let fn_ptr = self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?;
+        let op = self.translate_operand(span, func)?;
+        let fn_operand = match op.ty().kind() {
+            // The type of the value is one of the singleton types that corresponds to each
+            // function, so we statically know which function is getting called.
+            TyKind::FnDef(fn_ptr) => {
+                let fn_ptr = self.erase_region_binder(fn_ptr.clone());
                 FnOperand::Regular(fn_ptr)
             }
-            _ => {
-                // Call to a function pointer.
-                let op = self.translate_operand(span, func)?;
-                let regions = match op.ty().kind() {
-                    TyKind::FnPtr(sig) => RegionArgs::new(
-                        sig.regions
-                            .map_ref_indexed(|_, _| self.translate_erased_region()),
-                    ),
-                    _ => raise_error!(
-                        self,
-                        span,
-                        "expected a function pointer for call operand, got {}",
-                        op.ty().with_ctx(&self.into_fmt())
-                    ),
-                };
+            // Otherwise, we're calling a function pointer.
+            TyKind::FnPtr(sig) => {
+                let regions = RegionArgs::new(
+                    sig.regions
+                        .map_ref_indexed(|_, _| self.translate_erased_region()),
+                );
                 FnOperand::Dynamic(op, regions)
             }
+            _ => raise_error!(
+                self,
+                span,
+                "cannot call a value of type {}",
+                op.ty().with_ctx(&self.into_fmt())
+            ),
         };
         let args = self.translate_arguments(span, args)?;
 

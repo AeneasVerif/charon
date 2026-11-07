@@ -21,7 +21,7 @@ struct test_crate::Processor::{vtable}<'x> {
 pub trait Processor<'x, Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn process<'a, '_1_1>;
+    fn process<'a, '_1_1, Outlives0: (Self: '_1_1)>;
     vtable: test_crate::Processor::{vtable}<'x>
 }
 
@@ -43,7 +43,7 @@ where
     _4 = &(*processor) with_metadata(read processor.metadata)
     storage_live(_5)
     _5 = &(*input)
-    _3 = (read (*_4.metadata).method_process)<'25, '26>(move _4, move _5)
+    _3 = (read (*_4.metadata).method_process)<'37, '38>(move _4, move _5)
     ↳⚡ storage_dead(input)
         storage_dead(processor)
         unwind_continue

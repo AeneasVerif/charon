@@ -11,7 +11,7 @@ struct () {}
 trait Trait<'a, Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn method<'b>;
+    fn method<'b, Outlives0: (Self: 'b)>;
     vtable: test_crate::Trait::{vtable}<'a>
 }
 

@@ -12,7 +12,7 @@ struct () {}
 pub trait Drop<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
+    fn drop<'_0_1, Outlives0: (Self: '_0_1)> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
 
@@ -53,7 +53,7 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut Ticket)
     storage_live(_3)
     _0 = ()
     _2 = &mut (*_1)
-    _3 = impl_Drop_for_Ticket::drop<'4>(move _2)
+    _3 = impl_Drop_for_Ticket::drop<'6>(move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)

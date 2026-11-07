@@ -20,7 +20,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -40,7 +40,7 @@ impl "impl_Clone_for_u32" Clone for u32 {
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1>;
+    fn eq<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -69,7 +69,7 @@ where
 pub trait PartialOrd<Self, Rhs>
 {
     proof ImpliedClause0: (Self: PartialEq<Rhs>)
-    fn partial_cmp<'_0_1, '_1_1>;
+    fn partial_cmp<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
@@ -109,7 +109,7 @@ pub trait Step<Self>
     proof ImpliedClause0: (Self: Sized)
     proof ImpliedClause1: (Self: Clone)
     proof ImpliedClause2: (Self: PartialOrd<Self>)
-    fn steps_between<'_0_1, '_1_1>;
+    fn steps_between<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Self: '_1_1)>;
     fn forward_checked;
     fn forward_overflowing;
     fn backward_checked;
@@ -166,7 +166,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -178,7 +178,7 @@ pub trait Iterator<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Item: Sized)
     type Item
-    fn next<'_0_1>;
+    fn next<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 
@@ -346,7 +346,7 @@ pub fn impl_Clone_for_Derived::clone<'_0>(self: &'_0 Derived) -> Derived
     storage_live(_4)
     _4 = &(*self)._0
     _3 = &(*_4)
-    _2 = impl_Clone_for_u32::clone<'6>(move _3)
+    _2 = impl_Clone_for_u32::clone<'8>(move _3)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_3)
@@ -470,7 +470,7 @@ pub fn desugarings(x: Option<u32>[{built_in impl Sized for u32}]) -> Option<u32>
         storage_live(_14)
         _14 = &mut iter
         _13 = &two-phase-mut (*_14)
-        _12 = next<'4, u32>[{built_in impl Sized for u32}, impl_Step_for_u32, {built_in impl Destruct for u32}](move _13)
+        _12 = next<'6, u32>[{built_in impl Sized for u32}, impl_Step_for_u32, {built_in impl Destruct for u32}](move _13)
         ↳⚡ storage_dead(_17)
             storage_dead(x)
             unwind_continue

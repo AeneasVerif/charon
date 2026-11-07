@@ -20,7 +20,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -40,7 +40,7 @@ pub trait Index<Self, Idx>
     proof ImpliedClause2: (Self::Output: MetaSized)
     type Output
     #[track_caller]
-    fn index<'_0_1>;
+    fn index<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
 }
 
@@ -52,7 +52,7 @@ pub trait IndexMut<Self, Idx>
     proof ImpliedClause1: (Self: Index<Idx>)
     proof ImpliedClause2: (Idx: MetaSized)
     #[track_caller]
-    fn index_mut<'_0_1>;
+    fn index_mut<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Self::ImpliedClause1::Output: '_0_1)>;
     vtable: core::ops::index::IndexMut::{vtable}<Idx, Self::ImpliedClause1::Output>
 }
 
@@ -64,7 +64,6 @@ where
     TraitClause2: ([T]: IndexMut<I>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::ImpliedClause1::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 struct (_,)<A> {
@@ -103,7 +102,7 @@ pub trait FnMut<Self, Args>
     proof ImpliedClause1: (Self: FnOnce<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1>;
+    fn call_mut<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
 
@@ -113,7 +112,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -145,7 +144,7 @@ impl "impl_Clone_for_u8" Clone for u8 {
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1>;
+    fn eq<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -174,7 +173,7 @@ where
 pub trait PartialOrd<Self, Rhs>
 {
     proof ImpliedClause0: (Self: PartialEq<Rhs>)
-    fn partial_cmp<'_0_1, '_1_1>;
+    fn partial_cmp<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
@@ -214,7 +213,7 @@ pub trait Step<Self>
     proof ImpliedClause0: (Self: Sized)
     proof ImpliedClause1: (Self: Clone)
     proof ImpliedClause2: (Self: PartialOrd<Self>)
-    fn steps_between<'_0_1, '_1_1>;
+    fn steps_between<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Self: '_1_1)>;
     fn forward_checked;
     fn forward_overflowing;
     fn backward_checked;
@@ -273,7 +272,7 @@ pub trait Iterator<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Item: Sized)
     type Item
-    fn next<'_0_1>;
+    fn next<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 
@@ -322,14 +321,14 @@ pub unsafe trait SliceIndex<Self, T>
     proof ImpliedClause1: (T: MetaSized)
     proof ImpliedClause2: (Self::Output: MetaSized)
     type Output
-    fn get<'_0_1>;
-    fn get_mut<'_0_1>;
+    fn get<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
+    fn get_mut<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     fn get_unchecked;
     fn get_unchecked_mut;
     #[track_caller]
-    fn index<'_0_1>;
+    fn index<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     #[track_caller]
-    fn index_mut<'_0_1>;
+    fn index_mut<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }
 
@@ -341,7 +340,6 @@ where
     TraitClause2: (I: SliceIndex<[T]>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl Index<I> for [T]}
@@ -367,7 +365,6 @@ where
     TraitClause2: (I: SliceIndex<[T]>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl IndexMut<I> for [T]}
@@ -483,7 +480,7 @@ extern "rust-call" fn call_once(_1: {closure}, _2: (i32,)) -> i32
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = call_mut<'2>(move _3, move _2)
+    _0 = call_mut<'3>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -581,7 +578,7 @@ fn cbd(prf_input: [u8; 33usize])
         storage_live(_7)
         _7 = &mut iter
         _6 = &two-phase-mut (*_7)
-        _5 = next<'4, u8>[{built_in impl Sized for u8}, impl_Step_for_u8, {built_in impl Destruct for u8}](move _6)
+        _5 = next<'6, u8>[{built_in impl Sized for u8}, impl_Step_for_u8, {built_in impl Destruct for u8}](move _6)
         ↳⚡ storage_dead(prf_input)
             unwind_continue
         storage_dead(_6)
@@ -660,7 +657,7 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
         storage_live(_6)
         storage_live(_7)
         _7 = &(*lhs) with_metadata(read lhs.metadata)
-        _6 = core::slice::{[T]}::len<'40, u8>[{built_in impl Sized for u8}](move _7)
+        _6 = core::slice::{[T]}::len<'42, u8>[{built_in impl Sized for u8}](move _7)
         ↳⚡ storage_dead(_22)
             storage_dead(_21)
             storage_dead(_20)
@@ -677,7 +674,7 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
         storage_live(_9)
         storage_live(_10)
         _10 = &(*rhs) with_metadata(read rhs.metadata)
-        _9 = core::slice::{[T]}::len<'42, u8>[{built_in impl Sized for u8}](move _10)
+        _9 = core::slice::{[T]}::len<'45, u8>[{built_in impl Sized for u8}](move _10)
         ↳⚡ storage_dead(_22)
             storage_dead(_21)
             storage_dead(_20)

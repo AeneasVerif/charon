@@ -61,7 +61,7 @@ where
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -139,10 +139,10 @@ fn foo()
     storage_live(_3)
     // `try_borrow` has a type that includes predicates on late bound regions.
     _3 = &ref_b
-    _2 = try_borrow<'15, bool>[{built_in impl MetaSized for bool}](move _3)
+    _2 = try_borrow<'17, bool>[{built_in impl MetaSized for bool}](move _3)
     ↳⚡ unwind_continue
     storage_dead(_3)
-    conditional_drop[drop_glue<'35, Ref<'28, bool>[{built_in impl MetaSized for bool}], BorrowError>[{built_in impl Sized for Ref<'28, bool>[{built_in impl MetaSized for bool}]}, {built_in impl Sized for BorrowError}]] _2
+    conditional_drop[drop_glue<'37, Ref<'30, bool>[{built_in impl MetaSized for bool}], BorrowError>[{built_in impl Sized for Ref<'30, bool>[{built_in impl MetaSized for bool}]}, {built_in impl Sized for BorrowError}]] _2
     ↳⚡ unwind_continue
     storage_dead(_2)
     _0 = ()

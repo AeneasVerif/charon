@@ -185,10 +185,10 @@ fn foo()
     let mut _7: &'7 i32; // anonymous local
     let mut _8: &'8 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let mut _9: &'9 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let mut _10: &'12 i32; // anonymous local
-    let mut _11: &'15 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _10: &'14 i32; // anonymous local
+    let mut _11: &'19 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let mut _12: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let mut _13: &'16 i32; // anonymous local
+    let mut _13: &'20 i32; // anonymous local
     let mut _14: i32; // anonymous local
 
     storage_live(_9)
@@ -205,7 +205,7 @@ fn foo()
     storage_live(_2)
     _8 = move _9
     _2 = &(*_8)
-    _1 = is_some<'11, i32>[{built_in impl Sized for i32}](move _2)
+    _1 = is_some<'13, i32>[{built_in impl Sized for i32}](move _2)
     ↳⚡ storage_dead(_8)
         storage_dead(_7)
         unwind_continue
@@ -222,7 +222,7 @@ fn foo()
     _14 = const 0i32
     _13 = &_14
     _10 = move _13
-    set_type(typeof(_3) <= u64)
+    set _3 :< u64
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
@@ -230,7 +230,7 @@ fn foo()
     _7 = move _10
     _6 = &(*_7)
     _5 = &(*_6)
-    _4 = from_ref<'14, i32>[{built_in impl Sized for i32}](move _5)
+    _4 = from_ref<'18, i32>[{built_in impl Sized for i32}](move _5)
     ↳⚡ storage_dead(_8)
         storage_dead(_7)
         unwind_continue

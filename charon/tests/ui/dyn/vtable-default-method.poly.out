@@ -24,8 +24,8 @@ struct test_crate::Trait::{vtable} {
 pub trait Trait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn base<'_0_1>;
-    fn dflt<'_0_1> = test_crate::Trait::dflt<'_0_1, Self>[Self]
+    fn base<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn dflt<'_0_1, Outlives0: (Self: '_0_1)> = test_crate::Trait::dflt<'_0_1, Self>[Self]
     vtable: test_crate::Trait::{vtable}
 }
 
@@ -45,7 +45,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self) with_metadata(read self.metadata)
-    _2 = TraitClause0::base<'3>(move _3)
+    _2 = TraitClause0::base<'4>(move _3)
     ↳⚡ storage_dead(_4)
         storage_dead(self)
         unwind_continue
@@ -126,7 +126,7 @@ pub fn impl_Trait_for_Struct::dflt<'_0>(self: &'_0 Struct) -> i32
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self)
-    _2 = base<'3>(move _3)
+    _2 = base<'4>(move _3)
     ↳⚡ storage_dead(_4)
         storage_dead(self)
         unwind_continue
@@ -177,7 +177,7 @@ pub fn main()
     let mut _5: &'8 (dyn Trait + '9); // anonymous local
     let mut _6: &'10 Struct; // anonymous local
     let mut _7: &'11 Struct; // anonymous local
-    let mut _8: &'20 Struct; // anonymous local
+    let mut _8: &'24 Struct; // anonymous local
     let mut _9: Struct; // anonymous local
 
     storage_live(_7)
@@ -198,12 +198,13 @@ pub fn main()
     b = unsize_cast<&'12 (dyn Trait + '13), &impl_Trait_for_Struct::{vtable}>(move _2)
     storage_dead(_2)
     fake_read(b)
-    set_type(typeof(b) == &'14 (dyn Trait + '15))
+    set '15 :> '14
+    set b := &'14 (dyn Trait + '15)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*b) with_metadata(read b.metadata)
-    _4 = (read (*_5.metadata).method_dflt)<'19>(move _5)
+    _4 = (read (*_5.metadata).method_dflt)<'23>(move _5)
     ↳⚡ storage_dead(_6)
         unwind_continue
     storage_dead(_5)

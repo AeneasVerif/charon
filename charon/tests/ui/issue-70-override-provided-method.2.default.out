@@ -11,9 +11,9 @@ struct () {}
 trait Trait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn required<'_0_1>;
-    fn provided1<'_0_1> = test_crate::Trait::provided1<'_0_1, Self>[Self]
-    fn provided2<'_0_1> = test_crate::Trait::provided2<'_0_1, Self>[Self]
+    fn required<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn provided1<'_0_1, Outlives0: (Self: '_0_1)> = test_crate::Trait::provided1<'_0_1, Self>[Self]
+    fn provided2<'_0_1, Outlives0: (Self: '_0_1)> = test_crate::Trait::provided2<'_0_1, Self>[Self]
     vtable: test_crate::Trait::{vtable}
 }
 
@@ -34,7 +34,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self) with_metadata(read self.metadata)
-    _2 = TraitClause0::required<'4>(move _3)
+    _2 = TraitClause0::required<'5>(move _3)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_3)
@@ -42,7 +42,7 @@ where
     storage_live(_4)
     storage_live(_5)
     _5 = &(*self) with_metadata(read self.metadata)
-    _4 = TraitClause0::provided2<'5>(move _5)
+    _4 = TraitClause0::provided2<'7>(move _5)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_5)
@@ -69,7 +69,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self) with_metadata(read self.metadata)
-    _2 = TraitClause0::required<'4>(move _3)
+    _2 = TraitClause0::required<'5>(move _3)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_3)
@@ -77,7 +77,7 @@ where
     storage_live(_4)
     storage_live(_5)
     _5 = &(*self) with_metadata(read self.metadata)
-    _4 = TraitClause0::provided1<'5>(move _5)
+    _4 = TraitClause0::provided1<'7>(move _5)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_5)
@@ -105,7 +105,7 @@ fn impl_Trait_for_Foo::provided1<'_0>(self: &'_0 Foo)
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self)
-    _2 = impl_Trait_for_Foo::required<'4>(move _3)
+    _2 = impl_Trait_for_Foo::required<'5>(move _3)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_3)
@@ -113,7 +113,7 @@ fn impl_Trait_for_Foo::provided1<'_0>(self: &'_0 Foo)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*self)
-    _4 = impl_Trait_for_Foo::provided2<'5>(move _5)
+    _4 = impl_Trait_for_Foo::provided2<'7>(move _5)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_5)
@@ -138,7 +138,7 @@ fn impl_Trait_for_Foo::provided2<'_0>(self: &'_0 Foo)
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self)
-    _2 = impl_Trait_for_Foo::required<'4>(move _3)
+    _2 = impl_Trait_for_Foo::required<'5>(move _3)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_3)
@@ -146,7 +146,7 @@ fn impl_Trait_for_Foo::provided2<'_0>(self: &'_0 Foo)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*self)
-    _4 = impl_Trait_for_Foo::provided1<'5>(move _5)
+    _4 = impl_Trait_for_Foo::provided1<'7>(move _5)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_5)
@@ -169,7 +169,7 @@ fn impl_Trait_for_Foo::required<'_0>(self: &'_0 Foo)
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self)
-    _2 = impl_Trait_for_Foo::provided1<'4>(move _3)
+    _2 = impl_Trait_for_Foo::provided1<'6>(move _3)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_3)
@@ -206,7 +206,7 @@ fn impl_Trait_for_Bar::provided2<'_0>(self: &'_0 Bar)
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self)
-    _2 = impl_Trait_for_Bar::required<'4>(move _3)
+    _2 = impl_Trait_for_Bar::required<'5>(move _3)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_3)
@@ -214,7 +214,7 @@ fn impl_Trait_for_Bar::provided2<'_0>(self: &'_0 Bar)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*self)
-    _4 = impl_Trait_for_Bar::provided1<'5>(move _5)
+    _4 = impl_Trait_for_Bar::provided1<'7>(move _5)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_5)
@@ -237,7 +237,7 @@ fn impl_Trait_for_Bar::required<'_0>(self: &'_0 Bar)
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self)
-    _2 = impl_Trait_for_Bar::provided2<'4>(move _3)
+    _2 = impl_Trait_for_Bar::provided2<'6>(move _3)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_3)
@@ -260,7 +260,7 @@ fn impl_Trait_for_Bar::provided1<'_0>(self: &'_0 Bar)
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self)
-    _2 = impl_Trait_for_Bar::provided2<'4>(move _3)
+    _2 = impl_Trait_for_Bar::provided2<'6>(move _3)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_3)

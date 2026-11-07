@@ -11,11 +11,9 @@
 //! &mut B>`. Note also that partial-mono is infectious: `Foo<Bar<&mut A>>` generates `Bar::<&mut
 //! A>` then `Foo::<Bar::<&mut A>>``.
 use std::collections::{HashMap, HashSet, VecDeque};
-use std::fmt::Display;
 use std::mem;
 
 use derive_generic_visitor::Visitor;
-use index_vec::Idx;
 
 use crate::ast::visitor::{VisitWithBinderDepth, VisitorWithBinderDepth};
 use crate::formatter::IntoFormatter;
@@ -139,25 +137,23 @@ impl<'pm, 'ctx> MutabilityShapeBuilder<'pm, 'ctx> {
     }
 
     /// Replace this value with a fresh variable, and record that we did so.
-    fn replace_with_fresh_var<Id, Param, Arg>(
+    fn replace_with_fresh_var<Id>(
         &mut self,
-        val: &mut Arg,
-        mk_param: impl FnOnce(Id) -> Param,
-        mk_value: impl FnOnce(DeBruijnVar<Id>) -> Arg,
+        val: &mut Id::Arg,
+        mk_param: impl FnOnce(Id) -> Id::Param,
+        mk_value: impl FnOnce(DeBruijnVar<Id>) -> Id::Arg,
     ) where
-        Id: Idx + Display,
-        Arg: TyVisitable + Clone,
-        GenericParams: HasIdxVecOf<Id, Output = Param>,
-        GenericArgs: HasIdxVecOf<Id, Output = Arg>,
+        Id: TypeLevelVar,
+        Id::Arg: TyVisitable + Clone,
     {
         let Some(shifted_val) = val.clone().move_from_under_binders(self.binder_depth) else {
             // Give up on this value.
             return;
         };
         // Record the mapping in the output `GenericArgs`.
-        self.extracted.get_idx_vec_mut().push(shifted_val);
+        Id::get_arg_vec_mut(&mut self.extracted).push(shifted_val);
         // Put a fresh param in place of `val`.
-        let id = self.params.get_idx_vec_mut().push_with(mk_param);
+        let id = Id::get_param_vec_mut(&mut self.params).push_with(mk_param);
         *val = mk_value(DeBruijnVar::bound(self.binder_depth, id));
     }
 }

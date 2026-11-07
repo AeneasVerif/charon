@@ -6,7 +6,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -23,7 +23,7 @@ pub trait Borrow<Self, Borrowed>
     proof ImpliedClause1: (Borrowed: MetaSized)
     proof ImpliedClause2: (Self: Destruct)
     proof ImpliedClause3: (Borrowed: Destruct)
-    fn borrow<'_0_1>;
+    fn borrow<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Borrowed: '_0_1)>;
     vtable: core::borrow::Borrow::{vtable}<Borrowed>
 }
 
@@ -46,7 +46,7 @@ pub trait ToOwned<Self>
     proof ImpliedClause3: (Self::Owned: Borrow<Self>)
     proof ImpliedClause4: (Self::Owned: Destruct)
     type Owned
-    fn to_owned<'_0_1>;
+    fn to_owned<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 

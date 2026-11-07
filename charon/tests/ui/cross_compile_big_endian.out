@@ -66,11 +66,11 @@ fn main()
     storage_live(x)
     x = const 52usize
     fake_read(x)
-    set_type(typeof(x) == usize)
+    set x := usize
     storage_live(y)
     y = read MAX
     fake_read(y)
-    set_type(typeof(y) == usize)
+    set y := usize
     storage_live(z)
     storage_live(_4)
     _4 = copy y
@@ -84,7 +84,7 @@ fn main()
     storage_live(a)
     a = const 102u128 panic.<< const 64i32
     fake_read(a)
-    set_type(typeof(a) == u128)
+    set a := u128
     storage_live(b)
     b = HasBEDiscr::Second {  }
     fake_read(b)

@@ -35,7 +35,7 @@ fn main()
     let _3: &'2 u32; // anonymous local
     let mut _4: &'3 u32; // anonymous local
     let mut _5: &'4 u32; // anonymous local
-    let mut _6: &'7 u32; // anonymous local
+    let mut _6: &'9 u32; // anonymous local
     let mut _7: u32; // anonymous local
 
     storage_live(_5)
@@ -53,7 +53,7 @@ fn main()
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _1 = foo<'6>(move _2)
+    _1 = foo<'8>(move _2)
     ↳⚡ storage_dead(_4)
         unwind_continue
     storage_dead(_2)

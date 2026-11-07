@@ -5,6 +5,10 @@ fn into_inner(b: Box<String>) -> String {
     *b
 }
 
+fn read_ref<'a>(b: Box<&'a u32>) -> &'a u32 {
+    *b
+}
+
 fn write(mut b: Box<String>, s: String) {
     *b = s;
 }

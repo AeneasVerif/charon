@@ -46,7 +46,7 @@ trait Super<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: Sized)
-    fn super_method<'_0_1>;
+    fn super_method<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Super::{vtable}<T>
 }
 
@@ -64,7 +64,7 @@ trait Internal<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Internal: Sized)
     type Internal
-    fn internal_method<'_0_1>;
+    fn internal_method<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Internal::{vtable}<Self::Internal>
 }
 
@@ -84,7 +84,7 @@ trait Left<Self>
     proof ImpliedClause1: (Self: Internal)
     proof ImpliedClause2: (Self::Left: Sized)
     type Left
-    fn left_method<'_0_1>;
+    fn left_method<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Left::{vtable}<Self::Left, Self::ImpliedClause1::Internal>
 }
 
@@ -107,7 +107,7 @@ trait Right<Self, T>
     proof ImpliedClause3: (T: Sized)
     proof ImpliedClause4: (Self::Right: Sized)
     type Right
-    fn right_method<'_0_1>;
+    fn right_method<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Right::{vtable}<T, Self::Right, Self::ImpliedClause1::Internal>
 }
 
@@ -128,7 +128,7 @@ trait Join<Self, T>
     proof ImpliedClause1: (Self: Left)
     proof ImpliedClause2: (Self: Right<T>)
     proof ImpliedClause3: (T: Sized)
-    fn join_method<'_0_1>;
+    fn join_method<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Join::{vtable}<T, Self::ImpliedClause1::Left, Self::ImpliedClause1::ImpliedClause1::Internal, Self::ImpliedClause2::Right, Self::ImpliedClause1::ImpliedClause1::Internal>
 }
 
@@ -146,7 +146,7 @@ fn super_method<'_0>(self: &'_0 i32, arg: i32) -> i32
     _3 = copy self
     storage_live(_4)
     _4 = copy arg
-    _0 = add<'6>(move _3, move _4)
+    _0 = add<'7>(move _3, move _4)
     ↳⚡ storage_dead(arg)
         storage_dead(self)
         unwind_continue
@@ -371,7 +371,7 @@ fn right_method<'_0>(self: &'_0 i32) -> i32
     storage_live(_6)
     storage_live(_7)
     _7 = &(*self)
-    _6 = internal_method<'5>(move _7)
+    _6 = internal_method<'7>(move _7)
     ↳⚡ storage_dead(_11)
         storage_dead(_8)
         storage_dead(_5)
@@ -385,7 +385,7 @@ fn right_method<'_0>(self: &'_0 i32) -> i32
     storage_live(_9)
     storage_live(_10)
     _10 = &(*self)
-    _9 = super_method<'7>(move _10, const 10i32)
+    _9 = super_method<'11>(move _10, const 10i32)
     ↳⚡ storage_dead(_11)
         storage_dead(_8)
         storage_dead(_5)
@@ -467,14 +467,14 @@ fn join_method<'_0>(self: &'_0 i32) -> (i32, i32)
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self)
-    _2 = left_method<'5>(move _3)
+    _2 = left_method<'7>(move _3)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*self)
-    _4 = right_method<'7>(move _5)
+    _4 = right_method<'11>(move _5)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_5)
@@ -544,7 +544,7 @@ fn main()
     let mut _5: &'8 (dyn Join<i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::Left = i32, ImpliedClause2::Right = i32> + '9); // anonymous local
     let mut _6: &'10 i32; // anonymous local
     let mut _7: &'11 i32; // anonymous local
-    let mut _8: &'20 i32; // anonymous local
+    let mut _8: &'24 i32; // anonymous local
     let mut _9: i32; // anonymous local
 
     storage_live(_7)
@@ -565,12 +565,13 @@ fn main()
     v = unsize_cast<&'12 (dyn Join<i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::Left = i32, ImpliedClause2::Right = i32> + '13), &impl_Join_i32_for_i32::{vtable}>(move _2)
     storage_dead(_2)
     fake_read(v)
-    set_type(typeof(v) == &'14 (dyn Join<i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::Left = i32, ImpliedClause2::Right = i32> + '15))
+    set '15 :> '14
+    set v := &'14 (dyn Join<i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::Left = i32, ImpliedClause2::Right = i32> + '15)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*v) with_metadata(read v.metadata)
-    _4 = (read (*_5.metadata).method_join_method)<'19>(move _5)
+    _4 = (read (*_5.metadata).method_join_method)<'23>(move _5)
     ↳⚡ storage_dead(_6)
         unwind_continue
     storage_dead(_5)

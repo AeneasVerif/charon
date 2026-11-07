@@ -235,7 +235,7 @@ dependencies = [
 
 [[package]]
 name = "charon"
-version = "0.1.313"
+version = "0.1.314"
 dependencies = [
  "annotate-snippets",
  "anstream",

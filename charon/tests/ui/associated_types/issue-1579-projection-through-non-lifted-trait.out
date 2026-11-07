@@ -49,8 +49,6 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Typed<Clause1_V>),
     Outlives0: (TraitClause1::ImpliedClause2::Self_Clause1_B: '_0),
-    Outlives1: (T: '_0),
-    Outlives2: (Clause1_V: '_0),
 {
     let mut _0: (); // return
     let mut _1: &'1 TraitClause1::ImpliedClause2::Self_Clause1_B; // arg #1

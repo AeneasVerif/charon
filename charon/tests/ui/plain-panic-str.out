@@ -27,7 +27,7 @@ fn main()
 {
     let mut _0: (); // return
     let mut _1: Arguments<'1>; // anonymous local
-    let mut _2: &'4 str; // anonymous local
+    let mut _2: &'7 str; // anonymous local
 
     storage_live(_0)
     _0 = ()

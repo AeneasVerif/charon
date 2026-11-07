@@ -54,7 +54,7 @@ pub trait FnMut<Self, Args>
     proof ImpliedClause1: (Self: FnOnce<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1>;
+    fn call_mut<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
 
@@ -76,7 +76,7 @@ pub trait Fn<Self, Args>
     proof ImpliedClause1: (Self: FnMut<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call<'_0_1>;
+    fn call<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
 
@@ -110,7 +110,7 @@ fn takes_fn<'_0>(f: &'_0 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::Implied
     _7 = &mut counter
     _6 = &two-phase-mut (*_7)
     _5 = (move _6,)
-    _3 = (read (*_4.metadata).method_call)<'51>(move _4, move _5)
+    _3 = (read (*_4.metadata).method_call)<'76>(move _4, move _5)
     ↳⚡ storage_dead(f)
         unwind_continue
     if move _3 {
@@ -243,7 +243,7 @@ extern "rust-call" fn call_once<'_0>(_1: {closure}, _2: (&'_0 mut u32,)) -> bool
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = call_mut<'_0, '9>(move _3, move _2)
+    _0 = call_mut<'_0, '15>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -294,7 +294,7 @@ fn gives_fn()
     let _3: &'18 {closure}; // anonymous local
     let mut _4: &'19 {closure}; // anonymous local
     let mut _5: &'20 {closure}; // anonymous local
-    let mut _6: &'33 {closure}; // anonymous local
+    let mut _6: &'35 {closure}; // anonymous local
     let mut _7: {closure}; // anonymous local
 
     storage_live(_5)
@@ -314,7 +314,7 @@ fn gives_fn()
     _2 = &(*_3)
     _1 = unsize_cast<&'21 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '22), &impl_Fn_tuple_for_closure::{vtable}<'29>>(move _2)
     storage_dead(_2)
-    _0 = takes_fn<'32>(move _1)
+    _0 = takes_fn<'34>(move _1)
     ↳⚡ storage_dead(_4)
         unwind_continue
     storage_dead(_1)

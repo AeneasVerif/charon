@@ -219,19 +219,19 @@ pub enum BorrowckStatement {
     /// Acts like a read of the place.
     FakeRead(Place),
     /// Relate the type of a place to the provided type. For example, `let x: Self = value`
-    /// produces `SetType` for `x` and `Self`.
+    /// produces `SetType(x == Self)`.
     SetType {
         place: Place,
+        /// This type may contain body regions shared with subsequent `SetOutlives` statements.
         ty: Ty,
         #[serde_state(stateless)]
         variance: Variance,
+        /// Whether this type relation holds for the whole rest of the function, or just at this
+        /// point.
+        temporary: bool,
     },
-    /// Require a type to outlive a region. For example, the `'a` bound in
-    /// `let x: impl Copy + 'a = value` produces `SetOutlives(typeof(x), 'a)`.
-    SetOutlives(Ty, Region),
-    /// Require a trait predicate to hold. For example, the `Copy` bound in
-    /// `let x: impl Copy = value` produces `PredicateHolds(typeof(x): Copy)`.
-    PredicateHolds(PolyTraitRef),
+    /// Require an outlives predicate to hold.
+    SetOutlives(OutlivesPred),
 }
 
 /// (U)LLBC is a language with side-effects: a statement may abort in a way that isn't tracked by

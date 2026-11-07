@@ -22,7 +22,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -54,7 +54,7 @@ trait Modifiable<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: Sized)
-    fn modify<'_0_1, '_1_1>;
+    fn modify<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (T: '_1_1)>;
     vtable: test_crate::Modifiable::{vtable}<T>
 }
 
@@ -77,7 +77,7 @@ where
     (*self) = move _3
     storage_live(_4)
     _4 = &(*arg)
-    _0 = TraitClause1::clone<'5>(move _4)
+    _0 = TraitClause1::clone<'6>(move _4)
     ↳⚡ storage_dead(_3)
         storage_dead(arg)
         storage_dead(self)
@@ -182,13 +182,15 @@ where
     x = unsize_cast<&'13 mut (dyn Modifiable<T> + '14), &impl_Modifiable_for_i32::{vtable}<T>[TraitClause0, TraitClause1]>(move _3)
     storage_dead(_3)
     fake_read(x)
-    set_type(typeof(x) == &'15 mut (dyn Modifiable<T> + '16))
+    set 'lub<T> :> '15
+    set '16 :> '15
+    set x := &'15 mut (dyn Modifiable<T> + '16)
     storage_dead(_4)
     storage_live(_6)
     _6 = &two-phase-mut (*x) with_metadata(read x.metadata)
     storage_live(_7)
     _7 = &(*arg)
-    _0 = (read (*_6.metadata).method_modify)<'20, '21>(move _6, move _7)
+    _0 = (read (*_6.metadata).method_modify)<'25, '26>(move _6, move _7)
     ↳⚡ storage_dead(arg)
         unwind_continue
     storage_dead(_7)
@@ -208,7 +210,7 @@ fn main()
     let _3: &'2 i32; // anonymous local
     let mut _4: &'3 i32; // anonymous local
     let mut _5: &'4 i32; // anonymous local
-    let mut _6: &'7 i32; // anonymous local
+    let mut _6: &'9 i32; // anonymous local
     let mut _7: i32; // anonymous local
 
     storage_live(_5)
@@ -226,7 +228,7 @@ fn main()
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _1 = modify_trait_object<'6, i32>[{built_in impl Sized for i32}, impl_Clone_for_i32](move _2)
+    _1 = modify_trait_object<'8, i32>[{built_in impl Sized for i32}, impl_Clone_for_i32](move _2)
     ↳⚡ storage_dead(_4)
         unwind_continue
     storage_dead(_2)

@@ -26,12 +26,12 @@ pub struct NonNull<T> {
 pub unsafe trait Allocator<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn allocate<'_0_1>;
-    fn allocate_zeroed<'_0_1> = allocate_zeroed<'_0_1, Self>[Self]
-    fn deallocate<'_0_1>;
-    fn grow<'_0_1> = grow<'_0_1, Self>[Self]
-    fn grow_zeroed<'_0_1> = grow_zeroed<'_0_1, Self>[Self]
-    fn shrink<'_0_1> = shrink<'_0_1, Self>[Self]
+    fn allocate<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn allocate_zeroed<'_0_1, Outlives0: (Self: '_0_1)> = allocate_zeroed<'_0_1, Self>[Self]
+    fn deallocate<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn grow<'_0_1, Outlives0: (Self: '_0_1)> = grow<'_0_1, Self>[Self]
+    fn grow_zeroed<'_0_1, Outlives0: (Self: '_0_1)> = grow_zeroed<'_0_1, Self>[Self]
+    fn shrink<'_0_1, Outlives0: (Self: '_0_1)> = shrink<'_0_1, Self>[Self]
     vtable: core::alloc::Allocator::{vtable}
 }
 
@@ -214,10 +214,10 @@ fn core::ptr::write_bytes::precondition_check(addr: *const (), align: usize, zer
         storage_live(_10)
         storage_live(_11)
         _11 = &(*msg) with_metadata(read msg.metadata)
-        _10 = from_str<'6>(move _11)
+        _10 = from_str<'7>(move _11)
         ↳⚡ unwind_terminate
         storage_dead(_11)
-        _9 = panic_nounwind_fmt<'8>(move _10, const false)
+        _9 = panic_nounwind_fmt<'12>(move _10, const false)
         ↳⚡ undefined_behavior
     }
     storage_dead(_7)
@@ -440,10 +440,10 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
         storage_live(_6)
         storage_live(_7)
         _7 = &(*msg) with_metadata(read msg.metadata)
-        _6 = from_str<'6>(move _7)
+        _6 = from_str<'7>(move _7)
         ↳⚡ unwind_terminate
         storage_dead(_7)
-        _5 = panic_nounwind_fmt<'8>(move _6, const false)
+        _5 = panic_nounwind_fmt<'12>(move _6, const false)
         ↳⚡ undefined_behavior
     }
     storage_dead(_3)
@@ -759,7 +759,7 @@ where
     _6 = &(*self) with_metadata(read self.metadata)
     storage_live(_7)
     _7 = copy layout
-    _5 = TraitClause0::allocate<'3>(move _6, move _7)
+    _5 = TraitClause0::allocate<'4>(move _6, move _7)
     ↳⚡ unwind_continue
     storage_dead(_7)
     storage_dead(_6)
@@ -970,10 +970,10 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut 
         storage_live(_27)
         storage_live(_28)
         _28 = &(*msg) with_metadata(read msg.metadata)
-        _27 = from_str<'6>(move _28)
+        _27 = from_str<'7>(move _28)
         ↳⚡ unwind_terminate
         storage_dead(_28)
-        _26 = panic_nounwind_fmt<'8>(move _27, const false)
+        _26 = panic_nounwind_fmt<'12>(move _27, const false)
         ↳⚡ undefined_behavior
     }
     _0 = ()
@@ -1109,7 +1109,7 @@ where
     let mut _32: NonNull<u8>; // anonymous local
     let mut _33: Layout; // anonymous local
     let mut _34: NonNull<[u8]>; // anonymous local
-    let mut _35: &'17 str; // anonymous local
+    let mut _35: &'23 str; // anonymous local
 
     storage_live(_0)
     storage_live(_18)
@@ -1120,13 +1120,13 @@ where
         storage_live(_7)
         storage_live(_8)
         _8 = &new_layout
-        _7 = size<'11>(move _8)
+        _7 = size<'13>(move _8)
         ↳⚡ unwind_continue
         storage_dead(_8)
         storage_live(_9)
         storage_live(_10)
         _10 = &old_layout
-        _9 = size<'13>(move _10)
+        _9 = size<'16>(move _10)
         ↳⚡ unwind_continue
         storage_dead(_10)
         _6 = move _7 >= move _9
@@ -1138,9 +1138,9 @@ where
             storage_live(_12)
             storage_live(_35)
             _35 = &core::alloc::Allocator::grow::{promoted_const} with_metadata(const 72usize)
-            _12 = from_str<'15>(move _35)
+            _12 = from_str<'20>(move _35)
             ↳⚡ unwind_continue
-            _11 = panic_fmt<'19>(move _12)
+            _11 = panic_fmt<'27>(move _12)
             ↳⚡ unwind_continue
         }
         storage_dead(_9)
@@ -1156,7 +1156,7 @@ where
     _16 = &(*self) with_metadata(read self.metadata)
     storage_live(_17)
     _17 = copy new_layout
-    _15 = TraitClause0::allocate<'14>(move _16, move _17)
+    _15 = TraitClause0::allocate<'18>(move _16, move _17)
     ↳⚡ unwind_continue
     storage_dead(_17)
     storage_dead(_16)
@@ -1208,7 +1208,7 @@ where
     storage_live(_28)
     storage_live(_29)
     _29 = &old_layout
-    _28 = size<'21>(move _29)
+    _28 = size<'30>(move _29)
     ↳⚡ unwind_continue
     storage_dead(_29)
     _22 = core::ptr::copy_nonoverlapping<u8>[{built_in impl Sized for u8}](move _23, move _26, move _28)
@@ -1224,7 +1224,7 @@ where
     _32 = copy ptr
     storage_live(_33)
     _33 = copy old_layout
-    _30 = TraitClause0::deallocate<'22>(move _31, move _32, move _33)
+    _30 = TraitClause0::deallocate<'32>(move _31, move _32, move _33)
     ↳⚡ unwind_continue
     storage_dead(_33)
     storage_dead(_32)
@@ -1281,7 +1281,7 @@ where
     let mut _32: NonNull<u8>; // anonymous local
     let mut _33: Layout; // anonymous local
     let mut _34: NonNull<[u8]>; // anonymous local
-    let mut _35: &'17 str; // anonymous local
+    let mut _35: &'23 str; // anonymous local
 
     storage_live(_0)
     storage_live(_18)
@@ -1292,13 +1292,13 @@ where
         storage_live(_7)
         storage_live(_8)
         _8 = &new_layout
-        _7 = size<'11>(move _8)
+        _7 = size<'13>(move _8)
         ↳⚡ unwind_continue
         storage_dead(_8)
         storage_live(_9)
         storage_live(_10)
         _10 = &old_layout
-        _9 = size<'13>(move _10)
+        _9 = size<'16>(move _10)
         ↳⚡ unwind_continue
         storage_dead(_10)
         _6 = move _7 >= move _9
@@ -1310,9 +1310,9 @@ where
             storage_live(_12)
             storage_live(_35)
             _35 = &core::alloc::Allocator::grow_zeroed::{promoted_const} with_metadata(const 72usize)
-            _12 = from_str<'15>(move _35)
+            _12 = from_str<'20>(move _35)
             ↳⚡ unwind_continue
-            _11 = panic_fmt<'19>(move _12)
+            _11 = panic_fmt<'27>(move _12)
             ↳⚡ unwind_continue
         }
         storage_dead(_9)
@@ -1328,7 +1328,7 @@ where
     _16 = &(*self) with_metadata(read self.metadata)
     storage_live(_17)
     _17 = copy new_layout
-    _15 = TraitClause0::allocate_zeroed<'14>(move _16, move _17)
+    _15 = TraitClause0::allocate_zeroed<'18>(move _16, move _17)
     ↳⚡ unwind_continue
     storage_dead(_17)
     storage_dead(_16)
@@ -1380,7 +1380,7 @@ where
     storage_live(_28)
     storage_live(_29)
     _29 = &old_layout
-    _28 = size<'21>(move _29)
+    _28 = size<'30>(move _29)
     ↳⚡ unwind_continue
     storage_dead(_29)
     _22 = core::ptr::copy_nonoverlapping<u8>[{built_in impl Sized for u8}](move _23, move _26, move _28)
@@ -1396,7 +1396,7 @@ where
     _32 = copy ptr
     storage_live(_33)
     _33 = copy old_layout
-    _30 = TraitClause0::deallocate<'22>(move _31, move _32, move _33)
+    _30 = TraitClause0::deallocate<'32>(move _31, move _32, move _33)
     ↳⚡ unwind_continue
     storage_dead(_33)
     storage_dead(_32)
@@ -1453,7 +1453,7 @@ where
     let mut _32: NonNull<u8>; // anonymous local
     let mut _33: Layout; // anonymous local
     let mut _34: NonNull<[u8]>; // anonymous local
-    let mut _35: &'17 str; // anonymous local
+    let mut _35: &'23 str; // anonymous local
 
     storage_live(_0)
     storage_live(_18)
@@ -1464,13 +1464,13 @@ where
         storage_live(_7)
         storage_live(_8)
         _8 = &new_layout
-        _7 = size<'11>(move _8)
+        _7 = size<'13>(move _8)
         ↳⚡ unwind_continue
         storage_dead(_8)
         storage_live(_9)
         storage_live(_10)
         _10 = &old_layout
-        _9 = size<'13>(move _10)
+        _9 = size<'16>(move _10)
         ↳⚡ unwind_continue
         storage_dead(_10)
         _6 = move _7 <= move _9
@@ -1482,9 +1482,9 @@ where
             storage_live(_12)
             storage_live(_35)
             _35 = &core::alloc::Allocator::shrink::{promoted_const} with_metadata(const 72usize)
-            _12 = from_str<'15>(move _35)
+            _12 = from_str<'20>(move _35)
             ↳⚡ unwind_continue
-            _11 = panic_fmt<'19>(move _12)
+            _11 = panic_fmt<'27>(move _12)
             ↳⚡ unwind_continue
         }
         storage_dead(_9)
@@ -1500,7 +1500,7 @@ where
     _16 = &(*self) with_metadata(read self.metadata)
     storage_live(_17)
     _17 = copy new_layout
-    _15 = TraitClause0::allocate<'14>(move _16, move _17)
+    _15 = TraitClause0::allocate<'18>(move _16, move _17)
     ↳⚡ unwind_continue
     storage_dead(_17)
     storage_dead(_16)
@@ -1552,7 +1552,7 @@ where
     storage_live(_28)
     storage_live(_29)
     _29 = &new_layout
-    _28 = size<'21>(move _29)
+    _28 = size<'30>(move _29)
     ↳⚡ unwind_continue
     storage_dead(_29)
     _22 = core::ptr::copy_nonoverlapping<u8>[{built_in impl Sized for u8}](move _23, move _26, move _28)
@@ -1568,7 +1568,7 @@ where
     _32 = copy ptr
     storage_live(_33)
     _33 = copy old_layout
-    _30 = TraitClause0::deallocate<'22>(move _31, move _32, move _33)
+    _30 = TraitClause0::deallocate<'32>(move _31, move _32, move _33)
     ↳⚡ unwind_continue
     storage_dead(_33)
     storage_dead(_32)
@@ -1586,7 +1586,7 @@ where
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -1871,10 +1871,10 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr: *mu
     storage_live(_6)
     storage_live(_7)
     _7 = &(*msg) with_metadata(read msg.metadata)
-    _6 = from_str<'6>(move _7)
+    _6 = from_str<'7>(move _7)
     ↳⚡ unwind_terminate
     storage_dead(_7)
-    _5 = panic_nounwind_fmt<'8>(move _6, const false)
+    _5 = panic_nounwind_fmt<'12>(move _6, const false)
     ↳⚡ undefined_behavior
 }
 
@@ -2069,7 +2069,7 @@ where
     storage_live(_8)
     storage_live(_9)
     _9 = &layout
-    _8 = size<'7>(move _9)
+    _8 = size<'9>(move _9)
     ↳⚡ unwind_continue
     storage_dead(_9)
     _7 = move _8 != const 0usize
@@ -2098,7 +2098,7 @@ where
     storage_dead(_13)
     storage_live(_15)
     _15 = copy layout
-    _10 = TraitClause2::deallocate<'8>(move _11, move _12, move _15)
+    _10 = TraitClause2::deallocate<'11>(move _11, move _12, move _15)
     ↳⚡ unwind_continue
     storage_dead(_15)
     storage_dead(_12)
@@ -2138,17 +2138,17 @@ where
     _6 = transmute<*const T>(copy (*_1)._0.pointer)
     drop[{built_in impl Destruct for T}::drop_glue<'4>] (*_6)
     ↳⚡ _4 = &mut (*_1)
-        _5 = drop<'8, T, A>[TraitClause0, TraitClause1, TraitClause2](move _4)
+        _5 = drop<'11, T, A>[TraitClause0, TraitClause1, TraitClause2](move _4)
         ↳⚡ unwind_terminate
-        drop[{built_in impl Destruct for A}::drop_glue<'9>] (*_1)._1
+        drop[{built_in impl Destruct for A}::drop_glue<'12>] (*_1)._1
         ↳⚡ unwind_terminate
         unwind_continue
     _2 = &mut (*_1)
-    _3 = drop<'6, T, A>[TraitClause0, TraitClause1, TraitClause2](move _2)
-    ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'9>] (*_1)._1
+    _3 = drop<'8, T, A>[TraitClause0, TraitClause1, TraitClause2](move _2)
+    ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'12>] (*_1)._1
         ↳⚡ unwind_terminate
         unwind_continue
-    drop[{built_in impl Destruct for A}::drop_glue<'10>] (*_1)._1
+    drop[{built_in impl Destruct for A}::drop_glue<'13>] (*_1)._1
     ↳⚡ unwind_continue
     return
 }
@@ -2194,7 +2194,7 @@ fn box_new_uninit(layout: Layout) -> *mut u8
     _3 = &(*_10) with_metadata(read _10.metadata)
     storage_live(_4)
     _4 = copy layout
-    _2 = allocate<'5>(move _3, move _4)
+    _2 = allocate<'7>(move _3, move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)
@@ -2354,7 +2354,7 @@ where
     storage_live(_6)
     storage_live(_7)
     _7 = &mut b_2
-    _6 = deref_mut<'7, Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]>[{built_in impl MetaSized for Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]}](move _7)
+    _6 = deref_mut<'9, Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]>[{built_in impl MetaSized for Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]}](move _7)
     ↳⚡ unwind_continue
     storage_dead(_7)
     _8 = noretag read (*_6)
@@ -2414,7 +2414,7 @@ where
     storage_live(_5)
     storage_live(_6)
     _6 = &mut b_2
-    _5 = deref_mut<'11, Box<T, A>[TraitClause0, TraitClause1, TraitClause2]>[{built_in impl MetaSized for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}](move _6)
+    _5 = deref_mut<'13, Box<T, A>[TraitClause0, TraitClause1, TraitClause2]>[{built_in impl MetaSized for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}](move _6)
     ↳⚡ unwind_continue
     storage_dead(_6)
     _14 = noretag read (*_5)
@@ -2426,7 +2426,7 @@ where
     storage_live(_10)
     storage_live(_11)
     _11 = &b_2
-    _10 = deref<'13, Box<T, A>[TraitClause0, TraitClause1, TraitClause2]>[{built_in impl MetaSized for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}](move _11)
+    _10 = deref<'17, Box<T, A>[TraitClause0, TraitClause1, TraitClause2]>[{built_in impl MetaSized for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}](move _11)
     ↳⚡ unwind_continue
     storage_dead(_11)
     _9 = &(*_10)._1 with_metadata(read _10.metadata)
@@ -2537,7 +2537,7 @@ unsafe fn foo()
     storage_live(_5)
     _5 = alloc::boxed::{Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl#0}]}::new<i32>[{built_in impl Sized for i32}](const 42i32)
     ↳⚡ unwind_continue
-    _4 = leak<'2, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl#0}](move _5)
+    _4 = leak<'3, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl#0}](move _5)
     ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
@@ -2554,7 +2554,7 @@ unsafe fn foo()
     (*_10) = const 42i32
     _0 = ()
     storage_dead(i)
-    drop[drop_glue<'3, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl#0}]] b_6
+    drop[drop_glue<'5, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl#0}]] b_6
     ↳⚡ unwind_continue
     storage_dead(b_6)
     storage_dead(p)

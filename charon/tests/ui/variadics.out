@@ -67,8 +67,8 @@ pub unsafe extern "C" fn sum(...) -> i32
     storage_live(a)
     storage_live(_3)
     _3 = &two-phase-mut ap
-    a = next_arg<'8, '10, i32>[{built_in impl Sized for i32}, impl_VaArgSafe_for_i32](move _3)
-    ↳⚡ conditional_drop[drop_glue<'13, '14>] ap
+    a = next_arg<'10, '14, i32>[{built_in impl Sized for i32}, impl_VaArgSafe_for_i32](move _3)
+    ↳⚡ conditional_drop[drop_glue<'17, '18>] ap
         ↳⚡ storage_dead(_8)
             storage_dead(ap)
             unwind_terminate
@@ -77,12 +77,12 @@ pub unsafe extern "C" fn sum(...) -> i32
         unwind_continue
     storage_dead(_3)
     fake_read(a)
-    set_type(typeof(a) == i32)
+    set a := i32
     storage_live(b)
     storage_live(_5)
     _5 = &two-phase-mut ap
-    b = next_arg<'15, '17, i32>[{built_in impl Sized for i32}, impl_VaArgSafe_for_i32](move _5)
-    ↳⚡ conditional_drop[drop_glue<'13, '14>] ap
+    b = next_arg<'19, '23, i32>[{built_in impl Sized for i32}, impl_VaArgSafe_for_i32](move _5)
+    ↳⚡ conditional_drop[drop_glue<'17, '18>] ap
         ↳⚡ storage_dead(_8)
             storage_dead(ap)
             unwind_terminate
@@ -91,7 +91,7 @@ pub unsafe extern "C" fn sum(...) -> i32
         unwind_continue
     storage_dead(_5)
     fake_read(b)
-    set_type(typeof(b) == i32)
+    set b := i32
     storage_live(_6)
     _6 = copy a
     storage_live(_7)
@@ -102,7 +102,7 @@ pub unsafe extern "C" fn sum(...) -> i32
     storage_dead(_6)
     storage_dead(b)
     storage_dead(a)
-    conditional_drop[drop_glue<'20, '21>] ap
+    conditional_drop[drop_glue<'26, '27>] ap
     ↳⚡ storage_dead(_8)
         storage_dead(ap)
         unwind_continue
@@ -138,7 +138,7 @@ pub fn call()
     storage_live(fn_ptr)
     fn_ptr = fn_def_to_fn_ptr(const foo)
     fake_read(fn_ptr)
-    set_type(typeof(fn_ptr) == unsafe extern "C" fn(u32, u64, ...))
+    set fn_ptr := unsafe extern "C" fn(u32, u64, ...)
     storage_live(_4)
     storage_live(_5)
     _5 = copy fn_ptr

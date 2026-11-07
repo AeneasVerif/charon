@@ -11,7 +11,7 @@ pub trait Borrow<Self, Borrowed>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Borrowed: MetaSized)
-    fn borrow<'_0_1>;
+    fn borrow<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Borrowed: '_0_1)>;
     vtable: core::borrow::Borrow::{vtable}<Borrowed>
 }
 
@@ -30,7 +30,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -78,7 +78,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -132,7 +132,7 @@ pub trait ToOwned<Self, Self_Owned>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self_Owned: Sized)
     proof ImpliedClause2: (Self_Owned: Borrow<Self>)
-    fn to_owned<'_0_1>;
+    fn to_owned<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -289,7 +289,7 @@ where
         unwind_continue
     _2 = &_3
     storage_dead(_4)
-    _0 = TraitClause2::ImpliedClause1::ImpliedClause1::clone<'19>(move _2)
+    _0 = TraitClause2::ImpliedClause1::ImpliedClause1::clone<'33>(move _2)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_2)
@@ -310,7 +310,8 @@ fn call_fn()
     storage_live(_1)
     storage_live(_2)
     _2 = Option::None {  }
-    _1 = external_use_item<'25, &'25 bool, Option<&'25 bool>[{built_in impl Sized for &'25 bool}], &'25 bool>[{built_in impl Sized for &'25 bool}, {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}<'25, bool>[{built_in impl Sized for bool}], impl_Foo_for_Option<'25, &'25 bool>[{built_in impl Sized for &'25 bool}, {impl Copy for &'_0 T}<'25, bool>]](move _2)
+    set '58 :> '58
+    _1 = external_use_item<'58, &'58 bool, Option<&'58 bool>[{built_in impl Sized for &'58 bool}], &'58 bool>[{built_in impl Sized for &'58 bool}, {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}<'58, bool>[{built_in impl Sized for bool}], impl_Foo_for_Option<'58, &'58 bool>[{built_in impl Sized for &'58 bool}, {impl Copy for &'_0 T}<'58, bool>]](move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)

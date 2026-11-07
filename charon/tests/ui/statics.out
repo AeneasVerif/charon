@@ -188,7 +188,7 @@ fn non_copy_static()
     _0 = ()
     storage_live(_1)
     _1 = &FOO
-    _0 = method<'5>(move _1)
+    _0 = method<'7>(move _1)
     ↳⚡ unwind_continue
     storage_dead(_1)
     return

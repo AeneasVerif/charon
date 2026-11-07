@@ -20,7 +20,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -29,7 +29,7 @@ pub trait Clone<Self>
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1>;
+    fn eq<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -47,8 +47,8 @@ struct () {}
 pub trait Hasher<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn finish<'_0_1>;
-    fn write<'_0_1, '_1_1>;
+    fn finish<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn write<'_0_1, '_1_1, Outlives0: (Self: '_0_1)>;
     vtable: core::hash::Hasher::{vtable}
 }
 
@@ -56,7 +56,7 @@ pub trait Hasher<Self>
 #[diagnostic_item("Hash")]
 pub trait Hash<Self>
 {
-    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher)>;
+    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher), Outlives0: (Self: '_0_1), Outlives1: (H: '_1_1)>;
     non-dyn-compatible
 }
 
@@ -145,7 +145,7 @@ where
     storage_live(_0)
     storage_live(_2)
     _2 = &(*x)
-    _0 = discriminant<'4, T>[TraitClause0](move _2)
+    _0 = discriminant<'6, T>[TraitClause0](move _2)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_2)

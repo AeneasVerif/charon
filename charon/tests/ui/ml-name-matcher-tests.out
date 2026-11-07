@@ -27,7 +27,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -66,14 +66,14 @@ pub unsafe trait SliceIndex<Self, T>
     proof ImpliedClause1: (T: MetaSized)
     proof ImpliedClause2: (Self::Output: MetaSized)
     type Output
-    fn get<'_0_1>;
-    fn get_mut<'_0_1>;
+    fn get<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
+    fn get_mut<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     fn get_unchecked;
     fn get_unchecked_mut;
     #[track_caller]
-    fn index<'_0_1>;
+    fn index<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     #[track_caller]
-    fn index_mut<'_0_1>;
+    fn index_mut<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }
 
@@ -85,7 +85,6 @@ where
     TraitClause2: (I: SliceIndex<[T]>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index_mut
@@ -345,7 +344,7 @@ fn foo()
     storage_live(_2)
     _11 = read test_crate::foo::{promoted_const#1}
     _2 = &(*_11)
-    _1 = is_some<'14, i32>[{built_in impl Sized for i32}](move _2)
+    _1 = is_some<'16, i32>[{built_in impl Sized for i32}](move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)
@@ -359,7 +358,7 @@ fn foo()
     ↳⚡ undefined_behavior
     storage_dead(_4)
     fake_read(slice)
-    set_type(typeof(slice) == &'17 [bool])
+    set slice := &'19 [bool]
     storage_dead(_5)
     storage_live(_6)
     storage_live(_7)
@@ -367,7 +366,7 @@ fn foo()
     _8 = &(*slice) with_metadata(read slice.metadata)
     storage_live(_9)
     _9 = RangeFrom { start: const 1usize }
-    _7 = impl_Index_for_slice::index<'19, bool, RangeFrom<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for bool}, {built_in impl Sized for RangeFrom<usize>[{built_in impl Sized for usize}]}, impl_SliceIndex_slice_for_RangeFrom_usize<bool>[{built_in impl Sized for bool}]](move _8, move _9)
+    _7 = impl_Index_for_slice::index<'23, bool, RangeFrom<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for bool}, {built_in impl Sized for RangeFrom<usize>[{built_in impl Sized for usize}]}, impl_SliceIndex_slice_for_RangeFrom_usize<bool>[{built_in impl Sized for bool}]](move _8, move _9)
     ↳⚡ unwind_continue
     storage_dead(_9)
     storage_dead(_8)
@@ -417,7 +416,7 @@ fn tuple_closure_call()
     _3 = &closure
     storage_live(_4)
     _4 = (const 0usize,)
-    _2 = call<'2>(move _3, move _4)
+    _2 = call<'3>(move _3, move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)
@@ -516,7 +515,7 @@ fn mono_usage()
     let mut _0: (); // return
     let _container1: MonoContainer<i32>[{built_in impl Sized for i32}]; // local
     let _container2: MonoContainer<&'8 str>[{built_in impl Sized for &'8 str}]; // local
-    let mut _3: &'20 str; // anonymous local
+    let mut _3: &'39 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -527,7 +526,7 @@ fn mono_usage()
     storage_live(_container2)
     storage_live(_3)
     _3 = &test_crate::mono_usage::{promoted_const} with_metadata(const 4usize)
-    _container2 = create<&'13 str>[{built_in impl Sized for &'13 str}](move _3)
+    _container2 = create<&'18 str>[{built_in impl Sized for &'18 str}](move _3)
     ↳⚡ unwind_continue
     fake_read(_container2)
     _0 = ()
@@ -561,7 +560,7 @@ trait Get<'a, Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: Sized)
-    fn get;
+    fn get<Outlives0: (T: 'a)>;
     vtable: test_crate::Get::{vtable}<'a, T>
 }
 

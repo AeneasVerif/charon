@@ -5,7 +5,7 @@
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1>;
+    fn eq<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -148,7 +148,7 @@ pub fn impl_PartialEq_Enum_for_Enum::eq<'_0, '_1>(self: &'_0 Enum, other: &'_1 E
                     _15 = &__self_0
                     storage_live(_16)
                     _16 = &__arg1_0
-                    _0 = {impl PartialEq<&'_0 B> for &'_1 A}::eq<'48, '49, '52, '53, u8, u8>[impl_PartialEq_u8_for_u8](move _15, move _16)
+                    _0 = {impl PartialEq<&'_0 B> for &'_1 A}::eq<'55, '56, '63, '64, u8, u8>[impl_PartialEq_u8_for_u8](move _15, move _16)
                     ↳⚡ storage_dead(other)
                         storage_dead(self)
                         unwind_continue

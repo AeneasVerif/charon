@@ -38,7 +38,7 @@ fn box_pointee_pointer_assignment(rvalue: &Rvalue) -> Option<Place> {
         return None;
     }
     let box_generics = &tref.generics;
-    if &box_generics.types[0] != raw_ptr_ty.as_raw_ptr()?.0 {
+    if !box_generics.types[0].eq_modulo_regions(raw_ptr_ty.as_raw_ptr()?.0) {
         return None;
     }
     Some(box_place.clone().deref())

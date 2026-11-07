@@ -40,7 +40,7 @@ fn main()
     let mut _0: (); // return
     let _1: (); // anonymous local
     let mut _2: Arguments<'1>; // anonymous local
-    let mut _3: &'4 str; // anonymous local
+    let mut _3: &'7 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -50,7 +50,7 @@ fn main()
     _3 = &unsafe::main::{promoted_const} with_metadata(const 14usize)
     _2 = from_str<'2>(move _3)
     ↳⚡ unwind_continue
-    _1 = _print<'6>(move _2)
+    _1 = _print<'11>(move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)

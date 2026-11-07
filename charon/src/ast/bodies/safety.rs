@@ -315,9 +315,7 @@ impl HasSafety for BorrowckStatement {
     fn safety(&self, krate: &TranslatedCrate) -> Safety {
         match self {
             BorrowckStatement::FakeRead(place) => place.read_safety(krate),
-            BorrowckStatement::SetOutlives(..)
-            | BorrowckStatement::PredicateHolds(..)
-            | BorrowckStatement::SetType { .. } => Safety::Safe,
+            BorrowckStatement::SetType { .. } | BorrowckStatement::SetOutlives(..) => Safety::Safe,
         }
     }
 }

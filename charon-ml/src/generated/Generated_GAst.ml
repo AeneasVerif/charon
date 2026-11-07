@@ -156,22 +156,18 @@ and assertion = {
 (** Statements that only affect borrow-checking. They are no-ops at runtime. *)
 and borrowck_statement =
   | FakeRead of place  (** Acts like a read of the place. *)
-  | SetType of place * ty * variance
+  | SetType of place * ty * variance * bool
       (** Relate the type of a place to the provided type. For example,
-          [let x: Self = value] produces [SetType] for [x] and [Self].
+          [let x: Self = value] produces [SetType(x == Self)].
 
           Fields:
           - [place]
-          - [ty]
-          - [variance] *)
-  | SetOutlives of ty * region
-      (** Require a type to outlive a region. For example, the ['a] bound in
-          [let x: impl Copy + 'a = value] produces [SetOutlives(typeof(x), 'a)].
-      *)
-  | PredicateHolds of poly_trait_ref
-      (** Require a trait predicate to hold. For example, the [Copy] bound in
-          [let x: impl Copy = value] produces [PredicateHolds(typeof(x): Copy)].
-      *)
+          - [ty]: This type may contain body regions shared with subsequent
+            [SetOutlives] statements.
+          - [variance]
+          - [temporary]: Whether this type relation holds for the whole rest of
+            the function, or just at this point. *)
+  | SetOutlives of outlives_pred  (** Require an outlives predicate to hold. *)
 
 and branch_id = (BranchId.id[@visitors.opaque])
 

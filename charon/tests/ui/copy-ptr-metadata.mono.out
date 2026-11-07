@@ -143,12 +143,12 @@ fn main()
     let mut _17: &'18 u32; // anonymous local
     let mut _18: &'19 u32; // anonymous local
     let mut _19: &'20 [u32; 2usize]; // anonymous local
-    let mut _20: &'23 u32; // anonymous local
-    let mut _21: &'27 u32; // anonymous local
+    let mut _20: &'25 u32; // anonymous local
+    let mut _21: &'29 u32; // anonymous local
     let mut _22: u32; // anonymous local
-    let mut _23: &'28 [u32; 2usize]; // anonymous local
+    let mut _23: &'30 [u32; 2usize]; // anonymous local
     let mut _24: [u32; 2usize]; // anonymous local
-    let mut _25: &'29 u32; // anonymous local
+    let mut _25: &'31 u32; // anonymous local
     let mut _26: u32; // anonymous local
 
     storage_live(_18)
@@ -191,7 +191,7 @@ fn main()
     _8 = &(*_16)
     storage_live(_9)
     _9 = RangeFull {  }
-    _7 = index::<u32, RangeFull, 2usize><'22>(move _8, move _9)
+    _7 = index::<u32, RangeFull, 2usize><'24>(move _8, move _9)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(_15)
@@ -223,7 +223,7 @@ fn main()
     _15 = move _20
     _14 = &(*_15)
     _13 = &(*_14)
-    _12 = unsize_cast<&'24 (dyn Trait + '25), &impl_Trait_for_u32::{vtable}>(move _13)
+    _12 = unsize_cast<&'26 (dyn Trait + '27), &impl_Trait_for_u32::{vtable}>(move _13)
     storage_dead(_13)
     _11 = &raw const (*_12) with_metadata(read _12.metadata)
     _10 = metadata::<(dyn Trait)>(move _11)

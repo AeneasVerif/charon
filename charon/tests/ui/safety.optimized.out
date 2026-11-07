@@ -16,7 +16,7 @@ pub trait Index<Self, Idx>
     proof ImpliedClause2: (Self::Output: MetaSized)
     type Output
     #[track_caller]
-    fn index<'_0_1>;
+    fn index<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
 }
 
@@ -37,7 +37,6 @@ where
     TraitClause2: ([T]: Index<I>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 // Full name: core::clone::Clone
@@ -46,7 +45,7 @@ where
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -65,7 +64,7 @@ pub unsafe trait TrivialClone<Self>
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1>;
+    fn eq<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -102,7 +101,7 @@ where
 pub trait PartialOrd<Self, Rhs>
 {
     proof ImpliedClause0: (Self: PartialEq<Rhs>)
-    fn partial_cmp<'_0_1, '_1_1>;
+    fn partial_cmp<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
@@ -112,7 +111,7 @@ pub trait Ord<Self>
 {
     proof ImpliedClause0: (Self: Eq)
     proof ImpliedClause1: (Self: PartialOrd<Self>)
-    fn cmp<'_0_1, '_1_1>;
+    fn cmp<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Self: '_1_1)>;
     non-dyn-compatible
 }
 
@@ -161,8 +160,8 @@ impl "impl_Ord_for_unit" Ord for () {
 pub trait Hasher<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn finish<'_0_1>;
-    fn write<'_0_1, '_1_1>;
+    fn finish<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn write<'_0_1, '_1_1, Outlives0: (Self: '_0_1)>;
     vtable: core::hash::Hasher::{vtable}
 }
 
@@ -170,7 +169,7 @@ pub trait Hasher<Self>
 #[diagnostic_item("Hash")]
 pub trait Hash<Self>
 {
-    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher)>;
+    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher), Outlives0: (Self: '_0_1), Outlives1: (H: '_1_1)>;
     non-dyn-compatible
 }
 
@@ -223,7 +222,7 @@ pub trait Unpin<Self>
 pub trait Drop<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
+    fn drop<'_0_1, Outlives0: (Self: '_0_1)> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
 
@@ -285,14 +284,14 @@ pub unsafe trait SliceIndex<Self, T>
     proof ImpliedClause1: (T: MetaSized)
     proof ImpliedClause2: (Self::Output: MetaSized)
     type Output
-    fn get<'_0_1>;
-    fn get_mut<'_0_1>;
+    fn get<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
+    fn get_mut<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     fn get_unchecked;
     fn get_unchecked_mut;
     #[track_caller]
-    fn index<'_0_1>;
+    fn index<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     #[track_caller]
-    fn index_mut<'_0_1>;
+    fn index_mut<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }
 
@@ -304,7 +303,6 @@ where
     TraitClause2: (I: SliceIndex<[T]>),
     Outlives0: (T: '_0),
     Outlives1: (TraitClause2::Output: '_0),
-    Outlives2: (I: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl Index<I> for [T]}
@@ -704,8 +702,8 @@ struct test_crate::DynTrait::{vtable} {
 trait DynTrait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn unsafe_method<'_0_1>;
-    fn safe_method<'_0_1>;
+    fn unsafe_method<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn safe_method<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::DynTrait::{vtable}
 }
 
@@ -904,7 +902,7 @@ fn unsafe_call_unsafe_dyn_method<'_0>(s: &'_0 (dyn DynTrait + '_0))
     storage_live(_2)
     _2 = &(*s) with_metadata(read s.metadata)
     // unsafe
-    _0 = (read (*_2.metadata).method_unsafe_method)<'10>(move _2)
+    _0 = (read (*_2.metadata).method_unsafe_method)<'14>(move _2)
     ↳⚡ storage_dead(s)
         unwind_continue
     storage_dead(_2)
@@ -1232,7 +1230,7 @@ fn safe_call_dyn_method<'_0>(s: &'_0 (dyn DynTrait + '_0))
     _0 = ()
     storage_live(_2)
     _2 = &(*s) with_metadata(read s.metadata)
-    _0 = (read (*_2.metadata).method_safe_method)<'10>(move _2)
+    _0 = (read (*_2.metadata).method_safe_method)<'14>(move _2)
     ↳⚡ storage_dead(s)
         unwind_continue
     storage_dead(_2)
@@ -1353,7 +1351,7 @@ unsafe fn safe_call_target_feature_fn_in_closure()
     let mut _2: (); // anonymous local
     let mut _3: &'2 test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
     let mut _4: &'3 test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
-    let mut _5: &'5 test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
+    let mut _5: &'6 test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
     let mut _6: test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
 
     storage_live(_4)
@@ -1370,7 +1368,7 @@ unsafe fn safe_call_target_feature_fn_in_closure()
     _1 = &(*_3)
     storage_live(_2)
     _2 = ()
-    _0 = {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_closure::{closure}}::call<'4>(move _1, move _2)
+    _0 = {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_closure::{closure}}::call<'5>(move _1, move _2)
     ↳⚡ storage_dead(_3)
         unwind_continue
     storage_dead(_2)
@@ -1414,7 +1412,7 @@ unsafe fn safe_call_target_feature_fn_in_inline_closure()
     let mut _2: (); // anonymous local
     let mut _3: &'2 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
     let mut _4: &'3 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
-    let mut _5: &'5 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
+    let mut _5: &'6 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
     let mut _6: test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
 
     storage_live(_4)
@@ -1431,7 +1429,7 @@ unsafe fn safe_call_target_feature_fn_in_inline_closure()
     _1 = &(*_3)
     storage_live(_2)
     _2 = ()
-    _0 = {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}}::call<'4>(move _1, move _2)
+    _0 = {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}}::call<'5>(move _1, move _2)
     ↳⚡ storage_dead(_3)
         unwind_continue
     storage_dead(_2)

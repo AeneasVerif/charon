@@ -7,7 +7,7 @@ opaque type core::cmp::PartialEq::{vtable}<Rhs>
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1>;
+    fn eq<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -59,7 +59,7 @@ pub trait FnMut<Self, Args>
     proof ImpliedClause1: (Self: FnOnce<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1>;
+    fn call_mut<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
 
@@ -72,7 +72,7 @@ pub trait Fn<Self, Args>
     proof ImpliedClause1: (Self: FnMut<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call<'_0_1>;
+    fn call<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
 
@@ -136,7 +136,7 @@ fn destruct<'_0>(x: &'_0 (dyn Display + '_0)) -> String
     storage_live(_0)
     storage_live(_2)
     _2 = &(*x) with_metadata(read x.metadata)
-    _0 = to_string<'17, (dyn Display + '9)>[{built_in impl MetaSized for (dyn Display + '11)}, Display<(dyn Display + '15)>](move _2)
+    _0 = to_string<'31, (dyn Display + '17)>[{built_in impl MetaSized for (dyn Display + '19)}, Display<(dyn Display + '20)>](move _2)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_2)

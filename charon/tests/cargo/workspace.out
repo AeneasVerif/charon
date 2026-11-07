@@ -6,7 +6,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -30,8 +30,8 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
-    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (Self: Destruct)> = clone_from<'_0_1, '_1_1, Self>[Self, TraitClause0_1]
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (Self: Destruct), Outlives0: (Self: '_0_1), Outlives1: (Self: '_1_1)> = clone_from<'_0_1, '_1_1, Self>[Self, TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -54,10 +54,10 @@ where
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source) with_metadata(read source.metadata)
-    _3 = TraitClause0::clone<'5>(move _4)
+    _3 = TraitClause0::clone<'6>(move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)
-    drop[TraitClause1::drop_glue<'6>] (*self)
+    drop[TraitClause1::drop_glue<'7>] (*self)
     ↳⚡ (*self) = move _3
         unwind_continue
     (*self) = move _3

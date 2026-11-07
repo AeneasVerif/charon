@@ -11,7 +11,7 @@ pub trait Borrow<Self, Borrowed>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Borrowed: MetaSized)
-    fn borrow<'_0_1>;
+    fn borrow<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Borrowed: '_0_1)>;
     vtable: core::borrow::Borrow::{vtable}<Borrowed>
 }
 
@@ -30,7 +30,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -46,7 +46,7 @@ pub trait ToOwned<Self>
     proof ImpliedClause1: (Self::Owned: Sized)
     proof ImpliedClause2: (Self::Owned: Borrow<Self>)
     type Owned
-    fn to_owned<'_0_1>;
+    fn to_owned<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 

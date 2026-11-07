@@ -22,7 +22,7 @@ trait Internal<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::IntAssoc: Sized)
     type IntAssoc
-    fn internal_method<'_0_1>;
+    fn internal_method<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Internal::{vtable}<Self::IntAssoc>
 }
 

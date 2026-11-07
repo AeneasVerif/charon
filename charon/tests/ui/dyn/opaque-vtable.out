@@ -13,7 +13,7 @@ opaque type test_crate::x::Trait::{vtable}
 pub trait Trait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn method<'_0_1>;
+    fn method<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::x::Trait::{vtable}
 }
 
@@ -54,7 +54,7 @@ fn main()
     let _4: &'7 (); // anonymous local
     let mut _5: &'8 (); // anonymous local
     let mut _6: &'9 (); // anonymous local
-    let mut _7: &'14 (); // anonymous local
+    let mut _7: &'16 (); // anonymous local
     let mut _8: (); // anonymous local
 
     storage_live(_6)
@@ -75,7 +75,7 @@ fn main()
     _3 = &(*_4)
     _2 = unsize_cast<&'10 (dyn Trait + '11), &impl_Trait_for_unit::{vtable}>(move _3)
     storage_dead(_3)
-    _1 = use_debug<'13>(move _2)
+    _1 = use_debug<'15>(move _2)
     ↳⚡ storage_dead(_5)
         unwind_continue
     storage_dead(_2)

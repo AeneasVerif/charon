@@ -20,7 +20,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -70,7 +70,7 @@ where
     _z = noretag move tupled_args._0
     storage_live(_4)
     _4 = &(*(*_1)._0)
-    _0 = TraitClause1::clone<'13>(move _4)
+    _0 = TraitClause1::clone<'14>(move _4)
     ↳⚡ storage_dead(_z)
         storage_dead(tupled_args)
         storage_dead(_1)
@@ -191,11 +191,11 @@ where
     let _15: &'131 u32; // anonymous local
     let mut _16: &'132 u32; // anonymous local
     let mut _17: &'133 u32; // anonymous local
-    let mut _18: &'242 u32; // anonymous local
-    let mut _19: &'297 u32; // anonymous local
-    let mut _20: &'319 u32; // anonymous local
+    let mut _18: &'321 u32; // anonymous local
+    let mut _19: &'430 u32; // anonymous local
+    let mut _20: &'480 u32; // anonymous local
     let mut _21: u32; // anonymous local
-    let mut _22: &'320 u32; // anonymous local
+    let mut _22: &'481 u32; // anonymous local
     let mut _23: u32; // anonymous local
 
     storage_live(_0)
@@ -215,7 +215,7 @@ where
     _8 = &clo
     storage_live(_9)
     _9 = ()
-    _7 = impl_Fn_unit_for_closure::call<'199, '234, '235, '236, '237, '238, '239, '240, T>[TraitClause0, TraitClause1](move _8, move _9)
+    _7 = impl_Fn_unit_for_closure::call<'240, '241, '242, '243, '244, '245, '246, '319, T>[TraitClause0, TraitClause1](move _8, move _9)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(x)
@@ -236,7 +236,7 @@ where
     _12 = &(*_17)
     _11 = &(*_12)
     _10 = (move _11,)
-    _5 = {impl Fn<(&'_5 u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, T>[TraitClause0, TraitClause1]}::call<'274, '290, '291, '292, '293, '294, '295, T>[TraitClause0, TraitClause1](move _6, move _10)
+    _5 = {impl Fn<(&'_5 u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, T>[TraitClause0, TraitClause1]}::call<'374, '375, '376, '377, '378, '379, '428, T>[TraitClause0, TraitClause1](move _6, move _10)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(x)
@@ -258,7 +258,7 @@ where
     _15 = &(*_16)
     _14 = &(*_15)
     _13 = (move _14,)
-    _0 = {impl Fn<(&'_3 u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]}::call<'312, '315, '316, '317, '318, T>[TraitClause0, TraitClause1](move _4, move _13)
+    _0 = {impl Fn<(&'_3 u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]}::call<'451, '452, '453, '454, '479, T>[TraitClause0, TraitClause1](move _4, move _13)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(x)

@@ -20,7 +20,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -57,7 +57,7 @@ pub trait Trait<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Item: Sized)
     type Item
-    fn defaulted<'_0_1, TraitClause0_1: (Self: Copy)> = test_crate::Trait::defaulted<'_0_1, Self>[Self, TraitClause0_1]
+    fn defaulted<'_0_1, TraitClause0_1: (Self: Copy), Outlives0: (Self: '_0_1)> = test_crate::Trait::defaulted<'_0_1, Self>[Self, TraitClause0_1]
     vtable: test_crate::Trait::{vtable}<Self::Item>
 }
 

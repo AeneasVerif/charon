@@ -57,10 +57,10 @@ fn main()
     let mut _5: &'4 B; // anonymous local
     let mut _6: &'5 A; // anonymous local
     let mut _7: &'6 A; // anonymous local
-    let mut _8: &'9 B; // anonymous local
-    let mut _9: &'12 A; // anonymous local
+    let mut _8: &'11 B; // anonymous local
+    let mut _9: &'16 A; // anonymous local
     let mut _10: A; // anonymous local
-    let mut _11: &'13 B; // anonymous local
+    let mut _11: &'17 B; // anonymous local
     let mut _12: B; // anonymous local
 
     storage_live(_7)
@@ -77,7 +77,7 @@ fn main()
     storage_live(_2)
     _6 = move _7
     _2 = &(*_6)
-    _1 = method::<A><'8>(move _2)
+    _1 = method::<A><'10>(move _2)
     ↳⚡ storage_dead(_6)
         storage_dead(_5)
         unwind_continue
@@ -93,7 +93,7 @@ fn main()
     storage_live(_4)
     _5 = move _8
     _4 = &(*_5)
-    _3 = method::<B><'11>(move _4)
+    _3 = method::<B><'15>(move _4)
     ↳⚡ storage_dead(_6)
         storage_dead(_5)
         unwind_continue

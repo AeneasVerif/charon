@@ -38,7 +38,7 @@ fn panic2()
 {
     let mut _0: (); // return
     let mut _1: Arguments<'1>; // anonymous local
-    let mut _2: &'4 str; // anonymous local
+    let mut _2: &'7 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -61,7 +61,7 @@ fn panic3()
 {
     let mut _0: (); // return
     let mut _1: Arguments<'1>; // anonymous local
-    let mut _2: &'4 str; // anonymous local
+    let mut _2: &'7 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -102,7 +102,7 @@ fn panic5()
     let mut _0: (); // return
     let mut _1: bool; // anonymous local
     let mut _2: Arguments<'1>; // anonymous local
-    let mut _3: &'4 str; // anonymous local
+    let mut _3: &'7 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -146,7 +146,7 @@ fn panic7()
 {
     let mut _0: (); // return
     let mut _1: Arguments<'1>; // anonymous local
-    let mut _2: &'4 str; // anonymous local
+    let mut _2: &'7 str; // anonymous local
 
     storage_live(_0)
     _0 = ()

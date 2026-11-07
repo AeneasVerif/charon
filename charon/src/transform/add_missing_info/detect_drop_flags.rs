@@ -70,7 +70,7 @@ impl GatherCandidates<'_> {
                 place,
                 ..
             } = &terminator.kind
-                && !dropped_places.contains(place)
+                && !dropped_places.iter().any(|p: &Place| p.same_place(place))
             {
                 dropped_places.push(place.clone());
             }
@@ -120,7 +120,7 @@ impl VisitBody for GatherCandidates<'_> {
                 FlagStatus::Candidate {
                     dropped_places: candidates,
                 } => {
-                    candidates.retain(|place| dropped_places.contains(place));
+                    candidates.retain(|place| dropped_places.iter().any(|p| p.same_place(place)));
                     if dropped_places.is_empty() {
                         *status = FlagStatus::Discarded;
                     }
@@ -356,7 +356,7 @@ impl<'a, 'b> CheckFlagCorrectness<'a, 'b> {
         block: &BlockData,
         flag: LocalId,
         place: &Place,
-        mut state: AnalysisState,
+        state: AnalysisState,
     ) -> Option<Vec<(BlockId, AnalysisState)>> {
         if let TerminatorKind::Switch { data, branches } = &block.terminator.kind
             && let SwitchScrutinee::Value(Operand::Copy(flag_place, _) | Operand::Move(flag_place)) =
@@ -388,17 +388,8 @@ impl<'a, 'b> CheckFlagCorrectness<'a, 'b> {
                     }
                     vec![(*target, after_return), (*on_unwind, state)]
                 }
-                TerminatorKind::Drop {
-                    place: dropped,
-                    target,
-                    on_unwind,
-                    ..
-                } => {
-                    if place.is_subplace(dropped) {
-                        state.place_is_initialized = false;
-                    }
-                    vec![(*target, state), (*on_unwind, state)]
-                }
+                // We don't count `Drop` as deinitializing the place because the drop flags aren't
+                // changed consistently there. Anyway, worst case we miss a drop flag.
                 _ => block
                     .terminator
                     .targets()

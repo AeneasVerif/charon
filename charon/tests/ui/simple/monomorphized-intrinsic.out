@@ -27,10 +27,10 @@ fn main()
     let mut _7: &'6 E2; // anonymous local
     let mut _8: &'7 E1; // anonymous local
     let mut _9: &'8 E1; // anonymous local
-    let mut _10: &'11 E2; // anonymous local
-    let mut _11: &'14 E1; // anonymous local
+    let mut _10: &'13 E2; // anonymous local
+    let mut _11: &'18 E1; // anonymous local
     let mut _12: E1; // anonymous local
-    let mut _13: &'15 E2; // anonymous local
+    let mut _13: &'19 E2; // anonymous local
     let mut _14: E2; // anonymous local
 
     storage_live(_9)

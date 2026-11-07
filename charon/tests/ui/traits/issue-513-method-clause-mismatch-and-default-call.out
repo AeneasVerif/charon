@@ -20,7 +20,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -40,8 +40,8 @@ struct () {}
 trait Trait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn fold<'_0_1, TraitClause0_1: (Self: Copy)>;
-    fn method<'_0_1, TraitClause0_1: (Self: Copy)> = test_crate::Trait::method<'_0_1, Self>[Self, TraitClause0_1]
+    fn fold<'_0_1, TraitClause0_1: (Self: Copy), Outlives0: (Self: '_0_1)>;
+    fn method<'_0_1, TraitClause0_1: (Self: Copy), Outlives0: (Self: '_0_1)> = test_crate::Trait::method<'_0_1, Self>[Self, TraitClause0_1]
     vtable: test_crate::Trait::{vtable}
 }
 
@@ -59,7 +59,7 @@ where
     _0 = ()
     storage_live(_2)
     _2 = &(*self) with_metadata(read self.metadata)
-    _0 = TraitClause0::fold<'3>[TraitClause1](move _2)
+    _0 = TraitClause0::fold<'4>[TraitClause1](move _2)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_2)
@@ -93,7 +93,7 @@ where
     _0 = ()
     storage_live(_2)
     _2 = &(*self)
-    _0 = fold<'3>(move _2)
+    _0 = fold<'4>(move _2)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_2)

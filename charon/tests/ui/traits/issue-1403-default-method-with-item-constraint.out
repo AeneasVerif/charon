@@ -27,7 +27,7 @@ pub trait Trait<Self, Self_Assoc>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self_Assoc: Sized)
-    fn method<'_0_1, Clause0_Assoc, TraitClause0_1: (Self: Trait<Clause0_Assoc>), TypeConstraint0: Self::Assoc = B> = method<'_0_1, Self, Clause0_Assoc>[Self, TraitClause0_1]
+    fn method<'_0_1, Clause0_Assoc, TraitClause0_1: (Self: Trait<Clause0_Assoc>), Outlives0: (Self: '_0_1), TypeConstraint0: Self::Assoc = B> = method<'_0_1, Self, Clause0_Assoc>[Self, TraitClause0_1]
     non-dyn-compatible
 }
 

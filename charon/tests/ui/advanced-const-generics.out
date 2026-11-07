@@ -20,7 +20,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -36,7 +36,7 @@ where
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1>;
+    fn eq<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -194,7 +194,7 @@ where
             storage_dead(_6)
         },
     }
-    _0 = core::fmt::{Formatter<'a>}::write_str<'16, '19, '20>(move _3, move _4)
+    _0 = core::fmt::{Formatter<'a>}::write_str<'18, '30, '31>(move _3, move _4)
     ↳⚡ storage_dead(f)
         storage_dead(self)
         unwind_continue
@@ -236,7 +236,7 @@ fn bar<const N : usize>()
     _1 = repeat<(), test_crate::bar::{const#2}<N>>[{built_in impl Sized for ()}, {built_in impl Clone for ()}](move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
-    set_type(typeof(_1) <= [(); test_crate::bar::{const#1}<N>])
+    set _1 :< [(); test_crate::bar::{const#1}<N>]
     storage_dead(_1)
     _0 = ()
     return

@@ -60,6 +60,21 @@ fn into_inner(b: Box<String>[{built_in impl MetaSized for String}, {built_in imp
     return
 }
 
+// Full name: test_crate::read_ref
+fn read_ref<'a>(b: Box<&'a u32>[{built_in impl MetaSized for &'a u32}, {built_in impl Sized for Global}]) -> &'a u32
+{
+    let mut _0: &'1 u32; // return
+    let b: Box<&'7 u32>[{built_in impl MetaSized for &'7 u32}, {built_in impl Sized for Global}]; // arg #1
+
+    storage_live(_0)
+    _0 = copy (*b)
+    drop[impl_Destruct_for_Box::drop_glue<'37, &'32 u32, Global>[{built_in impl MetaSized for &'32 u32}, {built_in impl Sized for Global}]] b
+    ↳⚡ storage_dead(b)
+        unwind_continue
+    storage_dead(b)
+    return
+}
+
 // Full name: test_crate::write
 fn write(b: Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}], s: String)
 {

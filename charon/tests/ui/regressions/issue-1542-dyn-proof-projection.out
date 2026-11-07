@@ -22,7 +22,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -33,7 +33,7 @@ pub trait Deref<Self>
 {
     proof ImpliedClause0: (Self::Target: MetaSized)
     type Target
-    fn deref<'_0_1>;
+    fn deref<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Self::Target: '_0_1)>;
     vtable: core::ops::deref::Deref::{vtable}<Self::Target>
 }
 
@@ -128,7 +128,7 @@ fn pass_to_wrap<'_0>(p: &'_0 (dyn Trait + '_0))
     _4 = copy p
     _3 = Wrap { _0: move _4 }
     storage_dead(_4)
-    _2 = use_trait<Wrap<&'82 (dyn Trait + '77)>[{built_in impl Sized for &'82 (dyn Trait + '83)}]>[{built_in impl Sized for Wrap<&'82 (dyn Trait + '105)>[{built_in impl Sized for &'82 (dyn Trait + '111)}]}, impl_Trait_for_Wrap<&'82 (dyn Trait + '197)>[{built_in impl Sized for &'82 (dyn Trait + '202)}, {impl Deref for &'_0 T}<'82, (dyn Trait + '219)>[{built_in impl MetaSized for (dyn Trait + '221)}], Trait<(dyn Trait + '225)>]](move _3)
+    _2 = use_trait<Wrap<&'232 (dyn Trait + '227)>[{built_in impl Sized for &'232 (dyn Trait + '233)}]>[{built_in impl Sized for Wrap<&'232 (dyn Trait + '251)>[{built_in impl Sized for &'232 (dyn Trait + '257)}]}, impl_Trait_for_Wrap<&'232 (dyn Trait + '259)>[{built_in impl Sized for &'232 (dyn Trait + '265)}, {impl Deref for &'_0 T}<'232, (dyn Trait + '267)>[{built_in impl MetaSized for (dyn Trait + '269)}], Trait<(dyn Trait + '272)>]](move _3)
     ↳⚡ storage_dead(p)
         unwind_continue
     storage_dead(_3)
