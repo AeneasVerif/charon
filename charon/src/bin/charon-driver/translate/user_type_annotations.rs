@@ -48,21 +48,24 @@ impl<'tcx> UserTypeAnnotations<'tcx> {
         let Some(owner) = ctx.item_src.def_id().as_real_or_promoted() else {
             raise_error!(ctx, span, "user type annotation without a rustc owner");
         };
-        let ty_constraints = hax::rustc::recover_user_type(
+        let ty_constraints = hax::rustc::translate_user_annotation(
             ctx.tcx,
             hax::UnderOwnerState::typing_env(&ctx.hax_state),
-            &self.annotations,
             owner,
-            user_ty,
+            &self.annotations[user_ty.base],
+            std::slice::from_ref(&user_ty.projs),
         );
         let ty_constraints = match ty_constraints {
             Ok(ty_constraints) => ty_constraints,
             Err(message) => raise_error!(ctx, span, "{message}"),
         };
-        let ty_constraints: hax::Binder<(hax::Ty<'tcx>, Vec<hax::Clause<'tcx>>)> =
+        let ty_constraints: hax::Binder<(Vec<hax::Ty<'tcx>>, Vec<hax::Clause<'tcx>>)> =
             ctx.catch_sinto(span, &ty_constraints)?;
         let bound_constraints =
-            ctx.translate_region_binder(span, &ty_constraints, |ctx, (ty, clauses)| {
+            ctx.translate_region_binder(span, &ty_constraints, |ctx, (tys, clauses)| {
+                let [ty] = tys.as_slice() else {
+                    unreachable!("requested exactly one user type projection");
+                };
                 let ty = ctx.translate_ty(span, ty)?;
                 let mut outlives = Vec::new();
                 for clause in clauses {

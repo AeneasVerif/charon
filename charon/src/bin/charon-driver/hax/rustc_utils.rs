@@ -11,23 +11,30 @@ use rustc_span::kw;
 
 use crate::hax::prelude::*;
 
-/// Recover a user type annotation and all its region obligations. Rustc has already chosen the
-/// needed types; the inference context here only reconnects their erased regions to the
-/// annotation. The resulting binder binds existentially the regions involved.
-pub fn recover_user_type<'tcx>(
+/// The data of a user annotation, bound in an existentially-quantified binder.
+pub type UserAnnotation<'tcx> = ty::Binder<'tcx, UserAnnotationData<'tcx>>;
+/// The data of a user annotation: for each used projection we get the type of the corresponding
+/// place, and we record outlives predicates that must hold. The first vec matches the input list
+/// of projections, the second is free-form.
+pub type UserAnnotationData<'tcx> = (Vec<ty::Ty<'tcx>>, Vec<ty::Clause<'tcx>>);
+/// Denotes a subplace of a user annotation, e.g. in `let Foo { x, .. }: Self = ...;` the
+/// annotation will have a projection for `x`.
+pub type UserAnnotationProj = Vec<mir::ProjectionKind>;
+
+/// Convert a type annotation into data we can use, by fetching the types that rustc inferred and
+/// gathering the predicates that still need to be checked at borrowck time.
+pub fn translate_user_annotation<'tcx>(
     tcx: ty::TyCtxt<'tcx>,
     typing_env: ty::TypingEnv<'tcx>,
-    user_type_annotations: &ty::CanonicalUserTypeAnnotations<'tcx>,
     owner: RDefId,
-    user_ty: &mir::UserTypeProjection,
-) -> Result<ty::Binder<'tcx, (ty::Ty<'tcx>, Vec<ty::Clause<'tcx>>)>, String> {
+    annotation: &ty::CanonicalUserTypeAnnotation<'tcx>,
+    projections: &[UserAnnotationProj],
+) -> Result<UserAnnotation<'tcx>, String> {
     use rustc_trait_selection::infer::{RegionVariableOrigin, TyCtxtInferExt};
     use rustc_trait_selection::traits::query::type_op::{AscribeUserType, Normalize, TypeOp};
     use ty::{TypeVisitableExt, Upcast};
 
-    let annotation = &user_type_annotations[user_ty.base];
     let span = annotation.span;
-    let projections = &user_ty.projs;
     let owner = tcx.typeck_root_def_id(owner).as_local().unwrap();
     let (infcx, param_env) = tcx.infer_ctxt().build_with_typing_env(typing_env);
 
@@ -45,7 +52,7 @@ pub fn recover_user_type<'tcx>(
 
     // Compute the inferred type of the place, and constraints needed to match it with the
     // user-provided type.
-    let (projected_ty, constraints): (mir::PlaceTy<'tcx>, QueryRegionConstraints<'tcx>) = {
+    let (projected_tys, constraints): (Vec<ty::Ty<'tcx>>, QueryRegionConstraints<'tcx>) = {
         let mut constraints = param_env
             .and(AscribeUserType {
                 mir_ty: inferred_ty,
@@ -58,45 +65,50 @@ pub fn recover_user_type<'tcx>(
             .unwrap_or_default();
         // Add any normalization obligations coming from projections. In particular, projecting a field
         // can expose an associated type with lifetime requirements.
-        let mut projected_ty = mir::PlaceTy::from_ty(inferred_ty);
-        let mut iter = projections.iter();
-        loop {
-            let resolved = param_env
-                .and(Normalize {
-                    value: ty::Unnormalized::new_wip(projected_ty.ty),
-                })
-                .fully_perform(&infcx, owner, span)
-                .map_err(|_| "could not normalize user type projection".to_owned())?;
-            projected_ty.ty = resolved.output;
-            if let Some(extra) = resolved.constraints {
-                constraints
-                    .constraints
-                    .extend(extra.constraints.iter().copied());
-                constraints
-                    .assumptions
-                    .extend(extra.assumptions.iter().copied());
+        let mut projected_tys = Vec::new();
+        for projections in projections {
+            let mut projected_ty = mir::PlaceTy::from_ty(inferred_ty);
+            let mut iter = projections.iter();
+            loop {
+                let resolved = param_env
+                    .and(Normalize {
+                        value: ty::Unnormalized::new_wip(projected_ty.ty),
+                    })
+                    .fully_perform(&infcx, owner, span)
+                    .map_err(|_| "could not normalize user type projection".to_owned())?;
+                projected_ty.ty = resolved.output;
+                if let Some(extra) = resolved.constraints {
+                    constraints
+                        .constraints
+                        .extend(extra.constraints.iter().copied());
+                    constraints
+                        .assumptions
+                        .extend(extra.assumptions.iter().copied());
+                }
+                let Some(projection) = iter.next() else { break };
+                if matches!(
+                    projection,
+                    mir::ProjectionElem::OpaqueCast(())
+                        | mir::ProjectionElem::UnwrapUnsafeBinder(())
+                ) {
+                    return Err("unsupported cast in user type projection".into());
+                }
+                projected_ty = projected_ty.projection_ty_core(
+                    tcx,
+                    projection,
+                    |ty, variant, field, ()| {
+                        mir::PlaceTy::field_ty(tcx, ty, variant, field).skip_normalization()
+                    },
+                    |()| unreachable!(),
+                );
             }
-            let Some(projection) = iter.next() else { break };
-            if matches!(
-                projection,
-                mir::ProjectionElem::OpaqueCast(()) | mir::ProjectionElem::UnwrapUnsafeBinder(())
-            ) {
-                return Err("unsupported cast in user type projection".into());
-            }
-            projected_ty = projected_ty.projection_ty_core(
-                tcx,
-                projection,
-                |ty, variant, field, ()| {
-                    mir::PlaceTy::field_ty(tcx, ty, variant, field).skip_normalization()
-                },
-                |()| unreachable!(),
-            );
+            projected_tys.push(projected_ty.ty);
         }
-        (projected_ty, constraints)
+        (projected_tys, constraints)
     };
 
     // Apply the region equality constraints to remove redundant regions.
-    let (projected_ty, constraints) = {
+    let (projected_tys, constraints) = {
         let cause = rustc_middle::traits::ObligationCause::dummy_with_span(span);
         for constraint in &constraints.constraints {
             if let ty::RegionConstraint::Eq(eq @ ty::RegionEqPredicate(lhs, rhs)) =
@@ -108,7 +120,7 @@ pub fn recover_user_type<'tcx>(
                 infcx.register_region_eq_constraint(eq, constraint.visible_for_leak_check, &cause);
             }
         }
-        infcx.deeply_resolve_via_unification_table((projected_ty.ty, constraints))
+        infcx.deeply_resolve_via_unification_table((projected_tys, constraints))
     };
 
     // Turn the constraints into clauses.
@@ -151,7 +163,7 @@ pub fn recover_user_type<'tcx>(
 
     // Bind all the inferred regions in a binder.
     let bound = {
-        let value = (projected_ty, clauses);
+        let value = (projected_tys, clauses);
         if value.has_non_region_infer() || value.has_non_region_placeholders() {
             return Err("unresolved type or const in user type ascription".into());
         }
