@@ -279,6 +279,12 @@ fn main()
 
     storage_live(_0)
     _0 = ()
+    set '25 :> '24
+    set '27 :> '26
+    set '29 :> '28
+    set '31 :> '30
+    set '33 :> '32
+    set '35 :> '34
     storage_live(cat)
     cat = HouseCat {  }
     fake_read(cat)
@@ -287,32 +293,29 @@ fn main()
     storage_live(_4)
     _4 = &cat
     _3 = &(*_4)
-    dyn_cat = unsize_cast<&'24 (dyn Cat + '25), &impl_Cat_for_HouseCat::{vtable}>(move _3)
+    dyn_cat = unsize_cast<&'36 (dyn Cat + '37), &impl_Cat_for_HouseCat::{vtable}>(move _3)
     storage_dead(_3)
     fake_read(dyn_cat)
-    set '27 :> '26
     set dyn_cat := &'26 (dyn Cat + '27)
     storage_dead(_4)
     storage_live(dyn_feline)
     storage_live(_6)
     _6 = &(*dyn_cat) with_metadata(read dyn_cat.metadata)
-    dyn_feline = unsize_cast<&'29 (dyn Feline + '30),  at [5]>(move _6)
+    dyn_feline = unsize_cast<&'39 (dyn Feline + '40),  at [5]>(move _6)
     storage_dead(_6)
     fake_read(dyn_feline)
-    set '32 :> '31
-    set dyn_feline := &'31 (dyn Feline + '32)
+    set dyn_feline := &'30 (dyn Feline + '31)
     storage_live(dyn_pettable)
     storage_live(_8)
     _8 = &(*dyn_cat) with_metadata(read dyn_cat.metadata)
-    dyn_pettable = unsize_cast<&'34 (dyn Pettable + '35),  at [6]>(move _8)
+    dyn_pettable = unsize_cast<&'42 (dyn Pettable + '43),  at [6]>(move _8)
     storage_dead(_8)
     fake_read(dyn_pettable)
-    set '37 :> '36
-    set dyn_pettable := &'36 (dyn Pettable + '37)
+    set dyn_pettable := &'34 (dyn Pettable + '35)
     storage_live(_9)
     storage_live(_10)
     _10 = &(*dyn_cat) with_metadata(read dyn_cat.metadata)
-    _9 = takes_pettable<'63, (dyn Cat + '48)>[{built_in impl MetaSized for (dyn Cat + '50)}, Cat<(dyn Cat + '51)>::ImpliedClause2](move _10)
+    _9 = takes_pettable<'69, (dyn Cat + '54)>[{built_in impl MetaSized for (dyn Cat + '56)}, Cat<(dyn Cat + '57)>::ImpliedClause2](move _10)
     ↳⚡ unwind_continue
     storage_dead(_10)
     storage_dead(_9)

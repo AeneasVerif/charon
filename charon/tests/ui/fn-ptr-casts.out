@@ -89,7 +89,7 @@ fn from_fn_def<'a>(x: &'a u8) -> &'a u8
 
     storage_live(_0)
     storage_live(f)
-    f = fn_def_to_fn_ptr(const identity<'14>)
+    f = fn_def_to_fn_ptr(const identity<'21>)
     fake_read(f)
     set f := fn<'b>(&'b u8) -> &'b u8
     storage_live(g)

@@ -280,7 +280,7 @@ pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u
                 unwind_continue
         },
     }
-    set _3 :< &'8 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]
+    set _3 :< &'7 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]
     storage_live(x)
     x = &((*_3) as variant Either::Left)._0._0
     storage_dead(_3)
@@ -458,11 +458,12 @@ where
 
     storage_live(_0)
     _0 = ()
+    set '3 :> 'b
+    set '4 :> 'b
     storage_live(value_2)
     value_2 = copy value_1
     fake_read(value_2)
-    set '6 :> 'b
-    set value_2 := &'6 u32
+    set value_2 := &'4 u32
     _0 = ()
     storage_dead(value_2)
     storage_dead(value_1)
@@ -554,11 +555,12 @@ where
 
     storage_live(_0)
     _0 = ()
+    set '3 :> 'static
+    set '4 :> 'static
     storage_live(x)
     x = copy value
     fake_read(x)
-    set '5 :> 'static
-    set x := StaticCopy<'5>
+    set x := StaticCopy<'4>
     _0 = ()
     storage_dead(x)
     storage_dead(value)
@@ -576,20 +578,21 @@ where
 
     storage_live(_0)
     _0 = ()
+    set '12 :> 'static
+    set '13 :> 'static
     storage_live(x)
     x = move value
     fake_read(x)
-    set '12 :> 'static
-    set x := Box<StaticCopy<'12>>[{built_in impl MetaSized for StaticCopy<'12>}, {built_in impl Sized for Global}]
+    set x := Box<StaticCopy<'13>>[{built_in impl MetaSized for StaticCopy<'13>}, {built_in impl Sized for Global}]
     _0 = ()
-    conditional_drop[impl_Destruct_for_Box::drop_glue<'27, StaticCopy<'22>, Global>[{built_in impl MetaSized for StaticCopy<'22>}, {built_in impl Sized for Global}]] x
-    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'57, StaticCopy<'52>, Global>[{built_in impl MetaSized for StaticCopy<'52>}, {built_in impl Sized for Global}]] value
+    conditional_drop[impl_Destruct_for_Box::drop_glue<'28, StaticCopy<'23>, Global>[{built_in impl MetaSized for StaticCopy<'23>}, {built_in impl Sized for Global}]] x
+    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'58, StaticCopy<'53>, Global>[{built_in impl MetaSized for StaticCopy<'53>}, {built_in impl Sized for Global}]] value
         ↳⚡ storage_dead(value)
             unwind_terminate
         storage_dead(value)
         unwind_continue
     storage_dead(x)
-    conditional_drop[impl_Destruct_for_Box::drop_glue<'42, StaticCopy<'37>, Global>[{built_in impl MetaSized for StaticCopy<'37>}, {built_in impl Sized for Global}]] value
+    conditional_drop[impl_Destruct_for_Box::drop_glue<'43, StaticCopy<'38>, Global>[{built_in impl MetaSized for StaticCopy<'38>}, {built_in impl Sized for Global}]] value
     ↳⚡ storage_dead(value)
         unwind_continue
     storage_dead(value)
@@ -627,11 +630,13 @@ where
 
     storage_live(_0)
     _0 = ()
+    set 'b :> 'a
+    set 'b :> 'a
+    set 'b :> 'a
+    set 'b :> 'a
     storage_live(x)
     x = copy value
     fake_read(x)
-    set 'b :> 'a
-    set 'b :> 'a
     set x := u32
     _0 = ()
     storage_dead(x)
@@ -669,11 +674,13 @@ where
 
     storage_live(_0)
     _0 = ()
+    set 'a :> 'b
+    set 'b :> 'a
+    set 'a :> 'b
+    set 'b :> 'a
     storage_live(x)
     x = copy value
     fake_read(x)
-    set 'a :> 'b
-    set 'b :> 'a
     set x := &'b u32
     _0 = ()
     storage_dead(x)
@@ -692,14 +699,31 @@ where
 
     storage_live(_0)
     _0 = ()
+    set 'a :> 'b
+    set 'a :> 'b
     storage_live(x)
     x = copy value
     fake_read(x)
-    set 'a :> 'b
     set x := &'a u32
     _0 = ()
     storage_dead(x)
     storage_dead(value)
+    return
+}
+
+// Full name: test_crate::unused_annotation
+pub fn unused_annotation<'a, 'b>()
+where
+    Outlives0: ('b: 'a),
+{
+    let mut _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    // This annotation has obligations but no local or MIR statement.
+    set 'b :> 'a
+    set 'b :> 'a
+    _0 = ()
     return
 }
 

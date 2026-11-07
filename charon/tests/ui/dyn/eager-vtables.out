@@ -77,7 +77,7 @@ where
     storage_live(_5)
     _5 = &test_crate::impl_Debug_for_S::fmt::{promoted_const} with_metadata(const 1usize)
     _4 = &(*_5) with_metadata(read _5.metadata)
-    _0 = write_str<'16, '28, '29>(move _3, move _4)
+    _0 = write_str<'14, '28, '29>(move _3, move _4)
     ↳⚡ storage_dead(f)
         storage_dead(self)
         unwind_continue

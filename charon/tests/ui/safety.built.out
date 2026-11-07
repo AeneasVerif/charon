@@ -1110,7 +1110,7 @@ fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
     storage_live(_9)
     _9 = copy i
     // unsafe
-    _7 = slice_get_unchecked<&'27 u32, &'28 [u32], u32>[{built_in impl Sized for &'27 u32}, {built_in impl Sized for &'28 [u32]}, {built_in impl Sized for u32}, {impl ChangePointee<U> for &'a T}<'27, u32, [u32]>](move _8, move _9)
+    _7 = slice_get_unchecked<&'29 u32, &'30 [u32], u32>[{built_in impl Sized for &'29 u32}, {built_in impl Sized for &'30 [u32]}, {built_in impl Sized for u32}, {impl ChangePointee<U> for &'a T}<'29, u32, [u32]>](move _8, move _9)
     ↳⚡ storage_dead(i)
         storage_dead(s)
         storage_dead(p)
@@ -1118,7 +1118,7 @@ fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
         unwind_continue
     storage_dead(_9)
     storage_dead(_8)
-    set _7 :< &'56 u32
+    set _7 :< &'6 u32
     storage_dead(_7)
     storage_live(_10)
     storage_live(_11)

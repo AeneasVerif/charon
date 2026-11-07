@@ -194,7 +194,7 @@ where
             storage_dead(_6)
         },
     }
-    _0 = core::fmt::{Formatter<'a>}::write_str<'18, '30, '31>(move _3, move _4)
+    _0 = core::fmt::{Formatter<'a>}::write_str<'15, '30, '31>(move _3, move _4)
     ↳⚡ storage_dead(f)
         storage_dead(self)
         unwind_continue

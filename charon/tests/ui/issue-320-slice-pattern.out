@@ -334,8 +334,8 @@ fn slice_pat2()
     let _b: &'6 [i32; 2usize]; // local
     let _c: &'7 i32; // local
     let mut _6: &'8 [i32; 4usize]; // anonymous local
-    let mut _7: &'9 [i32; 4usize]; // anonymous local
-    let mut _8: &'11 [i32; 4usize]; // anonymous local
+    let mut _7: &'11 [i32; 4usize]; // anonymous local
+    let mut _8: &'12 [i32; 4usize]; // anonymous local
     let mut _9: [i32; 4usize]; // anonymous local
     let mut _10: &'_ [i32; 4usize]; // anonymous local
     let mut _11: &'_ i32; // anonymous local
@@ -426,8 +426,8 @@ fn slice_pat3()
     let mut _11: &'9 [i32; 4usize]; // anonymous local
     let mut _12: usize; // anonymous local
     let mut _13: usize; // anonymous local
-    let mut _14: &'10 [i32; 4usize]; // anonymous local
-    let mut _15: &'18 [i32; 4usize]; // anonymous local
+    let mut _14: &'12 [i32; 4usize]; // anonymous local
+    let mut _15: &'19 [i32; 4usize]; // anonymous local
     let mut _16: [i32; 4usize]; // anonymous local
     let mut _17: &'_ [i32]; // anonymous local
     let mut _18: &'_ i32; // anonymous local
@@ -463,7 +463,7 @@ fn slice_pat3()
     ↳⚡ undefined_behavior
     storage_dead(_2)
     fake_read(slice)
-    set slice := &'12 [i32]
+    set slice := &'11 [i32]
     storage_dead(_3)
     _8 = noretag copy slice.metadata
     _7 = move _8

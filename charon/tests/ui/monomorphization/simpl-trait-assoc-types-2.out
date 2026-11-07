@@ -162,11 +162,11 @@ fn main()
     let mut _12: &'21 i32; // anonymous local
     let mut _13: fn(&'8 (dyn Trait<Item = bool> + '9)); // anonymous local
     let mut _14: fn(&'18 (dyn Trait<Item = u32> + '19)); // anonymous local
-    let mut _15: &'22 i32; // anonymous local
-    let mut _16: &'35 usize; // anonymous local
-    let mut _17: &'48 i32; // anonymous local
+    let mut _15: &'30 i32; // anonymous local
+    let mut _16: &'41 usize; // anonymous local
+    let mut _17: &'52 i32; // anonymous local
     let mut _18: i32; // anonymous local
-    let mut _19: &'49 usize; // anonymous local
+    let mut _19: &'53 usize; // anonymous local
     let mut _20: usize; // anonymous local
 
     storage_live(_15)
@@ -179,17 +179,20 @@ fn main()
     storage_live(_11)
     storage_live(_12)
     _0 = ()
+    set '23 :> '22
+    set '25 :> '24
+    set '27 :> '26
+    set '29 :> '28
     storage_live(a)
     storage_live(_2)
     storage_live(_3)
     _12 = move _15
     _3 = &(*_12)
     _2 = &(*_3)
-    a = unsize_cast<&'23 (dyn Trait<Item = bool> + '24), &impl_Trait_for_i32::{vtable}>(move _2)
+    a = unsize_cast<&'31 (dyn Trait<Item = bool> + '32), &impl_Trait_for_i32::{vtable}>(move _2)
     storage_dead(_2)
     fake_read(a)
-    set '26 :> '25
-    set a := &'25 (dyn Trait<Item = bool> + '26)
+    set a := &'24 (dyn Trait<Item = bool> + '25)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
@@ -214,11 +217,10 @@ fn main()
     _11 = move _16
     _8 = &(*_11)
     _7 = &(*_8)
-    b = unsize_cast<&'36 (dyn Trait<Item = u32> + '37), &impl_Trait_for_usize::{vtable}>(move _7)
+    b = unsize_cast<&'42 (dyn Trait<Item = u32> + '43), &impl_Trait_for_usize::{vtable}>(move _7)
     storage_dead(_7)
     fake_read(b)
-    set '39 :> '38
-    set b := &'38 (dyn Trait<Item = u32> + '39)
+    set b := &'28 (dyn Trait<Item = u32> + '29)
     storage_dead(_8)
     storage_live(_9)
     storage_live(_10)

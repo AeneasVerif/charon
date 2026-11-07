@@ -134,7 +134,7 @@ fn main()
     _2 = new::<S>(move _3)
     ↳⚡ unwind_continue
     b = unsize_cast<Box::<(dyn Trait), Global>, &impl_Trait_for_S::{vtable}>(move _2)
-    conditional_drop[{impl Destruct for Box::<S, Global>}::drop_glue::<S, Global><'0>] _2
+    conditional_drop[{impl Destruct for Box::<S, Global>}::drop_glue::<S, Global><'2>] _2
     ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
@@ -146,17 +146,17 @@ fn main()
     storage_live(_6)
     _6 = cast<fn(Box::<(dyn Trait), Global>)>(read (*_5.metadata).method_method)
     _4 = (read _6)(move _5)
-    ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Trait), Global>}::drop_glue::<(dyn Trait), Global><'7>] _5
+    ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Trait), Global>}::drop_glue::<(dyn Trait), Global><'8>] _5
         ↳⚡ storage_dead(_6)
             unwind_terminate
-        conditional_drop[{impl Destruct for Box::<(dyn Trait), Global>}::drop_glue::<(dyn Trait), Global><'9>] b
+        conditional_drop[{impl Destruct for Box::<(dyn Trait), Global>}::drop_glue::<(dyn Trait), Global><'10>] b
         ↳⚡ storage_dead(_6)
             unwind_terminate
         unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()
-    conditional_drop[{impl Destruct for Box::<(dyn Trait), Global>}::drop_glue::<(dyn Trait), Global><'8>] b
+    conditional_drop[{impl Destruct for Box::<(dyn Trait), Global>}::drop_glue::<(dyn Trait), Global><'9>] b
     ↳⚡ unwind_continue
     storage_dead(b)
     storage_dead(_6)

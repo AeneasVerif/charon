@@ -321,8 +321,8 @@ pub fn use_wrap()
     let mut _5: &'19 u32; // anonymous local
     let _6: &'20 u32; // anonymous local
     let mut _7: &'21 u32; // anonymous local
-    let mut _8: &'22 u32; // anonymous local
-    let mut _9: &'46 u32; // anonymous local
+    let mut _8: &'40 u32; // anonymous local
+    let mut _9: &'55 u32; // anonymous local
     let mut _10: u32; // anonymous local
 
     storage_live(_0)
@@ -349,13 +349,13 @@ pub fn use_wrap()
     _6 = &(*_7)
     _5 = &(*_6)
     _4 = (move _5,)
-    _2 = call_once<'28, u32>[{built_in impl Sized for u32}](move _3, move _4)
+    _2 = call_once<'46, u32>[{built_in impl Sized for u32}](move _3, move _4)
     ↳⚡ storage_dead(_7)
         unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
-    set _2 :< WrapClone<&'43 u32>[{built_in impl Sized for &'43 u32}, {impl Clone for &'_0 T}<'43, u32>]
+    set _2 :< WrapClone<&'39 u32>[{built_in impl Sized for &'39 u32}, {impl Clone for &'_0 T}<'39, u32>]
     storage_dead(_6)
     storage_dead(_2)
     _0 = ()

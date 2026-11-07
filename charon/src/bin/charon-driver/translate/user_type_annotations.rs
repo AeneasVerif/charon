@@ -1,4 +1,6 @@
 //! Recover the type annotations provided by the user inside a body.
+use itertools::Itertools;
+use rustc_hash::FxHashMap as HashMap;
 use rustc_middle::{mir, ty};
 
 use super::translate_crate::RustcItem;
@@ -7,20 +9,33 @@ use crate::hax;
 use charon_lib::ast::*;
 use charon_lib::ullbc_ast::{Statement, StatementKind};
 
-/// User-provided type annotations for this MIR body.
-pub(crate) struct UserTypeAnnotations<'tcx> {
-    annotations: ty::CanonicalUserTypeAnnotations<'tcx>,
+struct UserTypeAnnotation {
+    projections: HashMap<Vec<mir::ProjectionKind>, Ty>,
 }
 
-impl<'tcx> UserTypeAnnotations<'tcx> {
-    pub(crate) fn new(ctx: &mut ItemTransCtx<'tcx, '_>, body: &mir::Body<'tcx>) -> Self {
-        let mut user_type_annotations = body.user_type_annotations.clone();
+/// User-provided type annotations for this MIR body.
+pub(crate) struct UserTypeAnnotations {
+    annotations: rustc_index::IndexVec<ty::UserTypeAnnotationIndex, UserTypeAnnotation>,
+    outlives_statements: Vec<Statement>,
+}
+
+impl UserTypeAnnotations {
+    /// Translate the annotations for this body. The computed `outlives_statements` must be
+    /// enforced at the start of the body. The returned value can then be used to fetch the type of
+    /// annotations.
+    pub(crate) fn new<'tcx>(
+        ctx: &mut ItemTransCtx<'tcx, '_>,
+        body: &mir::Body<'tcx>,
+    ) -> Result<Self, Error> {
+        use mir::visit::Visitor as _;
+
+        let mut annotations = body.user_type_annotations.clone();
         if let RustcItem::Mono(item) = &ctx.item_src.item {
             // `CanonicalUserTypeAnnotation::user_ty` is deliberately not folded when rustc
             // instantiates a MIR body, so do the item substitution explicitly.
             let item = item.clone();
             let args = item.rustc_args(ctx.hax_state_with_id());
-            for annotation in &mut user_type_annotations {
+            for annotation in &mut annotations {
                 annotation.user_ty.value = hax::substitute(
                     ctx.tcx,
                     hax::UnderOwnerState::typing_env(&ctx.hax_state),
@@ -29,29 +44,72 @@ impl<'tcx> UserTypeAnnotations<'tcx> {
                 );
             }
         }
-        Self {
-            annotations: user_type_annotations,
+
+        let mut recovered = Self {
+            annotations: Default::default(),
+            outlives_statements: Vec::new(),
+        };
+        if annotations.is_empty() {
+            return Ok(recovered);
+        }
+
+        // Gather all the projections on user annotations. We always include at least the
+        // unprojected annotation.
+        struct CollectProjections(
+            rustc_index::IndexVec<
+                ty::UserTypeAnnotationIndex,
+                SeqHashSet<Vec<mir::ProjectionKind>>,
+            >,
+        );
+        impl<'tcx> mir::visit::Visitor<'tcx> for CollectProjections {
+            fn visit_user_type_projection(&mut self, projection: &mir::UserTypeProjection) {
+                self.0[projection.base].insert(projection.projs.clone());
+            }
+        }
+        let mut projections = CollectProjections(
+            annotations
+                .iter()
+                .map(|_| SeqHashSet::from([vec![]]))
+                .collect(),
+        );
+        projections.visit_body(body);
+        for (base, projections) in projections.0.into_iter_enumerated() {
+            let annotation = &annotations[base];
+            let span = ctx.translate_span(&annotation.span);
+            let projections = projections.into_iter().collect_vec();
+            let (tys, outlives_statements) =
+                translate_user_annotation(ctx, span, annotation, &projections)?;
+            let annotation = UserTypeAnnotation {
+                projections: projections.into_iter().zip_eq(tys).collect(),
+            };
+            assert_eq!(recovered.annotations.push(annotation), base);
+            recovered.outlives_statements.extend(outlives_statements);
+        }
+        Ok(recovered)
+    }
+
+    /// The outlives statements that must be enforced for the annotations to be valid. Must be
+    /// emitted once at the start of the function.
+    pub(crate) fn take_outlives_statements(&mut self) -> Vec<Statement> {
+        std::mem::take(&mut self.outlives_statements)
+    }
+
+    /// Look up the (unprojected) type of an annotation.
+    pub(crate) fn translate_annotation(&self, index: ty::UserTypeAnnotationIndex) -> Option<Ty> {
+        if self.annotations.is_empty() {
+            None
+        } else {
+            Some(self.annotations[index].projections[&[][..]].clone())
         }
     }
 
-    pub(crate) fn is_empty(&self) -> bool {
-        self.annotations.is_empty()
-    }
-
-    /// Translate a user type annotation on a place. This returns the annotated type of the place,
-    /// plus statements for the outlives obligations that must hold for the annotation to be valid.
-    pub(crate) fn translate_place_annotation(
+    /// Look up the type of an annotation.
+    pub(crate) fn translate_projected_annotation(
         &self,
-        ctx: &mut ItemTransCtx<'tcx, '_>,
-        span: Span,
-        user_ty: &mir::UserTypeProjection,
-    ) -> Result<(Ty, Vec<Statement>), Error> {
-        translate_user_annotation(
-            ctx,
-            span,
-            &self.annotations[user_ty.base],
-            std::slice::from_ref(&user_ty.projs),
-        )
+        projection: &mir::UserTypeProjection,
+    ) -> Ty {
+        let annotation = &self.annotations[projection.base];
+        annotation.projections[projection.projs.as_slice()].clone()
     }
 }
 
@@ -61,7 +119,7 @@ fn translate_user_annotation<'tcx>(
     span: Span,
     annotation: &ty::CanonicalUserTypeAnnotation<'tcx>,
     projections: &[hax::rustc::UserAnnotationProj],
-) -> Result<(Ty, Vec<Statement>), Error> {
+) -> Result<(Vec<Ty>, Vec<Statement>), Error> {
     let Some(owner) = ctx.item_src.def_id().as_real_or_promoted() else {
         raise_error!(ctx, span, "user type annotation without a rustc owner");
     };
@@ -80,10 +138,10 @@ fn translate_user_annotation<'tcx>(
         ctx.catch_sinto(span, &ty_constraints)?;
     let bound_constraints =
         ctx.translate_region_binder(span, &ty_constraints, |ctx, (tys, clauses)| {
-            let [ty] = tys.as_slice() else {
-                unreachable!("requested exactly one user type projection");
-            };
-            let ty = ctx.translate_ty(span, ty)?;
+            let tys: Vec<Ty> = tys
+                .iter()
+                .map(|ty| ctx.translate_ty(span, ty))
+                .try_collect()?;
             let mut outlives = Vec::new();
             for clause in clauses {
                 let pred = ctx.translate_region_binder(span, &clause.kind, |ctx, kind| {
@@ -101,10 +159,10 @@ fn translate_user_annotation<'tcx>(
                 })?;
                 outlives.push(pred.no_bound_vars());
             }
-            Ok((ty, outlives))
+            Ok((tys, outlives))
         })?;
     // Instantiate the binder with fresh body regions.
-    let (ty, outlives) = ctx.erase_region_binder(bound_constraints);
+    let (tys, outlives) = ctx.erase_region_binder(bound_constraints);
     let mut outlives_statements = Vec::new();
     for pred in outlives {
         for pred in pred.normalize() {
@@ -114,5 +172,5 @@ fn translate_user_annotation<'tcx>(
             ));
         }
     }
-    Ok((ty, outlives_statements))
+    Ok((tys, outlives_statements))
 }

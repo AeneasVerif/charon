@@ -42,7 +42,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &two-phase-mut (*bufs)
-    _2 = advance_slices<'38, '50, '51>(move _3, const 0usize)
+    _2 = advance_slices<'33, '50, '51>(move _3, const 0usize)
     ↳⚡ storage_dead(bufs)
         unwind_continue
     storage_dead(_3)

@@ -138,11 +138,11 @@ fn main()
     storage_live(_8)
     _8 = &d
     _7 = &raw const (*_8)
-    _6 = unsize_cast<*const (dyn Sub + '15), &impl_Sub_for_D::{vtable}>(move _7)
+    _6 = unsize_cast<*const (dyn Sub + '18), &impl_Sub_for_D::{vtable}>(move _7)
     storage_dead(_7)
-    set _6 := *const (dyn Sub + '16)
+    set _6 := *const (dyn Sub + '15)
     _5 = copy _6
-    _4 = unsize_cast<*const (dyn Sub + '20),  at []>(move _5)
+    _4 = unsize_cast<*const (dyn Sub + '22),  at []>(move _5)
     storage_dead(_5)
     _3 = Wrapper::<(dyn Sub)> { _0: move _4 }
     storage_dead(_4)
@@ -161,11 +161,11 @@ fn main()
     storage_live(_15)
     _15 = &d
     _14 = &raw const (*_15)
-    _13 = unsize_cast<*const (dyn Sub + '21), &impl_Sub_for_D::{vtable}>(move _14)
+    _13 = unsize_cast<*const (dyn Sub + '23), &impl_Sub_for_D::{vtable}>(move _14)
     storage_dead(_14)
-    set _13 := *const (dyn Sub + '22)
+    set _13 := *const (dyn Sub + '16)
     _12 = copy _13
-    _11 = unsize_cast<*const (dyn Sub + '26),  at []>(move _12)
+    _11 = unsize_cast<*const (dyn Sub + '27),  at []>(move _12)
     storage_dead(_12)
     _10 = Wrapper::<(dyn Sub)> { _0: move _11 }
     storage_dead(_11)
@@ -184,9 +184,9 @@ fn main()
     storage_live(_22)
     _22 = &d
     _21 = &raw const (*_22)
-    _20 = unsize_cast<*const (dyn Sub + '27), &impl_Sub_for_D::{vtable}>(move _21)
+    _20 = unsize_cast<*const (dyn Sub + '28), &impl_Sub_for_D::{vtable}>(move _21)
     storage_dead(_21)
-    set _20 := *const (dyn Sub + '28)
+    set _20 := *const (dyn Sub + '17)
     _19 = copy _20
     _18 = unsize_cast<*const (dyn Sub + '32),  at []>(move _19)
     storage_dead(_19)

@@ -119,8 +119,8 @@ where
     storage_live(_7)
     storage_live(_8)
     _8 = &(*args_3._0)
-    _7 = new_debug<'41, '49, U>[TraitClause1, TraitClause5](move _8)
-    ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'50>] _5
+    _7 = new_debug<'39, '50, U>[TraitClause1, TraitClause5](move _8)
+    ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'51>] _5
         ↳⚡ storage_dead(_13)
             unwind_terminate
         unwind_continue
@@ -138,8 +138,8 @@ where
     storage_live(_12)
     _12 = &args_6
     _11 = &(*_12)
-    _2 = new<'57, 4usize, 1usize>(move _9, move _11)
-    ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'50>] _5
+    _2 = new<'40, 4usize, 1usize>(move _9, move _11)
+    ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'51>] _5
         ↳⚡ storage_dead(_13)
             unwind_terminate
         unwind_continue
@@ -148,7 +148,7 @@ where
     storage_dead(_10)
     storage_dead(_9)
     _1 = _print<'64>(move _2)
-    ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'50>] _5
+    ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'51>] _5
         ↳⚡ storage_dead(_13)
             unwind_terminate
         unwind_continue

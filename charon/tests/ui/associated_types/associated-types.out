@@ -307,11 +307,11 @@ fn call_fn()
 
     storage_live(_0)
     _0 = ()
+    set '51 :> '51
     storage_live(_1)
     storage_live(_2)
     _2 = Option::None {  }
-    set '58 :> '58
-    _1 = external_use_item<'58, &'58 bool, Option<&'58 bool>[{built_in impl Sized for &'58 bool}], &'58 bool>[{built_in impl Sized for &'58 bool}, {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}<'58, bool>[{built_in impl Sized for bool}], impl_Foo_for_Option<'58, &'58 bool>[{built_in impl Sized for &'58 bool}, {impl Copy for &'_0 T}<'58, bool>]](move _2)
+    _1 = external_use_item<'51, &'51 bool, Option<&'51 bool>[{built_in impl Sized for &'51 bool}], &'51 bool>[{built_in impl Sized for &'51 bool}, {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}<'51, bool>[{built_in impl Sized for bool}], impl_Foo_for_Option<'51, &'51 bool>[{built_in impl Sized for &'51 bool}, {impl Copy for &'_0 T}<'51, bool>]](move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)

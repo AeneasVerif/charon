@@ -143,7 +143,7 @@ fn main()
     storage_live(_7)
     storage_live(_8)
     _8 = &(*args_3._0)
-    _7 = new_display<'41, '49, u32>[{built_in impl Sized for u32}, impl_Display_for_u32](move _8)
+    _7 = new_display<'39, '50, u32>[{built_in impl Sized for u32}, impl_Display_for_u32](move _8)
     ↳⚡ unwind_continue
     storage_dead(_8)
     args_6 = [move _7]
@@ -159,7 +159,7 @@ fn main()
     storage_live(_12)
     _12 = &args_6
     _11 = &(*_12)
-    _2 = new<'56, 4usize, 1usize>(move _9, move _11)
+    _2 = new<'40, 4usize, 1usize>(move _9, move _11)
     ↳⚡ unwind_continue
     storage_dead(_12)
     storage_dead(_11)

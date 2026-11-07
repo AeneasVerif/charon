@@ -106,8 +106,8 @@ fn main()
     let mut _5: &'8 (dyn Trait<usize, Item = bool> + '9); // anonymous local
     let mut _6: &'10 i32; // anonymous local
     let mut _7: fn(&'8 (dyn Trait<usize, Item = bool> + '9)); // anonymous local
-    let mut _8: &'11 i32; // anonymous local
-    let mut _9: &'24 i32; // anonymous local
+    let mut _8: &'15 i32; // anonymous local
+    let mut _9: &'26 i32; // anonymous local
     let mut _10: i32; // anonymous local
 
     storage_live(_8)
@@ -119,17 +119,18 @@ fn main()
     storage_live(_0)
     storage_live(_6)
     _0 = ()
+    set '12 :> '11
+    set '14 :> '13
     storage_live(a)
     storage_live(_2)
     storage_live(_3)
     _6 = move _8
     _3 = &(*_6)
     _2 = &(*_3)
-    a = unsize_cast<&'12 (dyn Trait<usize, Item = bool> + '13), &impl_Trait_usize_for_i32::{vtable}>(move _2)
+    a = unsize_cast<&'16 (dyn Trait<usize, Item = bool> + '17), &impl_Trait_usize_for_i32::{vtable}>(move _2)
     storage_dead(_2)
     fake_read(a)
-    set '15 :> '14
-    set a := &'14 (dyn Trait<usize, Item = bool> + '15)
+    set a := &'13 (dyn Trait<usize, Item = bool> + '14)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)

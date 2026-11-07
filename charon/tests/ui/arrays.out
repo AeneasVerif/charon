@@ -1381,8 +1381,8 @@ pub fn const_slice()
     let mut _2: &'3 [u32; 2usize]; // anonymous local
     let _3: &'4 [u32; 2usize]; // anonymous local
     let mut _4: &'5 [u32; 2usize]; // anonymous local
-    let mut _5: &'6 [u32; 2usize]; // anonymous local
-    let mut _6: &'9 [u32; 2usize]; // anonymous local
+    let mut _5: &'8 [u32; 2usize]; // anonymous local
+    let mut _6: &'10 [u32; 2usize]; // anonymous local
     let mut _7: [u32; 2usize]; // anonymous local
 
     storage_live(_5)
@@ -1404,7 +1404,7 @@ pub fn const_slice()
     _1 = as_slice<'_, u32, 2usize>[{built_in impl Sized for u32}](move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
-    set _1 :< &'8 [u32]
+    set _1 :< &'7 [u32]
     storage_dead(_3)
     storage_dead(_1)
     _0 = ()

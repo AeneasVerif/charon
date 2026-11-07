@@ -172,6 +172,10 @@ where
     let mut _7: &'12 T; // anonymous local
 
     storage_live(_0)
+    set 'lub<T> :> '13
+    set '14 :> '13
+    set 'lub<T> :> '15
+    set '16 :> '15
     storage_live(x)
     storage_live(_3)
     storage_live(_4)
@@ -179,18 +183,16 @@ where
     _5 = const 199i32
     _4 = &mut _5
     _3 = &mut (*_4)
-    x = unsize_cast<&'13 mut (dyn Modifiable<T> + '14), &impl_Modifiable_for_i32::{vtable}<T>[TraitClause0, TraitClause1]>(move _3)
+    x = unsize_cast<&'17 mut (dyn Modifiable<T> + '18), &impl_Modifiable_for_i32::{vtable}<T>[TraitClause0, TraitClause1]>(move _3)
     storage_dead(_3)
     fake_read(x)
-    set 'lub<T> :> '15
-    set '16 :> '15
     set x := &'15 mut (dyn Modifiable<T> + '16)
     storage_dead(_4)
     storage_live(_6)
     _6 = &two-phase-mut (*x) with_metadata(read x.metadata)
     storage_live(_7)
     _7 = &(*arg)
-    _0 = (read (*_6.metadata).method_modify)<'25, '26>(move _6, move _7)
+    _0 = (read (*_6.metadata).method_modify)<'27, '28>(move _6, move _7)
     ↳⚡ storage_dead(arg)
         unwind_continue
     storage_dead(_7)

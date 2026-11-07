@@ -97,10 +97,11 @@ where
 
     storage_live(_0)
     _0 = ()
+    set 'lub<T> :> '78
     storage_live(_2)
     storage_live(_3)
     _3 = copy slice
-    _2 = into_iter<'72, T>[TraitClause0](move _3)
+    _2 = into_iter<'84, T>[TraitClause0](move _3)
     ↳⚡ storage_dead(slice)
         unwind_continue
     storage_dead(_3)
@@ -112,7 +113,7 @@ where
         storage_live(_7)
         _7 = &mut iter
         _6 = &two-phase-mut (*_7)
-        _5 = next<'77, '81, T>[TraitClause0](move _6)
+        _5 = next<'89, '93, T>[TraitClause0](move _6)
         ↳⚡ storage_dead(slice)
             unwind_continue
         storage_dead(_6)
@@ -137,8 +138,7 @@ where
         storage_live(_14)
         storage_live(_15)
         _15 = &(*args_11._0)
-        set 'lub<T> :> '105
-        _14 = new_debug<'104, '141, &'105 T>[{built_in impl Sized for &'105 T}, {impl#9}<'103, T>[TraitClause1]](move _15)
+        _14 = new_debug<'77, '142, &'78 T>[{built_in impl Sized for &'78 T}, {impl#6}<'76, T>[TraitClause1]](move _15)
         ↳⚡ storage_dead(slice)
             unwind_continue
         storage_dead(_15)
@@ -155,7 +155,7 @@ where
         storage_live(_19)
         _19 = &args_13
         _18 = &(*_19)
-        _10 = new<'148, 7usize, 1usize>(move _16, move _18)
+        _10 = new<'79, 7usize, 1usize>(move _16, move _18)
         ↳⚡ storage_dead(slice)
             unwind_continue
         storage_dead(_19)

@@ -119,3 +119,8 @@ where
 {
     let x: impl SameAs<&'a u32> + 'b = value;
 }
+
+pub fn unused_annotation<'a, 'b: 'a>() {
+    // This annotation has obligations but no local or MIR statement.
+    let _: <&'b u32 as Project<'a>>::Output;
+}
