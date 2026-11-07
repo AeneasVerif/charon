@@ -217,9 +217,7 @@ fn translate_with_cargo(
     mut cargo_args: Vec<String>,
 ) -> anyhow::Result<ExitStatus> {
     ensure_rustup();
-    // Cargo runs the driver from the workspace root, which `--manifest-path` can move away from
-    // where charon was run. Resolve the output paths now so they stay relative to charon's
-    // working directory, as documented.
+    // Resolve these paths relative to the current directory.
     options.dest_dir = Some(std::path::absolute(
         options.dest_dir.as_deref().unwrap_or(".".as_ref()),
     )?);
