@@ -217,7 +217,8 @@ fn translate_with_cargo(
     mut cargo_args: Vec<String>,
 ) -> anyhow::Result<ExitStatus> {
     ensure_rustup();
-    // Resolve these paths relative to the current directory.
+    // Cargo controls the directory where the driver is run, so we resolve these paths relative to
+    // the current directory.
     options.dest_dir = Some(std::path::absolute(
         options.dest_dir.as_deref().unwrap_or(".".as_ref()),
     )?);
