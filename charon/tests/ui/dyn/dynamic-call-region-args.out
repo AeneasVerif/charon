@@ -21,7 +21,7 @@ struct test_crate::Processor::{vtable}<'x> {
 pub trait Processor<'x, Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn process<'a, '_1_1>;
+    fn process<'a, '_1_1, Outlives0: (Self: '_1_1)>;
     vtable: test_crate::Processor::{vtable}<'x>
 }
 

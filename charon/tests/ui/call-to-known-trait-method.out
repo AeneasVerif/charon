@@ -20,7 +20,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -40,7 +40,7 @@ impl "impl_Clone_for_u8" Clone for u8 {
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1>;
+    fn eq<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -80,7 +80,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 

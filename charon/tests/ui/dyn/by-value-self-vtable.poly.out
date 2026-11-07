@@ -63,7 +63,7 @@ trait Consume<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     fn consume;
-    fn read<'_0_1>;
+    fn read<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Consume::{vtable}
 }
 

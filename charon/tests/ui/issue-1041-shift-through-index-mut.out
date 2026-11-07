@@ -23,7 +23,7 @@ pub trait Index<Self, Idx>
     proof ImpliedClause2: (Self::Output: MetaSized)
     type Output
     #[track_caller]
-    fn index<'_0_1>;
+    fn index<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
 }
 
@@ -35,7 +35,7 @@ pub trait IndexMut<Self, Idx>
     proof ImpliedClause1: (Self: Index<Idx>)
     proof ImpliedClause2: (Idx: MetaSized)
     #[track_caller]
-    fn index_mut<'_0_1>;
+    fn index_mut<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Self::ImpliedClause1::Output: '_0_1)>;
     vtable: core::ops::index::IndexMut::{vtable}<Idx, Self::ImpliedClause1::Output>
 }
 

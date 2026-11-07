@@ -33,7 +33,7 @@ pub fn impl_Trait_for_unit::defaulted<'_0>(self: &'_0 ())
 pub trait Trait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn defaulted<'_0_1> = test_crate::foo::Trait::defaulted<'_0_1, Self>[Self]
+    fn defaulted<'_0_1, Outlives0: (Self: '_0_1)> = test_crate::foo::Trait::defaulted<'_0_1, Self>[Self]
     vtable: test_crate::foo::Trait::{vtable}
 }
 

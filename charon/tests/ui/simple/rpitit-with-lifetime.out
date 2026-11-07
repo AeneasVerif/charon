@@ -33,7 +33,7 @@ pub trait Iterator<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Item: Sized)
     type Item
-    fn next<'_0_1>;
+    fn next<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 
@@ -50,7 +50,7 @@ trait Foo<Self, T>
         TypeConstraint0: Self::iter_ty<'_, '_>::ImpliedClause1::Item = &'_1_1 T,
         proof ImpliedClause0: (Self::iter_ty<'a, '_1_1>: Sized),
         proof ImpliedClause1: (Self::iter_ty<'a, '_1_1>: Iterator);
-    fn iter<'a, Outlives0: (T: 'a)>;
+    fn iter<'a, Outlives0: (T: 'a), Outlives1: (Self: 'a)>;
     non-dyn-compatible
 }
 

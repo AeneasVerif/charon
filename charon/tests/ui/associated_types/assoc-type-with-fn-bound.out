@@ -45,7 +45,7 @@ pub trait FnMut<Self, Args, Self_Clause1_Output>
     proof ImpliedClause1: (Self: FnOnce<Args, Self_Clause1_Output>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1>;
+    fn call_mut<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self_Clause1_Output>
 }
 
@@ -58,7 +58,7 @@ pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
     proof ImpliedClause1: (Self: FnMut<Args, Self_Clause1_Clause1_Output>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call<'_0_1>;
+    fn call<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::ops::function::Fn::{vtable}<Args, Self_Clause1_Clause1_Output>
 }
 
@@ -70,7 +70,7 @@ pub trait Trait<Self, Self_Foo>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self_Foo: Sized)
     proof ImpliedClause2: (Self_Foo: Fn<(), ()>)
-    fn call<'_0_1>;
+    fn call<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Trait::{vtable}<Self_Foo>
 }
 

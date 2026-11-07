@@ -44,14 +44,14 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
 #[lang_item(Destruct)]
 pub trait core::marker::Destruct::<&_ mut _><'_0, T0>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (&'_0 mut T0: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -66,7 +66,7 @@ pub enum Option<T> {
 #[lang_item(Destruct)]
 pub trait core::marker::Destruct::<Option<&_ mut _>><'_0, T0>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Option<&'_0 mut T0>: '_0_1)>;
     non-dyn-compatible
 }
 

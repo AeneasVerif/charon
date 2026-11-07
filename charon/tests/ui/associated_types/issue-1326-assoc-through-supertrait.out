@@ -20,7 +20,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -29,7 +29,7 @@ pub trait HasAssoc<Self, Self_Assoc>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self_Assoc: Sized)
-    fn method<'_0_1>;
+    fn method<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::HasAssoc::{vtable}<Self_Assoc>
 }
 

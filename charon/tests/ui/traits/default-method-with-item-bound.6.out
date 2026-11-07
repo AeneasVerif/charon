@@ -37,8 +37,8 @@ trait Trait<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Item: Sized)
     type Item
-    fn consume<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: Takes<Self::Item>)>;
-    fn provided<'_0_1, TraitClause0_1: (Self: Trait), TypeConstraint0: Self::Item = bool> = test_crate::Trait::provided<'_0_1, Self>[Self, TraitClause0_1]
+    fn consume<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: Takes<Self::Item>), Outlives0: (Self: '_0_1)>;
+    fn provided<'_0_1, TraitClause0_1: (Self: Trait), Outlives0: (Self: '_0_1), TypeConstraint0: Self::Item = bool> = test_crate::Trait::provided<'_0_1, Self>[Self, TraitClause0_1]
     non-dyn-compatible
 }
 

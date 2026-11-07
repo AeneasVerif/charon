@@ -20,7 +20,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -39,7 +39,7 @@ pub trait Index<Self, Idx, Self_Output>
     proof ImpliedClause1: (Idx: MetaSized)
     proof ImpliedClause2: (Self_Output: MetaSized)
     #[track_caller]
-    fn index<'_0_1>;
+    fn index<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Self_Output: '_0_1)>;
     vtable: core::ops::index::Index::{vtable}<Idx, Self_Output>
 }
 
@@ -61,7 +61,7 @@ pub trait IndexMut<Self, Idx, Self_Clause1_Output>
     proof ImpliedClause1: (Self: Index<Idx, Self_Clause1_Output>)
     proof ImpliedClause2: (Idx: MetaSized)
     #[track_caller]
-    fn index_mut<'_0_1>;
+    fn index_mut<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Self_Clause1_Output: '_0_1)>;
     vtable: core::ops::index::IndexMut::{vtable}<Idx, Self_Clause1_Output>
 }
 
@@ -106,7 +106,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -157,14 +157,14 @@ pub unsafe trait SliceIndex<Self, T, Self_Output>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: MetaSized)
     proof ImpliedClause2: (Self_Output: MetaSized)
-    fn get<'_0_1>;
-    fn get_mut<'_0_1>;
+    fn get<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self_Output: '_0_1)>;
+    fn get_mut<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self_Output: '_0_1)>;
     fn get_unchecked;
     fn get_unchecked_mut;
     #[track_caller]
-    fn index<'_0_1>;
+    fn index<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self_Output: '_0_1)>;
     #[track_caller]
-    fn index_mut<'_0_1>;
+    fn index_mut<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self_Output: '_0_1)>;
     vtable: core::slice::index::SliceIndex::{vtable}<T, Self_Output>
 }
 

@@ -20,7 +20,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -30,7 +30,7 @@ pub trait Drop<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Destruct)
-    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
+    fn drop<'_0_1, Outlives0: (Self: '_0_1)> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
 

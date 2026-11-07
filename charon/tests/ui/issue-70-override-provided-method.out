@@ -5,7 +5,7 @@
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1>;
+    fn eq<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -48,7 +48,7 @@ where
 pub trait PartialOrd<Self, Rhs>
 {
     proof ImpliedClause0: (Self: PartialEq<Rhs>)
-    fn partial_cmp<'_0_1, '_1_1>;
+    fn partial_cmp<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 

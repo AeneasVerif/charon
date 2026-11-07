@@ -22,7 +22,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -53,7 +53,7 @@ pub trait Broken<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Assoc: Sized)
     type Assoc
-    fn broken<'_0_1>;
+    fn broken<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Broken::{vtable}<Self::Assoc>
 }
 

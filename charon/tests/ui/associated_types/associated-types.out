@@ -11,7 +11,7 @@ pub trait Borrow<Self, Borrowed>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Borrowed: MetaSized)
-    fn borrow<'_0_1>;
+    fn borrow<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Borrowed: '_0_1)>;
     vtable: core::borrow::Borrow::{vtable}<Borrowed>
 }
 
@@ -30,7 +30,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -78,7 +78,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -132,7 +132,7 @@ pub trait ToOwned<Self, Self_Owned>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self_Owned: Sized)
     proof ImpliedClause2: (Self_Owned: Borrow<Self>)
-    fn to_owned<'_0_1>;
+    fn to_owned<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 

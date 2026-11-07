@@ -26,12 +26,12 @@ pub struct NonNull<T> {
 pub unsafe trait Allocator<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn allocate<'_0_1>;
-    fn allocate_zeroed<'_0_1> = allocate_zeroed<'_0_1, Self>[Self]
-    fn deallocate<'_0_1>;
-    fn grow<'_0_1> = grow<'_0_1, Self>[Self]
-    fn grow_zeroed<'_0_1> = grow_zeroed<'_0_1, Self>[Self]
-    fn shrink<'_0_1> = shrink<'_0_1, Self>[Self]
+    fn allocate<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn allocate_zeroed<'_0_1, Outlives0: (Self: '_0_1)> = allocate_zeroed<'_0_1, Self>[Self]
+    fn deallocate<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn grow<'_0_1, Outlives0: (Self: '_0_1)> = grow<'_0_1, Self>[Self]
+    fn grow_zeroed<'_0_1, Outlives0: (Self: '_0_1)> = grow_zeroed<'_0_1, Self>[Self]
+    fn shrink<'_0_1, Outlives0: (Self: '_0_1)> = shrink<'_0_1, Self>[Self]
     vtable: core::alloc::Allocator::{vtable}
 }
 
@@ -1586,7 +1586,7 @@ where
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 

@@ -31,7 +31,7 @@ struct () {}
 pub trait BoolTrait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn foo<'_0_1> = test_crate::BoolTrait::foo<'_0_1, Self>[Self]
+    fn foo<'_0_1, Outlives0: (Self: '_0_1)> = test_crate::BoolTrait::foo<'_0_1, Self>[Self]
     vtable: test_crate::BoolTrait::{vtable}
 }
 

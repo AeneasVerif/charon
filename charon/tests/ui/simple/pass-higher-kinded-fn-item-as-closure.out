@@ -20,7 +20,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -55,7 +55,7 @@ pub trait FnMut<Self, Args, Self_Clause1_Output>
     proof ImpliedClause1: (Self: FnOnce<Args, Self_Clause1_Output>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1>;
+    fn call_mut<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self_Clause1_Output>
 }
 
@@ -68,7 +68,7 @@ pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
     proof ImpliedClause1: (Self: FnMut<Args, Self_Clause1_Clause1_Output>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call<'_0_1>;
+    fn call<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::ops::function::Fn::{vtable}<Args, Self_Clause1_Clause1_Output>
 }
 

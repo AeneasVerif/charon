@@ -23,7 +23,7 @@ struct test_crate::Feline::{vtable} {
 trait Feline<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn hunt<'_0_1>;
+    fn hunt<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Feline::{vtable}
 }
 
@@ -39,7 +39,7 @@ struct test_crate::Pettable::{vtable} {
 trait Pettable<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn pet<'_0_1>;
+    fn pet<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Pettable::{vtable}
 }
 
@@ -59,7 +59,7 @@ trait Cat<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Feline)
     proof ImpliedClause2: (Self: Pettable)
-    fn meow<'_0_1>;
+    fn meow<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Cat::{vtable}
 }
 

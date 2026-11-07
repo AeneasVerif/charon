@@ -28,7 +28,7 @@ pub trait core::marker::Sized<Self>
 pub trait core::clone::Clone<Self>
 {
     proof ImpliedClause0: (Self: core::marker::Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -94,7 +94,7 @@ pub trait core::ops::index::Index<Self, Idx>
     proof ImpliedClause2: (Self::Output: core::marker::MetaSized)
     type Output
     #[track_caller]
-    fn index<'_0_1>;
+    fn index<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
 }
 
@@ -114,7 +114,7 @@ pub trait core::ops::index::IndexMut<Self, Idx>
     proof ImpliedClause1: (Self: core::ops::index::Index<Idx>)
     proof ImpliedClause2: (Idx: core::marker::MetaSized)
     #[track_caller]
-    fn index_mut<'_0_1>;
+    fn index_mut<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Self::ImpliedClause1::Output: '_0_1)>;
     vtable: core::ops::index::IndexMut::{vtable}<Idx, Self::ImpliedClause1::Output>
 }
 
@@ -153,7 +153,7 @@ impl core::clone::Clone for usize {
 #[diagnostic_item("PartialEq")]
 pub trait core::cmp::PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1>;
+    fn eq<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -179,7 +179,7 @@ where
 pub trait core::cmp::PartialOrd<Self, Rhs>
 {
     proof ImpliedClause0: (Self: core::cmp::PartialEq<Rhs>)
-    fn partial_cmp<'_0_1, '_1_1>;
+    fn partial_cmp<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
@@ -216,7 +216,7 @@ pub trait core::iter::range::Step<Self>
     proof ImpliedClause0: (Self: core::marker::Sized)
     proof ImpliedClause1: (Self: core::clone::Clone)
     proof ImpliedClause2: (Self: core::cmp::PartialOrd<Self>)
-    fn steps_between<'_0_1, '_1_1>;
+    fn steps_between<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Self: '_1_1)>;
     fn forward_checked;
     fn forward_overflowing;
     fn backward_checked;
@@ -264,7 +264,7 @@ where
 #[lang_item(Destruct)]
 pub trait core::marker::Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -275,7 +275,7 @@ pub trait core::iter::traits::iterator::Iterator<Self>
     proof ImpliedClause0: (Self: core::marker::MetaSized)
     proof ImpliedClause1: (Self::Item: core::marker::Sized)
     type Item
-    fn next<'_0_1>;
+    fn next<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 
@@ -317,14 +317,14 @@ pub unsafe trait core::slice::index::SliceIndex<Self, T>
     proof ImpliedClause1: (T: core::marker::MetaSized)
     proof ImpliedClause2: (Self::Output: core::marker::MetaSized)
     type Output
-    fn get<'_0_1>;
-    fn get_mut<'_0_1>;
+    fn get<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
+    fn get_mut<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     fn get_unchecked;
     fn get_unchecked_mut;
     #[track_caller]
-    fn index<'_0_1>;
+    fn index<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     #[track_caller]
-    fn index_mut<'_0_1>;
+    fn index_mut<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }
 

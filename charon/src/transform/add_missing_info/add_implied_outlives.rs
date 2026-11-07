@@ -247,5 +247,13 @@ impl TransformPass for Transform {
             visitor.visit(&mut timpl.impl_trait);
             visitor.finish();
         }
+
+        for trait_decl in &mut ctx.translated.trait_decls {
+            for method in &mut trait_decl.methods {
+                let mut visitor = OutlivesGatherer::new(&mut method.params, type_decls);
+                visitor.visit(&mut method.skip_binder.signature);
+                visitor.finish();
+            }
+        }
     }
 }

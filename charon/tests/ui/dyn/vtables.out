@@ -22,7 +22,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -115,7 +115,7 @@ trait Super<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: Sized)
-    fn super_method<'_0_1>;
+    fn super_method<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Super::{vtable}<T>
 }
 
@@ -134,7 +134,7 @@ trait Checkable<Self, T>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Super<T>)
     proof ImpliedClause2: (T: Sized)
-    fn check<'_0_1>;
+    fn check<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Checkable::{vtable}<T>
 }
 
@@ -294,7 +294,7 @@ struct test_crate::NoParam::{vtable} {
 trait NoParam<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn dummy<'_0_1>;
+    fn dummy<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::NoParam::{vtable}
 }
 
@@ -369,7 +369,7 @@ trait Modifiable<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: Sized)
-    fn modify<'_0_1, '_1_1>;
+    fn modify<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (T: '_1_1)>;
     vtable: test_crate::Modifiable::{vtable}<T>
 }
 
@@ -529,7 +529,7 @@ trait BaseOn<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: Sized)
-    fn operate_on<'_0_1, '_1_1>;
+    fn operate_on<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (T: '_1_1)>;
     vtable: test_crate::BaseOn::{vtable}<T>
 }
 
@@ -549,7 +549,7 @@ trait Both32And64<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: BaseOn<i32>)
     proof ImpliedClause2: (Self: BaseOn<i64>)
-    fn both_operate<'_0_1, '_1_1, '_2_1> = test_crate::Both32And64::both_operate<'_0_1, '_1_1, '_2_1, Self>[Self]
+    fn both_operate<'_0_1, '_1_1, '_2_1, Outlives0: (Self: '_0_1)> = test_crate::Both32And64::both_operate<'_0_1, '_1_1, '_2_1, Self>[Self]
     vtable: test_crate::Both32And64::{vtable}
 }
 
@@ -892,7 +892,7 @@ trait LifetimeTrait<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Ty: Sized)
     type Ty
-    fn lifetime_method<'a, '_1_1>;
+    fn lifetime_method<'a, '_1_1, Outlives0: (Self: '_1_1), Outlives1: (Self::Ty: 'a)>;
     vtable: test_crate::LifetimeTrait::{vtable}<Self::Ty>
 }
 

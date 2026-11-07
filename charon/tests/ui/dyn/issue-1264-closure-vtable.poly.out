@@ -24,7 +24,7 @@ vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -42,7 +42,7 @@ pub trait Tuple<Self>
 pub trait Drop<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
+    fn drop<'_0_1, Outlives0: (Self: '_0_1)> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
 
@@ -92,7 +92,7 @@ pub trait FnMut<Self, Args>
     proof ImpliedClause1: (Self: FnOnce<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1>;
+    fn call_mut<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
 
@@ -114,7 +114,7 @@ pub trait Fn<Self, Args>
     proof ImpliedClause1: (Self: FnMut<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call<'_0_1>;
+    fn call<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
 

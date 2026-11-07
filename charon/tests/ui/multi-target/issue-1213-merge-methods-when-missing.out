@@ -55,7 +55,7 @@ pub trait core::iter::traits::iterator::Iterator<Self>
     proof ImpliedClause0: (Self: core::marker::MetaSized)
     proof ImpliedClause1: (Self::Item: core::marker::Sized)
     type Item
-    fn next<'_0_1>;
+    fn next<'_0_1, Outlives0: (Self: '_0_1)>;
     fn zip<U, TraitClause0_1: (U: core::marker::Sized), TraitClause1_1: (Self: core::marker::Sized), TraitClause2_1: (U: core::iter::traits::collect::IntoIterator)> = core::iter::traits::iterator::Iterator::zip<Self, U>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }

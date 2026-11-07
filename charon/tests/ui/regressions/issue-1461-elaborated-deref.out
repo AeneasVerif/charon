@@ -42,8 +42,8 @@ pub opaque type NonNull<T>
 pub unsafe trait Allocator<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn allocate<'_0_1>;
-    fn deallocate<'_0_1>;
+    fn allocate<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn deallocate<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::alloc::Allocator::{vtable}
 }
 
@@ -51,7 +51,7 @@ pub unsafe trait Allocator<Self>
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 

@@ -7,7 +7,7 @@ opaque type core::cmp::PartialEq::{vtable}<Rhs>
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1>;
+    fn eq<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -59,7 +59,7 @@ pub trait FnMut<Self, Args>
     proof ImpliedClause1: (Self: FnOnce<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1>;
+    fn call_mut<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
 
@@ -72,7 +72,7 @@ pub trait Fn<Self, Args>
     proof ImpliedClause1: (Self: FnMut<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call<'_0_1>;
+    fn call<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
 

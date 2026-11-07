@@ -46,7 +46,7 @@ trait Super<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: Sized)
-    fn super_method<'_0_1>;
+    fn super_method<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Super::{vtable}<T>
 }
 
@@ -64,7 +64,7 @@ trait Internal<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Internal: Sized)
     type Internal
-    fn internal_method<'_0_1>;
+    fn internal_method<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Internal::{vtable}<Self::Internal>
 }
 
@@ -84,7 +84,7 @@ trait Left<Self>
     proof ImpliedClause1: (Self: Internal)
     proof ImpliedClause2: (Self::Left: Sized)
     type Left
-    fn left_method<'_0_1>;
+    fn left_method<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Left::{vtable}<Self::Left, Self::ImpliedClause1::Internal>
 }
 
@@ -107,7 +107,7 @@ trait Right<Self, T>
     proof ImpliedClause3: (T: Sized)
     proof ImpliedClause4: (Self::Right: Sized)
     type Right
-    fn right_method<'_0_1>;
+    fn right_method<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Right::{vtable}<T, Self::Right, Self::ImpliedClause1::Internal>
 }
 
@@ -128,7 +128,7 @@ trait Join<Self, T>
     proof ImpliedClause1: (Self: Left)
     proof ImpliedClause2: (Self: Right<T>)
     proof ImpliedClause3: (T: Sized)
-    fn join_method<'_0_1>;
+    fn join_method<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Join::{vtable}<T, Self::ImpliedClause1::Left, Self::ImpliedClause1::ImpliedClause1::Internal, Self::ImpliedClause2::Right, Self::ImpliedClause1::ImpliedClause1::Internal>
 }
 

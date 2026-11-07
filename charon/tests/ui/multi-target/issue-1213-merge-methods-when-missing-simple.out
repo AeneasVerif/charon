@@ -16,8 +16,8 @@ struct () {}
 trait test_crate::Trait<Self>
 {
     proof ImpliedClause0: (Self: core::marker::MetaSized)
-    fn method1<'_0_1> = test_crate::Trait::method1<'_0_1, Self>[Self]
-    fn method2<'_0_1> = test_crate::Trait::method2<'_0_1, Self>[Self]
+    fn method1<'_0_1, Outlives0: (Self: '_0_1)> = test_crate::Trait::method1<'_0_1, Self>[Self]
+    fn method2<'_0_1, Outlives0: (Self: '_0_1)> = test_crate::Trait::method2<'_0_1, Self>[Self]
     vtable: test_crate::Trait::{vtable}
 }
 

@@ -20,7 +20,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -56,7 +56,7 @@ pub trait FnMut<Self, Args>
     proof ImpliedClause1: (Self: FnOnce<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1>;
+    fn call_mut<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
 
@@ -69,7 +69,7 @@ pub trait Fn<Self, Args>
     proof ImpliedClause1: (Self: FnMut<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call<'_0_1>;
+    fn call<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
 
@@ -147,8 +147,8 @@ where
 pub trait BoolTrait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn get_bool<'_0_1>;
-    fn ret_true<'_0_1> = test_crate::BoolTrait::ret_true<'_0_1, Self>[Self]
+    fn get_bool<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn ret_true<'_0_1, Outlives0: (Self: '_0_1)> = test_crate::BoolTrait::ret_true<'_0_1, Self>[Self]
     vtable: test_crate::BoolTrait::{vtable}
 }
 
@@ -870,7 +870,7 @@ where
 trait TestTrait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn test<'_0_1>;
+    fn test<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::{TestType<T>[TraitClause0]}::test::TestTrait::{vtable}
 }
 
@@ -930,7 +930,7 @@ pub trait WithConstTy<Self, const LEN : usize>
     const LEN2 : usize
     type V
     type W
-    fn f<'_0_1, '_1_1>;
+    fn f<'_0_1, '_1_1, Outlives0: (Self::W: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -1095,8 +1095,8 @@ pub trait ParentTrait0<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::W: Sized)
     type W
-    fn get_name<'_0_1>;
-    fn get_w<'_0_1>;
+    fn get_name<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn get_w<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::ParentTrait0::{vtable}<Self::W>
 }
 
@@ -1322,7 +1322,7 @@ pub trait CFnMut<Self, Args>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: CFnOnce<Args>)
     proof ImpliedClause2: (Args: Sized)
-    fn call_mut<'_0_1>;
+    fn call_mut<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::CFnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
 
@@ -1332,7 +1332,7 @@ pub trait CFn<Self, Args>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: CFnMut<Args>)
     proof ImpliedClause2: (Args: Sized)
-    fn call<'_0_1>;
+    fn call<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::CFn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
 
@@ -1342,7 +1342,7 @@ pub trait GetTrait<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::W: Sized)
     type W
-    fn get_w<'_0_1>;
+    fn get_w<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::GetTrait::{vtable}<Self::W>
 }
 

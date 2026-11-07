@@ -20,7 +20,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -49,7 +49,7 @@ trait Iter<Self, Self_Item>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self_Item: Sized)
-    fn map<'_0_1, B, F, TraitClause0_1: (B: Sized), TraitClause1_1: (F: Sized), TraitClause2_1: (F: Apply<Self_Item, B>)> = test_crate::Iter::map<'_0_1, Self, B, F, Self_Item>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    fn map<'_0_1, B, F, TraitClause0_1: (B: Sized), TraitClause1_1: (F: Sized), TraitClause2_1: (F: Apply<Self_Item, B>), Outlives0: (Self: '_0_1)> = test_crate::Iter::map<'_0_1, Self, B, F, Self_Item>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
     non-dyn-compatible
 }
 

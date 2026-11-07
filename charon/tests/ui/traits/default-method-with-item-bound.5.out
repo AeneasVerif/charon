@@ -46,7 +46,7 @@ pub trait FnMut<Self, Args>
     proof ImpliedClause1: (Self: FnOnce<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1>;
+    fn call_mut<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
 
@@ -62,7 +62,7 @@ trait Iterator<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Item: Sized)
     type Item
-    fn rposition<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: FnMut<(Self::Item,)>), TraitClause2_1: (Self: DoubleEndedIterator), TypeConstraint0: TraitClause1_1::ImpliedClause1::Output = ()>;
+    fn rposition<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: FnMut<(Self::Item,)>), TraitClause2_1: (Self: DoubleEndedIterator), Outlives0: (Self: '_0_1), TypeConstraint0: TraitClause1_1::ImpliedClause1::Output = ()>;
     non-dyn-compatible
 }
 

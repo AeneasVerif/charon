@@ -20,7 +20,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -51,7 +51,7 @@ impl "impl_Clone_for_usize" Clone for usize {
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1>;
+    fn eq<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -80,7 +80,7 @@ where
 pub trait PartialOrd<Self, Rhs>
 {
     proof ImpliedClause0: (Self: PartialEq<Rhs>)
-    fn partial_cmp<'_0_1, '_1_1>;
+    fn partial_cmp<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
@@ -141,7 +141,7 @@ pub trait Step<Self>
     proof ImpliedClause0: (Self: Sized)
     proof ImpliedClause1: (Self: Clone)
     proof ImpliedClause2: (Self: PartialOrd<Self>)
-    fn steps_between<'_0_1, '_1_1>;
+    fn steps_between<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Self: '_1_1)>;
     fn forward_checked;
     fn forward_overflowing;
     fn backward_checked;
@@ -231,7 +231,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -243,7 +243,7 @@ pub trait Iterator<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Item: Sized)
     type Item
-    fn next<'_0_1>;
+    fn next<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 

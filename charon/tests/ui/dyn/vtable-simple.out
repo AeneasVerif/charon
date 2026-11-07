@@ -22,7 +22,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -54,7 +54,7 @@ trait Modifiable<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: Sized)
-    fn modify<'_0_1, '_1_1>;
+    fn modify<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (T: '_1_1)>;
     vtable: test_crate::Modifiable::{vtable}<T>
 }
 

@@ -27,7 +27,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -66,14 +66,14 @@ pub unsafe trait SliceIndex<Self, T>
     proof ImpliedClause1: (T: MetaSized)
     proof ImpliedClause2: (Self::Output: MetaSized)
     type Output
-    fn get<'_0_1>;
-    fn get_mut<'_0_1>;
+    fn get<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
+    fn get_mut<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     fn get_unchecked;
     fn get_unchecked_mut;
     #[track_caller]
-    fn index<'_0_1>;
+    fn index<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     #[track_caller]
-    fn index_mut<'_0_1>;
+    fn index_mut<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }
 
@@ -560,7 +560,7 @@ trait Get<'a, Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: Sized)
-    fn get;
+    fn get<Outlives0: (T: 'a)>;
     vtable: test_crate::Get::{vtable}<'a, T>
 }
 

@@ -47,7 +47,7 @@ struct test_crate::Foo::{vtable} {
 trait Foo<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn bar<'_0_1>;
+    fn bar<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Foo::{vtable}
 }
 

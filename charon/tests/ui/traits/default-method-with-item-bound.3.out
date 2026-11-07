@@ -32,7 +32,7 @@ trait Trait<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Item: Sized)
     type Item
-    fn defaulted<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: HasAssoc<Self::Item>), TraitClause2_1: (Self: Exact), TypeConstraint0: TraitClause1_1::Assoc = bool> = test_crate::Trait::defaulted<'_0_1, Self, P>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    fn defaulted<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: HasAssoc<Self::Item>), TraitClause2_1: (Self: Exact), Outlives0: (Self: '_0_1), TypeConstraint0: TraitClause1_1::Assoc = bool> = test_crate::Trait::defaulted<'_0_1, Self, P>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
     non-dyn-compatible
 }
 

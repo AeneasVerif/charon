@@ -16,7 +16,7 @@ pub trait Index<Self, Idx>
     proof ImpliedClause2: (Self::Output: MetaSized)
     type Output
     #[track_caller]
-    fn index<'_0_1>;
+    fn index<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
 }
 
@@ -45,7 +45,7 @@ where
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -75,7 +75,7 @@ impl "impl_Clone_for_u32" Clone for u32 {
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1>;
+    fn eq<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -112,7 +112,7 @@ where
 pub trait PartialOrd<Self, Rhs>
 {
     proof ImpliedClause0: (Self: PartialEq<Rhs>)
-    fn partial_cmp<'_0_1, '_1_1>;
+    fn partial_cmp<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
@@ -122,7 +122,7 @@ pub trait Ord<Self>
 {
     proof ImpliedClause0: (Self: Eq)
     proof ImpliedClause1: (Self: PartialOrd<Self>)
-    fn cmp<'_0_1, '_1_1>;
+    fn cmp<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Self: '_1_1)>;
     non-dyn-compatible
 }
 
@@ -171,8 +171,8 @@ impl "impl_Ord_for_unit" Ord for () {
 pub trait Hasher<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn finish<'_0_1>;
-    fn write<'_0_1, '_1_1>;
+    fn finish<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn write<'_0_1, '_1_1, Outlives0: (Self: '_0_1)>;
     vtable: core::hash::Hasher::{vtable}
 }
 
@@ -180,7 +180,7 @@ pub trait Hasher<Self>
 #[diagnostic_item("Hash")]
 pub trait Hash<Self>
 {
-    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher)>;
+    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher), Outlives0: (Self: '_0_1), Outlives1: (H: '_1_1)>;
     non-dyn-compatible
 }
 
@@ -333,7 +333,7 @@ pub trait Unpin<Self>
 pub trait Drop<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
+    fn drop<'_0_1, Outlives0: (Self: '_0_1)> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
 
@@ -395,14 +395,14 @@ pub unsafe trait SliceIndex<Self, T>
     proof ImpliedClause1: (T: MetaSized)
     proof ImpliedClause2: (Self::Output: MetaSized)
     type Output
-    fn get<'_0_1>;
-    fn get_mut<'_0_1>;
+    fn get<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
+    fn get_mut<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     fn get_unchecked;
     fn get_unchecked_mut;
     #[track_caller]
-    fn index<'_0_1>;
+    fn index<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     #[track_caller]
-    fn index_mut<'_0_1>;
+    fn index_mut<'_0_1, Outlives0: (T: '_0_1), Outlives1: (Self::Output: '_0_1)>;
     vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }
 
@@ -813,8 +813,8 @@ struct test_crate::DynTrait::{vtable} {
 trait DynTrait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn unsafe_method<'_0_1>;
-    fn safe_method<'_0_1>;
+    fn unsafe_method<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn safe_method<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::DynTrait::{vtable}
 }
 

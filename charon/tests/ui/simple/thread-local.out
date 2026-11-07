@@ -20,7 +20,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -99,7 +99,7 @@ pub unsafe trait DestroyedState<Self>
 {
     proof ImpliedClause0: (Self: Sized)
     proof ImpliedClause1: (Self: Copy)
-    fn register_dtor<'_0_1, T, TraitClause0_1: (T: Sized)>;
+    fn register_dtor<'_0_1, T, TraitClause0_1: (T: Sized), Outlives0: (T: '_0_1), Outlives1: (Self: '_0_1)>;
     non-dyn-compatible
 }
 

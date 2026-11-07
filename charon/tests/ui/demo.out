@@ -554,7 +554,7 @@ where
 pub trait Counter<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn incr<'_0_1>;
+    fn incr<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::Counter::{vtable}
 }
 

@@ -36,7 +36,7 @@ impl "impl_Hasher_for_DefaultHasher" Hasher for DefaultHasher {
 pub trait Hash<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher)>;
+    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher), Outlives0: (Self: '_0_1), Outlives1: (H: '_1_1)>;
     non-dyn-compatible
 }
 

@@ -20,7 +20,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -65,7 +65,7 @@ where
 #[diagnostic_item("Debug")]
 pub trait Debug<Self>
 {
-    fn fmt<'_0_1, '_1_1, '_2_1>;
+    fn fmt<'_0_1, '_1_1, '_2_1, Outlives0: (Self: '_0_1), Outlives1: ('_2_1: '_1_1)>;
     vtable: core::fmt::Debug::{vtable}
 }
 

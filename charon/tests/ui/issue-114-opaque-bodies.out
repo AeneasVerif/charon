@@ -31,7 +31,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -73,8 +73,8 @@ where
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1>;
-    fn ne<'_0_1, '_1_1> = ne<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn eq<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
+    fn ne<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)> = ne<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 

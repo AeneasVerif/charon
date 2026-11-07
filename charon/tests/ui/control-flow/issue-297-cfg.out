@@ -33,7 +33,7 @@ pub trait Iterator<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Item: Sized)
     type Item
-    fn next<'_0_1>;
+    fn next<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 

@@ -24,8 +24,8 @@ struct test_crate::Trait::{vtable} {
 pub trait Trait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn base<'_0_1>;
-    fn dflt<'_0_1> = test_crate::Trait::dflt<'_0_1, Self>[Self]
+    fn base<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn dflt<'_0_1, Outlives0: (Self: '_0_1)> = test_crate::Trait::dflt<'_0_1, Self>[Self]
     vtable: test_crate::Trait::{vtable}
 }
 

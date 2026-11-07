@@ -13,7 +13,7 @@ opaque type test_crate::x::Trait::{vtable}
 pub trait Trait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn method<'_0_1>;
+    fn method<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: test_crate::x::Trait::{vtable}
 }
 

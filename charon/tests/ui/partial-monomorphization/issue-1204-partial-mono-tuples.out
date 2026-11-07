@@ -32,7 +32,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -44,7 +44,7 @@ struct (_, _)<A, B> {
 #[lang_item(Destruct)]
 pub trait core::marker::Destruct::<(&_ mut _, &_ mut _)><'_0, '_1, T0, T1>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: ((&'_0 mut T0, &'_1 mut T1): '_0_1)>;
     non-dyn-compatible
 }
 

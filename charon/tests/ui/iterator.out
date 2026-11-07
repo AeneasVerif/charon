@@ -141,7 +141,7 @@ pub trait FnMut<Self, Args>
     proof ImpliedClause1: (Self: FnOnce<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1>;
+    fn call_mut<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
 
@@ -149,7 +149,7 @@ pub trait FnMut<Self, Args>
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -159,8 +159,8 @@ pub trait Destruct<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
-    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (Self: Destruct)> = core::clone::Clone::clone_from<'_0_1, '_1_1, Self>[Self, TraitClause0_1]
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (Self: Destruct), Outlives0: (Self: '_0_1), Outlives1: (Self: '_1_1)> = core::clone::Clone::clone_from<'_0_1, '_1_1, Self>[Self, TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -395,8 +395,8 @@ pub enum Ordering {
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1>;
-    fn ne<'_0_1, '_1_1> = core::cmp::PartialEq::ne<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn eq<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
+    fn ne<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)> = core::cmp::PartialEq::ne<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
@@ -406,15 +406,15 @@ pub trait PartialEq<Self, Rhs>
 pub trait PartialOrd<Self, Rhs>
 {
     proof ImpliedClause0: (Self: PartialEq<Rhs>)
-    fn partial_cmp<'_0_1, '_1_1>;
-    fn lt<'_0_1, '_1_1> = core::cmp::PartialOrd::lt<'_0_1, '_1_1, Self, Rhs>[Self]
-    fn le<'_0_1, '_1_1> = core::cmp::PartialOrd::le<'_0_1, '_1_1, Self, Rhs>[Self]
-    fn gt<'_0_1, '_1_1> = core::cmp::PartialOrd::gt<'_0_1, '_1_1, Self, Rhs>[Self]
-    fn ge<'_0_1, '_1_1> = core::cmp::PartialOrd::ge<'_0_1, '_1_1, Self, Rhs>[Self]
-    fn __chaining_lt<'_0_1, '_1_1> = __chaining_lt<'_0_1, '_1_1, Self, Rhs>[Self]
-    fn __chaining_le<'_0_1, '_1_1> = __chaining_le<'_0_1, '_1_1, Self, Rhs>[Self]
-    fn __chaining_gt<'_0_1, '_1_1> = __chaining_gt<'_0_1, '_1_1, Self, Rhs>[Self]
-    fn __chaining_ge<'_0_1, '_1_1> = __chaining_ge<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn partial_cmp<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)>;
+    fn lt<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)> = core::cmp::PartialOrd::lt<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn le<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)> = core::cmp::PartialOrd::le<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn gt<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)> = core::cmp::PartialOrd::gt<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn ge<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)> = core::cmp::PartialOrd::ge<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn __chaining_lt<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)> = __chaining_lt<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn __chaining_le<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)> = __chaining_le<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn __chaining_gt<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)> = __chaining_gt<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn __chaining_ge<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Rhs: '_1_1)> = __chaining_ge<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
@@ -424,8 +424,8 @@ pub trait Eq<Self>
 {
     proof ImpliedClause0: (Self: PartialEq<Self>)
     #[deprecated(since = "1.95.0", note = "implementation detail of `#[derive(Eq)]`")]
-    fn assert_receiver_is_total_eq<'_0_1> = assert_receiver_is_total_eq<'_0_1, Self>[Self]
-    fn assert_fields_are_eq<'_0_1> = assert_fields_are_eq<'_0_1, Self>[Self]
+    fn assert_receiver_is_total_eq<'_0_1, Outlives0: (Self: '_0_1)> = assert_receiver_is_total_eq<'_0_1, Self>[Self]
+    fn assert_fields_are_eq<'_0_1, Outlives0: (Self: '_0_1)> = assert_fields_are_eq<'_0_1, Self>[Self]
     non-dyn-compatible
 }
 
@@ -444,7 +444,7 @@ pub trait Ord<Self>
 {
     proof ImpliedClause0: (Self: Eq)
     proof ImpliedClause1: (Self: PartialOrd<Self>)
-    fn cmp<'_0_1, '_1_1>;
+    fn cmp<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Self: '_1_1)>;
     fn max<TraitClause0_1: (Self: Sized), TraitClause1_1: (Self: Destruct)> = core::cmp::Ord::max<Self>[Self, TraitClause0_1, TraitClause1_1]
     fn min<TraitClause0_1: (Self: Sized), TraitClause1_1: (Self: Destruct)> = core::cmp::Ord::min<Self>[Self, TraitClause0_1, TraitClause1_1]
     fn clamp<TraitClause0_1: (Self: Sized), TraitClause1_1: (Self: Destruct)> = clamp<Self>[Self, TraitClause0_1, TraitClause1_1]
@@ -506,7 +506,7 @@ pub unsafe trait TrustedRandomAccessNoCoerce<Self>
 {
     proof ImpliedClause0: (Self: Sized)
     const MAY_HAVE_SIDE_EFFECT : bool
-    fn size<'_0_1, TraitClause0_1: (Self: Iterator)> = size<'_0_1, Self>[Self, TraitClause0_1]
+    fn size<'_0_1, TraitClause0_1: (Self: Iterator), Outlives0: (Self: '_0_1)> = size<'_0_1, Self>[Self, TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -559,10 +559,10 @@ pub trait Extend<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: Sized)
-    fn extend<'_0_1, I, TraitClause0_1: (I: Sized), TraitClause1_1: (I: IntoIterator), TypeConstraint0: TraitClause1_1::Item = T>;
-    fn extend_one<'_0_1> = extend_one<'_0_1, Self, T>[Self]
-    fn extend_reserve<'_0_1> = extend_reserve<'_0_1, Self, T>[Self]
-    fn extend_one_unchecked<'_0_1, TraitClause0_1: (Self: Sized)> = extend_one_unchecked<'_0_1, Self, T>[Self, TraitClause0_1]
+    fn extend<'_0_1, I, TraitClause0_1: (I: Sized), TraitClause1_1: (I: IntoIterator), Outlives0: (Self: '_0_1), TypeConstraint0: TraitClause1_1::Item = T>;
+    fn extend_one<'_0_1, Outlives0: (Self: '_0_1)> = extend_one<'_0_1, Self, T>[Self]
+    fn extend_reserve<'_0_1, Outlives0: (Self: '_0_1)> = extend_reserve<'_0_1, Self, T>[Self]
+    fn extend_one_unchecked<'_0_1, TraitClause0_1: (Self: Sized), Outlives0: (Self: '_0_1)> = extend_one_unchecked<'_0_1, Self, T>[Self, TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -572,13 +572,13 @@ pub trait DoubleEndedIterator<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Iterator)
-    fn next_back<'_0_1>;
-    fn next_chunk_back<'_0_1, const N : usize, TraitClause0_1: (Self: Sized)> = next_chunk_back<'_0_1, Self, N>[Self, TraitClause0_1]
-    fn advance_back_by<'_0_1, TraitClause0_1: (Self::ImpliedClause1::Item: Destruct)> = advance_back_by<'_0_1, Self>[Self, TraitClause0_1]
-    fn nth_back<'_0_1, TraitClause0_1: (Self::ImpliedClause1::Item: Destruct)> = nth_back<'_0_1, Self>[Self, TraitClause0_1]
-    fn try_rfold<'_0_1, B, F, R, TraitClause0_1: (B: Sized), TraitClause1_1: (F: Sized), TraitClause2_1: (R: Sized), TraitClause3_1: (Self: Sized), TraitClause4_1: (F: FnMut<(B, Self::ImpliedClause1::Item)>), TraitClause5_1: (F: Destruct), TraitClause6_1: (R: Try), TypeConstraint0: TraitClause4_1::ImpliedClause1::Output = R, TypeConstraint1: TraitClause6_1::Output = B> = try_rfold<'_0_1, Self, B, F, R>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1, TraitClause5_1, TraitClause6_1]
+    fn next_back<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn next_chunk_back<'_0_1, const N : usize, TraitClause0_1: (Self: Sized), Outlives0: (Self: '_0_1)> = next_chunk_back<'_0_1, Self, N>[Self, TraitClause0_1]
+    fn advance_back_by<'_0_1, TraitClause0_1: (Self::ImpliedClause1::Item: Destruct), Outlives0: (Self: '_0_1)> = advance_back_by<'_0_1, Self>[Self, TraitClause0_1]
+    fn nth_back<'_0_1, TraitClause0_1: (Self::ImpliedClause1::Item: Destruct), Outlives0: (Self: '_0_1)> = nth_back<'_0_1, Self>[Self, TraitClause0_1]
+    fn try_rfold<'_0_1, B, F, R, TraitClause0_1: (B: Sized), TraitClause1_1: (F: Sized), TraitClause2_1: (R: Sized), TraitClause3_1: (Self: Sized), TraitClause4_1: (F: FnMut<(B, Self::ImpliedClause1::Item)>), TraitClause5_1: (F: Destruct), TraitClause6_1: (R: Try), Outlives0: (Self: '_0_1), TypeConstraint0: TraitClause4_1::ImpliedClause1::Output = R, TypeConstraint1: TraitClause6_1::Output = B> = try_rfold<'_0_1, Self, B, F, R>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1, TraitClause5_1, TraitClause6_1]
     fn rfold<B, F, TraitClause0_1: (B: Sized), TraitClause1_1: (F: Sized), TraitClause2_1: (Self: Sized), TraitClause3_1: (Self: Destruct), TraitClause4_1: (F: FnMut<(B, Self::ImpliedClause1::Item)>), TraitClause5_1: (F: Destruct), TypeConstraint0: TraitClause4_1::ImpliedClause1::Output = B> = rfold<Self, B, F>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1, TraitClause5_1]
-    fn rfind<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: for<'_0_2> (P: FnMut<(&'_0_2 Self::ImpliedClause1::Item,)>), TraitClause3_1: (P: Destruct), TraitClause4_1: (Self::ImpliedClause1::Item: Destruct), TypeConstraint0: for<'_0_2> TraitClause2_1<'_>::ImpliedClause1::Output = bool> = rfind<'_0_1, Self, P>[Self, TraitClause0_1, TraitClause1_1, for<'_0_2> TraitClause2_1<'_0_2>, TraitClause3_1, TraitClause4_1]
+    fn rfind<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: for<'_0_2> (P: FnMut<(&'_0_2 Self::ImpliedClause1::Item,)>), TraitClause3_1: (P: Destruct), TraitClause4_1: (Self::ImpliedClause1::Item: Destruct), Outlives0: (Self: '_0_1), TypeConstraint0: for<'_0_2> TraitClause2_1<'_>::ImpliedClause1::Output = bool> = rfind<'_0_1, Self, P>[Self, TraitClause0_1, TraitClause1_1, for<'_0_2> TraitClause2_1<'_0_2>, TraitClause3_1, TraitClause4_1]
     vtable: core::iter::traits::double_ended::DoubleEndedIterator::{vtable}<Self::ImpliedClause1::Item>
 }
 
@@ -587,8 +587,8 @@ pub trait ExactSizeIterator<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Iterator)
-    fn len<'_0_1> = len<'_0_1, Self>[Self]
-    fn is_empty<'_0_1> = is_empty<'_0_1, Self>[Self]
+    fn len<'_0_1, Outlives0: (Self: '_0_1)> = len<'_0_1, Self>[Self]
+    fn is_empty<'_0_1, Outlives0: (Self: '_0_1)> = is_empty<'_0_1, Self>[Self]
     vtable: core::iter::traits::exact_size::ExactSizeIterator::{vtable}<Self::ImpliedClause1::Item>
 }
 
@@ -600,13 +600,13 @@ pub trait Iterator<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Item: Sized)
     type Item
-    fn next<'_0_1>;
-    fn next_chunk<'_0_1, const N : usize, TraitClause0_1: (Self: Sized)> = core::iter::traits::iterator::Iterator::next_chunk<'_0_1, Self, N>[Self, TraitClause0_1]
-    fn size_hint<'_0_1> = core::iter::traits::iterator::Iterator::size_hint<'_0_1, Self>[Self]
+    fn next<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn next_chunk<'_0_1, const N : usize, TraitClause0_1: (Self: Sized), Outlives0: (Self: '_0_1)> = core::iter::traits::iterator::Iterator::next_chunk<'_0_1, Self, N>[Self, TraitClause0_1]
+    fn size_hint<'_0_1, Outlives0: (Self: '_0_1)> = core::iter::traits::iterator::Iterator::size_hint<'_0_1, Self>[Self]
     fn count<TraitClause0_1: (Self: Sized), TraitClause1_1: (Self: Destruct), TraitClause2_1: (Self::Item: Destruct)> = core::iter::traits::iterator::Iterator::count<Self>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
     fn last<TraitClause0_1: (Self: Sized), TraitClause1_1: (Self: Destruct), TraitClause2_1: (Self::Item: Destruct)> = core::iter::traits::iterator::Iterator::last<Self>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
-    fn advance_by<'_0_1, TraitClause0_1: (Self::Item: Destruct)> = core::iter::traits::iterator::Iterator::advance_by<'_0_1, Self>[Self, TraitClause0_1]
-    fn nth<'_0_1, TraitClause0_1: (Self::Item: Destruct)> = core::iter::traits::iterator::Iterator::nth<'_0_1, Self>[Self, TraitClause0_1]
+    fn advance_by<'_0_1, TraitClause0_1: (Self::Item: Destruct), Outlives0: (Self: '_0_1)> = core::iter::traits::iterator::Iterator::advance_by<'_0_1, Self>[Self, TraitClause0_1]
+    fn nth<'_0_1, TraitClause0_1: (Self::Item: Destruct), Outlives0: (Self: '_0_1)> = core::iter::traits::iterator::Iterator::nth<'_0_1, Self>[Self, TraitClause0_1]
     fn step_by<TraitClause0_1: (Self: Sized)> = core::iter::traits::iterator::Iterator::step_by<Self>[Self, TraitClause0_1]
     fn chain<U, TraitClause0_1: (U: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: (U: IntoIterator), TypeConstraint0: TraitClause2_1::Item = Self::Item> = core::iter::traits::iterator::Iterator::chain<Self, U>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
     fn zip<U, TraitClause0_1: (U: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: (U: IntoIterator)> = core::iter::traits::iterator::Iterator::zip<Self, U>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
@@ -629,25 +629,25 @@ pub trait Iterator<Self>
     fn map_windows<F, R, const N : usize, TraitClause0_1: (F: Sized), TraitClause1_1: (R: Sized), TraitClause2_1: (Self: Sized), TraitClause3_1: for<'_0_2> (F: FnMut<(&'_0_2 [Self::Item; N],)>), TypeConstraint0: for<'_0_2> TraitClause3_1<'_>::ImpliedClause1::Output = R> = core::iter::traits::iterator::Iterator::map_windows<Self, F, R, N>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, for<'_0_2> TraitClause3_1<'_0_2>]
     fn fuse<TraitClause0_1: (Self: Sized)> = core::iter::traits::iterator::Iterator::fuse<Self>[Self, TraitClause0_1]
     fn inspect<F, TraitClause0_1: (F: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: for<'_0_2> (F: FnMut<(&'_0_2 Self::Item,)>), TypeConstraint0: for<'_0_2> TraitClause2_1<'_>::ImpliedClause1::Output = ()> = core::iter::traits::iterator::Iterator::inspect<Self, F>[Self, TraitClause0_1, TraitClause1_1, for<'_0_2> TraitClause2_1<'_0_2>]
-    fn by_ref<'_0_1, TraitClause0_1: (Self: Sized)> = core::iter::traits::iterator::Iterator::by_ref<'_0_1, Self>[Self, TraitClause0_1]
+    fn by_ref<'_0_1, TraitClause0_1: (Self: Sized), Outlives0: (Self: '_0_1)> = core::iter::traits::iterator::Iterator::by_ref<'_0_1, Self>[Self, TraitClause0_1]
     fn collect<B, TraitClause0_1: (B: Sized), TraitClause1_1: (B: FromIterator<Self::Item>), TraitClause2_1: (Self: Sized)> = core::iter::traits::iterator::Iterator::collect<Self, B>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
-    fn try_collect<'_0_1, B, TraitClause0_1: (B: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: (Self::Item: Try), TraitClause3_1: (TraitClause2_1::Residual: Residual<B>), TraitClause4_1: (B: FromIterator<TraitClause2_1::Output>)> = core::iter::traits::iterator::Iterator::try_collect<'_0_1, Self, B>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1]
-    fn collect_into<'_0_1, E, TraitClause0_1: (E: Sized), TraitClause1_1: (E: Extend<Self::Item>), TraitClause2_1: (Self: Sized)> = core::iter::traits::iterator::Iterator::collect_into<'_0_1, Self, E>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    fn try_collect<'_0_1, B, TraitClause0_1: (B: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: (Self::Item: Try), TraitClause3_1: (TraitClause2_1::Residual: Residual<B>), TraitClause4_1: (B: FromIterator<TraitClause2_1::Output>), Outlives0: (Self: '_0_1)> = core::iter::traits::iterator::Iterator::try_collect<'_0_1, Self, B>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1]
+    fn collect_into<'_0_1, E, TraitClause0_1: (E: Sized), TraitClause1_1: (E: Extend<Self::Item>), TraitClause2_1: (Self: Sized), Outlives0: (E: '_0_1)> = core::iter::traits::iterator::Iterator::collect_into<'_0_1, Self, E>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
     fn partition<B, F, TraitClause0_1: (B: Sized), TraitClause1_1: (F: Sized), TraitClause2_1: (Self: Sized), TraitClause3_1: (B: Default), TraitClause4_1: (B: Extend<Self::Item>), TraitClause5_1: for<'_0_2> (F: FnMut<(&'_0_2 Self::Item,)>), TypeConstraint0: for<'_0_2> TraitClause5_1<'_>::ImpliedClause1::Output = bool> = core::iter::traits::iterator::Iterator::partition<Self, B, F>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1, for<'_0_2> TraitClause5_1<'_0_2>]
     fn partition_in_place<'a, T, P, TraitClause0_1: (T: Sized), TraitClause1_1: (P: Sized), TraitClause2_1: (Self: Sized), TraitClause3_1: (Self: DoubleEndedIterator), TraitClause4_1: for<'_0_2> (P: FnMut<(&'_0_2 T,)>), Outlives0: (T: 'a), TypeConstraint0: Self::Item = &'a mut T, TypeConstraint1: for<'_0_2> TraitClause4_1<'_>::ImpliedClause1::Output = bool> = core::iter::traits::iterator::Iterator::partition_in_place<'a, Self, T, P>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, for<'_0_2> TraitClause4_1<'_0_2>]
     fn is_partitioned<P, TraitClause0_1: (P: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: (P: FnMut<(Self::Item,)>), TypeConstraint0: TraitClause2_1::ImpliedClause1::Output = bool> = core::iter::traits::iterator::Iterator::is_partitioned<Self, P>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
-    fn try_fold<'_0_1, B, F, R, TraitClause0_1: (B: Sized), TraitClause1_1: (F: Sized), TraitClause2_1: (R: Sized), TraitClause3_1: (Self: Sized), TraitClause4_1: (F: FnMut<(B, Self::Item)>), TraitClause5_1: (F: Destruct), TraitClause6_1: (R: Try), TypeConstraint0: TraitClause4_1::ImpliedClause1::Output = R, TypeConstraint1: TraitClause6_1::Output = B> = core::iter::traits::iterator::Iterator::try_fold<'_0_1, Self, B, F, R>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1, TraitClause5_1, TraitClause6_1]
-    fn try_for_each<'_0_1, F, R, TraitClause0_1: (F: Sized), TraitClause1_1: (R: Sized), TraitClause2_1: (Self: Sized), TraitClause3_1: (F: FnMut<(Self::Item,)>), TraitClause4_1: (R: Try), TypeConstraint0: TraitClause3_1::ImpliedClause1::Output = R, TypeConstraint1: TraitClause4_1::Output = ()> = core::iter::traits::iterator::Iterator::try_for_each<'_0_1, Self, F, R>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1]
+    fn try_fold<'_0_1, B, F, R, TraitClause0_1: (B: Sized), TraitClause1_1: (F: Sized), TraitClause2_1: (R: Sized), TraitClause3_1: (Self: Sized), TraitClause4_1: (F: FnMut<(B, Self::Item)>), TraitClause5_1: (F: Destruct), TraitClause6_1: (R: Try), Outlives0: (Self: '_0_1), TypeConstraint0: TraitClause4_1::ImpliedClause1::Output = R, TypeConstraint1: TraitClause6_1::Output = B> = core::iter::traits::iterator::Iterator::try_fold<'_0_1, Self, B, F, R>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1, TraitClause5_1, TraitClause6_1]
+    fn try_for_each<'_0_1, F, R, TraitClause0_1: (F: Sized), TraitClause1_1: (R: Sized), TraitClause2_1: (Self: Sized), TraitClause3_1: (F: FnMut<(Self::Item,)>), TraitClause4_1: (R: Try), Outlives0: (Self: '_0_1), TypeConstraint0: TraitClause3_1::ImpliedClause1::Output = R, TypeConstraint1: TraitClause4_1::Output = ()> = core::iter::traits::iterator::Iterator::try_for_each<'_0_1, Self, F, R>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1]
     fn fold<B, F, TraitClause0_1: (B: Sized), TraitClause1_1: (F: Sized), TraitClause2_1: (Self: Sized), TraitClause3_1: (Self: Destruct), TraitClause4_1: (F: FnMut<(B, Self::Item)>), TraitClause5_1: (F: Destruct), TypeConstraint0: TraitClause4_1::ImpliedClause1::Output = B> = core::iter::traits::iterator::Iterator::fold<Self, B, F>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1, TraitClause5_1]
     fn reduce<F, TraitClause0_1: (F: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: (Self: Destruct), TraitClause3_1: (F: FnMut<(Self::Item, Self::Item)>), TraitClause4_1: (F: Destruct), TypeConstraint0: TraitClause3_1::ImpliedClause1::Output = Self::Item> = core::iter::traits::iterator::Iterator::reduce<Self, F>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1]
-    fn try_reduce<'_0_1, R, T2, TraitClause0_1: (R: Sized), TraitClause1_1: (T2: Sized), TraitClause2_1: (Self: Sized), TraitClause3_1: (R: Try), TraitClause4_1: (TraitClause3_1::Residual: Residual<Option<Self::Item>[Self::ImpliedClause1]>), TraitClause5_1: (T2: FnMut<(Self::Item, Self::Item)>), TraitClause6_1: (T2: Destruct), TypeConstraint0: TraitClause3_1::Output = Self::Item, TypeConstraint1: TraitClause5_1::ImpliedClause1::Output = R> = core::iter::traits::iterator::Iterator::try_reduce<'_0_1, Self, R, T2>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1, TraitClause5_1, TraitClause6_1]
-    fn all<'_0_1, F, TraitClause0_1: (F: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: (F: FnMut<(Self::Item,)>), TraitClause3_1: (F: Destruct), TypeConstraint0: TraitClause2_1::ImpliedClause1::Output = bool> = core::iter::traits::iterator::Iterator::all<'_0_1, Self, F>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1]
-    fn any<'_0_1, F, TraitClause0_1: (F: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: (F: FnMut<(Self::Item,)>), TypeConstraint0: TraitClause2_1::ImpliedClause1::Output = bool> = core::iter::traits::iterator::Iterator::any<'_0_1, Self, F>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
-    fn find<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: for<'_0_2> (P: FnMut<(&'_0_2 Self::Item,)>), TypeConstraint0: for<'_0_2> TraitClause2_1<'_>::ImpliedClause1::Output = bool> = core::iter::traits::iterator::Iterator::find<'_0_1, Self, P>[Self, TraitClause0_1, TraitClause1_1, for<'_0_2> TraitClause2_1<'_0_2>]
-    fn find_map<'_0_1, B, F, TraitClause0_1: (B: Sized), TraitClause1_1: (F: Sized), TraitClause2_1: (Self: Sized), TraitClause3_1: (F: FnMut<(Self::Item,)>), TypeConstraint0: TraitClause3_1::ImpliedClause1::Output = Option<B>[TraitClause0_1]> = core::iter::traits::iterator::Iterator::find_map<'_0_1, Self, B, F>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1]
-    fn try_find<'_0_1, R, T2, TraitClause0_1: (R: Sized), TraitClause1_1: (T2: Sized), TraitClause2_1: (Self: Sized), TraitClause3_1: (R: Try), TraitClause4_1: (TraitClause3_1::Residual: Residual<Option<Self::Item>[Self::ImpliedClause1]>), TraitClause5_1: for<'_0_2> (T2: FnMut<(&'_0_2 Self::Item,)>), TypeConstraint0: TraitClause3_1::Output = bool, TypeConstraint1: for<'_0_2> TraitClause5_1<'_>::ImpliedClause1::Output = R> = core::iter::traits::iterator::Iterator::try_find<'_0_1, Self, R, T2>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1, for<'_0_2> TraitClause5_1<'_0_2>]
-    fn position<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: (P: FnMut<(Self::Item,)>), TypeConstraint0: TraitClause2_1::ImpliedClause1::Output = bool> = core::iter::traits::iterator::Iterator::position<'_0_1, Self, P>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
-    fn rposition<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: FnMut<(Self::Item,)>), TraitClause2_1: (Self: Sized), TraitClause3_1: (Self: ExactSizeIterator), TraitClause4_1: (Self: DoubleEndedIterator), TypeConstraint0: TraitClause1_1::ImpliedClause1::Output = bool> = core::iter::traits::iterator::Iterator::rposition<'_0_1, Self, P>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1]
+    fn try_reduce<'_0_1, R, T2, TraitClause0_1: (R: Sized), TraitClause1_1: (T2: Sized), TraitClause2_1: (Self: Sized), TraitClause3_1: (R: Try), TraitClause4_1: (TraitClause3_1::Residual: Residual<Option<Self::Item>[Self::ImpliedClause1]>), TraitClause5_1: (T2: FnMut<(Self::Item, Self::Item)>), TraitClause6_1: (T2: Destruct), Outlives0: (Self: '_0_1), TypeConstraint0: TraitClause3_1::Output = Self::Item, TypeConstraint1: TraitClause5_1::ImpliedClause1::Output = R> = core::iter::traits::iterator::Iterator::try_reduce<'_0_1, Self, R, T2>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1, TraitClause5_1, TraitClause6_1]
+    fn all<'_0_1, F, TraitClause0_1: (F: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: (F: FnMut<(Self::Item,)>), TraitClause3_1: (F: Destruct), Outlives0: (Self: '_0_1), TypeConstraint0: TraitClause2_1::ImpliedClause1::Output = bool> = core::iter::traits::iterator::Iterator::all<'_0_1, Self, F>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1]
+    fn any<'_0_1, F, TraitClause0_1: (F: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: (F: FnMut<(Self::Item,)>), Outlives0: (Self: '_0_1), TypeConstraint0: TraitClause2_1::ImpliedClause1::Output = bool> = core::iter::traits::iterator::Iterator::any<'_0_1, Self, F>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    fn find<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: for<'_0_2> (P: FnMut<(&'_0_2 Self::Item,)>), Outlives0: (Self: '_0_1), TypeConstraint0: for<'_0_2> TraitClause2_1<'_>::ImpliedClause1::Output = bool> = core::iter::traits::iterator::Iterator::find<'_0_1, Self, P>[Self, TraitClause0_1, TraitClause1_1, for<'_0_2> TraitClause2_1<'_0_2>]
+    fn find_map<'_0_1, B, F, TraitClause0_1: (B: Sized), TraitClause1_1: (F: Sized), TraitClause2_1: (Self: Sized), TraitClause3_1: (F: FnMut<(Self::Item,)>), Outlives0: (Self: '_0_1), TypeConstraint0: TraitClause3_1::ImpliedClause1::Output = Option<B>[TraitClause0_1]> = core::iter::traits::iterator::Iterator::find_map<'_0_1, Self, B, F>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1]
+    fn try_find<'_0_1, R, T2, TraitClause0_1: (R: Sized), TraitClause1_1: (T2: Sized), TraitClause2_1: (Self: Sized), TraitClause3_1: (R: Try), TraitClause4_1: (TraitClause3_1::Residual: Residual<Option<Self::Item>[Self::ImpliedClause1]>), TraitClause5_1: for<'_0_2> (T2: FnMut<(&'_0_2 Self::Item,)>), Outlives0: (Self: '_0_1), TypeConstraint0: TraitClause3_1::Output = bool, TypeConstraint1: for<'_0_2> TraitClause5_1<'_>::ImpliedClause1::Output = R> = core::iter::traits::iterator::Iterator::try_find<'_0_1, Self, R, T2>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1, for<'_0_2> TraitClause5_1<'_0_2>]
+    fn position<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: (P: FnMut<(Self::Item,)>), Outlives0: (Self: '_0_1), TypeConstraint0: TraitClause2_1::ImpliedClause1::Output = bool> = core::iter::traits::iterator::Iterator::position<'_0_1, Self, P>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    fn rposition<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: FnMut<(Self::Item,)>), TraitClause2_1: (Self: Sized), TraitClause3_1: (Self: ExactSizeIterator), TraitClause4_1: (Self: DoubleEndedIterator), Outlives0: (Self: '_0_1), TypeConstraint0: TraitClause1_1::ImpliedClause1::Output = bool> = core::iter::traits::iterator::Iterator::rposition<'_0_1, Self, P>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1]
     fn max<TraitClause0_1: (Self: Sized), TraitClause1_1: (Self: Destruct), TraitClause2_1: (Self::Item: Ord), TraitClause3_1: (Self::Item: Destruct)> = core::iter::traits::iterator::Iterator::max<Self>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1]
     fn min<TraitClause0_1: (Self: Sized), TraitClause1_1: (Self: Destruct), TraitClause2_1: (Self::Item: Ord), TraitClause3_1: (Self::Item: Destruct)> = core::iter::traits::iterator::Iterator::min<Self>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1]
     fn max_by_key<B, F, TraitClause0_1: (B: Sized), TraitClause1_1: (F: Sized), TraitClause2_1: (B: Ord), TraitClause3_1: (Self: Sized), TraitClause4_1: for<'_0_2> (F: FnMut<(&'_0_2 Self::Item,)>), TypeConstraint0: for<'_0_2> TraitClause4_1<'_>::ImpliedClause1::Output = B> = core::iter::traits::iterator::Iterator::max_by_key<Self, B, F>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, for<'_0_2> TraitClause4_1<'_0_2>]
@@ -677,7 +677,7 @@ pub trait Iterator<Self>
     fn is_sorted<TraitClause0_1: (Self: Sized), TraitClause1_1: (Self: Destruct), TraitClause2_1: (Self::Item: PartialOrd<Self::Item>), TraitClause3_1: (Self::Item: Destruct)> = core::iter::traits::iterator::Iterator::is_sorted<Self>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1]
     fn is_sorted_by<F, TraitClause0_1: (F: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: (Self: Destruct), TraitClause3_1: (Self::Item: Destruct), TraitClause4_1: for<'_0_2, '_1_2> (F: FnMut<(&'_0_2 Self::Item, &'_1_2 Self::Item)>), TraitClause5_1: (F: Destruct), TypeConstraint0: for<'_0_2, '_1_2> TraitClause4_1<'_, '_>::ImpliedClause1::Output = bool> = core::iter::traits::iterator::Iterator::is_sorted_by<Self, F>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, for<'_0_2, '_1_2> TraitClause4_1<'_0_2, '_1_2>, TraitClause5_1]
     fn is_sorted_by_key<F, K, TraitClause0_1: (F: Sized), TraitClause1_1: (K: Sized), TraitClause2_1: (Self: Sized), TraitClause3_1: (F: FnMut<(Self::Item,)>), TraitClause4_1: (K: PartialOrd<K>), TypeConstraint0: TraitClause3_1::ImpliedClause1::Output = K> = core::iter::traits::iterator::Iterator::is_sorted_by_key<Self, F, K>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1]
-    fn __iterator_get_unchecked<'_0_1, TraitClause0_1: (Self: TrustedRandomAccessNoCoerce)> = core::iter::traits::iterator::Iterator::__iterator_get_unchecked<'_0_1, Self>[Self, TraitClause0_1]
+    fn __iterator_get_unchecked<'_0_1, TraitClause0_1: (Self: TrustedRandomAccessNoCoerce), Outlives0: (Self: '_0_1)> = core::iter::traits::iterator::Iterator::__iterator_get_unchecked<'_0_1, Self>[Self, TraitClause0_1]
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 

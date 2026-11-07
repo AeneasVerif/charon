@@ -20,7 +20,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -59,7 +59,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -74,7 +74,7 @@ pub trait Foo<Self>
     proof ImpliedClause1: (Self::Type: Sized)
     proof ImpliedClause2: (Self::Type: Clone)
     type Type
-    fn get_ty<'_0_1>;
+    fn get_ty<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Self::Type: '_0_1)>;
     vtable: test_crate::Foo::{vtable}<Self::Type>
 }
 

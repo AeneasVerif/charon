@@ -42,8 +42,8 @@ pub opaque type NonNull<T>
 pub unsafe trait Allocator<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn allocate<'_0_1>;
-    fn deallocate<'_0_1>;
+    fn allocate<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn deallocate<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::alloc::Allocator::{vtable}
 }
 
@@ -53,7 +53,7 @@ pub trait Borrow<Self, Borrowed>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Borrowed: MetaSized)
-    fn borrow<'_0_1>;
+    fn borrow<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Borrowed: '_0_1)>;
     vtable: core::borrow::Borrow::{vtable}<Borrowed>
 }
 
@@ -112,7 +112,7 @@ pub trait FnMut<Self, Args>
     proof ImpliedClause1: (Self: FnOnce<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1>;
+    fn call_mut<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
 
@@ -125,7 +125,7 @@ pub trait Fn<Self, Args>
     proof ImpliedClause1: (Self: FnMut<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call<'_0_1>;
+    fn call<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
 
@@ -199,7 +199,7 @@ pub trait ToOwned<Self>
     proof ImpliedClause1: (Self::Owned: Sized)
     proof ImpliedClause2: (Self::Owned: Borrow<Self>)
     type Owned
-    fn to_owned<'_0_1>;
+    fn to_owned<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 

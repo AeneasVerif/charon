@@ -28,7 +28,7 @@ struct () {}
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1>;
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
@@ -67,7 +67,7 @@ where
 trait Ord<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn cmp<'_0_1, '_1_1>;
+    fn cmp<'_0_1, '_1_1, Outlives0: (Self: '_0_1), Outlives1: (Self: '_1_1)>;
     non-dyn-compatible
 }
 
