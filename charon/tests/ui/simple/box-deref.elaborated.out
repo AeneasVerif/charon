@@ -14,6 +14,9 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::ptr::unique::Unique
+pub opaque type Unique<T>
+
 // Full name: alloc::alloc::Global
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
@@ -56,6 +59,26 @@ fn into_inner(b: Box<String>[{built_in impl MetaSized for String}, {built_in imp
     drop_empty_box b
     ↳⚡ storage_dead(b)
         unwind_continue
+    storage_dead(b)
+    return
+}
+
+// Full name: test_crate::read_ref
+fn read_ref<'a>(b: Box<&'a u32>[{built_in impl MetaSized for &'a u32}, {built_in impl Sized for Global}]) -> &'a u32
+{
+    let mut _0: &'1 u32; // return
+    let b: Box<&'7 u32>[{built_in impl MetaSized for &'7 u32}, {built_in impl Sized for Global}]; // arg #1
+    let mut _2: *const &'11 u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = transmute<*const &'12 u32>(copy (*b))
+    _0 = copy (*_2)
+    drop[impl_Destruct_for_Box::drop_glue<'37, &'32 u32, Global>[{built_in impl MetaSized for &'32 u32}, {built_in impl Sized for Global}]] b
+    ↳⚡ storage_dead(_2)
+        storage_dead(b)
+        unwind_continue
+    storage_dead(_2)
     storage_dead(b)
     return
 }
