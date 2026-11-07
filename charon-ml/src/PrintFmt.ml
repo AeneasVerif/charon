@@ -1794,9 +1794,7 @@ let pp_borrowck_statement (env : fmt_env) (fmt : Format.formatter)
   match statement with
   | FakeRead place -> Format.fprintf fmt "fake_read(%a)" (pp_place env) place
   | SetType constraint_ ->
-      Format.fprintf fmt "set_here %a"
-        (pp_place_type_constraint env)
-        constraint_
+      Format.fprintf fmt "set %a" (pp_place_type_constraint env) constraint_
   | SetOutlives (lhs, rhs) ->
       Format.fprintf fmt "set %s :> %s" (region_to_string env lhs)
         (region_to_string env rhs)

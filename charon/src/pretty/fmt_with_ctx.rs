@@ -2473,7 +2473,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for BorrowckStatement {
                 write!(f, "fake_read({})", place.with_ctx(ctx))
             }
             BorrowckStatement::SetType(constraint) => {
-                write!(f, "set_here {}", constraint.with_ctx(ctx))
+                write!(f, "set {}", constraint.with_ctx(ctx))
             }
             BorrowckStatement::SetOutlives(OutlivesPred(lhs, rhs)) => {
                 write!(f, "set {} :> {}", lhs.with_ctx(ctx), rhs.with_ctx(ctx))

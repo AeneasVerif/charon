@@ -410,7 +410,7 @@ pub fn associated_items(value: &'static u32)
     storage_live(x)
     storage_live(_6)
     _6 = noretag read NONE<&'37 u32>[{built_in impl Sized for &'39 u32}]
-    set_here _6 := Option<&'static u32>[{built_in impl Sized for &'static u32}]
+    set _6 := Option<&'static u32>[{built_in impl Sized for &'static u32}]
     x = move _6
     fake_read(x)
     storage_live(_3)
