@@ -119,7 +119,7 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         // Type aliases may use associated types without declaring the corresponding trait
         // such missing trait clauses.
         global(&add_missing_info::add_missing_alias_clauses::Transform),
-        // Make explicit the outlives predicates implied by item signatures.
+        // Make explicit the outlives predicates implied by type well-formedness.
         global(&add_missing_info::add_implied_outlives::Transform),
     ]);
 

@@ -1,4 +1,4 @@
-//! Make explicit the outlives predicates implied by item signatures.
+//! Make explicit the outlives predicates implied by the well-formedness of a type.
 use derive_generic_visitor::*;
 use itertools::Itertools;
 use std::mem;
@@ -240,6 +240,12 @@ impl TransformPass for Transform {
                 visitor.visit(self_ty);
             }
             visitor.finish();
+
+            // Also add implied bounds to the inner binders inside bodies. Implied bounds involving
+            // only body or signature lifetimes must not be kept; they must be checked by
+            // borrow-checking.
+            OutlivesGatherer::new(&mut GenericParams::default(), type_decls)
+                .visit(&mut fun_decl.body);
         }
 
         for timpl in &mut ctx.translated.trait_impls {

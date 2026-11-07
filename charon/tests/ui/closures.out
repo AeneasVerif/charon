@@ -498,10 +498,10 @@ where
 {
     let mut _0: Option<T>[TraitClause0]; // return
     let x_1: &'1 Option<T>[TraitClause0]; // arg #1
-    let f: fn<'_0_1>(&'_0_1 T) -> T; // arg #2
+    let f: fn<'_0_1 where T: '_0_1>(&'_0_1 T) -> T; // arg #2
     let x_3: &'3 T; // local
     let mut _4: T; // anonymous local
-    let mut _5: fn<'_0_1>(&'_0_1 T) -> T; // anonymous local
+    let mut _5: fn<'_0_1 where T: '_0_1>(&'_0_1 T) -> T; // anonymous local
     let mut _6: &'4 T; // anonymous local
 
     storage_live(_0)
@@ -1055,10 +1055,10 @@ where
 {
     let mut _0: &'1 T; // return
     let x: &'2 T; // arg #1
-    let f: fn<'_0_1>(&'_0_1 T) -> &'_0_1 T; // local
+    let f: fn<'_0_1 where T: '_0_1>(&'_0_1 T) -> &'_0_1 T; // local
     let mut _3: test_crate::test_closure_ref_param::{closure}<T>[TraitClause0]; // anonymous local
     let _4: &'3 T; // anonymous local
-    let mut _5: fn<'_0_1>(&'_0_1 T) -> &'_0_1 T; // anonymous local
+    let mut _5: fn<'_0_1 where T: '_0_1>(&'_0_1 T) -> &'_0_1 T; // anonymous local
     let mut _6: &'4 T; // anonymous local
 
     storage_live(_0)
@@ -1068,7 +1068,7 @@ where
     f = fn_def_to_fn_ptr(const test_crate::test_closure_ref_param::{closure}::{as_fn}<'6, T>[TraitClause0])
     storage_dead(_3)
     fake_read(f)
-    set f := fn<'_0_1>(&'_0_1 T) -> &'_0_1 T
+    set f := fn<'_0_1 where T: '_0_1>(&'_0_1 T) -> &'_0_1 T
     storage_live(_4)
     storage_live(_5)
     _5 = copy f
@@ -1215,10 +1215,10 @@ where
 {
     let mut _0: &'1 T; // return
     let x: &'2 T; // arg #1
-    let f: fn<'_0_1>(&'_0_1 T) -> &'_0_1 T; // local
+    let f: fn<'_0_1 where T: '_0_1>(&'_0_1 T) -> &'_0_1 T; // local
     let mut _3: test_crate::test_closure_ref_early_bound::{closure}<'7, '8, T>[TraitClause0, TraitClause1]; // anonymous local
     let _4: &'10 T; // anonymous local
-    let mut _5: fn<'_0_1>(&'_0_1 T) -> &'_0_1 T; // anonymous local
+    let mut _5: fn<'_0_1 where T: '_0_1>(&'_0_1 T) -> &'_0_1 T; // anonymous local
     let mut _6: &'11 T; // anonymous local
 
     storage_live(_0)
@@ -1228,7 +1228,7 @@ where
     f = fn_def_to_fn_ptr(const test_crate::test_closure_ref_early_bound::{closure}::{as_fn}<'16, '19, '21, T>[TraitClause0, TraitClause1])
     storage_dead(_3)
     fake_read(f)
-    set f := fn<'_0_1>(&'_0_1 T) -> &'_0_1 T
+    set f := fn<'_0_1 where T: '_0_1>(&'_0_1 T) -> &'_0_1 T
     storage_live(_4)
     storage_live(_5)
     _5 = copy f
@@ -2038,7 +2038,7 @@ pub fn test_regions_casted<'a>(x: &'a u32) -> u32
 {
     let mut _0: u32; // return
     let x: &'1 u32; // arg #1
-    let f: fn<'_0_1>(&'_0_1 &'a u32) -> u32; // local
+    let f: fn<'_0_1 where 'a: '_0_1>(&'_0_1 &'a u32) -> u32; // local
     let mut _3: test_crate::test_regions_casted::{closure}<'8>; // anonymous local
     let mut _4: fn<'_0_1>(&'_0_1 &'12 u32) -> u32; // anonymous local
     let mut _5: &'15 &'16 u32; // anonymous local
@@ -2051,7 +2051,7 @@ pub fn test_regions_casted<'a>(x: &'a u32) -> u32
     f = fn_def_to_fn_ptr(const test_crate::test_regions_casted::{closure}::{as_fn}<'23, '25>)
     storage_dead(_3)
     fake_read(f)
-    set f := fn<'_0_1>(&'_0_1 &'a u32) -> u32
+    set f := fn<'_0_1 where 'a: '_0_1>(&'_0_1 &'a u32) -> u32
     storage_live(_4)
     _4 = copy f
     storage_live(_5)

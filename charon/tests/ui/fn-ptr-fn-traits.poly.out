@@ -145,7 +145,7 @@ where
     Outlives1: (B: '_0),
 {
     let mut _0: Adt<'_0, B>[TraitClause4, TraitClause5]; // return
-    let mut fn_ptr: fn<'_0_1>(Adt<'_0_1, A>[TraitClause2, TraitClause3]) -> Adt<'_0_1, B>[TraitClause4, TraitClause5]; // arg #1
+    let mut fn_ptr: fn<'_0_1 where A: '_0_1, B: '_0_1>(Adt<'_0_1, A>[TraitClause2, TraitClause3]) -> Adt<'_0_1, B>[TraitClause4, TraitClause5]; // arg #1
     let mut args: (Adt<'_0, A>[TraitClause2, TraitClause3],); // arg #2
 
     storage_live(_0)
@@ -276,7 +276,7 @@ where
     Outlives1: (C: '_0),
 {
     let mut _0: &'_0 C; // return
-    let mut fn_ptr: fn<'_0_1>(A, &'_0_1 B) -> &'_0_1 C; // arg #1
+    let mut fn_ptr: fn<'_0_1 where B: '_0_1, C: '_0_1>(A, &'_0_1 B) -> &'_0_1 C; // arg #1
     let mut args: (A, &'_0 B); // arg #2
 
     storage_live(_0)
@@ -315,7 +315,7 @@ where
     Outlives1: (B: '_0),
 {
     let mut _0: [&'_0 B; C3]; // return
-    let mut fn_ptr: fn<'_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3]; // arg #1
+    let mut fn_ptr: fn<'_0_1 where A: '_0_1, B: '_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3]; // arg #1
     let mut args: ([&'_0 A; C2],); // arg #2
 
     storage_live(_0)
@@ -356,7 +356,7 @@ where
     Outlives3: (D: '_0),
 {
     let mut _0: (&'_1 C, &'_0 D); // return
-    let mut fn_ptr: fn<'_0_1, '_1_1>(&'_0_1 A, &'_1_1 B) -> (&'_1_1 C, &'_0_1 D); // arg #1
+    let mut fn_ptr: fn<'_0_1, '_1_1 where A: '_0_1, B: '_1_1, C: '_1_1, D: '_0_1>(&'_0_1 A, &'_1_1 B) -> (&'_1_1 C, &'_0_1 D); // arg #1
     let mut args: (&'_0 A, &'_1 B); // arg #2
 
     storage_live(_0)
@@ -927,9 +927,9 @@ pub fn test<'a>(x: &'a u32) -> &'a u32
 {
     let mut _0: &'1 u32; // return
     let x: &'2 u32; // arg #1
-    let f: fn<'b>(Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // local
+    let f: fn<'b where u32: 'b>(Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // local
     let _3: Adt<'4, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // anonymous local
-    let mut _4: fn<'b>(Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // anonymous local
+    let mut _4: fn<'b where u32: 'b>(Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // anonymous local
     let mut _5: Adt<'5, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // anonymous local
     let mut _6: &'6 u32; // anonymous local
 
@@ -937,7 +937,7 @@ pub fn test<'a>(x: &'a u32) -> &'a u32
     storage_live(f)
     f = fn_def_to_fn_ptr(const identity<'9>)
     fake_read(f)
-    set f := fn<'b>(Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]
+    set f := fn<'b where u32: 'b>(Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]
     storage_live(_3)
     storage_live(_4)
     _4 = copy f
@@ -946,7 +946,7 @@ pub fn test<'a>(x: &'a u32) -> &'a u32
     _6 = &(*x)
     _5 = Adt { _0: move _6 }
     storage_dead(_6)
-    _3 = test_crate::call_once<'26, fn<'_0_1>(Adt<'_0_1, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'_0_1, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]>[{built_in impl Sized for fn<'_0_2>(Adt<'_0_2, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'_0_2, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]}, {impl FnOnce<(Adt<'_0, A>[TraitClause2, TraitClause3],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>(Adt<'_0_1, A>[TraitClause2, TraitClause3]) -> Adt<'_0_1, B>[TraitClause4, TraitClause5]}<'26, u32, u32>[for<'_0_2> {built_in impl Sized for Adt<'_0_2, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]}, for<'_0_2> {built_in impl Sized for Adt<'_0_2, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]}, {built_in impl Sized for u32}, impl_Trait_for_u32, {built_in impl Sized for u32}, impl_Trait_for_u32]](move _4, move _5)
+    _3 = test_crate::call_once<'26, fn<'_0_1 where u32: '_0_1>(Adt<'_0_1, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'_0_1, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]>[{built_in impl Sized for fn<'_0_2 where u32: '_0_2>(Adt<'_0_2, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'_0_2, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]}, {impl FnOnce<(Adt<'_0, A>[TraitClause2, TraitClause3],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>(Adt<'_0_1, A>[TraitClause2, TraitClause3]) -> Adt<'_0_1, B>[TraitClause4, TraitClause5]}<'26, u32, u32>[for<'_0_2 where u32: '_0_2> {built_in impl Sized for Adt<'_0_2, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]}, for<'_0_2 where u32: '_0_2> {built_in impl Sized for Adt<'_0_2, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]}, {built_in impl Sized for u32}, impl_Trait_for_u32, {built_in impl Sized for u32}, impl_Trait_for_u32]](move _4, move _5)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_5)

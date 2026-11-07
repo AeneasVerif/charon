@@ -22,7 +22,7 @@ where
     TraitClause0: (T: Sized),
 {
     let mut _0: (); // return
-    let mut _1: fn<'a>(&'a T); // arg #1
+    let mut _1: fn<'a where T: 'a>(&'a T); // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -37,7 +37,7 @@ where
     TraitClause0: (T: Sized),
 {
     let mut _0: (); // return
-    let mut _1: fn<'a>(fn<'b>(&'b T), &'a T); // arg #1
+    let mut _1: fn<'a where T: 'a>(fn<'b where T: 'b>(&'b T), &'a T); // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -52,7 +52,7 @@ where
     TraitClause0: (T: Sized),
 {
     let mut _0: (); // return
-    let mut _1: fn<'a>(fn<'b>(&'a T)); // arg #1
+    let mut _1: fn<'a where T: 'a>(fn<'b>(&'a T)); // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -68,7 +68,7 @@ where
     Outlives0: (T: 'b),
 {
     let mut _0: (); // return
-    let mut _1: fn<'a>(&'a &'3 T); // arg #1
+    let mut _1: fn<'a where T: 'a>(&'a &'3 T); // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -146,7 +146,7 @@ where
     TraitClause1: (T: WithAssoc),
 {
     let mut _0: (); // return
-    let mut _1: fn<'a>(&'a TraitClause1::Assoc); // arg #1
+    let mut _1: fn<'a where TraitClause1::Assoc: 'a>(&'a TraitClause1::Assoc); // arg #1
 
     storage_live(_0)
     _0 = ()
