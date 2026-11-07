@@ -481,11 +481,11 @@ fn foo::<u8>()
 fn main()
 {
     let mut _0: (); // return
-    let boo: &'7 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '8); // local
-    let mut _2: &'10 fn(i32); // anonymous local
-    let _3: &'11 fn(i32); // anonymous local
+    let boo: &'0 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '1); // local
+    let mut _2: &'5 fn(i32); // anonymous local
+    let _3: &'6 fn(i32); // anonymous local
     let _4: (); // anonymous local
-    let mut _5: &'13 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '14); // anonymous local
+    let mut _5: &'11 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '12); // anonymous local
     let mut _6: (i32,); // anonymous local
     let _7: (); // anonymous local
 
@@ -498,7 +498,7 @@ fn main()
     storage_live(_3)
     _3 = &BAR
     _2 = &(*_3)
-    boo = unsize_cast<&'16 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '17), &{impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>>(move _2)
+    boo = unsize_cast<&'14 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '15), &{impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>>(move _2)
     storage_dead(_2)
     fake_read(boo)
     set boo := &'2 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '3)
@@ -508,7 +508,7 @@ fn main()
     _5 = &(*boo) with_metadata(read boo.metadata)
     storage_live(_6)
     _6 = (const 42i32,)
-    _4 = Fn<(dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '21), (i32,)>::call<'25>(move _5, move _6)
+    _4 = Fn<(dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '19), (i32,)>::call<'23>(move _5, move _6)
     ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_5)

@@ -479,12 +479,12 @@ where
 {
     let mut _0: T; // return
     let arg: &'5 T; // arg #1
-    let x: &'9 mut (dyn Modifiable<T> + '10); // local
-    let mut _3: &'12 mut i32; // anonymous local
-    let mut _4: &'13 mut i32; // anonymous local
+    let x: &'0 mut (dyn Modifiable<T> + '1); // local
+    let mut _3: &'7 mut i32; // anonymous local
+    let mut _4: &'8 mut i32; // anonymous local
     let mut _5: i32; // anonymous local
-    let mut _6: &'14 mut (dyn Modifiable<T> + '15); // anonymous local
-    let mut _7: &'16 T; // anonymous local
+    let mut _6: &'12 mut (dyn Modifiable<T> + '13); // anonymous local
+    let mut _7: &'14 T; // anonymous local
 
     storage_live(_0)
     set 'lub<T> :> '0
@@ -498,7 +498,7 @@ where
     _5 = const 199i32
     _4 = &mut _5
     _3 = &mut (*_4)
-    x = unsize_cast<&'17 mut (dyn Modifiable<T> + '18), &impl_Modifiable_for_i32::{vtable}<T>[TraitClause0, TraitClause1]>(move _3)
+    x = unsize_cast<&'15 mut (dyn Modifiable<T> + '16), &impl_Modifiable_for_i32::{vtable}<T>[TraitClause0, TraitClause1]>(move _3)
     storage_dead(_3)
     fake_read(x)
     set x := &'2 mut (dyn Modifiable<T> + '3)
@@ -507,7 +507,7 @@ where
     _6 = &two-phase-mut (*x) with_metadata(read x.metadata)
     storage_live(_7)
     _7 = &(*arg)
-    _0 = (read (*_6.metadata).method_modify)<'27, '28>(move _6, move _7)
+    _0 = (read (*_6.metadata).method_modify)<'25, '26>(move _6, move _7)
     ↳⚡ storage_dead(arg)
         unwind_continue
     storage_dead(_7)
@@ -1084,117 +1084,117 @@ pub const test_crate::main::{promoted_const#18}: str = "Hello" with_metadata(5us
 fn main()
 {
     let mut _0: (); // return
-    let x: &'23 (dyn Checkable<i32> + '24); // local
-    let mut _2: &'26 i32; // anonymous local
-    let _3: &'27 i32; // anonymous local
+    let x: &'0 (dyn Checkable<i32> + '1); // local
+    let mut _2: &'21 i32; // anonymous local
+    let _3: &'22 i32; // anonymous local
     let mut _4: bool; // anonymous local
-    let mut _5: &'28 (dyn Checkable<i32> + '29); // anonymous local
-    let y: &'33 mut (dyn Modifiable<i32> + '34); // local
-    let mut _7: &'36 mut i32; // anonymous local
-    let mut _8: &'37 mut i32; // anonymous local
+    let mut _5: &'26 (dyn Checkable<i32> + '27); // anonymous local
+    let y: &'4 mut (dyn Modifiable<i32> + '5); // local
+    let mut _7: &'29 mut i32; // anonymous local
+    let mut _8: &'30 mut i32; // anonymous local
     let mut _9: i32; // anonymous local
     let mut _10: bool; // anonymous local
-    let mut _11: &'39 String; // anonymous local
+    let mut _11: &'32 String; // anonymous local
     let _12: String; // anonymous local
-    let mut _13: &'40 String; // anonymous local
-    let _14: &'41 String; // anonymous local
+    let mut _13: &'33 String; // anonymous local
+    let _14: &'34 String; // anonymous local
     let _15: String; // anonymous local
-    let mut _16: &'43 str; // anonymous local
-    let _17: &'44 str; // anonymous local
-    let mut _18: (&'53 i32, &'54 i32); // anonymous local
-    let mut _19: &'58 i32; // anonymous local
+    let mut _16: &'36 str; // anonymous local
+    let _17: &'37 str; // anonymous local
+    let mut _18: (&'46 i32, &'47 i32); // anonymous local
+    let mut _19: &'51 i32; // anonymous local
     let _20: i32; // anonymous local
-    let mut _21: &'59 mut (dyn Modifiable<i32> + '60); // anonymous local
-    let mut _22: &'61 i32; // anonymous local
-    let _23: &'62 mut i32; // anonymous local
+    let mut _21: &'55 mut (dyn Modifiable<i32> + '56); // anonymous local
+    let mut _22: &'57 i32; // anonymous local
+    let _23: &'58 mut i32; // anonymous local
     let mut _24: i32; // anonymous local
-    let mut _25: &'63 i32; // anonymous local
-    let left_val_26: &'64 i32; // local
-    let right_val_27: &'65 i32; // local
+    let mut _25: &'59 i32; // anonymous local
+    let left_val_26: &'60 i32; // local
+    let right_val_27: &'61 i32; // local
     let mut _28: bool; // anonymous local
     let mut _29: i32; // anonymous local
     let mut _30: i32; // anonymous local
     let kind_31: AssertKind; // local
     let mut _32: AssertKind; // anonymous local
-    let mut _33: &'66 i32; // anonymous local
-    let _34: &'67 i32; // anonymous local
-    let mut _35: &'68 i32; // anonymous local
-    let _36: &'69 i32; // anonymous local
-    let mut _37: Option<Arguments<'78>>[{built_in impl Sized for Arguments<'78>}]; // anonymous local
-    let z: &'85 (dyn NoParam + '86); // local
-    let mut _39: &'87 (dyn NoParam + '88); // anonymous local
-    let _40: &'89 (dyn NoParam + '90); // anonymous local
-    let mut _41: &'91 i32; // anonymous local
-    let _42: &'92 i32; // anonymous local
+    let mut _33: &'62 i32; // anonymous local
+    let _34: &'63 i32; // anonymous local
+    let mut _35: &'64 i32; // anonymous local
+    let _36: &'65 i32; // anonymous local
+    let mut _37: Option<Arguments<'74>>[{built_in impl Sized for Arguments<'74>}]; // anonymous local
+    let z: &'8 (dyn NoParam + '9); // local
+    let mut _39: &'81 (dyn NoParam + '82); // anonymous local
+    let _40: &'83 (dyn NoParam + '84); // anonymous local
+    let mut _41: &'85 i32; // anonymous local
+    let _42: &'86 i32; // anonymous local
     let _43: (); // anonymous local
-    let mut _44: &'93 (dyn NoParam + '94); // anonymous local
-    let a: &'98 (dyn Both32And64 + '99); // local
-    let mut _46: &'100 i32; // anonymous local
-    let _47: &'101 i32; // anonymous local
+    let mut _44: &'87 (dyn NoParam + '88); // anonymous local
+    let a: &'12 (dyn Both32And64 + '13); // local
+    let mut _46: &'89 i32; // anonymous local
+    let _47: &'90 i32; // anonymous local
     let _48: (); // anonymous local
-    let mut _49: &'102 (dyn Both32And64 + '103); // anonymous local
-    let mut _50: &'104 i32; // anonymous local
-    let _51: &'105 i32; // anonymous local
-    let mut _52: &'107 i64; // anonymous local
-    let _53: &'108 i64; // anonymous local
-    let b: &'112 (dyn LifetimeTrait<Ty = i32> + '113); // local
-    let mut _55: &'114 i32; // anonymous local
-    let _56: &'115 i32; // anonymous local
-    let mut _57: (&'116 i32, &'117 i32); // anonymous local
-    let mut _58: &'121 i32; // anonymous local
-    let _59: &'122 i32; // anonymous local
-    let mut _60: &'123 (dyn LifetimeTrait<Ty = i32> + '124); // anonymous local
-    let mut _61: &'125 (dyn LifetimeTrait<Ty = i32> + '126); // anonymous local
-    let mut _62: &'127 i32; // anonymous local
-    let _63: &'128 i32; // anonymous local
-    let mut _64: &'129 i32; // anonymous local
-    let left_val_65: &'130 i32; // local
-    let right_val_66: &'131 i32; // local
+    let mut _49: &'94 (dyn Both32And64 + '95); // anonymous local
+    let mut _50: &'96 i32; // anonymous local
+    let _51: &'97 i32; // anonymous local
+    let mut _52: &'99 i64; // anonymous local
+    let _53: &'100 i64; // anonymous local
+    let b: &'16 (dyn LifetimeTrait<Ty = i32> + '17); // local
+    let mut _55: &'101 i32; // anonymous local
+    let _56: &'102 i32; // anonymous local
+    let mut _57: (&'103 i32, &'104 i32); // anonymous local
+    let mut _58: &'108 i32; // anonymous local
+    let _59: &'109 i32; // anonymous local
+    let mut _60: &'113 (dyn LifetimeTrait<Ty = i32> + '114); // anonymous local
+    let mut _61: &'115 (dyn LifetimeTrait<Ty = i32> + '116); // anonymous local
+    let mut _62: &'117 i32; // anonymous local
+    let _63: &'118 i32; // anonymous local
+    let mut _64: &'119 i32; // anonymous local
+    let left_val_65: &'120 i32; // local
+    let right_val_66: &'121 i32; // local
     let mut _67: bool; // anonymous local
     let mut _68: i32; // anonymous local
     let mut _69: i32; // anonymous local
     let kind_70: AssertKind; // local
     let mut _71: AssertKind; // anonymous local
-    let mut _72: &'132 i32; // anonymous local
-    let _73: &'133 i32; // anonymous local
-    let mut _74: &'134 i32; // anonymous local
-    let _75: &'135 i32; // anonymous local
-    let mut _76: Option<Arguments<'136>>[{built_in impl Sized for Arguments<'136>}]; // anonymous local
-    let mut _77: &'140 i32; // anonymous local
-    let mut _78: &'141 i32; // anonymous local
-    let mut _79: &'142 i32; // anonymous local
-    let mut _80: &'143 i64; // anonymous local
-    let mut _81: &'144 i32; // anonymous local
-    let mut _82: &'145 i32; // anonymous local
-    let mut _83: &'146 i32; // anonymous local
-    let mut _84: &'147 i32; // anonymous local
-    let mut _85: &'148 i32; // anonymous local
-    let mut _86: &'149 i32; // anonymous local
-    let mut _87: &'193 i32; // anonymous local
-    let mut _88: &'207 i32; // anonymous local
-    let mut _89: &'242 i32; // anonymous local
-    let mut _90: &'246 i32; // anonymous local
-    let mut _91: &'247 i64; // anonymous local
-    let mut _92: &'259 i32; // anonymous local
-    let mut _93: &'265 i32; // anonymous local
-    let mut _94: &'274 i32; // anonymous local
-    let mut _95: &'304 i32; // anonymous local
+    let mut _72: &'122 i32; // anonymous local
+    let _73: &'123 i32; // anonymous local
+    let mut _74: &'124 i32; // anonymous local
+    let _75: &'125 i32; // anonymous local
+    let mut _76: Option<Arguments<'126>>[{built_in impl Sized for Arguments<'126>}]; // anonymous local
+    let mut _77: &'130 i32; // anonymous local
+    let mut _78: &'131 i32; // anonymous local
+    let mut _79: &'132 i32; // anonymous local
+    let mut _80: &'133 i64; // anonymous local
+    let mut _81: &'134 i32; // anonymous local
+    let mut _82: &'135 i32; // anonymous local
+    let mut _83: &'136 i32; // anonymous local
+    let mut _84: &'137 i32; // anonymous local
+    let mut _85: &'138 i32; // anonymous local
+    let mut _86: &'139 i32; // anonymous local
+    let mut _87: &'183 i32; // anonymous local
+    let mut _88: &'197 i32; // anonymous local
+    let mut _89: &'232 i32; // anonymous local
+    let mut _90: &'236 i32; // anonymous local
+    let mut _91: &'237 i64; // anonymous local
+    let mut _92: &'249 i32; // anonymous local
+    let mut _93: &'255 i32; // anonymous local
+    let mut _94: &'264 i32; // anonymous local
+    let mut _95: &'294 i32; // anonymous local
     let mut _96: i32; // anonymous local
-    let mut _97: &'305 i32; // anonymous local
+    let mut _97: &'295 i32; // anonymous local
     let mut _98: i32; // anonymous local
-    let mut _99: &'306 i32; // anonymous local
+    let mut _99: &'296 i32; // anonymous local
     let mut _100: i32; // anonymous local
-    let mut _101: &'307 i32; // anonymous local
+    let mut _101: &'297 i32; // anonymous local
     let mut _102: i32; // anonymous local
-    let mut _103: &'308 i32; // anonymous local
+    let mut _103: &'298 i32; // anonymous local
     let mut _104: i32; // anonymous local
-    let mut _105: &'309 i64; // anonymous local
+    let mut _105: &'299 i64; // anonymous local
     let mut _106: i64; // anonymous local
-    let mut _107: &'310 i32; // anonymous local
+    let mut _107: &'300 i32; // anonymous local
     let mut _108: i32; // anonymous local
-    let mut _109: &'311 i32; // anonymous local
+    let mut _109: &'301 i32; // anonymous local
     let mut _110: i32; // anonymous local
-    let mut _111: &'312 i32; // anonymous local
+    let mut _111: &'302 i32; // anonymous local
     let mut _112: i32; // anonymous local
 
     storage_live(_86)
@@ -1230,7 +1230,7 @@ fn main()
     _85 = move _86
     _3 = &(*_85)
     _2 = &(*_3)
-    x = unsize_cast<&'150 (dyn Checkable<i32> + '151), &impl_Checkable_i32_for_i32::{vtable}>(move _2)
+    x = unsize_cast<&'140 (dyn Checkable<i32> + '141), &impl_Checkable_i32_for_i32::{vtable}>(move _2)
     storage_dead(_2)
     fake_read(x)
     set x := &'2 (dyn Checkable<i32> + '3)
@@ -1238,7 +1238,7 @@ fn main()
     storage_live(_4)
     storage_live(_5)
     _5 = &(*x) with_metadata(read x.metadata)
-    _4 = (read (*_5.metadata).method_check)<'159>(move _5)
+    _4 = (read (*_5.metadata).method_check)<'149>(move _5)
     ↳⚡ storage_dead(_85)
         storage_dead(_84)
         storage_dead(_83)
@@ -1274,7 +1274,7 @@ fn main()
     _9 = const 99i32
     _8 = &mut _9
     _7 = &mut (*_8)
-    y = unsize_cast<&'160 mut (dyn Modifiable<i32> + '161), &impl_Modifiable_for_i32::{vtable}<i32>[{built_in impl Sized for i32}, impl_Clone_for_i32]>(move _7)
+    y = unsize_cast<&'150 mut (dyn Modifiable<i32> + '151), &impl_Modifiable_for_i32::{vtable}<i32>[{built_in impl Sized for i32}, impl_Clone_for_i32]>(move _7)
     storage_dead(_7)
     fake_read(y)
     set y := &'6 mut (dyn Modifiable<i32> + '7)
@@ -1289,7 +1289,7 @@ fn main()
     storage_live(_17)
     _17 = &test_crate::main::{promoted_const#18} with_metadata(const 5usize)
     _16 = &(*_17) with_metadata(read _17.metadata)
-    _15 = to_string<'166, str>[{built_in impl MetaSized for str}, {impl#16}](move _16)
+    _15 = to_string<'156, str>[{built_in impl MetaSized for str}, {impl#16}](move _16)
     ↳⚡ storage_dead(_85)
         storage_dead(_84)
         storage_dead(_83)
@@ -1317,8 +1317,8 @@ fn main()
     storage_dead(_16)
     _14 = &_15
     _13 = &(*_14)
-    _12 = modify_trait_object<'171, String>[{built_in impl Sized for String}, impl_Clone_for_String](move _13)
-    ↳⚡ conditional_drop[drop_glue<'172>] _15
+    _12 = modify_trait_object<'161, String>[{built_in impl Sized for String}, impl_Clone_for_String](move _13)
+    ↳⚡ conditional_drop[drop_glue<'162>] _15
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1396,8 +1396,8 @@ fn main()
         unwind_continue
     _11 = &_12
     storage_dead(_13)
-    _10 = is_empty<'176>(move _11)
-    ↳⚡ conditional_drop[drop_glue<'177>] _12
+    _10 = is_empty<'166>(move _11)
+    ↳⚡ conditional_drop[drop_glue<'167>] _12
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1449,7 +1449,7 @@ fn main()
             storage_dead(_87)
             storage_dead(_86)
             unwind_terminate
-        conditional_drop[drop_glue<'172>] _15
+        conditional_drop[drop_glue<'162>] _15
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1528,8 +1528,8 @@ fn main()
     if move _10 {
     } else {
         storage_dead(_11)
-        conditional_drop[drop_glue<'179>] _12
-        ↳⚡ conditional_drop[drop_glue<'172>] _15
+        conditional_drop[drop_glue<'169>] _12
+        ↳⚡ conditional_drop[drop_glue<'162>] _15
             ↳⚡ storage_dead(_85)
                 storage_dead(_84)
                 storage_dead(_83)
@@ -1605,7 +1605,7 @@ fn main()
             storage_dead(_32)
             storage_dead(kind_31)
             unwind_continue
-        conditional_drop[drop_glue<'181>] _15
+        conditional_drop[drop_glue<'171>] _15
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1646,7 +1646,7 @@ fn main()
         _24 = const 100i32
         _23 = &mut _24
         _22 = &(*_23)
-        _20 = (read (*_21.metadata).method_modify)<'191, '192>(move _21, move _22)
+        _20 = (read (*_21.metadata).method_modify)<'181, '182>(move _21, move _22)
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1791,7 +1791,7 @@ fn main()
         _83 = move _88
         _42 = &(*_83)
         _41 = &(*_42)
-        _40 = to_dyn_obj<'211, i32>[{built_in impl Sized for i32}, impl_NoParam_for_i32](move _41)
+        _40 = to_dyn_obj<'201, i32>[{built_in impl Sized for i32}, impl_NoParam_for_i32](move _41)
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1817,7 +1817,7 @@ fn main()
             storage_dead(kind_31)
             unwind_continue
         _39 = &(*_40) with_metadata(read _40.metadata)
-        z = unsize_cast<&'232 (dyn NoParam + '233),  at []>(move _39)
+        z = unsize_cast<&'222 (dyn NoParam + '223),  at []>(move _39)
         storage_dead(_41)
         storage_dead(_39)
         fake_read(z)
@@ -1827,7 +1827,7 @@ fn main()
         storage_live(_43)
         storage_live(_44)
         _44 = &(*z) with_metadata(read z.metadata)
-        _43 = (read (*_44.metadata).method_dummy)<'241>(move _44)
+        _43 = (read (*_44.metadata).method_dummy)<'231>(move _44)
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1878,7 +1878,7 @@ fn main()
         _82 = move _89
         _47 = &(*_82)
         _46 = &(*_47)
-        a = unsize_cast<&'243 (dyn Both32And64 + '244), &impl_Both32And64_for_i32::{vtable}>(move _46)
+        a = unsize_cast<&'233 (dyn Both32And64 + '234), &impl_Both32And64_for_i32::{vtable}>(move _46)
         storage_dead(_46)
         fake_read(a)
         set a := &'14 (dyn Both32And64 + '15)
@@ -1896,7 +1896,7 @@ fn main()
         _80 = move _91
         _53 = &(*_80)
         _52 = &(*_53)
-        _48 = (read (*_49.metadata).method_both_operate)<'256, '257, '258>(move _49, move _50, move _52)
+        _48 = (read (*_49.metadata).method_both_operate)<'246, '247, '248>(move _49, move _50, move _52)
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1945,7 +1945,7 @@ fn main()
         _79 = move _92
         _56 = &(*_79)
         _55 = &(*_56)
-        b = unsize_cast<&'260 (dyn LifetimeTrait<Ty = i32> + '261), &impl_LifetimeTrait_for_i32::{vtable}>(move _55)
+        b = unsize_cast<&'250 (dyn LifetimeTrait<Ty = i32> + '251), &impl_LifetimeTrait_for_i32::{vtable}>(move _55)
         storage_dead(_55)
         fake_read(b)
         set b := &'18 (dyn LifetimeTrait<Ty = i32> + '19)
@@ -1956,14 +1956,14 @@ fn main()
         storage_live(_60)
         storage_live(_61)
         _61 = &(*b) with_metadata(read b.metadata)
-        _60 = unsize_cast<&'263 (dyn LifetimeTrait<Ty = i32> + '264),  at []>(move _61)
+        _60 = unsize_cast<&'253 (dyn LifetimeTrait<Ty = i32> + '254),  at []>(move _61)
         storage_dead(_61)
         storage_live(_62)
         storage_live(_63)
         _78 = move _93
         _63 = &(*_78)
         _62 = &(*_63)
-        _59 = use_lifetime_trait<'272, '273>(move _60, move _62)
+        _59 = use_lifetime_trait<'262, '263>(move _60, move _62)
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -2153,8 +2153,8 @@ fn main()
         return
     }
     storage_dead(_11)
-    conditional_drop[drop_glue<'178>] _12
-    ↳⚡ conditional_drop[drop_glue<'172>] _15
+    conditional_drop[drop_glue<'168>] _12
+    ↳⚡ conditional_drop[drop_glue<'162>] _15
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -2230,7 +2230,7 @@ fn main()
         storage_dead(_32)
         storage_dead(kind_31)
         unwind_continue
-    conditional_drop[drop_glue<'180>] _15
+    conditional_drop[drop_glue<'170>] _15
     ↳⚡ storage_dead(_85)
         storage_dead(_84)
         storage_dead(_83)

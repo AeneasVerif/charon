@@ -77,24 +77,24 @@ fn from_fn_def<'a>(x: &'a u8) -> &'a u8
     let mut _0: &'8 u8; // return
     let x: &'9 u8; // arg #1
     let f: fn<'b>(&'b u8) -> &'b u8; // local
-    let g: unsafe fn<'b>(&'12 u8, &'b u8) -> &'b u8; // local
-    let _4: &'13 u8; // anonymous local
-    let mut _5: unsafe fn<'b>(&'14 u8, &'b u8) -> &'b u8; // anonymous local
-    let mut _6: &'15 u8; // anonymous local
-    let mut _7: &'16 u8; // anonymous local
-    let _8: &'17 u8; // anonymous local
+    let g: unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8; // local
+    let _4: &'10 u8; // anonymous local
+    let mut _5: unsafe fn<'b>(&'13 u8, &'b u8) -> &'b u8; // anonymous local
+    let mut _6: &'14 u8; // anonymous local
+    let mut _7: &'15 u8; // anonymous local
+    let _8: &'16 u8; // anonymous local
     let mut _9: fn<'b>(&'b u8) -> &'b u8; // anonymous local
-    let mut _10: &'18 u8; // anonymous local
-    let mut _11: fn<'b>(&'47 u8, &'b u8) -> &'b u8; // anonymous local
+    let mut _10: &'17 u8; // anonymous local
+    let mut _11: fn<'b>(&'46 u8, &'b u8) -> &'b u8; // anonymous local
 
     storage_live(_0)
     storage_live(f)
-    f = fn_def_to_fn_ptr(const identity<'21>)
+    f = fn_def_to_fn_ptr(const identity<'20>)
     fake_read(f)
     set f := fn<'b>(&'b u8) -> &'b u8
     storage_live(g)
     storage_live(_11)
-    _11 = fn_def_to_fn_ptr(const with_early_and_late<'a, '44>[{built_in impl Sized for &'a u8}])
+    _11 = fn_def_to_fn_ptr(const with_early_and_late<'a, '43>[{built_in impl Sized for &'a u8}])
     g = fn_ptr_to_unsafe(move _11)
     fake_read(g)
     set g := unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8
@@ -109,14 +109,14 @@ fn from_fn_def<'a>(x: &'a u8) -> &'a u8
     _9 = copy f
     storage_live(_10)
     _10 = &(*x)
-    _8 = (move _9)<'72>(move _10)
+    _8 = (move _9)<'71>(move _10)
     ↳⚡ storage_dead(_11)
         storage_dead(x)
         unwind_continue
     _7 = &(*_8)
     storage_dead(_10)
     storage_dead(_9)
-    _4 = (move _5)<'73>(move _6, move _7)
+    _4 = (move _5)<'72>(move _6, move _7)
     ↳⚡ storage_dead(_11)
         storage_dead(x)
         unwind_continue
@@ -270,20 +270,20 @@ fn from_closure<'a>(x: &'a u8) -> &'a u8
 {
     let mut _0: &'1 u8; // return
     let x: &'2 u8; // arg #1
-    let f: unsafe fn<'b>(&'5 u8, &'b u8) -> &'b u8; // local
-    let mut _3: {closure}<'31>; // anonymous local
-    let _4: &'32 u8; // anonymous local
-    let mut _5: unsafe fn<'b>(&'33 u8, &'b u8) -> &'b u8; // anonymous local
-    let mut _6: &'34 u8; // anonymous local
-    let mut _7: &'35 u8; // anonymous local
-    let mut _8: fn<'_0_1>(&'67 u8, &'_0_1 u8) -> &'_0_1 u8; // anonymous local
+    let f: unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8; // local
+    let mut _3: {closure}<'28>; // anonymous local
+    let _4: &'29 u8; // anonymous local
+    let mut _5: unsafe fn<'b>(&'32 u8, &'b u8) -> &'b u8; // anonymous local
+    let mut _6: &'33 u8; // anonymous local
+    let mut _7: &'34 u8; // anonymous local
+    let mut _8: fn<'_0_1>(&'66 u8, &'_0_1 u8) -> &'_0_1 u8; // anonymous local
 
     storage_live(_0)
     storage_live(f)
     storage_live(_3)
     _3 = {closure} {  }
     storage_live(_8)
-    _8 = fn_def_to_fn_ptr(const {as_fn}<'62, '64>)
+    _8 = fn_def_to_fn_ptr(const {as_fn}<'61, '63>)
     f = fn_ptr_to_unsafe(move _8)
     storage_dead(_3)
     fake_read(f)
@@ -295,7 +295,7 @@ fn from_closure<'a>(x: &'a u8) -> &'a u8
     _6 = copy x
     storage_live(_7)
     _7 = &(*x)
-    _4 = (move _5)<'92>(move _6, move _7)
+    _4 = (move _5)<'91>(move _6, move _7)
     ↳⚡ storage_dead(_8)
         storage_dead(x)
         unwind_continue

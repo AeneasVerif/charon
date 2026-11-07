@@ -679,13 +679,13 @@ fn main()
 {
     let mut _0: (); // return
     let a: [u32; 5usize]; // local
-    let b: &'3 [u32]; // local
-    let mut _3: &'5 [u32; 5usize]; // anonymous local
-    let _4: &'6 [u32; 5usize]; // anonymous local
+    let b: &'0 [u32]; // local
+    let mut _3: &'3 [u32; 5usize]; // anonymous local
+    let _4: &'4 [u32; 5usize]; // anonymous local
     let res: Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]; // local
-    let mut _6: &'7 [u32]; // anonymous local
-    let mut _7: &'8 [u32; 5usize]; // anonymous local
-    let mut _8: {closure}<'14>; // anonymous local
+    let mut _6: &'6 [u32]; // anonymous local
+    let mut _7: &'7 [u32; 5usize]; // anonymous local
+    let mut _8: {closure}<'13>; // anonymous local
 
     bb0: {
         storage_live(_0);
@@ -699,7 +699,7 @@ fn main()
         storage_live(_4);
         _4 = &a;
         _3 = &(*_4);
-        b = unsize_cast<&'15 [u32], 5usize>(move _3);
+        b = unsize_cast<&'14 [u32], 5usize>(move _3);
         storage_dead(_3);
         fake_read(b);
         set b := &'1 [u32];
@@ -708,11 +708,11 @@ fn main()
         storage_live(_6);
         storage_live(_7);
         _7 = &a;
-        _6 = unsize_cast<&'16 [u32], 5usize>(move _7);
+        _6 = unsize_cast<&'15 [u32], 5usize>(move _7);
         storage_dead(_7);
         storage_live(_8);
         _8 = {closure} {  };
-        res = binary_search_by<'61, u32, {closure}<'61>>[{built_in impl Sized for u32}, {built_in impl Sized for {closure}<'61>}, impl_FnMut_tuple_for_closure<'61>, {built_in impl Destruct for {closure}<'61>}](move _6, move _8) -> bb1 (unwind: bb2);
+        res = binary_search_by<'60, u32, {closure}<'60>>[{built_in impl Sized for u32}, {built_in impl Sized for {closure}<'60>}, impl_FnMut_tuple_for_closure<'60>, {built_in impl Destruct for {closure}<'60>}](move _6, move _8) -> bb1 (unwind: bb2);
     }
 
     bb1: {

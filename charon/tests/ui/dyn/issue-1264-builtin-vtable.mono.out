@@ -36,12 +36,12 @@ vtable {vtable}::<i32>: {vtable} = {vtable} { size: size_of::<i32>(), align: ali
 fn main()
 {
     let mut _0: (); // return
-    let _x: &'7 (dyn Send + '8); // local
-    let mut _2: &'10 i32; // anonymous local
-    let _3: &'11 i32; // anonymous local
-    let mut _4: &'12 i32; // anonymous local
-    let mut _5: &'13 i32; // anonymous local
-    let mut _6: &'16 i32; // anonymous local
+    let _x: &'0 (dyn Send + '1); // local
+    let mut _2: &'5 i32; // anonymous local
+    let _3: &'6 i32; // anonymous local
+    let mut _4: &'7 i32; // anonymous local
+    let mut _5: &'8 i32; // anonymous local
+    let mut _6: &'14 i32; // anonymous local
     let mut _7: i32; // anonymous local
 
     storage_live(_5)
@@ -61,7 +61,7 @@ fn main()
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _x = unsize_cast<&'14 (dyn Send + '15), &{vtable}::<i32>>(move _2)
+    _x = unsize_cast<&'12 (dyn Send + '13), &{vtable}::<i32>>(move _2)
     storage_dead(_2)
     fake_read(_x)
     set _x := &'2 (dyn Send + '3)

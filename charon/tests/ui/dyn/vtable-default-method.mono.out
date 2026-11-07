@@ -135,15 +135,15 @@ impl "impl_Trait_for_Struct" Trait for Struct {
 pub fn main()
 {
     let mut _0: (); // return
-    let b: &'7 (dyn Trait + '8); // local
-    let mut _2: &'10 Struct; // anonymous local
-    let _3: &'11 Struct; // anonymous local
+    let b: &'0 (dyn Trait + '1); // local
+    let mut _2: &'5 Struct; // anonymous local
+    let _3: &'6 Struct; // anonymous local
     let mut _4: i32; // anonymous local
-    let mut _5: &'12 (dyn Trait + '13); // anonymous local
-    let mut _6: &'14 Struct; // anonymous local
-    let mut _7: fn(&'12 (dyn Trait + '13)) -> i32; // anonymous local
-    let mut _8: &'15 Struct; // anonymous local
-    let mut _9: &'26 Struct; // anonymous local
+    let mut _5: &'10 (dyn Trait + '11); // anonymous local
+    let mut _6: &'12 Struct; // anonymous local
+    let mut _7: fn(&'10 (dyn Trait + '11)) -> i32; // anonymous local
+    let mut _8: &'13 Struct; // anonymous local
+    let mut _9: &'24 Struct; // anonymous local
     let mut _10: Struct; // anonymous local
 
     storage_live(_8)
@@ -163,7 +163,7 @@ pub fn main()
     _6 = move _8
     _3 = &(*_6)
     _2 = &(*_3)
-    b = unsize_cast<&'16 (dyn Trait + '17), &impl_Trait_for_Struct::{vtable}>(move _2)
+    b = unsize_cast<&'14 (dyn Trait + '15), &impl_Trait_for_Struct::{vtable}>(move _2)
     storage_dead(_2)
     fake_read(b)
     set b := &'2 (dyn Trait + '3)
@@ -172,7 +172,7 @@ pub fn main()
     storage_live(_5)
     _5 = &(*b) with_metadata(read b.metadata)
     storage_live(_7)
-    _7 = cast<fn(&'12 (dyn Trait + '13)) -> i32>(read (*_5.metadata).method_dflt)
+    _7 = cast<fn(&'10 (dyn Trait + '11)) -> i32>(read (*_5.metadata).method_dflt)
     _4 = (read _7)(move _5)
     ↳⚡ storage_dead(_6)
         unwind_continue

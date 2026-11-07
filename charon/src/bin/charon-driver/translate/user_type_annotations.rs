@@ -1,4 +1,6 @@
 //! Recover the type annotations provided by the user inside a body.
+use std::mem;
+
 use itertools::Itertools;
 use rustc_hash::FxHashMap as HashMap;
 use rustc_middle::{mir, ty};
@@ -16,12 +18,12 @@ struct UserTypeAnnotation {
 /// User-provided type annotations for this MIR body.
 pub(crate) struct UserTypeAnnotations {
     annotations: rustc_index::IndexVec<ty::UserTypeAnnotationIndex, UserTypeAnnotation>,
-    outlives_statements: Vec<Statement>,
+    extra_constraints: Vec<Statement>,
 }
 
 impl UserTypeAnnotations {
-    /// Translate the annotations for this body. The computed `outlives_statements` must be
-    /// enforced at the start of the body. The returned value can then be used to fetch the type of
+    /// Translate the annotations for this body. The computed `extra_constraints` must be enforced
+    /// at the start of the body. The returned value can then be used to fetch the type of
     /// annotations.
     pub(crate) fn new<'tcx>(
         ctx: &mut ItemTransCtx<'tcx, '_>,
@@ -47,7 +49,7 @@ impl UserTypeAnnotations {
 
         let mut recovered = Self {
             annotations: Default::default(),
-            outlives_statements: Vec::new(),
+            extra_constraints: Vec::new(),
         };
         if annotations.is_empty() {
             return Ok(recovered);
@@ -83,15 +85,69 @@ impl UserTypeAnnotations {
                 projections: projections.into_iter().zip_eq(tys).collect(),
             };
             assert_eq!(recovered.annotations.push(annotation), base);
-            recovered.outlives_statements.extend(outlives_statements);
+            recovered.extra_constraints.extend(outlives_statements);
         }
         Ok(recovered)
     }
 
-    /// The outlives statements that must be enforced for the annotations to be valid. Must be
+    /// Get the annotated type of this local, if there was such an annotation. If there were
+    /// multiple annotations, we add the rest as constraints in `self.extra_constraints`.
+    pub(crate) fn translate_local_ty<'tcx>(
+        &mut self,
+        ctx: &mut ItemTransCtx<'tcx, '_>,
+        span: Span,
+        local_id: LocalId,
+        decl: &mir::LocalDecl<'tcx>,
+    ) -> Result<Ty, Error> {
+        if let Some(user_tys) = &decl.user_ty
+            && user_tys.projections().len() != 0
+        {
+            let mut extra_constraints = mem::take(&mut self.extra_constraints);
+            let outer_ref = if decl.is_nonref_binding() {
+                None
+            } else {
+                // In `let ref x: T`, the annotation describes the pointer target. We grab the
+                // appropriate region by using the normal type of the local.
+                let inferred_ty = ctx.translate_rustc_ty(span, &decl.ty)?;
+                let TyKind::Ref(region, _, kind) = inferred_ty.kind() else {
+                    raise_error!(ctx, span, "ref binding has non-reference type");
+                };
+                Some((region.clone(), *kind))
+            };
+
+            let mut annotated_tys = user_tys
+                .projections()
+                .map(|pj| self.translate_projected_annotation(pj))
+                .map(|ty| {
+                    if let Some((region, kind)) = &outer_ref {
+                        TyKind::Ref(region.clone(), ty, *kind).into()
+                    } else {
+                        ty
+                    }
+                });
+            let ty = annotated_tys.next().unwrap();
+            for annotated_ty in annotated_tys {
+                extra_constraints.push(Statement::new(
+                    span,
+                    StatementKind::Borrowck(BorrowckStatement::SetType {
+                        place: Place::new(local_id, ty.clone()),
+                        ty: annotated_ty,
+                        variance: Variance::Invariant,
+                        temporary: false,
+                    }),
+                ));
+            }
+            self.extra_constraints = extra_constraints;
+            Ok(ty)
+        } else {
+            ctx.translate_rustc_ty(span, &decl.ty)
+        }
+    }
+
+    /// The borrowck constraints that must be enforced for the annotations to be valid. Must be
     /// emitted once at the start of the function.
-    pub(crate) fn take_outlives_statements(&mut self) -> Vec<Statement> {
-        std::mem::take(&mut self.outlives_statements)
+    pub(crate) fn take_body_start_constraints(&mut self) -> Vec<Statement> {
+        mem::take(&mut self.extra_constraints)
     }
 
     /// Look up the (unprojected) type of an annotation.

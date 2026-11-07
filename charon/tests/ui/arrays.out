@@ -2294,9 +2294,9 @@ pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
 pub fn f0()
 {
     let mut _0: (); // return
-    let s: &'3 mut [u32]; // local
-    let mut _2: &'5 mut [u32; 2usize]; // anonymous local
-    let mut _3: &'6 mut [u32; 2usize]; // anonymous local
+    let s: &'0 mut [u32]; // local
+    let mut _2: &'3 mut [u32; 2usize]; // anonymous local
+    let mut _3: &'4 mut [u32; 2usize]; // anonymous local
     let mut _4: [u32; 2usize]; // anonymous local
     let _5: usize; // anonymous local
     let mut _6: &'_ mut [u32]; // anonymous local

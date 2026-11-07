@@ -2038,17 +2038,17 @@ pub fn test_regions_casted<'a>(x: &'a u32) -> u32
 {
     let mut _0: u32; // return
     let x: &'1 u32; // arg #1
-    let f: fn<'_0_1>(&'_0_1 &'5 u32) -> u32; // local
-    let mut _3: test_crate::test_regions_casted::{closure}<'12>; // anonymous local
-    let mut _4: fn<'_0_1>(&'_0_1 &'13 u32) -> u32; // anonymous local
-    let mut _5: &'16 &'17 u32; // anonymous local
-    let _6: &'18 &'19 u32; // anonymous local
+    let f: fn<'_0_1>(&'_0_1 &'a u32) -> u32; // local
+    let mut _3: test_crate::test_regions_casted::{closure}<'8>; // anonymous local
+    let mut _4: fn<'_0_1>(&'_0_1 &'12 u32) -> u32; // anonymous local
+    let mut _5: &'15 &'16 u32; // anonymous local
+    let _6: &'17 &'18 u32; // anonymous local
 
     storage_live(_0)
     storage_live(f)
     storage_live(_3)
     _3 = test_crate::test_regions_casted::{closure} {  }
-    f = fn_def_to_fn_ptr(const test_crate::test_regions_casted::{closure}::{as_fn}<'24, '26>)
+    f = fn_def_to_fn_ptr(const test_crate::test_regions_casted::{closure}::{as_fn}<'23, '25>)
     storage_dead(_3)
     fake_read(f)
     set f := fn<'_0_1>(&'_0_1 &'a u32) -> u32
@@ -2058,7 +2058,7 @@ pub fn test_regions_casted<'a>(x: &'a u32) -> u32
     storage_live(_6)
     _6 = &x
     _5 = &(*_6)
-    _0 = (move _4)<'60>(move _5)
+    _0 = (move _4)<'59>(move _5)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_5)

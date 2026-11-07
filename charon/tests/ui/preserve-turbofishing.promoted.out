@@ -200,10 +200,10 @@ pub fn function_values(value: &'static u32)
     let _7: (); // anonymous local
     let mut _8: bar<&'30 u32>[{built_in impl Sized for &'30 u32}]; // anonymous local
     let mut _9: &'34 u32; // anonymous local
-    let f_10: fn(&'37 u32); // local
+    let f_10: fn(&'static u32); // local
     let _11: (); // anonymous local
-    let mut _12: fn(&'38 u32); // anonymous local
-    let mut _13: &'39 u32; // anonymous local
+    let mut _12: fn(&'37 u32); // anonymous local
+    let mut _13: &'38 u32; // anonymous local
 
     storage_live(_0)
     _0 = ()

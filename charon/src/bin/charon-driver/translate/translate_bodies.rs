@@ -63,7 +63,7 @@ impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
         drop_kind: DropKind,
     ) -> Result<Self, Error> {
         i_ctx.lifetime_freshener = (!i_ctx.options.erase_body_lifetimes).then(IndexMap::new);
-        let user_type_annotations = UserTypeAnnotations::new(i_ctx, body)?;
+        let mut user_type_annotations = UserTypeAnnotations::new(i_ctx, body)?;
 
         // Translate the local variables.
         let mut locals = Locals {
@@ -78,7 +78,12 @@ impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
 
             // Translate the type
             let span = i_ctx.translate_span(&var.source_info.span);
-            let ty = i_ctx.translate_rustc_ty(span, &var.ty)?;
+            let ty = user_type_annotations.translate_local_ty(
+                i_ctx,
+                span,
+                locals.locals.next_idx(),
+                var,
+            )?;
 
             // Add the variable to the environment
             let local_id = locals.locals.push_with(|index| Local {
@@ -658,7 +663,7 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
                 block_ctx
                     .b_ctx
                     .user_type_annotations
-                    .take_outlives_statements(),
+                    .take_body_start_constraints(),
             );
         }
         for statement in &block.statements {

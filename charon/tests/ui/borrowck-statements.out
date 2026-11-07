@@ -454,7 +454,7 @@ where
 {
     let mut _0: (); // return
     let value_1: &'3 u32; // arg #1
-    let value_2: &'4 u32; // local
+    let value_2: &'0 u32; // local
 
     storage_live(_0)
     _0 = ()
@@ -480,7 +480,7 @@ pub fn set_type_self<'_0>(self: Foo<'_0>)
 {
     let mut _0: (); // return
     let self: Foo<'1>; // arg #1
-    let x: Foo<'2>; // local
+    let x: Foo<'_0>; // local
 
     storage_live(_0)
     _0 = ()
@@ -499,7 +499,7 @@ pub fn explicit_lifetimes<'a>(value: (&'static u32, &'a u32, &'a u32))
 {
     let mut _0: (); // return
     let value: (&'40 u32, &'41 u32, &'42 u32); // arg #1
-    let x: (&'49 u32, &'50 u32, &'51 u32); // local
+    let x: (&'static u32, &'a u32, &'a u32); // local
 
     storage_live(_0)
     _0 = ()
@@ -551,7 +551,7 @@ where
 {
     let mut _0: (); // return
     let value: StaticCopy<'3>; // arg #1
-    let x: StaticCopy<'4>; // local
+    let x: StaticCopy<'0>; // local
 
     storage_live(_0)
     _0 = ()
@@ -574,7 +574,7 @@ where
 {
     let mut _0: (); // return
     let value: Box<StaticCopy<'8>>[{built_in impl MetaSized for StaticCopy<'8>}, {built_in impl Sized for Global}]; // arg #1
-    let x: Box<StaticCopy<'11>>[{built_in impl MetaSized for StaticCopy<'11>}, {built_in impl Sized for Global}]; // local
+    let x: Box<StaticCopy<'0>>[{built_in impl MetaSized for StaticCopy<'0>}, {built_in impl Sized for Global}]; // local
 
     storage_live(_0)
     _0 = ()
@@ -585,14 +585,14 @@ where
     fake_read(x)
     set x := Box<StaticCopy<'1>>[{built_in impl MetaSized for StaticCopy<'1>}, {built_in impl Sized for Global}]
     _0 = ()
-    conditional_drop[impl_Destruct_for_Box::drop_glue<'28, StaticCopy<'23>, Global>[{built_in impl MetaSized for StaticCopy<'23>}, {built_in impl Sized for Global}]] x
-    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'58, StaticCopy<'53>, Global>[{built_in impl MetaSized for StaticCopy<'53>}, {built_in impl Sized for Global}]] value
+    conditional_drop[impl_Destruct_for_Box::drop_glue<'25, StaticCopy<'20>, Global>[{built_in impl MetaSized for StaticCopy<'20>}, {built_in impl Sized for Global}]] x
+    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'55, StaticCopy<'50>, Global>[{built_in impl MetaSized for StaticCopy<'50>}, {built_in impl Sized for Global}]] value
         ↳⚡ storage_dead(value)
             unwind_terminate
         storage_dead(value)
         unwind_continue
     storage_dead(x)
-    conditional_drop[impl_Destruct_for_Box::drop_glue<'43, StaticCopy<'38>, Global>[{built_in impl MetaSized for StaticCopy<'38>}, {built_in impl Sized for Global}]] value
+    conditional_drop[impl_Destruct_for_Box::drop_glue<'40, StaticCopy<'35>, Global>[{built_in impl MetaSized for StaticCopy<'35>}, {built_in impl Sized for Global}]] value
     ↳⚡ storage_dead(value)
         unwind_continue
     storage_dead(value)
@@ -670,7 +670,7 @@ where
 {
     let mut _0: (); // return
     let value: &'1 u32; // arg #1
-    let x: &'2 u32; // local
+    let x: &'b u32; // local
 
     storage_live(_0)
     _0 = ()
@@ -695,7 +695,7 @@ where
 {
     let mut _0: (); // return
     let value: &'1 u32; // arg #1
-    let x: &'2 u32; // local
+    let x: &'a u32; // local
 
     storage_live(_0)
     _0 = ()
@@ -707,6 +707,114 @@ where
     set x := &'a u32
     _0 = ()
     storage_dead(x)
+    storage_dead(value)
+    return
+}
+
+// Full name: test_crate::deferred_annotation
+pub fn deferred_annotation(value: &'static u32)
+{
+    let mut _0: (); // return
+    let value: &'1 u32; // arg #1
+    let x: &'static u32; // local
+    let mut _3: &'2 u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(x)
+    storage_live(_3)
+    _3 = copy value
+    x = move _3
+    storage_dead(_3)
+    _0 = ()
+    storage_dead(x)
+    storage_dead(value)
+    return
+}
+
+// Full name: test_crate::ref_annotations
+pub fn ref_annotations(value: &'static u32)
+{
+    let mut _0: (); // return
+    let mut value: &'1 u32; // arg #1
+    let x: &'4 &'static u32; // local
+    let y: &'8 mut &'static u32; // local
+
+    storage_live(_0)
+    _0 = ()
+    set value :< &'static u32
+    storage_live(x)
+    x = &value
+    set value :< &'static u32
+    storage_live(y)
+    y = &mut value
+    _0 = ()
+    storage_dead(y)
+    storage_dead(x)
+    storage_dead(value)
+    return
+}
+
+// Full name: test_crate::Pair
+pub struct Pair<'a> {
+  x: &'a u32,
+  y: &'a u32,
+}
+
+// Full name: test_crate::shared_projected_annotation
+pub fn shared_projected_annotation(value: &'static u32)
+{
+    let mut _0: (); // return
+    let value: &'2 u32; // arg #1
+    let x: &'0 u32; // local
+    let y: &'0 u32; // local
+    let mut _4: &'3 u32; // anonymous local
+    let mut _5: &'4 u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(x)
+    storage_live(y)
+    storage_live(_4)
+    // Both locals must share the same inferred annotation lifetime.
+    _4 = &(*value)
+    x = move _4
+    storage_dead(_4)
+    storage_live(_5)
+    _5 = &(*value)
+    y = move _5
+    storage_dead(_5)
+    _0 = ()
+    storage_dead(y)
+    storage_dead(x)
+    storage_dead(value)
+    return
+}
+
+// Full name: test_crate::multiple_projected_annotations
+pub fn multiple_projected_annotations(value: &'static u32)
+{
+    let mut _0: (); // return
+    let value: &'3 u32; // arg #1
+    let x: &'6 &'static u32; // local
+    let mut _3: Foo<'9>; // anonymous local
+    let mut _4: &'10 u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    set x := &'6 &'0 u32
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &(*value)
+    _3 = Foo { _0: move _4 }
+    storage_dead(_4)
+    set _3 :< Foo<'static>
+    set _3 :< Foo<'1>
+    storage_live(x)
+    x = &_3._0
+    _0 = ()
+    storage_dead(x)
+    storage_dead(_3)
     storage_dead(value)
     return
 }
