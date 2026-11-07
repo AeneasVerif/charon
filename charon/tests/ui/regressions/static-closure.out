@@ -267,7 +267,7 @@ extern "rust-call" fn call_mut<'_0>(state: &'_0 mut test_crate::BAR::{closure}, 
 extern "rust-call" fn call_once(_1: test_crate::BAR::{closure}, _2: (i32,))
 {
     let mut _0: (); // return
-    let _1: test_crate::BAR::{closure}; // arg #1
+    let mut _1: test_crate::BAR::{closure}; // arg #1
     let _2: (i32,); // arg #2
     let _3: &'1 mut test_crate::BAR::{closure}; // anonymous local
 

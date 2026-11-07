@@ -108,7 +108,7 @@ extern "rust-call" fn {impl FnMut<()> for test_crate::CLOSURE_STATELESS::{closur
 extern "rust-call" fn {impl FnOnce<()> for test_crate::CLOSURE_STATELESS::{closure}}::call_once(_1: test_crate::CLOSURE_STATELESS::{closure}, _2: ()) -> u8
 {
     let mut _0: u8; // return
-    let _1: test_crate::CLOSURE_STATELESS::{closure}; // arg #1
+    let mut _1: test_crate::CLOSURE_STATELESS::{closure}; // arg #1
     let _2: (); // arg #2
     let _3: &'1 mut test_crate::CLOSURE_STATELESS::{closure}; // anonymous local
 
@@ -218,7 +218,7 @@ extern "rust-call" fn {impl FnMut<()> for test_crate::CLOSURE_BY_VALUE::{closure
 extern "rust-call" fn {impl FnOnce<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call_once(_1: test_crate::CLOSURE_BY_VALUE::{closure}, _2: ()) -> u8
 {
     let mut _0: u8; // return
-    let _1: test_crate::CLOSURE_BY_VALUE::{closure}; // arg #1
+    let mut _1: test_crate::CLOSURE_BY_VALUE::{closure}; // arg #1
     let _2: (); // arg #2
     let _3: &'1 mut test_crate::CLOSURE_BY_VALUE::{closure}; // anonymous local
 

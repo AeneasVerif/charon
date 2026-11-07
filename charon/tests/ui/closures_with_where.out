@@ -127,7 +127,7 @@ where
     TraitClause1: (T: Ops<K>),
 {
     let mut _0: T; // return
-    let _1: {closure}<T, K>[TraitClause0, TraitClause1]; // arg #1
+    let mut _1: {closure}<T, K>[TraitClause0, TraitClause1]; // arg #1
     let _2: (usize,); // arg #2
     let _3: &'1 mut {closure}<T, K>[TraitClause0, TraitClause1]; // anonymous local
 

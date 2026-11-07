@@ -220,7 +220,7 @@ where
 extern "rust-call" fn call_once<'_0, '_1>(_1: {closure}<'_0>, _2: (&'_0 u8, &'_1 u8)) -> &'_1 u8
 {
     let mut _0: &'1 u8; // return
-    let _1: {closure}<'_0>; // arg #1
+    let mut _1: {closure}<'_0>; // arg #1
     let _2: (&'35 u8, &'36 u8); // arg #2
     let _3: &'41 mut {closure}<'_0>; // anonymous local
 

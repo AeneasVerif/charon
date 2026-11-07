@@ -604,7 +604,7 @@ extern "rust-call" fn {impl FnMut<(u32,), u32> for test_crate::test_closure_u32:
 extern "rust-call" fn {impl FnOnce<(u32,), u32> for test_crate::test_closure_u32::{closure}}::call_once(_1: test_crate::test_closure_u32::{closure}, _2: (u32,)) -> u32
 {
     let mut _0: u32; // return
-    let _1: test_crate::test_closure_u32::{closure}; // arg #1
+    let mut _1: test_crate::test_closure_u32::{closure}; // arg #1
     let _2: (u32,); // arg #2
     let _3: &'1 mut test_crate::test_closure_u32::{closure}; // anonymous local
 
@@ -739,7 +739,7 @@ extern "rust-call" fn {impl FnMut<(u32, u32), u32> for test_crate::test_closure_
 extern "rust-call" fn {impl FnOnce<(u32, u32), u32> for test_crate::test_closure_u32s::{closure}}::call_once(_1: test_crate::test_closure_u32s::{closure}, _2: (u32, u32)) -> u32
 {
     let mut _0: u32; // return
-    let _1: test_crate::test_closure_u32s::{closure}; // arg #1
+    let mut _1: test_crate::test_closure_u32s::{closure}; // arg #1
     let _2: (u32, u32); // arg #2
     let _3: &'1 mut test_crate::test_closure_u32s::{closure}; // anonymous local
 
@@ -865,7 +865,7 @@ extern "rust-call" fn {impl FnMut<(&'_0 u32,), &'_0 u32> for test_crate::test_cl
 extern "rust-call" fn {impl FnOnce<(&'_0 u32,), &'_0 u32> for test_crate::test_closure_ref_u32::{closure}}::call_once<'_0>(_1: test_crate::test_closure_ref_u32::{closure}, _2: (&'_0 u32,)) -> &'_0 u32
 {
     let mut _0: &'1 u32; // return
-    let _1: test_crate::test_closure_ref_u32::{closure}; // arg #1
+    let mut _1: test_crate::test_closure_ref_u32::{closure}; // arg #1
     let _2: (&'3 u32,); // arg #2
     let _3: &'5 mut test_crate::test_closure_ref_u32::{closure}; // anonymous local
 
@@ -1003,7 +1003,7 @@ where
     Outlives0: (T: '_0),
 {
     let mut _0: &'1 T; // return
-    let _1: test_crate::test_closure_ref_param::{closure}<T>[TraitClause0]; // arg #1
+    let mut _1: test_crate::test_closure_ref_param::{closure}<T>[TraitClause0]; // arg #1
     let _2: (&'3 T,); // arg #2
     let _3: &'5 mut test_crate::test_closure_ref_param::{closure}<T>[TraitClause0]; // anonymous local
 
@@ -1161,7 +1161,7 @@ where
     Outlives0: (T: '_2),
 {
     let mut _0: &'1 T; // return
-    let _1: test_crate::test_closure_ref_early_bound::{closure}<'a, '_1, T>[TraitClause0, TraitClause1]; // arg #1
+    let mut _1: test_crate::test_closure_ref_early_bound::{closure}<'a, '_1, T>[TraitClause0, TraitClause1]; // arg #1
     let _2: (&'8 T,); // arg #2
     let _3: &'11 mut test_crate::test_closure_ref_early_bound::{closure}<'a, '_1, T>[TraitClause0, TraitClause1]; // anonymous local
 
@@ -1300,7 +1300,7 @@ extern "rust-call" fn {impl FnMut<(u32,), u32> for test_crate::test_map_option2:
 extern "rust-call" fn {impl FnOnce<(u32,), u32> for test_crate::test_map_option2::{closure}}::call_once(_1: test_crate::test_map_option2::{closure}, _2: (u32,)) -> u32
 {
     let mut _0: u32; // return
-    let _1: test_crate::test_map_option2::{closure}; // arg #1
+    let mut _1: test_crate::test_map_option2::{closure}; // arg #1
     let _2: (u32,); // arg #2
     let _3: &'1 mut test_crate::test_map_option2::{closure}; // anonymous local
 
@@ -1808,7 +1808,7 @@ extern "rust-call" fn {impl FnMut<(u32,), u32> for test_crate::test_map_option3:
 extern "rust-call" fn {impl FnOnce<(u32,), u32> for test_crate::test_map_option3::{closure}}::call_once(_1: test_crate::test_map_option3::{closure}, _2: (u32,)) -> u32
 {
     let mut _0: u32; // return
-    let _1: test_crate::test_map_option3::{closure}; // arg #1
+    let mut _1: test_crate::test_map_option3::{closure}; // arg #1
     let _2: (u32,); // arg #2
     let _3: &'1 mut test_crate::test_map_option3::{closure}; // anonymous local
 
@@ -1990,7 +1990,7 @@ where
     Outlives0: ('_0: '_1),
 {
     let mut _0: u32; // return
-    let _1: test_crate::test_regions_casted::{closure}<'_0>; // arg #1
+    let mut _1: test_crate::test_regions_casted::{closure}<'_0>; // arg #1
     let _2: (&'11 &'12 u32,); // arg #2
     let _3: &'14 mut test_crate::test_regions_casted::{closure}<'_0>; // anonymous local
 
@@ -2287,7 +2287,7 @@ extern "rust-call" fn {impl FnMut<(i32,), i32> for test_crate::test_array_map::{
 extern "rust-call" fn {impl FnOnce<(i32,), i32> for test_crate::test_array_map::{closure}}::call_once(_1: test_crate::test_array_map::{closure}, _2: (i32,)) -> i32
 {
     let mut _0: i32; // return
-    let _1: test_crate::test_array_map::{closure}; // arg #1
+    let mut _1: test_crate::test_array_map::{closure}; // arg #1
     let _2: (i32,); // arg #2
     let _3: &'1 mut test_crate::test_array_map::{closure}; // anonymous local
 

@@ -412,7 +412,7 @@ extern "rust-call" fn {impl FnMut<()> for test_attributes::tests::test_ignore::{
 extern "rust-call" fn {impl FnOnce<()> for test_attributes::tests::test_ignore::{closure}}::call_once(_1: test_attributes::tests::test_ignore::{closure}, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let mut _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let _1: test_attributes::tests::test_ignore::{closure}; // arg #1
+    let mut _1: test_attributes::tests::test_ignore::{closure}; // arg #1
     let _2: (); // arg #2
     let _3: &'1 mut test_attributes::tests::test_ignore::{closure}; // anonymous local
 
@@ -565,7 +565,7 @@ extern "rust-call" fn {impl FnMut<()> for test_attributes::tests::test_should_pa
 extern "rust-call" fn {impl FnOnce<()> for test_attributes::tests::test_should_panic::{closure}}::call_once(_1: test_attributes::tests::test_should_panic::{closure}, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let mut _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let _1: test_attributes::tests::test_should_panic::{closure}; // arg #1
+    let mut _1: test_attributes::tests::test_should_panic::{closure}; // arg #1
     let _2: (); // arg #2
     let _3: &'1 mut test_attributes::tests::test_should_panic::{closure}; // anonymous local
 
@@ -711,7 +711,7 @@ extern "rust-call" fn {impl FnMut<()> for test_attributes::tests::test_foo::{clo
 extern "rust-call" fn {impl FnOnce<()> for test_attributes::tests::test_foo::{closure}}::call_once(_1: test_attributes::tests::test_foo::{closure}, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let mut _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let _1: test_attributes::tests::test_foo::{closure}; // arg #1
+    let mut _1: test_attributes::tests::test_foo::{closure}; // arg #1
     let _2: (); // arg #2
     let _3: &'1 mut test_attributes::tests::test_foo::{closure}; // anonymous local
 
