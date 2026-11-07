@@ -290,7 +290,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             TraitProofKind::SelfProof => TraitRefKind::SelfId,
             TraitProofKind::LocalBound(id) => match self.lookup_clause_var(span, id) {
                 Ok((var, region_count)) => {
-                    TraitRefKind::Clause(var, RegionArgs::erased(region_count))
+                    TraitRefKind::Clause(var, self.translate_erased_region_args(region_count))
                 }
                 Err(err) => TraitRefKind::Unknown(err.msg),
             },
@@ -313,7 +313,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             type_id: assoc_type_id,
                             generics,
                             clause_id: TraitClauseId::new(*index),
-                            clause_args: RegionArgs::erased(*bound_region_count),
+                            clause_args: self.translate_erased_region_args(*bound_region_count),
                         }
                     }
                     hax::TraitProofImpliedPredicate::Parent {
@@ -322,7 +322,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     } => TraitRefKind::ParentClause(
                         trait_ref,
                         TraitClauseId::new(*index),
-                        RegionArgs::erased(*bound_region_count),
+                        self.translate_erased_region_args(*bound_region_count),
                     ),
                 }
             }

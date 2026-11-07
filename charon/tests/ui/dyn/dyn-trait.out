@@ -157,8 +157,8 @@ where
     Outlives1: (T: '_1),
 {
     let mut _0: (); // return
-    let mut _1: &'10 (dyn for<'a> Fn<(&'a T,), ImpliedClause1::ImpliedClause1::Output = T> + '11); // arg #1
-    let mut _2: &'19 (dyn PartialEq<Option<T>[TraitClause0]> + '20); // arg #2
+    let mut _1: &'11 (dyn for<'a> Fn<(&'a T,), ImpliedClause1::ImpliedClause1::Output = T> + '12); // arg #1
+    let mut _2: &'20 (dyn PartialEq<Option<T>[TraitClause0]> + '21); // arg #2
 
     storage_live(_0)
     _0 = ()
@@ -172,7 +172,7 @@ where
 fn bar<'_0>(_1: &'_0 (dyn for<'_0_2> Fn<(&'_0_2 (dyn Display + '_0_2),), ImpliedClause1::ImpliedClause1::Output = ()> + '_0))
 {
     let mut _0: (); // return
-    let mut _1: &'17 (dyn for<'_0_2> Fn<(&'_0_2 (dyn Display + '_0_2),), ImpliedClause1::ImpliedClause1::Output = ()> + '18); // arg #1
+    let mut _1: &'18 (dyn for<'_0_2> Fn<(&'_0_2 (dyn Display + '_0_2),), ImpliedClause1::ImpliedClause1::Output = ()> + '19); // arg #1
 
     storage_live(_0)
     _0 = ()

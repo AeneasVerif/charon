@@ -88,13 +88,13 @@ struct (_,)<A> {
 fn takes_fn<'_0>(f: &'_0 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '_0))
 {
     let mut _0: (); // return
-    let f: &'10 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '11); // arg #1
+    let f: &'11 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '12); // arg #1
     let mut counter: u32; // local
     let mut _3: bool; // anonymous local
-    let mut _4: &'16 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '17); // anonymous local
-    let mut _5: (&'24 mut u32,); // anonymous local
-    let mut _6: &'25 mut u32; // anonymous local
-    let mut _7: &'26 mut u32; // anonymous local
+    let mut _4: &'17 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '18); // anonymous local
+    let mut _5: (&'25 mut u32,); // anonymous local
+    let mut _6: &'26 mut u32; // anonymous local
+    let mut _7: &'27 mut u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -110,7 +110,7 @@ fn takes_fn<'_0>(f: &'_0 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::Implied
     _7 = &mut counter
     _6 = &two-phase-mut (*_7)
     _5 = (move _6,)
-    _3 = (read (*_4.metadata).method_call)<'76>(move _4, move _5)
+    _3 = (read (*_4.metadata).method_call)<'83>(move _4, move _5)
     ↳⚡ storage_dead(f)
         unwind_continue
     if move _3 {
@@ -289,12 +289,12 @@ impl<'_0> "impl_Fn_tuple_for_closure" Fn<(&'_0 mut u32,)> for {closure} {
 fn gives_fn()
 {
     let mut _0: (); // return
-    let mut _1: &'10 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '11); // anonymous local
-    let mut _2: &'17 {closure}; // anonymous local
-    let _3: &'18 {closure}; // anonymous local
-    let mut _4: &'19 {closure}; // anonymous local
-    let mut _5: &'20 {closure}; // anonymous local
-    let mut _6: &'35 {closure}; // anonymous local
+    let mut _1: &'11 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '12); // anonymous local
+    let mut _2: &'18 {closure}; // anonymous local
+    let _3: &'19 {closure}; // anonymous local
+    let mut _4: &'20 {closure}; // anonymous local
+    let mut _5: &'21 {closure}; // anonymous local
+    let mut _6: &'36 {closure}; // anonymous local
     let mut _7: {closure}; // anonymous local
 
     storage_live(_5)
@@ -312,9 +312,9 @@ fn gives_fn()
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _1 = unsize_cast<&'21 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '22), &impl_Fn_tuple_for_closure::{vtable}<'29>>(move _2)
+    _1 = unsize_cast<&'22 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '23), &impl_Fn_tuple_for_closure::{vtable}<'30>>(move _2)
     storage_dead(_2)
-    _0 = takes_fn<'34>(move _1)
+    _0 = takes_fn<'35>(move _1)
     ↳⚡ storage_dead(_4)
         unwind_continue
     storage_dead(_1)
