@@ -153,7 +153,7 @@ where
     storage_live(_0)
     storage_live(_3)
     _3 = &(*_1)._0
-    _0 = TraitClause1::clone<'4>(move _3)
+    _0 = TraitClause1::clone<'5>(move _3)
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)
         unwind_continue

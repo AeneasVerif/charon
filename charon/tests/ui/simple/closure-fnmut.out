@@ -81,15 +81,15 @@ where
     _2 = &mut f
     storage_live(_3)
     _3 = (const 0u8,)
-    _0 = TraitClause1::call_mut<'2>(move _2, move _3)
-    ↳⚡ conditional_drop[{built_in impl Destruct for T0}::drop_glue<'3>] f
+    _0 = TraitClause1::call_mut<'3>(move _2, move _3)
+    ↳⚡ conditional_drop[{built_in impl Destruct for T0}::drop_glue<'4>] f
         ↳⚡ storage_dead(f)
             unwind_terminate
         storage_dead(f)
         unwind_continue
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for T0}::drop_glue<'4>] f
+    conditional_drop[{built_in impl Destruct for T0}::drop_glue<'5>] f
     ↳⚡ storage_dead(f)
         unwind_continue
     storage_dead(f)
@@ -149,7 +149,7 @@ extern "rust-call" fn call_once<'_0>(_1: {closure}<'_0>, _2: (u8,)) -> u8
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = call_mut<'_0, '12>(move _3, move _2)
+    _0 = call_mut<'_0, '19>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -201,7 +201,7 @@ fn main()
     _4 = &mut z
     _3 = {closure} { _0: move _4 }
     storage_dead(_4)
-    _2 = apply_to_zero_mut<{closure}<'12>>[{built_in impl Sized for {closure}<'12>}, impl_FnMut_tuple_for_closure<'12>](move _3)
+    _2 = apply_to_zero_mut<{closure}<'35>>[{built_in impl Sized for {closure}<'35>}, impl_FnMut_tuple_for_closure<'35>](move _3)
     ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)

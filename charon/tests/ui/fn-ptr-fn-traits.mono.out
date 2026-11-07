@@ -476,7 +476,7 @@ fn test_crate::call_once::<'_, fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>>(f: f
     storage_live(_5)
     _5 = move x
     _4 = (move _5,)
-    _0 = {impl FnOnce<(Adt::<'_, u32>,)> for fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>}::call_once::<u32, u32><'0>(move _3, move _4)
+    _0 = {impl FnOnce<(Adt::<'_, u32>,)> for fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>}::call_once::<u32, u32><'1>(move _3, move _4)
     ↳⚡ storage_dead(x)
         storage_dead(f)
         unwind_continue
@@ -563,7 +563,7 @@ fn generic_call_once::<fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize], [&
     storage_live(_5)
     _5 = move x
     _4 = (move _5,)
-    _0 = {impl FnOnce<([&'_ u8; 3usize],)> for fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize]}::call_once::<u8, u8, 3usize, 3usize><'13>(move _3, move _4)
+    _0 = {impl FnOnce<([&'_ u8; 3usize],)> for fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize]}::call_once::<u8, u8, 3usize, 3usize><'14>(move _3, move _4)
     ↳⚡ storage_dead(x)
         storage_dead(f)
         unwind_continue
@@ -635,7 +635,7 @@ fn generic_call_once2::<for<'a, 'b> swap<'a, 'b>, &'_ u8, &'_ u8, (&'_ u8, &'_ u
     storage_live(_7)
     _7 = move y
     _5 = (move _6, move _7)
-    _0 = {impl FnOnce<(&'_ u8, &'_ u8)> for for<'a, 'b> swap<'a, 'b>}::call_once<'4, '5>(move _4, move _5)
+    _0 = {impl FnOnce<(&'_ u8, &'_ u8)> for for<'a, 'b> swap<'a, 'b>}::call_once<'6, '7>(move _4, move _5)
     ↳⚡ storage_dead(y)
         storage_dead(x)
         storage_dead(f)
@@ -671,7 +671,7 @@ fn generic_call_once2::<fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32, Plain
     storage_live(_7)
     _7 = move y
     _5 = (move _6, move _7)
-    _0 = {impl FnOnce<(Plain::<u32>, &'_ u32)> for fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32}::call_once::<Plain::<u32>, u32, u32><'3>(move _4, move _5)
+    _0 = {impl FnOnce<(Plain::<u32>, &'_ u32)> for fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32}::call_once::<Plain::<u32>, u32, u32><'4>(move _4, move _5)
     ↳⚡ storage_dead(y)
         storage_dead(x)
         storage_dead(f)
@@ -707,7 +707,7 @@ fn generic_call_once2::<fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_ u8, &'_ u
     storage_live(_7)
     _7 = move y
     _5 = (move _6, move _7)
-    _0 = {impl FnOnce<(&'_ u8, &'_ u8)> for fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_ u8, &'_ u8)}::call_once::<u8, u8, u8, u8><'4, '5>(move _4, move _5)
+    _0 = {impl FnOnce<(&'_ u8, &'_ u8)> for fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_ u8, &'_ u8)}::call_once::<u8, u8, u8, u8><'6, '7>(move _4, move _5)
     ↳⚡ storage_dead(y)
         storage_dead(x)
         storage_dead(f)
@@ -1042,8 +1042,8 @@ pub fn test_dyn_fn(x: u32) -> u32
     dyn_fn = unsize_cast<&'10 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '11), &{impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>>(move _4)
     storage_dead(_4)
     fake_read(dyn_fn)
-    set dyn_fn := &'12 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '13)
     set '13 :> '12
+    set dyn_fn := &'12 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '13)
     storage_dead(_5)
     storage_live(_6)
     _6 = &(*dyn_fn) with_metadata(read dyn_fn.metadata)
@@ -1093,8 +1093,8 @@ pub fn test_dyn_fn_mut(x: u32) -> u32
     dyn_fn = unsize_cast<&'10 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '11), &{impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>>(move _4)
     storage_dead(_4)
     fake_read(dyn_fn)
-    set dyn_fn := &'12 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '13)
     set '13 :> '12
+    set dyn_fn := &'12 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '13)
     storage_dead(_5)
     storage_live(_6)
     _6 = &mut (*dyn_fn) with_metadata(read dyn_fn.metadata)

@@ -135,7 +135,7 @@ fn main()
     storage_live(_6)
     storage_live(_7)
     _7 = &two-phase-mut iter
-    _6 = next::<u32, Range::<u32>, test_crate::main::{closure}<'_>><'12>(move _7)
+    _6 = next::<u32, Range::<u32>, test_crate::main::{closure}<'_>><'14>(move _7)
     ↳⚡ unwind_continue
     storage_dead(_7)
     storage_dead(_6)

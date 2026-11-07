@@ -62,12 +62,12 @@ where
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source) with_metadata(read source.metadata)
-    _3 = TraitClause0::clone<'5>(move _4)
+    _3 = TraitClause0::clone<'6>(move _4)
     ↳⚡ storage_dead(source)
         storage_dead(self)
         unwind_continue
     storage_dead(_4)
-    drop[TraitClause1::drop_glue<'6>] (*self)
+    drop[TraitClause1::drop_glue<'7>] (*self)
     ↳⚡ (*self) = move _3
         storage_dead(source)
         storage_dead(self)
@@ -108,12 +108,12 @@ where
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source)
-    _3 = impl_Clone_for_usize::clone<'5>(move _4)
+    _3 = impl_Clone_for_usize::clone<'6>(move _4)
     ↳⚡ storage_dead(source)
         storage_dead(self)
         unwind_continue
     storage_dead(_4)
-    drop[TraitClause0::drop_glue<'6>] (*self)
+    drop[TraitClause0::drop_glue<'7>] (*self)
     ↳⚡ (*self) = move _3
         storage_dead(source)
         storage_dead(self)
@@ -470,7 +470,7 @@ fn core::panicking::panic_nounwind_fmt::runtime<'_0>(fmt: Arguments<'_0>, force_
         _7 = &fmt
         _6 = &(*_7) with_metadata(read _7.metadata)
         storage_live(_8)
-        _8 = caller<'22>()
+        _8 = caller<'23>()
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
             storage_dead(pi)
@@ -480,7 +480,7 @@ fn core::panicking::panic_nounwind_fmt::runtime<'_0>(fmt: Arguments<'_0>, force_
             unwind_continue
         storage_live(_9)
         _9 = copy force_no_backtrace
-        pi = core::panic::panic_info::{PanicInfo<'a>}::new<'23>(move _6, move _8, const false, move _9)
+        pi = core::panic::panic_info::{PanicInfo<'a>}::new<'26>(move _6, move _8, const false, move _9)
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
             storage_dead(pi)
@@ -496,7 +496,7 @@ fn core::panicking::panic_nounwind_fmt::runtime<'_0>(fmt: Arguments<'_0>, force_
         storage_live(_11)
         _11 = &pi
         _10 = &(*_11)
-        _0 = core::panicking::panic_nounwind_fmt::runtime::panic_impl<'27, '28>(move _10)
+        _0 = core::panicking::panic_nounwind_fmt::runtime::panic_impl<'35, '36>(move _10)
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
             storage_dead(pi)
@@ -530,7 +530,7 @@ pub fn panic_nounwind_fmt<'_0>(fmt: Arguments<'_0>, force_no_backtrace: bool) ->
     _3 = (move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
-    _0 = core::panicking::panic_nounwind_fmt::runtime<'22>(move _3._0, move _3._1)
+    _0 = core::panicking::panic_nounwind_fmt::runtime<'24>(move _3._0, move _3._1)
     ↳⚡ storage_dead(_3)
         storage_dead(force_no_backtrace)
         storage_dead(fmt)
@@ -569,14 +569,14 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
         storage_live(_6)
         storage_live(_7)
         _7 = &(*msg) with_metadata(read msg.metadata)
-        _6 = from_str<'6>(move _7)
+        _6 = from_str<'7>(move _7)
         ↳⚡ storage_dead(_6)
             storage_dead(_5)
             storage_dead(msg)
             storage_dead(align)
             unwind_terminate
         storage_dead(_7)
-        _5 = panic_nounwind_fmt<'8>(move _6, const false)
+        _5 = panic_nounwind_fmt<'12>(move _6, const false)
         ↳⚡ undefined_behavior
     }
     storage_dead(_3)

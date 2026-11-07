@@ -145,7 +145,7 @@ where
     storage_live(_0)
     storage_live(_2)
     _2 = &(*x)
-    _0 = discriminant<'4, T>[TraitClause0](move _2)
+    _0 = discriminant<'6, T>[TraitClause0](move _2)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_2)

@@ -106,7 +106,7 @@ where
     _4 = &(*_1)._0
     storage_live(_5)
     _5 = ()
-    _3 = {impl Fn<()> for test_crate::captured_closure::{closure}<'_0, '_1>}::call<'18, '19, '21>(move _4, move _5)
+    _3 = {impl Fn<()> for test_crate::captured_closure::{closure}<'_0, '_1>}::call<'21, '22, '27>(move _4, move _5)
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)
         unwind_continue
@@ -195,7 +195,7 @@ where
     _4 = &(*_1)._0
     storage_live(_5)
     _5 = ()
-    _3 = {impl Fn<()> for test_crate::generic_closure::{closure}::<&'_ u8>}::call::<&'_ u8><'10>(move _4, move _5)
+    _3 = {impl Fn<()> for test_crate::generic_closure::{closure}::<&'_ u8>}::call::<&'_ u8><'12>(move _4, move _5)
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)
         unwind_continue
@@ -373,7 +373,7 @@ pub fn captured_assoc_closure<'a>(x: &'a u8) -> test_crate::captured_assoc_closu
     storage_live(inner)
     storage_live(_3)
     _3 = &(*x)
-    inner = generic_assoc_closure::<()><'12>(move _3)
+    inner = generic_assoc_closure::<()><'14>(move _3)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_3)
@@ -403,7 +403,7 @@ where
     _4 = &(*_1)._0
     storage_live(_5)
     _5 = ()
-    _3 = {impl Fn<()> for test_crate::generic_assoc_closure::{closure}::<()><'_0, '_1>}::call::<()><'17, '18, '20>(move _4, move _5)
+    _3 = {impl Fn<()> for test_crate::generic_assoc_closure::{closure}::<()><'_0, '_1>}::call::<()><'20, '21, '26>(move _4, move _5)
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)
         unwind_continue

@@ -43,7 +43,7 @@ where
     _4 = &(*processor) with_metadata(read processor.metadata)
     storage_live(_5)
     _5 = &(*input)
-    _3 = (read (*_4.metadata).method_process)<'25, '26>(move _4, move _5)
+    _3 = (read (*_4.metadata).method_process)<'37, '38>(move _4, move _5)
     ↳⚡ storage_dead(input)
         storage_dead(processor)
         unwind_continue

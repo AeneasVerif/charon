@@ -99,7 +99,7 @@ where
     _2 = &(*f)
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
-    _0 = TraitClause1::call<'3>(move _2, move _3)
+    _0 = TraitClause1::call<'4>(move _2, move _3)
     ↳⚡ storage_dead(f)
         unwind_continue
     storage_dead(_3)
@@ -126,7 +126,7 @@ where
     _2 = &mut (*f)
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
-    _0 = TraitClause1::call_mut<'3>(move _2, move _3)
+    _0 = TraitClause1::call_mut<'4>(move _2, move _3)
     ↳⚡ storage_dead(f)
         unwind_continue
     storage_dead(_3)
@@ -273,7 +273,7 @@ extern "rust-call" fn call_once<'_0, '_1>(_1: {closure}<'_0, '_1>, _2: (u8, u8))
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = call_mut<'_0, '_1, '59>(move _3, move _2)
+    _0 = call_mut<'_0, '_1, '95>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -358,7 +358,7 @@ fn main()
     _7 = &f
     storage_live(_8)
     _8 = (const 10u8, const 20u8)
-    _6 = call<'97, '98, '99>(move _7, move _8)
+    _6 = call<'99, '100, '141>(move _7, move _8)
     ↳⚡ unwind_continue
     storage_dead(_8)
     storage_dead(_7)
@@ -368,7 +368,7 @@ fn main()
     storage_live(_11)
     _11 = &f
     _10 = &(*_11)
-    _9 = apply_to<'236, {closure}<'124, '125>>[{built_in impl Sized for {closure}<'124, '125>}, impl_Fn_tuple_for_closure<'124, '125>](move _10)
+    _9 = apply_to<'425, {closure}<'278, '279>>[{built_in impl Sized for {closure}<'278, '279>}, impl_Fn_tuple_for_closure<'278, '279>](move _10)
     ↳⚡ unwind_continue
     storage_dead(_10)
     storage_dead(_11)
@@ -378,7 +378,7 @@ fn main()
     storage_live(_14)
     _14 = &mut f
     _13 = &two-phase-mut (*_14)
-    _12 = apply_to_mut<'373, {closure}<'261, '262>>[{built_in impl Sized for {closure}<'261, '262>}, impl_FnMut_tuple_for_closure<'261, '262>](move _13)
+    _12 = apply_to_mut<'709, {closure}<'562, '563>>[{built_in impl Sized for {closure}<'562, '563>}, impl_FnMut_tuple_for_closure<'562, '563>](move _13)
     ↳⚡ unwind_continue
     storage_dead(_13)
     storage_dead(_14)
@@ -386,7 +386,7 @@ fn main()
     storage_live(_15)
     storage_live(_16)
     _16 = copy f
-    _15 = apply_to_once<{closure}<'564, '565>>[{built_in impl Sized for {closure}<'564, '565>}, impl_FnOnce_tuple_for_closure<'564, '565>](move _16)
+    _15 = apply_to_once<{closure}<'1011, '1012>>[{built_in impl Sized for {closure}<'1011, '1012>}, impl_FnOnce_tuple_for_closure<'1011, '1012>](move _16)
     ↳⚡ unwind_continue
     storage_dead(_16)
     storage_dead(_15)

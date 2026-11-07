@@ -49,13 +49,13 @@ fn main()
     storage_live(_3)
     _3 = &test_crate::main::{promoted_const} with_metadata(const 13usize)
     _2 = &(*_3) with_metadata(read _3.metadata)
-    a = to_string::<str><'5>(move _2)
+    a = to_string::<str><'7>(move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     fake_read(a)
     storage_dead(_3)
     _0 = ()
-    conditional_drop[drop_glue<'6>] a
+    conditional_drop[drop_glue<'8>] a
     ↳⚡ unwind_continue
     storage_dead(a)
     return

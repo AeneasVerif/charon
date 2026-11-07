@@ -85,7 +85,7 @@ fn from_fn_def<'a>(x: &'a u8) -> &'a u8
     let _8: &'10 u8; // anonymous local
     let mut _9: fn<'b>(&'b u8) -> &'b u8; // anonymous local
     let mut _10: &'11 u8; // anonymous local
-    let mut _11: fn<'b>(&'39 u8, &'b u8) -> &'b u8; // anonymous local
+    let mut _11: fn<'b>(&'47 u8, &'b u8) -> &'b u8; // anonymous local
 
     storage_live(_0)
     storage_live(f)
@@ -94,7 +94,7 @@ fn from_fn_def<'a>(x: &'a u8) -> &'a u8
     set f := fn<'b>(&'b u8) -> &'b u8
     storage_live(g)
     storage_live(_11)
-    _11 = fn_def_to_fn_ptr(const with_early_and_late<'28, '36>[{built_in impl Sized for &'30 u8}])
+    _11 = fn_def_to_fn_ptr(const with_early_and_late<'a, '44>[{built_in impl Sized for &'a u8}])
     g = fn_ptr_to_unsafe(move _11)
     fake_read(g)
     set g := unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8
@@ -109,14 +109,14 @@ fn from_fn_def<'a>(x: &'a u8) -> &'a u8
     _9 = copy f
     storage_live(_10)
     _10 = &(*x)
-    _8 = (move _9)<'64>(move _10)
+    _8 = (move _9)<'72>(move _10)
     ↳⚡ storage_dead(_11)
         storage_dead(x)
         unwind_continue
     _7 = &(*_8)
     storage_dead(_10)
     storage_dead(_9)
-    _4 = (move _5)<'65>(move _6, move _7)
+    _4 = (move _5)<'73>(move _6, move _7)
     ↳⚡ storage_dead(_11)
         storage_dead(x)
         unwind_continue
@@ -227,7 +227,7 @@ extern "rust-call" fn call_once<'_0, '_1>(_1: {closure}<'_0>, _2: (&'_0 u8, &'_1
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = call_mut<'_0, '_1, '95>(move _3, move _2)
+    _0 = call_mut<'_0, '_1, '154>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)

@@ -269,7 +269,7 @@ fn main()
         _20 = &(*_21)
         storage_live(_22)
         _22 = Option::None {  }
-        _16 = assert_failed<'59, '60, '61, u32, u32>[{built_in impl MetaSized for u32}, {built_in impl MetaSized for u32}, impl_Debug_for_u32, impl_Debug_for_u32](move _17, move _18, move _20, move _22)
+        _16 = assert_failed<'65, '66, '67, u32, u32>[{built_in impl MetaSized for u32}, {built_in impl MetaSized for u32}, impl_Debug_for_u32, impl_Debug_for_u32](move _17, move _18, move _20, move _22)
         ↳⚡ unwind_continue
     }
     storage_dead(_14)

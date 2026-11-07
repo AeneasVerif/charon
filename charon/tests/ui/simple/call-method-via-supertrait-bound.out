@@ -91,8 +91,8 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &x
-    _2 = method<'3, T>[TraitClause0, TraitClause1::ImpliedClause1](move _3)
-    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] x
+    _2 = method<'5, T>[TraitClause0, TraitClause1::ImpliedClause1](move _3)
+    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'6>] x
         ↳⚡ storage_dead(x)
             unwind_terminate
         storage_dead(x)
@@ -100,7 +100,7 @@ where
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] x
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'7>] x
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(x)

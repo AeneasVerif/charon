@@ -59,7 +59,7 @@ where
     let mut _3: !; // anonymous local
     let mut _4: &'3 (dyn Debug + '4); // anonymous local
     let _5: &'6 E; // anonymous local
-    let mut _6: &'17 str; // anonymous local
+    let mut _6: &'21 str; // anonymous local
 
     storage_live(t)
     storage_live(_3)
@@ -75,8 +75,8 @@ where
             _4 = unsize_cast<&'7 (dyn Debug + '8), &vtable_of(TraitClause2)>(copy _5)
             storage_live(_6)
             _6 = &core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap::{promoted_const} with_metadata(const 43usize)
-            _3 = unwrap_failed<'14, '15>(move _6, move _4)
-            ↳⚡ drop[{built_in impl Destruct for E}::drop_glue<'18>] e
+            _3 = unwrap_failed<'18, '19>(move _6, move _4)
+            ↳⚡ drop[{built_in impl Destruct for E}::drop_glue<'22>] e
                 ↳⚡ storage_dead(_5)
                     storage_dead(_4)
                     storage_dead(_3)

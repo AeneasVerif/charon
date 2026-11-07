@@ -211,7 +211,7 @@ pub fn test_bool_trait_bool(x: bool) -> bool
     storage_live(_2)
     storage_live(_3)
     _3 = &x
-    _2 = impl_BoolTrait_for_bool::get_bool<'4>(move _3)
+    _2 = impl_BoolTrait_for_bool::get_bool<'6>(move _3)
     ↳⚡ storage_dead(x)
         unwind_continue
     if move _2 {
@@ -225,7 +225,7 @@ pub fn test_bool_trait_bool(x: bool) -> bool
     storage_dead(_3)
     storage_live(_4)
     _4 = &x
-    _0 = impl_BoolTrait_for_bool::ret_true<'6>(move _4)
+    _0 = impl_BoolTrait_for_bool::ret_true<'10>(move _4)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_4)
@@ -299,8 +299,8 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &x
-    _2 = impl_BoolTrait_for_Option::get_bool<'4, T>[TraitClause0](move _3)
-    ↳⚡ conditional_drop[impl_Destruct_for_Option::drop_glue<'5, T>[TraitClause0]] x
+    _2 = impl_BoolTrait_for_Option::get_bool<'6, T>[TraitClause0](move _3)
+    ↳⚡ conditional_drop[impl_Destruct_for_Option::drop_glue<'7, T>[TraitClause0]] x
         ↳⚡ storage_dead(x)
             unwind_terminate
         storage_dead(x)
@@ -309,8 +309,8 @@ where
         storage_dead(_3)
         storage_live(_4)
         _4 = &x
-        _0 = impl_BoolTrait_for_Option::ret_true<'7, T>[TraitClause0](move _4)
-        ↳⚡ conditional_drop[impl_Destruct_for_Option::drop_glue<'5, T>[TraitClause0]] x
+        _0 = impl_BoolTrait_for_Option::ret_true<'11, T>[TraitClause0](move _4)
+        ↳⚡ conditional_drop[impl_Destruct_for_Option::drop_glue<'7, T>[TraitClause0]] x
             ↳⚡ storage_dead(x)
                 unwind_terminate
             storage_dead(x)
@@ -321,7 +321,7 @@ where
         _0 = const false
     }
     storage_dead(_2)
-    conditional_drop[impl_Destruct_for_Option::drop_glue<'8, T>[TraitClause0]] x
+    conditional_drop[impl_Destruct_for_Option::drop_glue<'12, T>[TraitClause0]] x
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(x)
@@ -341,14 +341,14 @@ where
     storage_live(_0)
     storage_live(_2)
     _2 = &x
-    _0 = TraitClause1::get_bool<'2>(move _2)
-    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'3>] x
+    _0 = TraitClause1::get_bool<'3>(move _2)
+    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] x
         ↳⚡ storage_dead(x)
             unwind_terminate
         storage_dead(x)
         unwind_continue
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] x
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] x
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(x)
@@ -841,7 +841,7 @@ where
         storage_dead(_7)
         storage_live(_8)
         _8 = &y
-        _0 = impl_TestTrait_for_TestType1::test<'7>(move _8)
+        _0 = impl_TestTrait_for_TestType1::test<'9>(move _8)
         ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] x_2
             ↳⚡ storage_dead(x_2)
                 storage_dead(self)
@@ -857,7 +857,7 @@ where
     storage_dead(_6)
     storage_dead(y)
     storage_dead(x_3)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'8>] x_2
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'10>] x_2
     ↳⚡ storage_dead(x_2)
         storage_dead(self)
         unwind_continue
@@ -1130,7 +1130,7 @@ where
     storage_live(_0)
     storage_live(_2)
     _2 = &(*x)
-    _0 = TraitClause1::ImpliedClause1::get_name<'3>(move _2)
+    _0 = TraitClause1::ImpliedClause1::get_name<'4>(move _2)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_2)
@@ -1152,7 +1152,7 @@ where
     storage_live(_0)
     storage_live(_2)
     _2 = &(*x)
-    _0 = TraitClause1::ImpliedClause1::get_w<'3>(move _2)
+    _0 = TraitClause1::ImpliedClause1::get_w<'4>(move _2)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_2)
@@ -1360,7 +1360,7 @@ where
     storage_live(_0)
     storage_live(_2)
     _2 = &(*x)
-    _0 = TraitClause1::get_w<'3>(move _2)
+    _0 = TraitClause1::get_w<'4>(move _2)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_2)
@@ -1649,7 +1649,7 @@ pub fn flibidi()
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = test_crate::call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {impl Fn<(&'a (),)> for for<'a> flabada<'a>}<'0>](const flabada<'12>)
+    _1 = test_crate::call<'10, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {impl Fn<(&'a (),)> for for<'a> flabada<'a>}<'10>](const flabada<'25>)
     ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()

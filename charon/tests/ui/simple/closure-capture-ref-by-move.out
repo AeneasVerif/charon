@@ -56,7 +56,7 @@ fn foo()
     _5 = &mut closure
     storage_live(_6)
     _6 = ()
-    _4 = call_mut<'18, '19>(move _5, move _6)
+    _4 = call_mut<'19, '29>(move _5, move _6)
     ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_5)

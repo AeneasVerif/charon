@@ -54,7 +54,7 @@ fn dyn_to_string<'_0>(x: &'_0 (dyn Display + '_0)) -> String
     storage_live(_0)
     storage_live(_2)
     _2 = &(*x) with_metadata(read x.metadata)
-    _0 = {impl ToString for (dyn Display)}::to_string::<(dyn Display)><'9>(move _2)
+    _0 = {impl ToString for (dyn Display)}::to_string::<(dyn Display)><'11>(move _2)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_2)
@@ -83,7 +83,7 @@ fn main()
     storage_live(_3)
     _3 = &test_crate::main::{promoted_const} with_metadata(const 5usize)
     _2 = &(*_3) with_metadata(read _3.metadata)
-    str = impl_ToString_for_str::to_string::<str><'13>(move _2)
+    str = impl_ToString_for_str::to_string::<str><'15>(move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     fake_read(str)
@@ -95,21 +95,21 @@ fn main()
     storage_live(_7)
     _7 = &str
     _6 = &(*_7)
-    _5 = unsize_cast<&'14 (dyn Display + '15), &impl_Display_for_String::{vtable}>(move _6)
+    _5 = unsize_cast<&'16 (dyn Display + '17), &impl_Display_for_String::{vtable}>(move _6)
     storage_dead(_6)
-    _4 = dyn_to_string<'17>(move _5)
-    ↳⚡ conditional_drop[drop_glue<'18>] str
+    _4 = dyn_to_string<'21>(move _5)
+    ↳⚡ conditional_drop[drop_glue<'22>] str
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_5)
-    conditional_drop[drop_glue<'19>] _4
-    ↳⚡ conditional_drop[drop_glue<'18>] str
+    conditional_drop[drop_glue<'23>] _4
+    ↳⚡ conditional_drop[drop_glue<'22>] str
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_7)
     storage_dead(_4)
     _0 = ()
-    conditional_drop[drop_glue<'20>] str
+    conditional_drop[drop_glue<'24>] str
     ↳⚡ unwind_continue
     storage_dead(str)
     return

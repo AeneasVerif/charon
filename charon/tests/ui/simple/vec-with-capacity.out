@@ -209,7 +209,7 @@ where
     storage_live(_0)
     storage_live(_2)
     _2 = &(*self).buf
-    _0 = ptr<'5, T, A>[TraitClause0, TraitClause1](move _2)
+    _0 = ptr<'7, T, A>[TraitClause0, TraitClause1](move _2)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_2)
@@ -240,7 +240,7 @@ where
     storage_live(_3)
     storage_live(_4)
     _4 = &two-phase-mut (*self)
-    _3 = as_mut_ptr<'4, T, A>[TraitClause0, TraitClause1](move _4)
+    _3 = as_mut_ptr<'6, T, A>[TraitClause0, TraitClause1](move _4)
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(_4)
@@ -277,8 +277,8 @@ where
     storage_live(_3)
     _0 = ()
     _2 = &mut (*_1)
-    _3 = impl_Drop_for_Vec::drop<'4, T, A>[TraitClause0, TraitClause1, {built_in impl Destruct for T}, {built_in impl Destruct for A}](move _2)
-    ↳⚡ drop[impl_Destruct_for_RawVec::drop_glue<'5, T, A>[TraitClause0, TraitClause1]] (*_1).buf
+    _3 = impl_Drop_for_Vec::drop<'6, T, A>[TraitClause0, TraitClause1, {built_in impl Destruct for T}, {built_in impl Destruct for A}](move _2)
+    ↳⚡ drop[impl_Destruct_for_RawVec::drop_glue<'7, T, A>[TraitClause0, TraitClause1]] (*_1).buf
         ↳⚡ storage_dead(_3)
             storage_dead(_2)
             storage_dead(_1)
@@ -287,7 +287,7 @@ where
         storage_dead(_2)
         storage_dead(_1)
         unwind_continue
-    drop[impl_Destruct_for_RawVec::drop_glue<'6, T, A>[TraitClause0, TraitClause1]] (*_1).buf
+    drop[impl_Destruct_for_RawVec::drop_glue<'8, T, A>[TraitClause0, TraitClause1]] (*_1).buf
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)

@@ -56,7 +56,7 @@ pub fn dflt::<Struct><'_0>(self: &'_0 Struct) -> i32
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self)
-    _2 = base<'4>(move _3)
+    _2 = base<'6>(move _3)
     ↳⚡ storage_dead(_4)
         storage_dead(self)
         unwind_continue
@@ -143,7 +143,7 @@ pub fn main()
     let mut _6: &'10 Struct; // anonymous local
     let mut _7: fn(&'8 (dyn Trait + '9)) -> i32; // anonymous local
     let mut _8: &'11 Struct; // anonymous local
-    let mut _9: &'20 Struct; // anonymous local
+    let mut _9: &'24 Struct; // anonymous local
     let mut _10: Struct; // anonymous local
 
     storage_live(_8)
@@ -164,8 +164,8 @@ pub fn main()
     b = unsize_cast<&'12 (dyn Trait + '13), &impl_Trait_for_Struct::{vtable}>(move _2)
     storage_dead(_2)
     fake_read(b)
-    set b := &'14 (dyn Trait + '15)
     set '15 :> '14
+    set b := &'14 (dyn Trait + '15)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)

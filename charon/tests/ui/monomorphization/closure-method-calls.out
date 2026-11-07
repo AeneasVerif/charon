@@ -51,7 +51,7 @@ fn apply::<test_crate::main::{closure}>(f: test_crate::main::{closure}, x: i32) 
     storage_live(_5)
     _5 = copy x
     _4 = (move _5,)
-    _0 = impl_Fn_for_closure::call<'3>(move _3, move _4)
+    _0 = impl_Fn_for_closure::call<'5>(move _3, move _4)
     ↳⚡ storage_dead(x)
         storage_dead(f)
         unwind_continue
@@ -117,7 +117,7 @@ fn apply::<plain>(f: plain, x: i32) -> i32
     storage_live(_5)
     _5 = copy x
     _4 = (move _5,)
-    _0 = {impl Fn<(i32,)> for plain}::call<'3>(move _3, move _4)
+    _0 = {impl Fn<(i32,)> for plain}::call<'5>(move _3, move _4)
     ↳⚡ storage_dead(x)
         storage_dead(f)
         unwind_continue
@@ -174,7 +174,7 @@ fn apply_mut::<test_crate::main::{closure#1}>(f: test_crate::main::{closure#1}, 
     storage_live(_5)
     _5 = copy x
     _4 = (move _5,)
-    _0 = {impl FnMut<(i32,)> for test_crate::main::{closure#1}}::call_mut<'3>(move _3, move _4)
+    _0 = {impl FnMut<(i32,)> for test_crate::main::{closure#1}}::call_mut<'5>(move _3, move _4)
     ↳⚡ storage_dead(x)
         storage_dead(f)
         unwind_continue
@@ -220,7 +220,7 @@ fn apply_mut::<plain>(f: plain, x: i32) -> i32
     storage_live(_5)
     _5 = copy x
     _4 = (move _5,)
-    _0 = {impl FnMut<(i32,)> for plain}::call_mut<'3>(move _3, move _4)
+    _0 = {impl FnMut<(i32,)> for plain}::call_mut<'5>(move _3, move _4)
     ↳⚡ storage_dead(x)
         storage_dead(f)
         unwind_continue

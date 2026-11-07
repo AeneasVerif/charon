@@ -1009,7 +1009,7 @@ fn unsafe_call_unsafe_dyn_method<'_0>(s: &'_0 (dyn DynTrait + '_0))
     storage_live(_2)
     _2 = &(*s) with_metadata(read s.metadata)
     // unsafe
-    _0 = (read (*_2.metadata).method_unsafe_method)<'10>(move _2)
+    _0 = (read (*_2.metadata).method_unsafe_method)<'14>(move _2)
     ↳⚡ storage_dead(s)
         unwind_continue
     storage_dead(_2)
@@ -1110,7 +1110,7 @@ fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
     storage_live(_9)
     _9 = copy i
     // unsafe
-    _7 = slice_get_unchecked<&'9 u32, &'11 [u32], u32>[{built_in impl Sized for &'9 u32}, {built_in impl Sized for &'11 [u32]}, {built_in impl Sized for u32}, {impl ChangePointee<U> for &'a T}<'9, u32, [u32]>](move _8, move _9)
+    _7 = slice_get_unchecked<&'27 u32, &'28 [u32], u32>[{built_in impl Sized for &'27 u32}, {built_in impl Sized for &'28 [u32]}, {built_in impl Sized for u32}, {impl ChangePointee<U> for &'a T}<'27, u32, [u32]>](move _8, move _9)
     ↳⚡ storage_dead(i)
         storage_dead(s)
         storage_dead(p)
@@ -1118,7 +1118,7 @@ fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
         unwind_continue
     storage_dead(_9)
     storage_dead(_8)
-    set _7 :< &'27 u32
+    set _7 :< &'56 u32
     storage_dead(_7)
     storage_live(_10)
     storage_live(_11)
@@ -1347,7 +1347,7 @@ fn safe_call_dyn_method<'_0>(s: &'_0 (dyn DynTrait + '_0))
     _0 = ()
     storage_live(_2)
     _2 = &(*s) with_metadata(read s.metadata)
-    _0 = (read (*_2.metadata).method_safe_method)<'10>(move _2)
+    _0 = (read (*_2.metadata).method_safe_method)<'14>(move _2)
     ↳⚡ storage_dead(s)
         unwind_continue
     storage_dead(_2)
@@ -1476,7 +1476,7 @@ unsafe fn safe_call_target_feature_fn_in_closure()
     _1 = &_2
     storage_live(_3)
     _3 = ()
-    _0 = {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_closure::{closure}}::call<'2>(move _1, move _3)
+    _0 = {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_closure::{closure}}::call<'3>(move _1, move _3)
     ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_1)
@@ -1524,7 +1524,7 @@ unsafe fn safe_call_target_feature_fn_in_inline_closure()
     _1 = &_2
     storage_live(_3)
     _3 = ()
-    _0 = {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}}::call<'2>(move _1, move _3)
+    _0 = {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}}::call<'3>(move _1, move _3)
     ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_1)

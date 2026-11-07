@@ -97,8 +97,8 @@ where
     storage_live(_4)
     _4 = &opt
     _3 = &(*_4)
-    _2 = discriminant_value<'4, T>[TraitClause0](move _3)
-    ↳⚡ drop[drop_glue<'5, T>[TraitClause0]] opt
+    _2 = discriminant_value<'6, T>[TraitClause0](move _3)
+    ↳⚡ drop[drop_glue<'7, T>[TraitClause0]] opt
         ↳⚡ storage_dead(opt)
             unwind_terminate
         storage_dead(opt)
@@ -107,7 +107,7 @@ where
     _0 = move _2 != const 0isize
     storage_dead(_2)
     storage_dead(_4)
-    drop[drop_glue<'6, T>[TraitClause0]] opt
+    drop[drop_glue<'8, T>[TraitClause0]] opt
     ↳⚡ storage_dead(opt)
         unwind_continue
     storage_dead(opt)

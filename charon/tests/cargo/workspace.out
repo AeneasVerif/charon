@@ -54,10 +54,10 @@ where
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source) with_metadata(read source.metadata)
-    _3 = TraitClause0::clone<'5>(move _4)
+    _3 = TraitClause0::clone<'6>(move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)
-    drop[TraitClause1::drop_glue<'6>] (*self)
+    drop[TraitClause1::drop_glue<'7>] (*self)
     ↳⚡ (*self) = move _3
         unwind_continue
     (*self) = move _3

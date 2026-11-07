@@ -109,7 +109,7 @@ extern "rust-call" fn call_once<'a, '_1>(_1: {closure}<'a, '_1>, _2: ()) -> Opti
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = call_mut<'a, '_1, '11>(move _3, move _2)
+    _0 = call_mut<'a, '_1, '18>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -150,7 +150,7 @@ fn sparse_transitions<'a>() -> FromFn<{closure}<'a, 'a>>[{built_in impl Sized fo
     storage_live(_0)
     storage_live(_1)
     _1 = {closure} {  }
-    _0 = from_fn<u8, {closure}<'36, '37>>[{built_in impl Sized for u8}, {built_in impl Sized for {closure}<'36, '37>}, impl_FnMut_unit_for_closure<'36, '37>](move _1)
+    _0 = from_fn<u8, {closure}<'61, '62>>[{built_in impl Sized for u8}, {built_in impl Sized for {closure}<'61, '62>}, impl_FnMut_unit_for_closure<'61, '62>](move _1)
     ↳⚡ unwind_continue
     storage_dead(_1)
     return

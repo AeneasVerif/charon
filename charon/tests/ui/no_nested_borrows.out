@@ -517,8 +517,8 @@ pub fn test_box1()
     storage_live(x_2)
     storage_live(_3)
     _3 = &two-phase-mut b
-    x_2 = deref_mut<'9, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _3)
-    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'10, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b
+    x_2 = deref_mut<'11, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _3)
+    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'12, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_3)
@@ -527,8 +527,8 @@ pub fn test_box1()
     storage_live(x_4)
     storage_live(_5)
     _5 = &b
-    x_4 = deref<'12, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _5)
-    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'10, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b
+    x_4 = deref<'16, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _5)
+    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'12, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_5)
@@ -544,7 +544,7 @@ pub fn test_box1()
     _0 = ()
     storage_dead(x_4)
     storage_dead(x_2)
-    conditional_drop[impl_Destruct_for_Box::drop_glue<'13, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b
+    conditional_drop[impl_Destruct_for_Box::drop_glue<'17, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b
     ↳⚡ unwind_continue
     storage_dead(b)
     return

@@ -42,7 +42,7 @@ fn main()
     storage_live(_6)
     _6 = &y
     _5 = &(*_6)
-    _3 = cmp<'6, '7>(move _4, move _5)
+    _3 = cmp<'10, '11>(move _4, move _5)
     ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)

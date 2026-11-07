@@ -902,7 +902,7 @@ fn unsafe_call_unsafe_dyn_method<'_0>(s: &'_0 (dyn DynTrait + '_0))
     storage_live(_2)
     _2 = &(*s) with_metadata(read s.metadata)
     // unsafe
-    _0 = (read (*_2.metadata).method_unsafe_method)<'10>(move _2)
+    _0 = (read (*_2.metadata).method_unsafe_method)<'14>(move _2)
     ↳⚡ storage_dead(s)
         unwind_continue
     storage_dead(_2)
@@ -1230,7 +1230,7 @@ fn safe_call_dyn_method<'_0>(s: &'_0 (dyn DynTrait + '_0))
     _0 = ()
     storage_live(_2)
     _2 = &(*s) with_metadata(read s.metadata)
-    _0 = (read (*_2.metadata).method_safe_method)<'10>(move _2)
+    _0 = (read (*_2.metadata).method_safe_method)<'14>(move _2)
     ↳⚡ storage_dead(s)
         unwind_continue
     storage_dead(_2)
@@ -1351,7 +1351,7 @@ unsafe fn safe_call_target_feature_fn_in_closure()
     let mut _2: (); // anonymous local
     let mut _3: &'2 test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
     let mut _4: &'3 test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
-    let mut _5: &'5 test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
+    let mut _5: &'6 test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
     let mut _6: test_crate::safe_call_target_feature_fn_in_closure::{closure}; // anonymous local
 
     storage_live(_4)
@@ -1368,7 +1368,7 @@ unsafe fn safe_call_target_feature_fn_in_closure()
     _1 = &(*_3)
     storage_live(_2)
     _2 = ()
-    _0 = {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_closure::{closure}}::call<'4>(move _1, move _2)
+    _0 = {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_closure::{closure}}::call<'5>(move _1, move _2)
     ↳⚡ storage_dead(_3)
         unwind_continue
     storage_dead(_2)
@@ -1412,7 +1412,7 @@ unsafe fn safe_call_target_feature_fn_in_inline_closure()
     let mut _2: (); // anonymous local
     let mut _3: &'2 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
     let mut _4: &'3 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
-    let mut _5: &'5 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
+    let mut _5: &'6 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
     let mut _6: test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // anonymous local
 
     storage_live(_4)
@@ -1429,7 +1429,7 @@ unsafe fn safe_call_target_feature_fn_in_inline_closure()
     _1 = &(*_3)
     storage_live(_2)
     _2 = ()
-    _0 = {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}}::call<'4>(move _1, move _2)
+    _0 = {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}}::call<'5>(move _1, move _2)
     ↳⚡ storage_dead(_3)
         unwind_continue
     storage_dead(_2)

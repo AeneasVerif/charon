@@ -817,11 +817,24 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         ))
     }
 
+    fn insert_outlives_stmts(&mut self, span: Span, outlives: Vec<OutlivesPred>) {
+        for pred in outlives {
+            for pred in pred.normalize() {
+                self.statements.push(Statement::new(
+                    span,
+                    StatementKind::Borrowck(BorrowckStatement::SetOutlives(pred)),
+                ));
+            }
+        }
+    }
+
+    /// Translate this user-provided type annotation. May also register some outlives constraints
+    /// as statements as this point.
     fn translate_user_type_projection(
         &mut self,
         span: Span,
         user_ty: &mir::UserTypeProjection,
-    ) -> Result<RegionBinder<(Ty, Vec<OutlivesPred>)>, Error> {
+    ) -> Result<Ty, Error> {
         let Some(owner) = self.item_src.def_id().as_real_or_promoted() else {
             raise_error!(self, span, "user type annotation without a rustc owner");
         };
@@ -838,27 +851,34 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         };
         let ty_constraints: hax::Binder<(hax::Ty<'tcx>, Vec<hax::Clause<'tcx>>)> =
             self.catch_sinto(span, &ty_constraints)?;
-        self.translate_region_binder(span, &ty_constraints, |ctx, (ty, clauses)| {
-            let ty = ctx.translate_ty(span, ty)?;
-            let mut preds = Vec::new();
-            for clause in clauses {
-                let pred = ctx.translate_region_binder(span, &clause.kind, |ctx, kind| {
-                    Ok(match kind {
-                        hax::ClauseKind::RegionOutlives(p) => OutlivesPred(
-                            ctx.translate_region(span, &p.lhs)?,
-                            ctx.translate_region(span, &p.rhs)?,
-                        ),
-                        hax::ClauseKind::TypeOutlives(p) => OutlivesPred(
-                            Region::Lub(ctx.translate_ty(span, &p.lhs)?),
-                            ctx.translate_region(span, &p.rhs)?,
-                        ),
-                        _ => unreachable!("recovered ascription contains a non-region constraint"),
-                    })
-                })?;
-                preds.push(pred.no_bound_vars());
-            }
-            Ok((ty, preds))
-        })
+        let bound_constraints =
+            self.translate_region_binder(span, &ty_constraints, |ctx, (ty, clauses)| {
+                let ty = ctx.translate_ty(span, ty)?;
+                let mut outlives = Vec::new();
+                for clause in clauses {
+                    let pred = ctx.translate_region_binder(span, &clause.kind, |ctx, kind| {
+                        Ok(match kind {
+                            hax::ClauseKind::RegionOutlives(p) => OutlivesPred(
+                                ctx.translate_region(span, &p.lhs)?,
+                                ctx.translate_region(span, &p.rhs)?,
+                            ),
+                            hax::ClauseKind::TypeOutlives(p) => OutlivesPred(
+                                Region::Lub(ctx.translate_ty(span, &p.lhs)?),
+                                ctx.translate_region(span, &p.rhs)?,
+                            ),
+                            _ => unreachable!(
+                                "recovered ascription contains a non-region constraint"
+                            ),
+                        })
+                    })?;
+                    outlives.push(pred.no_bound_vars());
+                }
+                Ok((ty, outlives))
+            })?;
+        // Instantiate the binder with body regions.
+        let (ty, outlives) = self.erase_region_binder(bound_constraints);
+        self.insert_outlives_stmts(span, outlives);
+        Ok(ty)
     }
 
     fn translate_thread_local_ref(
@@ -1101,8 +1121,22 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 Operand::Move(p)
             }
             mir::Operand::Constant(const_op) => {
+                let annotated_ty = if let Some(base) = const_op.user_ty
+                    && !self.user_type_annotations.is_empty()
+                {
+                    let ty = self.translate_user_type_projection(
+                        span,
+                        &mir::UserTypeProjection {
+                            base,
+                            projs: vec![],
+                        },
+                    )?;
+                    Some(ty)
+                } else {
+                    None
+                };
                 let const_op = self.catch_sinto(span, &const_op)?;
-                match &const_op.kind {
+                let operand = match &const_op.kind {
                     hax::ConstOperandKind::Value(constant) => {
                         let constant = self.translate_constant_expr(span, constant)?;
                         Operand::Const(constant)
@@ -1116,6 +1150,36 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         );
                         Operand::Const(constant)
                     }
+                };
+                if let Some(annotated_ty) = annotated_ty
+                    && annotated_ty != *operand.ty()
+                {
+                    if let TyKind::FnDef(fn_ptr) = annotated_ty.kind() {
+                        // The function type is a singleton hence determines the value uniquely.
+                        // Prefer using the annotated type to preserve explicit turbofishing
+                        // choices.
+                        let fn_ptr = self.erase_region_binder(fn_ptr.clone());
+                        Operand::Const(ConstantExpr::new(
+                            ConstantExprKind::FnDef(fn_ptr),
+                            annotated_ty,
+                        ))
+                    } else {
+                        // For other constants, add the type annotation as a separate constraint.
+                        let place = self.fresh_var(None, operand.ty().clone());
+                        self.insert_assn_stmt(place.clone(), Rvalue::Use(operand, WithRetag::No));
+                        self.statements.push(Statement::new(
+                            span,
+                            StatementKind::Borrowck(BorrowckStatement::SetType {
+                                place: place.clone(),
+                                ty: annotated_ty,
+                                variance: Variance::Invariant,
+                                temporary: true,
+                            }),
+                        ));
+                        Operand::Move(place)
+                    }
+                } else {
+                    operand
                 }
             }
             mir::Operand::RuntimeChecks(check) => {
@@ -1623,8 +1687,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     ty::Variance::Bivariant => return Ok(()),
                 };
                 let place = self.translate_place(span, place)?;
-                let constraints = self.translate_user_type_projection(span, user_ty)?;
-                let (ty, outlives) = self.erase_region_binder(constraints);
+                let ty = self.translate_user_type_projection(span, user_ty)?;
                 self.statements.push(Statement::new(
                     span,
                     StatementKind::Borrowck(BorrowckStatement::SetType {
@@ -1634,14 +1697,6 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         temporary: false,
                     }),
                 ));
-                for pred in outlives {
-                    for pred in pred.normalize() {
-                        self.statements.push(Statement::new(
-                            span,
-                            StatementKind::Borrowck(BorrowckStatement::SetOutlives(pred)),
-                        ));
-                    }
-                }
                 None
             }
             // Used for coverage instrumentation.
@@ -1991,35 +2046,28 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         let lval = self.translate_place(span, destination)?;
         let on_unwind = self.translate_unwind_action(span, unwind);
         // Translate the function operand.
-        let fn_operand = match op_ty.kind() {
-            ty::TyKind::FnDef(def_id, generics) => {
-                // The type of the value is one of the singleton types that corresponds to each function,
-                // which is enough information.
-                //
-                // note: loss of precision, we erase the bound vars.
-                let generics = hax::erase_free_regions(tcx, generics.skip_binder());
-                let item = &hax::translate_item_ref(&self.hax_state, *def_id, generics);
-                trace!("func: {:?}", item.def_id);
-                let fn_ptr = self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?;
+        let op = self.translate_operand(span, func)?;
+        let fn_operand = match op.ty().kind() {
+            // The type of the value is one of the singleton types that corresponds to each
+            // function, so we statically know which function is getting called.
+            TyKind::FnDef(fn_ptr) => {
+                let fn_ptr = self.erase_region_binder(fn_ptr.clone());
                 FnOperand::Regular(fn_ptr)
             }
-            _ => {
-                // Call to a function pointer.
-                let op = self.translate_operand(span, func)?;
-                let regions = match op.ty().kind() {
-                    TyKind::FnPtr(sig) => RegionArgs::new(
-                        sig.regions
-                            .map_ref_indexed(|_, _| self.translate_erased_region()),
-                    ),
-                    _ => raise_error!(
-                        self,
-                        span,
-                        "expected a function pointer for call operand, got {}",
-                        op.ty().with_ctx(&self.into_fmt())
-                    ),
-                };
+            // Otherwise, we're calling a function pointer.
+            TyKind::FnPtr(sig) => {
+                let regions = RegionArgs::new(
+                    sig.regions
+                        .map_ref_indexed(|_, _| self.translate_erased_region()),
+                );
                 FnOperand::Dynamic(op, regions)
             }
+            _ => raise_error!(
+                self,
+                span,
+                "cannot call a value of type {}",
+                op.ty().with_ctx(&self.into_fmt())
+            ),
         };
         let args = self.translate_arguments(span, args)?;
 

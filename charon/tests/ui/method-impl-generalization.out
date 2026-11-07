@@ -147,11 +147,11 @@ fn main()
     let mut _14: &'10 u32; // anonymous local
     let mut _15: &'11 (); // anonymous local
     let mut _16: &'12 (); // anonymous local
-    let mut _17: &'14 u32; // anonymous local
+    let mut _17: &'16 u32; // anonymous local
     let mut _18: u32; // anonymous local
-    let mut _19: &'15 (); // anonymous local
+    let mut _19: &'17 (); // anonymous local
     let mut _20: (); // anonymous local
-    let mut _21: &'16 (); // anonymous local
+    let mut _21: &'18 (); // anonymous local
     let mut _22: (); // anonymous local
 
     storage_live(_14)
@@ -215,7 +215,7 @@ fn main()
     _11 = move _16
     _10 = &(*_11)
     _9 = &(*_10)
-    _7 = compare<'13>(move _8, move _9)
+    _7 = compare<'14>(move _8, move _9)
     ↳⚡ storage_dead(_13)
         storage_dead(_12)
         storage_dead(_11)
@@ -280,7 +280,7 @@ fn call_foo<'e>(x: &'e ()) -> &'e ()
     let _5: &'6 (); // anonymous local
     let mut _6: &'7 (); // anonymous local
     let mut _7: &'8 (); // anonymous local
-    let mut _8: &'13 (); // anonymous local
+    let mut _8: &'17 (); // anonymous local
     let mut _9: (); // anonymous local
 
     storage_live(_7)
@@ -300,7 +300,7 @@ fn call_foo<'e>(x: &'e ()) -> &'e ()
     _6 = move _7
     _5 = &(*_6)
     _4 = &(*_5)
-    _2 = foo<'11, '12>(move _3, move _4)
+    _2 = foo<'15, '16>(move _3, move _4)
     ↳⚡ storage_dead(_6)
         storage_dead(x)
         unwind_continue

@@ -251,7 +251,7 @@ fn precondition_check(this: *const (), count: isize, size: usize)
         storage_live(_10)
         storage_live(_11)
         _11 = &(*msg) with_metadata(read msg.metadata)
-        _10 = from_str<'6>(move _11)
+        _10 = from_str<'7>(move _11)
         ↳⚡ storage_dead(_10)
             storage_dead(_9)
             storage_dead(msg)
@@ -260,7 +260,7 @@ fn precondition_check(this: *const (), count: isize, size: usize)
             storage_dead(this)
             unwind_terminate
         storage_dead(_11)
-        _9 = panic_nounwind_fmt<'8>(move _10, const false)
+        _9 = panic_nounwind_fmt<'12>(move _10, const false)
         ↳⚡ undefined_behavior
     }
     storage_dead(_7)
@@ -374,7 +374,7 @@ fn main()
     _3 = as_slice<'_, i32, 2usize>[{built_in impl Sized for i32}](move _4)
     ↳⚡ undefined_behavior
     storage_dead(_4)
-    ptr = as_ptr<'6, i32>[{built_in impl Sized for i32}](move _3)
+    ptr = as_ptr<'8, i32>[{built_in impl Sized for i32}](move _3)
     ↳⚡ unwind_continue
     storage_dead(_3)
     fake_read(ptr)

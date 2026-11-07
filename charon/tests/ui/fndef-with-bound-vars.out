@@ -63,7 +63,7 @@ where
 
     storage_live(_0)
     storage_live(i)
-    i = const bar<&'151 ()>[{built_in impl Sized for &'153 ()}]
+    i = const bar<&'152 ()>[{built_in impl Sized for &'152 ()}]
     fake_read(i)
     _0 = test_crate::main::{closure}::{closure} { _0: copy i }
     storage_dead(i)

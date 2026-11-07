@@ -210,7 +210,7 @@ fn iter(n: usize)
         storage_live(_8)
         _8 = &mut iter
         _7 = &two-phase-mut (*_8)
-        _6 = next<'4, usize>[impl_Step_for_usize, {built_in impl Destruct for usize}](move _7)
+        _6 = next<'6, usize>[impl_Step_for_usize, {built_in impl Destruct for usize}](move _7)
         ↳⚡ storage_dead(n)
             unwind_continue
         storage_dead(_7)

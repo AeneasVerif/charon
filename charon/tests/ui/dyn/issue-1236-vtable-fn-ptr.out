@@ -125,8 +125,8 @@ fn main()
         some_foo = unsize_cast<&'10 (dyn Foo + '11), &impl_Foo_for_Bar::{vtable}>(move _3);
         storage_dead(_3);
         fake_read(some_foo);
-        set some_foo := &'12 (dyn Foo + '13);
         set '13 :> '12;
+        set some_foo := &'12 (dyn Foo + '13);
         storage_dead(_4);
         storage_live(_5);
         storage_live(_6);

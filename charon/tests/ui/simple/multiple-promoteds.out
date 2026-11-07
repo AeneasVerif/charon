@@ -21,10 +21,10 @@ fn six() -> u32
     let mut _8: &'6 u32; // anonymous local
     let mut _9: &'7 u32; // anonymous local
     let mut _10: &'8 u32; // anonymous local
-    let mut _11: &'17 u32; // anonymous local
+    let mut _11: &'21 u32; // anonymous local
     let mut _12: u32; // anonymous local
     let mut _13: u32; // anonymous local
-    let mut _14: &'18 u32; // anonymous local
+    let mut _14: &'22 u32; // anonymous local
     let mut _15: u32; // anonymous local
     let mut _16: u32; // anonymous local
 
@@ -61,7 +61,7 @@ fn six() -> u32
     _5 = copy x
     storage_live(_6)
     _6 = copy y
-    _0 = add<'15, '16>(move _5, move _6)
+    _0 = add<'17, '18>(move _5, move _6)
     ↳⚡ storage_dead(_8)
         storage_dead(_7)
         storage_dead(_4)

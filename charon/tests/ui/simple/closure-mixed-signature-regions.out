@@ -197,7 +197,7 @@ where
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = call_mut<'a, '_1, '_2, '_3, '92, T>[TraitClause0, TraitClause1](move _3, move _2)
+    _0 = call_mut<'a, '_1, '_2, '_3, '142, T>[TraitClause0, TraitClause1](move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -272,8 +272,8 @@ where
     storage_live(_5)
     _5 = &(*x)
     _4 = (move _5,)
-    _0 = TraitClause1<'_>::call<'24>(move _3, move _4)
-    ↳⚡ conditional_drop[{built_in impl Destruct for F}::drop_glue<'25>] f
+    _0 = TraitClause1<'24>::call<'30>(move _3, move _4)
+    ↳⚡ conditional_drop[{built_in impl Destruct for F}::drop_glue<'31>] f
         ↳⚡ storage_dead(x)
             storage_dead(f)
             unwind_terminate
@@ -283,7 +283,7 @@ where
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
-    conditional_drop[{built_in impl Destruct for F}::drop_glue<'26>] f
+    conditional_drop[{built_in impl Destruct for F}::drop_glue<'32>] f
     ↳⚡ storage_dead(x)
         storage_dead(f)
         unwind_continue
@@ -304,12 +304,12 @@ where
 
     storage_live(_0)
     storage_live(_2)
-    _2 = make<'45, T>[TraitClause0, TraitClause1]()
+    _2 = make<'a, T>[TraitClause0, TraitClause1]()
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_live(_3)
     _3 = &(*x)
-    _0 = apply<'47, '211, {closure}<'76, '76, '75, T>[TraitClause0, TraitClause1]>[{built_in impl Sized for {closure}<'76, '76, '75, T>[TraitClause0, TraitClause1]}, for<'c> impl_Fn_tuple_for_closure<'76, '76, '75, '209, T>[TraitClause0, TraitClause1]](move _2, move _3)
+    _0 = apply<'215, '406, {closure}<'219, '219, '218, T>[TraitClause0, TraitClause1]>[{built_in impl Sized for {closure}<'219, '219, '218, T>[TraitClause0, TraitClause1]}, for<'c> impl_Fn_tuple_for_closure<'219, '219, '218, '235, T>[TraitClause0, TraitClause1]](move _2, move _3)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_3)

@@ -69,7 +69,7 @@ pub unsafe fn drop_in_place::<(dyn T)>(to_drop: *mut (dyn T))
     storage_live(_3)
     _3 = &mut (*to_drop) with_metadata(read to_drop.metadata)
     _2 = &two-phase-mut (*_3) with_metadata(read _3.metadata)
-    _0 = drop_glue::<(dyn T)><'10>(move _2)
+    _0 = drop_glue::<(dyn T)><'12>(move _2)
     ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)

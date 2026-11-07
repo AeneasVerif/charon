@@ -335,7 +335,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         storage_live(_9);
         _9 = &mut iter_6;
         _8 = &two-phase-mut (*_9);
-        _7 = next<'9, i32>[{built_in impl Sized for i32}, impl_Step_for_i32, {built_in impl Destruct for i32}](move _8) -> bb3 (unwind: bb16);
+        _7 = next<'11, i32>[{built_in impl Sized for i32}, impl_Step_for_i32, {built_in impl Destruct for i32}](move _8) -> bb3 (unwind: bb16);
     }
 
     bb3: {
@@ -370,7 +370,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         storage_live(_17);
         _17 = &mut iter_14;
         _16 = &two-phase-mut (*_17);
-        _15 = next<'11, usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}](move _16) -> bb7 (unwind: bb16);
+        _15 = next<'15, usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}](move _16) -> bb7 (unwind: bb16);
     }
 
     bb7: {
@@ -416,7 +416,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         storage_live(_24);
         _24 = &mut iter_21;
         _23 = &two-phase-mut (*_24);
-        _22 = next<'13, usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}](move _23) -> bb12 (unwind: bb16);
+        _22 = next<'18, usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}](move _23) -> bb12 (unwind: bb16);
     }
 
     bb12: {

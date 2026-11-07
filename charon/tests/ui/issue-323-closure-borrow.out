@@ -60,7 +60,7 @@ where
     storage_live(_3)
     storage_live(_4)
     _4 = &two-phase-mut (*(*_1)._0)
-    _3 = next_u64<'9>(move _4)
+    _3 = next_u64<'11>(move _4)
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)
         unwind_continue

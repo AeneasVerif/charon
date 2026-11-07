@@ -419,7 +419,7 @@ extern "rust-call" fn {impl FnOnce<()> for test_attributes::tests::test_ignore::
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<()> for test_attributes::tests::test_ignore::{closure}}::call_mut<'2>(move _3, move _2)
+    _0 = {impl FnMut<()> for test_attributes::tests::test_ignore::{closure}}::call_mut<'3>(move _3, move _2)
     ↳⚡ unwind_continue
     return
 }
@@ -511,7 +511,7 @@ fn test_attributes::tests::test_should_panic#1()
     let mut _0: (); // return
     let _1: !; // anonymous local
     let mut _2: Arguments<'1>; // anonymous local
-    let mut _3: &'4 str; // anonymous local
+    let mut _3: &'7 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -521,7 +521,7 @@ fn test_attributes::tests::test_should_panic#1()
     _3 = &test_attributes::tests::test_should_panic#1::{promoted_const} with_metadata(const 22usize)
     _2 = from_str<'2>(move _3)
     ↳⚡ unwind_continue
-    _1 = panic_fmt<'6>(move _2)
+    _1 = panic_fmt<'11>(move _2)
     ↳⚡ unwind_continue
 }
 
@@ -572,7 +572,7 @@ extern "rust-call" fn {impl FnOnce<()> for test_attributes::tests::test_should_p
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<()> for test_attributes::tests::test_should_panic::{closure}}::call_mut<'2>(move _3, move _2)
+    _0 = {impl FnMut<()> for test_attributes::tests::test_should_panic::{closure}}::call_mut<'3>(move _3, move _2)
     ↳⚡ unwind_continue
     return
 }
@@ -718,7 +718,7 @@ extern "rust-call" fn {impl FnOnce<()> for test_attributes::tests::test_foo::{cl
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<()> for test_attributes::tests::test_foo::{closure}}::call_mut<'2>(move _3, move _2)
+    _0 = {impl FnMut<()> for test_attributes::tests::test_foo::{closure}}::call_mut<'3>(move _3, move _2)
     ↳⚡ unwind_continue
     return
 }
@@ -839,7 +839,7 @@ pub fn main()
     _2 = &(*_3)
     _1 = unsize_cast<&'61 [&'62 TestDescAndFn], 3usize>(move _2)
     storage_dead(_2)
-    _0 = test_main_env_args<'68, '69>(move _1)
+    _0 = test_main_env_args<'72, '73>(move _1)
     ↳⚡ unwind_continue
     storage_dead(_1)
     storage_dead(_10)

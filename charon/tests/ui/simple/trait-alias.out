@@ -168,7 +168,7 @@ fn use_hrtb_alias()
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = takes_hrtb_alias<Struct>[{built_in impl Sized for Struct}, impl_HrtbAlias_for_T<Struct>[{built_in impl MetaSized for Struct}, for<'a> impl_Borrowed_for_Struct<'0>]]()
+    _1 = takes_hrtb_alias<Struct>[{built_in impl Sized for Struct}, impl_HrtbAlias_for_T<Struct>[{built_in impl MetaSized for Struct}, for<'a> impl_Borrowed_for_Struct<'1>]]()
     ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()
@@ -191,22 +191,22 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &x
-    _2 = TraitClause1::ImpliedClause2::clone<'2>(move _3)
-    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'3>] x
+    _2 = TraitClause1::ImpliedClause2::clone<'3>(move _3)
+    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] x
         ↳⚡ storage_dead(x)
             unwind_terminate
         storage_dead(x)
         unwind_continue
     storage_dead(_3)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] _2
-    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'3>] x
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] _2
+    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] x
         ↳⚡ storage_dead(x)
             unwind_terminate
         storage_dead(x)
         unwind_continue
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] x
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'6>] x
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(x)

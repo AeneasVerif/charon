@@ -192,7 +192,7 @@ pub fn f<'_0>(ctx: &'_0 mut [u64])
     storage_live(acc)
     storage_live(_3)
     _3 = &two-phase-mut (*ctx) with_metadata(read ctx.metadata)
-    acc = split_at_mut<'19, u64>[{built_in impl Sized for u64}](move _3, const 0usize)
+    acc = split_at_mut<'21, u64>[{built_in impl Sized for u64}](move _3, const 0usize)
     ↳⚡ unwind_continue
     storage_dead(_3)
     storage_live(_4)

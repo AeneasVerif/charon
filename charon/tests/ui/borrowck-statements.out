@@ -461,8 +461,8 @@ where
     storage_live(value_2)
     value_2 = copy value_1
     fake_read(value_2)
-    set value_2 := &'6 u32
     set '6 :> 'b
+    set value_2 := &'6 u32
     _0 = ()
     storage_dead(value_2)
     storage_dead(value_1)
@@ -557,8 +557,8 @@ where
     storage_live(x)
     x = copy value
     fake_read(x)
-    set x := StaticCopy<'5>
     set '5 :> 'static
+    set x := StaticCopy<'5>
     _0 = ()
     storage_dead(x)
     storage_dead(value)
@@ -579,8 +579,8 @@ where
     storage_live(x)
     x = move value
     fake_read(x)
-    set x := Box<StaticCopy<'12>>[{built_in impl MetaSized for StaticCopy<'12>}, {built_in impl Sized for Global}]
     set '12 :> 'static
+    set x := Box<StaticCopy<'12>>[{built_in impl MetaSized for StaticCopy<'12>}, {built_in impl Sized for Global}]
     _0 = ()
     conditional_drop[impl_Destruct_for_Box::drop_glue<'27, StaticCopy<'22>, Global>[{built_in impl MetaSized for StaticCopy<'22>}, {built_in impl Sized for Global}]] x
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'57, StaticCopy<'52>, Global>[{built_in impl MetaSized for StaticCopy<'52>}, {built_in impl Sized for Global}]] value
@@ -630,9 +630,9 @@ where
     storage_live(x)
     x = copy value
     fake_read(x)
+    set 'b :> 'a
+    set 'b :> 'a
     set x := u32
-    set 'b :> 'a
-    set 'b :> 'a
     _0 = ()
     storage_dead(x)
     storage_dead(value)
@@ -672,9 +672,9 @@ where
     storage_live(x)
     x = copy value
     fake_read(x)
-    set x := &'b u32
     set 'a :> 'b
     set 'b :> 'a
+    set x := &'b u32
     _0 = ()
     storage_dead(x)
     storage_dead(value)
@@ -695,8 +695,8 @@ where
     storage_live(x)
     x = copy value
     fake_read(x)
-    set x := &'a u32
     set 'a :> 'b
+    set x := &'a u32
     _0 = ()
     storage_dead(x)
     storage_dead(value)

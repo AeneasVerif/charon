@@ -100,13 +100,13 @@ fn main()
     storage_live(_3)
     _3 = &test_crate::main::{promoted_const} with_metadata(const 5usize)
     _2 = &(*_3) with_metadata(read _3.metadata)
-    _s = to_string<'5, str>[{built_in impl MetaSized for str}, {impl#7}](move _2)
+    _s = to_string<'7, str>[{built_in impl MetaSized for str}, {impl#7}](move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     fake_read(_s)
     storage_dead(_3)
     _0 = ()
-    conditional_drop[drop_glue<'6>] _s
+    conditional_drop[drop_glue<'8>] _s
     ↳⚡ unwind_continue
     storage_dead(_s)
     return

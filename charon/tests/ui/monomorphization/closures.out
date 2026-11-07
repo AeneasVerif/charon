@@ -63,7 +63,7 @@ fn apply_to_zero::<test_crate::main::{closure}<'_>>(f: test_crate::main::{closur
     _2 = &f
     storage_live(_3)
     _3 = (const 0u8,)
-    _0 = call<'5, '7>(move _2, move _3)
+    _0 = call<'7, '11>(move _2, move _3)
     ↳⚡ storage_dead(f)
         unwind_continue
     storage_dead(_3)
@@ -126,7 +126,7 @@ fn apply_to_zero_mut::<test_crate::main::{closure#1}<'_>>(f: test_crate::main::{
     _2 = &mut f
     storage_live(_3)
     _3 = (const 0u8,)
-    _0 = call_mut<'5, '7>(move _2, move _3)
+    _0 = call_mut<'7, '11>(move _2, move _3)
     ↳⚡ storage_dead(f)
         unwind_continue
     storage_dead(_3)

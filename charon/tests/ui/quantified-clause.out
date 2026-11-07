@@ -274,7 +274,7 @@ where
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = needs_parent<T>[TraitClause0, TraitClause1::ImpliedClause1<'_>]()
+    _1 = needs_parent<T>[TraitClause0, TraitClause1::ImpliedClause1<'0>]()
     ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()

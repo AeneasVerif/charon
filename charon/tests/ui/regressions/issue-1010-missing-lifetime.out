@@ -96,7 +96,7 @@ extern "rust-call" fn {impl FnOnce<(&'_0 u16,)> for test_crate::main::{closure#1
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut<(&'_0 u16,)> for test_crate::main::{closure#1}<'_0>}::call_mut<'_0, '20>(move _3, move _2)
+    _0 = {impl FnMut<(&'_0 u16,)> for test_crate::main::{closure#1}<'_0>}::call_mut<'_0, '32>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -154,7 +154,7 @@ fn main()
     _4 = test_crate::main::{closure#1} {  }
     _3 = fn_def_to_fn_ptr(const {as_fn}<'13>)
     storage_dead(_4)
-    _2 = make_early<'16, u16>[{built_in impl Sized for u16}](move _3)
+    _2 = make_early<'18, u16>[{built_in impl Sized for u16}](move _3)
     ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)

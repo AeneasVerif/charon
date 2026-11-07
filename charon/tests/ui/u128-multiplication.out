@@ -38,12 +38,12 @@ where
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source)
-    _3 = TraitClause0::clone<'5>(move _4)
+    _3 = TraitClause0::clone<'6>(move _4)
     ↳⚡ storage_dead(source)
         storage_dead(self)
         unwind_continue
     storage_dead(_4)
-    drop[TraitClause1::drop_glue<'6>] (*self)
+    drop[TraitClause1::drop_glue<'7>] (*self)
     ↳⚡ (*self) = move _3
         storage_dead(source)
         storage_dead(self)
@@ -84,12 +84,12 @@ where
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source)
-    _3 = impl_Clone_for_u128::clone<'5>(move _4)
+    _3 = impl_Clone_for_u128::clone<'6>(move _4)
     ↳⚡ storage_dead(source)
         storage_dead(self)
         unwind_continue
     storage_dead(_4)
-    drop[TraitClause0::drop_glue<'6>] (*self)
+    drop[TraitClause0::drop_glue<'7>] (*self)
     ↳⚡ (*self) = move _3
         storage_dead(source)
         storage_dead(self)

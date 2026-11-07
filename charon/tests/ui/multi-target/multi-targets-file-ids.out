@@ -500,7 +500,7 @@ fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::store<
     _5 = core::array::{[T; N]}::as_mut_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _6)
     ↳⚡ undefined_behavior
     storage_dead(_6)
-    _4 = core::slice::{[T]}::as_mut_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _5)
+    _4 = core::slice::{[T]}::as_mut_ptr<'9, u16>[{built_in impl core::marker::Sized for u16}](move _5)
     ↳⚡ storage_dead(val)
         storage_dead(dst)
         unwind_continue
@@ -538,7 +538,7 @@ fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::load<'
     _4 = core::array::{[T; N]}::as_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _5)
     ↳⚡ undefined_behavior
     storage_dead(_5)
-    _3 = core::slice::{[T]}::as_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _4)
+    _3 = core::slice::{[T]}::as_ptr<'9, u16>[{built_in impl core::marker::Sized for u16}](move _4)
     ↳⚡ storage_dead(src)
         unwind_continue
     storage_dead(_4)
@@ -609,7 +609,7 @@ fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::store<
     _4 = core::array::{[T; N]}::as_mut_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _5)
     ↳⚡ undefined_behavior
     storage_dead(_5)
-    _3 = core::slice::{[T]}::as_mut_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _4)
+    _3 = core::slice::{[T]}::as_mut_ptr<'9, u16>[{built_in impl core::marker::Sized for u16}](move _4)
     ↳⚡ storage_dead(val)
         storage_dead(dst)
         unwind_continue
@@ -643,7 +643,7 @@ fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::load<'
     _3 = core::array::{[T; N]}::as_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _4)
     ↳⚡ undefined_behavior
     storage_dead(_4)
-    _2 = core::slice::{[T]}::as_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _3)
+    _2 = core::slice::{[T]}::as_ptr<'9, u16>[{built_in impl core::marker::Sized for u16}](move _3)
     ↳⚡ storage_dead(src)
         unwind_continue
     storage_dead(_3)
@@ -690,7 +690,7 @@ where
     storage_live(va)
     storage_live(_4)
     _4 = &(*a)
-    va = TraitClause1::load<'7>(move _4)
+    va = TraitClause1::load<'8>(move _4)
     ↳⚡ storage_dead(b)
         storage_dead(a)
         unwind_continue
@@ -699,7 +699,7 @@ where
     storage_live(vb)
     storage_live(_6)
     _6 = &(*b)
-    vb = TraitClause1::load<'8>(move _6)
+    vb = TraitClause1::load<'10>(move _6)
     ↳⚡ storage_dead(b)
         storage_dead(a)
         unwind_continue
@@ -719,7 +719,7 @@ where
         unwind_continue
     storage_dead(_11)
     storage_dead(_10)
-    _7 = TraitClause1::store<'9>(move _8, move _9)
+    _7 = TraitClause1::store<'12>(move _8, move _9)
     ↳⚡ storage_dead(b)
         storage_dead(a)
         unwind_continue
@@ -777,7 +777,7 @@ fn test_crate::add_scalar<'_0, '_1>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8us
         storage_live(_8)
         _8 = &mut iter
         _7 = &two-phase-mut (*_8)
-        _6 = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[TraitClause0]}::next<'8, usize>[{built_in impl core::marker::Sized for usize}, core::iter::range::{impl core::iter::range::Step for usize}, {built_in impl core::marker::Destruct for usize}](move _7)
+        _6 = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[TraitClause0]}::next<'10, usize>[{built_in impl core::marker::Sized for usize}, core::iter::range::{impl core::iter::range::Step for usize}, {built_in impl core::marker::Destruct for usize}](move _7)
         ↳⚡ storage_dead(b)
             storage_dead(a)
             unwind_continue
@@ -890,7 +890,7 @@ fn test_crate::add_dispatch::x86_64-apple-darwin<'_0, '_1>(a: &'_0 mut [u16; 8us
         _8 = &two-phase-mut (*a)
         storage_live(_9)
         _9 = &(*b)
-        _7 = test_crate::add_scalar<'14, '15>(move _8, move _9)
+        _7 = test_crate::add_scalar<'22, '23>(move _8, move _9)
         ↳⚡ storage_dead(b)
             storage_dead(a)
             unwind_continue
@@ -908,7 +908,7 @@ fn test_crate::add_dispatch::x86_64-apple-darwin<'_0, '_1>(a: &'_0 mut [u16; 8us
     _5 = &two-phase-mut (*a)
     storage_live(_6)
     _6 = &(*b)
-    _4 = test_crate::add_generic<'10, '11, test_crate::x86::Sse2>[{built_in impl core::marker::Sized for test_crate::x86::Sse2}, test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}](move _5, move _6)
+    _4 = test_crate::add_generic<'14, '15, test_crate::x86::Sse2>[{built_in impl core::marker::Sized for test_crate::x86::Sse2}, test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}](move _5, move _6)
     ↳⚡ storage_dead(b)
         storage_dead(a)
         unwind_continue
@@ -949,7 +949,7 @@ fn test_crate::add_dispatch::aarch64-apple-darwin<'_0, '_1>(a: &'_0 mut [u16; 8u
         _8 = &two-phase-mut (*a)
         storage_live(_9)
         _9 = &(*b)
-        _7 = test_crate::add_scalar<'14, '15>(move _8, move _9)
+        _7 = test_crate::add_scalar<'22, '23>(move _8, move _9)
         ↳⚡ storage_dead(b)
             storage_dead(a)
             unwind_continue
@@ -967,7 +967,7 @@ fn test_crate::add_dispatch::aarch64-apple-darwin<'_0, '_1>(a: &'_0 mut [u16; 8u
     _5 = &two-phase-mut (*a)
     storage_live(_6)
     _6 = &(*b)
-    _4 = test_crate::add_generic<'10, '11, test_crate::arm::Neon>[{built_in impl core::marker::Sized for test_crate::arm::Neon}, test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}](move _5, move _6)
+    _4 = test_crate::add_generic<'14, '15, test_crate::arm::Neon>[{built_in impl core::marker::Sized for test_crate::arm::Neon}, test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}](move _5, move _6)
     ↳⚡ storage_dead(b)
         storage_dead(a)
         unwind_continue

@@ -24,7 +24,7 @@ fn do_test::<bool>(init: bool, expected: bool)
         _4 = &expected;
         storage_live(_5);
         _5 = &init;
-        _3 = eq<'5, '6>(move _4, move _5) -> bb1 (unwind: bb2);
+        _3 = eq<'9, '10>(move _4, move _5) -> bb1 (unwind: bb2);
     }
 
     bb1: {

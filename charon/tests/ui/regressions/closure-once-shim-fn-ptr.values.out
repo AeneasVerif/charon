@@ -51,7 +51,7 @@ extern "rust-call" fn {impl FnOnce<()> for test_crate::AS_FN::{closure}}::call_o
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<()> for test_crate::AS_FN::{closure}}::call_mut<'2>(move _3, move _2)
+    _0 = {impl FnMut<()> for test_crate::AS_FN::{closure}}::call_mut<'3>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -148,7 +148,7 @@ extern "rust-call" fn {impl FnOnce<()> for test_crate::mk_closure::{closure}}::c
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<()> for test_crate::mk_closure::{closure}}::call_mut<'2>(move _3, move _2)
+    _0 = {impl FnMut<()> for test_crate::mk_closure::{closure}}::call_mut<'3>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)

@@ -230,7 +230,7 @@ extern "rust-call" fn call<'_0, '_1>(_1: &'_1 {closure}, tupled_args: (Option<&'
     _4 = &__RUST_STD_INTERNAL_VAL
     storage_live(_5)
     _5 = move __rust_std_internal_init
-    _0 = get_or_init<'23, '24, u32, !, __rust_std_internal_init_fn>[{built_in impl Sized for u32}, {built_in impl Sized for !}, {impl DestroyedState for !}, {built_in impl Sized for __rust_std_internal_init_fn}, {impl FnOnce<()> for __rust_std_internal_init_fn}](move _4, move _5, const __rust_std_internal_init_fn)
+    _0 = get_or_init<'27, '28, u32, !, __rust_std_internal_init_fn>[{built_in impl Sized for u32}, {built_in impl Sized for !}, {impl DestroyedState for !}, {built_in impl Sized for __rust_std_internal_init_fn}, {impl FnOnce<()> for __rust_std_internal_init_fn}](move _4, move _5, const __rust_std_internal_init_fn)
     ↳⚡ storage_dead(__rust_std_internal_init)
         storage_dead(tupled_args)
         storage_dead(_1)
@@ -276,7 +276,7 @@ extern "rust-call" fn impl_FnOnce_tuple_for_closure::call_once<'_0>(_1: {closure
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = call_mut<'_0, '35>(move _3, move _2)
+    _0 = call_mut<'_0, '57>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)

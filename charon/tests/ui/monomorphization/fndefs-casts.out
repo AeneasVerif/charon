@@ -74,7 +74,7 @@ fn takes_closure::<for<'a> foo::<u32><'a>>(c: for<'a> foo::<u32><'a>)
     let _5: &'4 u32; // anonymous local
     let mut _6: &'5 u32; // anonymous local
     let mut _7: &'6 u32; // anonymous local
-    let mut _8: &'14 u32; // anonymous local
+    let mut _8: &'18 u32; // anonymous local
     let mut _9: u32; // anonymous local
 
     storage_live(_7)
@@ -95,7 +95,7 @@ fn takes_closure::<for<'a> foo::<u32><'a>>(c: for<'a> foo::<u32><'a>)
     _5 = &(*_6)
     _4 = &(*_5)
     _3 = (move _4,)
-    _0 = call::<u32><'7, '9>(move _2, move _3)
+    _0 = call::<u32><'9, '13>(move _2, move _3)
     ↳⚡ storage_dead(_6)
         storage_dead(c)
         unwind_continue

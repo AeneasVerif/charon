@@ -87,7 +87,7 @@ fn apply_to::<{closure}<'_, '_>><'_0>(f: &'_0 {closure}<'_, '_>) -> u8
     _2 = &(*f)
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
-    _0 = call<'11, '12, '14>(move _2, move _3)
+    _0 = call<'14, '15, '20>(move _2, move _3)
     ↳⚡ storage_dead(f)
         unwind_continue
     storage_dead(_3)
@@ -134,7 +134,7 @@ fn apply_to_mut::<{closure}<'_, '_>><'_0>(f: &'_0 mut {closure}<'_, '_>) -> u8
     _2 = &mut (*f)
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
-    _0 = call_mut<'11, '12, '14>(move _2, move _3)
+    _0 = call_mut<'14, '15, '20>(move _2, move _3)
     ↳⚡ storage_dead(f)
         unwind_continue
     storage_dead(_3)
@@ -154,7 +154,7 @@ extern "rust-call" fn call_once<'_0, '_1>(_1: {closure}<'_0, '_1>, _2: (u8, u8))
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = call_mut<'_0, '_1, '7>(move _3, move _2)
+    _0 = call_mut<'_0, '_1, '11>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -178,7 +178,7 @@ fn apply_to_once::<{closure}<'_, '_>>(f: {closure}<'_, '_>) -> u8
     _2 = move f
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
-    _0 = call_once<'4, '5>(move _2, move _3)
+    _0 = call_once<'6, '7>(move _2, move _3)
     ↳⚡ storage_dead(f)
         unwind_continue
     storage_dead(_3)
@@ -230,7 +230,7 @@ fn main()
     _7 = &f
     storage_live(_8)
     _8 = (const 10u8, const 20u8)
-    _6 = call<'32, '33, '35>(move _7, move _8)
+    _6 = call<'35, '36, '41>(move _7, move _8)
     ↳⚡ unwind_continue
     storage_dead(_8)
     storage_dead(_7)
@@ -240,7 +240,7 @@ fn main()
     storage_live(_11)
     _11 = &f
     _10 = &(*_11)
-    _9 = apply_to::<{closure}<'_, '_>><'39>(move _10)
+    _9 = apply_to::<{closure}<'_, '_>><'47>(move _10)
     ↳⚡ unwind_continue
     storage_dead(_10)
     storage_dead(_11)
@@ -250,7 +250,7 @@ fn main()
     storage_live(_14)
     _14 = &mut f
     _13 = &two-phase-mut (*_14)
-    _12 = apply_to_mut::<{closure}<'_, '_>><'43>(move _13)
+    _12 = apply_to_mut::<{closure}<'_, '_>><'53>(move _13)
     ↳⚡ unwind_continue
     storage_dead(_13)
     storage_dead(_14)

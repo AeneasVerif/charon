@@ -66,14 +66,14 @@ where
     _0 = ()
     storage_live(_2)
     _2 = &f
-    _0 = TraitClause2::ImpliedClause1::ImpliedClause1::method<'2>(move _2)
-    ↳⚡ conditional_drop[{built_in impl Destruct for F}::drop_glue<'3>] f
+    _0 = TraitClause2::ImpliedClause1::ImpliedClause1::method<'3>(move _2)
+    ↳⚡ conditional_drop[{built_in impl Destruct for F}::drop_glue<'4>] f
         ↳⚡ storage_dead(f)
             unwind_terminate
         storage_dead(f)
         unwind_continue
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for F}::drop_glue<'4>] f
+    conditional_drop[{built_in impl Destruct for F}::drop_glue<'5>] f
     ↳⚡ storage_dead(f)
         unwind_continue
     storage_dead(f)

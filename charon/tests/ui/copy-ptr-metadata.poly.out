@@ -360,12 +360,12 @@ fn main()
     let mut _17: &'20 u32; // anonymous local
     let mut _18: &'21 u32; // anonymous local
     let mut _19: &'22 [u32; 2usize]; // anonymous local
-    let mut _20: &'25 u32; // anonymous local
-    let mut _21: &'35 u32; // anonymous local
+    let mut _20: &'27 u32; // anonymous local
+    let mut _21: &'46 u32; // anonymous local
     let mut _22: u32; // anonymous local
-    let mut _23: &'36 [u32; 2usize]; // anonymous local
+    let mut _23: &'47 [u32; 2usize]; // anonymous local
     let mut _24: [u32; 2usize]; // anonymous local
-    let mut _25: &'37 u32; // anonymous local
+    let mut _25: &'48 u32; // anonymous local
     let mut _26: u32; // anonymous local
 
     storage_live(_18)
@@ -408,7 +408,7 @@ fn main()
     _8 = &(*_16)
     storage_live(_9)
     _9 = RangeFull {  }
-    _7 = impl_Index_for_array::index<'24, u32, RangeFull, 2usize>[{built_in impl Sized for u32}, {built_in impl Sized for RangeFull}, impl_Index_for_slice<u32, RangeFull>[{built_in impl Sized for u32}, {built_in impl Sized for RangeFull}, impl_SliceIndex_slice_for_RangeFull<u32>[{built_in impl Sized for u32}]]](move _8, move _9)
+    _7 = impl_Index_for_array::index<'26, u32, RangeFull, 2usize>[{built_in impl Sized for u32}, {built_in impl Sized for RangeFull}, impl_Index_for_slice<u32, RangeFull>[{built_in impl Sized for u32}, {built_in impl Sized for RangeFull}, impl_SliceIndex_slice_for_RangeFull<u32>[{built_in impl Sized for u32}]]](move _8, move _9)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(_15)
@@ -440,10 +440,10 @@ fn main()
     _15 = move _20
     _14 = &(*_15)
     _13 = &(*_14)
-    _12 = unsize_cast<&'26 (dyn Trait + '27), &impl_Trait_for_u32::{vtable}>(move _13)
+    _12 = unsize_cast<&'28 (dyn Trait + '29), &impl_Trait_for_u32::{vtable}>(move _13)
     storage_dead(_13)
     _11 = &raw const (*_12) with_metadata(read _12.metadata)
-    _10 = metadata<(dyn Trait + '30)>[{built_in impl MetaSized for (dyn Trait + '32)}](move _11)
+    _10 = metadata<(dyn Trait + '37)>[{built_in impl MetaSized for (dyn Trait + '39)}](move _11)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(_15)
