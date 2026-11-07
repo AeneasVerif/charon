@@ -46,60 +46,73 @@ impl<'tcx> UserTypeAnnotations<'tcx> {
         span: Span,
         user_ty: &mir::UserTypeProjection,
     ) -> Result<(Ty, Vec<Statement>), Error> {
-        let Some(owner) = ctx.item_src.def_id().as_real_or_promoted() else {
-            raise_error!(ctx, span, "user type annotation without a rustc owner");
-        };
-        let ty_constraints = hax::rustc::translate_user_annotation(
-            ctx.tcx,
-            hax::UnderOwnerState::typing_env(&ctx.hax_state),
-            owner,
+        translate_user_annotation(
+            ctx,
+            span,
             &self.annotations[user_ty.base],
             std::slice::from_ref(&user_ty.projs),
-        );
-        let ty_constraints = match ty_constraints {
-            Ok(ty_constraints) => ty_constraints,
-            Err(message) => raise_error!(ctx, span, "{message}"),
-        };
-        let ty_constraints: hax::Binder<(Vec<hax::Ty<'tcx>>, Vec<hax::Clause<'tcx>>)> =
-            ctx.catch_sinto(span, &ty_constraints)?;
-        let bound_constraints =
-            ctx.translate_region_binder(span, &ty_constraints, |ctx, (tys, clauses)| {
-                let [ty] = tys.as_slice() else {
-                    unreachable!("requested exactly one user type projection");
-                };
-                let ty = ctx.translate_ty(span, ty)?;
-                let mut outlives = Vec::new();
-                for clause in clauses {
-                    let pred = ctx.translate_region_binder(span, &clause.kind, |ctx, kind| {
-                        Ok(match kind {
-                            hax::ClauseKind::RegionOutlives(p) => OutlivesPred(
-                                ctx.translate_region(span, &p.lhs)?,
-                                ctx.translate_region(span, &p.rhs)?,
-                            ),
-                            hax::ClauseKind::TypeOutlives(p) => OutlivesPred(
-                                Region::Lub(ctx.translate_ty(span, &p.lhs)?),
-                                ctx.translate_region(span, &p.rhs)?,
-                            ),
-                            _ => unreachable!(
-                                "recovered ascription contains a non-region constraint"
-                            ),
-                        })
-                    })?;
-                    outlives.push(pred.no_bound_vars());
-                }
-                Ok((ty, outlives))
-            })?;
-        // Instantiate the binder with fresh body regions.
-        let (ty, outlives) = ctx.erase_region_binder(bound_constraints);
-        let mut outlives_statements = Vec::new();
-        for pred in outlives {
-            for pred in pred.normalize() {
-                outlives_statements.push(Statement::new(
-                    span,
-                    StatementKind::Borrowck(BorrowckStatement::SetOutlives(pred)),
-                ));
-            }
-        }
-        Ok((ty, outlives_statements))
+        )
     }
+}
+
+/// Translate a user annotation and the outlives obligations needed to validate it.
+fn translate_user_annotation<'tcx>(
+    ctx: &mut ItemTransCtx<'tcx, '_>,
+    span: Span,
+    annotation: &ty::CanonicalUserTypeAnnotation<'tcx>,
+    projections: &[hax::rustc::UserAnnotationProj],
+) -> Result<(Ty, Vec<Statement>), Error> {
+    let Some(owner) = ctx.item_src.def_id().as_real_or_promoted() else {
+        raise_error!(ctx, span, "user type annotation without a rustc owner");
+    };
+    let ty_constraints = hax::rustc::translate_user_annotation(
+        ctx.tcx,
+        hax::UnderOwnerState::typing_env(&ctx.hax_state),
+        owner,
+        annotation,
+        projections,
+    );
+    let ty_constraints = match ty_constraints {
+        Ok(ty_constraints) => ty_constraints,
+        Err(message) => raise_error!(ctx, span, "{message}"),
+    };
+    let ty_constraints: hax::Binder<(Vec<hax::Ty<'tcx>>, Vec<hax::Clause<'tcx>>)> =
+        ctx.catch_sinto(span, &ty_constraints)?;
+    let bound_constraints =
+        ctx.translate_region_binder(span, &ty_constraints, |ctx, (tys, clauses)| {
+            let [ty] = tys.as_slice() else {
+                unreachable!("requested exactly one user type projection");
+            };
+            let ty = ctx.translate_ty(span, ty)?;
+            let mut outlives = Vec::new();
+            for clause in clauses {
+                let pred = ctx.translate_region_binder(span, &clause.kind, |ctx, kind| {
+                    Ok(match kind {
+                        hax::ClauseKind::RegionOutlives(p) => OutlivesPred(
+                            ctx.translate_region(span, &p.lhs)?,
+                            ctx.translate_region(span, &p.rhs)?,
+                        ),
+                        hax::ClauseKind::TypeOutlives(p) => OutlivesPred(
+                            Region::Lub(ctx.translate_ty(span, &p.lhs)?),
+                            ctx.translate_region(span, &p.rhs)?,
+                        ),
+                        _ => unreachable!("recovered ascription contains a non-region constraint"),
+                    })
+                })?;
+                outlives.push(pred.no_bound_vars());
+            }
+            Ok((ty, outlives))
+        })?;
+    // Instantiate the binder with fresh body regions.
+    let (ty, outlives) = ctx.erase_region_binder(bound_constraints);
+    let mut outlives_statements = Vec::new();
+    for pred in outlives {
+        for pred in pred.normalize() {
+            outlives_statements.push(Statement::new(
+                span,
+                StatementKind::Borrowck(BorrowckStatement::SetOutlives(pred)),
+            ));
+        }
+    }
+    Ok((ty, outlives_statements))
 }
