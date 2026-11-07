@@ -790,17 +790,6 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         ))
     }
 
-    fn insert_outlives_stmts(&mut self, span: Span, outlives: Vec<OutlivesPred>) {
-        for pred in outlives {
-            for pred in pred.normalize() {
-                self.statements.push(Statement::new(
-                    span,
-                    StatementKind::Borrowck(BorrowckStatement::SetOutlives(pred)),
-                ));
-            }
-        }
-    }
-
     /// Translate this user-provided type annotation. May also register some outlives constraints
     /// as statements as this point.
     fn translate_user_type_projection(
@@ -808,11 +797,11 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         span: Span,
         user_ty: &mir::UserTypeProjection,
     ) -> Result<Ty, Error> {
-        let (ty, outlives) = self
+        let (ty, outlives_statements) = self
             .b_ctx
             .user_type_annotations
             .translate_place_annotation(self.b_ctx.i_ctx, span, user_ty)?;
-        self.insert_outlives_stmts(span, outlives);
+        self.statements.extend(outlives_statements);
         Ok(ty)
     }
 

@@ -5,6 +5,7 @@ use super::translate_crate::RustcItem;
 use super::translate_ctx::*;
 use crate::hax;
 use charon_lib::ast::*;
+use charon_lib::ullbc_ast::{Statement, StatementKind};
 
 /// User-provided type annotations for this MIR body.
 pub(crate) struct UserTypeAnnotations<'tcx> {
@@ -38,13 +39,13 @@ impl<'tcx> UserTypeAnnotations<'tcx> {
     }
 
     /// Translate a user type annotation on a place. This returns the annotated type of the place,
-    /// plus some outlive obligations that must hold for the annotation to be valid.
+    /// plus statements for the outlives obligations that must hold for the annotation to be valid.
     pub(crate) fn translate_place_annotation(
         &self,
         ctx: &mut ItemTransCtx<'tcx, '_>,
         span: Span,
         user_ty: &mir::UserTypeProjection,
-    ) -> Result<(Ty, Vec<OutlivesPred>), Error> {
+    ) -> Result<(Ty, Vec<Statement>), Error> {
         let Some(owner) = ctx.item_src.def_id().as_real_or_promoted() else {
             raise_error!(ctx, span, "user type annotation without a rustc owner");
         };
@@ -90,6 +91,15 @@ impl<'tcx> UserTypeAnnotations<'tcx> {
             })?;
         // Instantiate the binder with fresh body regions.
         let (ty, outlives) = ctx.erase_region_binder(bound_constraints);
-        Ok((ty, outlives))
+        let mut outlives_statements = Vec::new();
+        for pred in outlives {
+            for pred in pred.normalize() {
+                outlives_statements.push(Statement::new(
+                    span,
+                    StatementKind::Borrowck(BorrowckStatement::SetOutlives(pred)),
+                ));
+            }
+        }
+        Ok((ty, outlives_statements))
     }
 }
