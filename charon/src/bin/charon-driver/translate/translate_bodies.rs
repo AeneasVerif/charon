@@ -61,20 +61,48 @@ impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
         i_ctx: &'ictx mut ItemTransCtx<'tcx, 'tctx>,
         body: &'ictx Rc<mir::Body<'tcx>>,
         drop_kind: DropKind,
-    ) -> Self {
+    ) -> Result<Self, Error> {
         i_ctx.lifetime_freshener = (!i_ctx.options.erase_body_lifetimes).then(IndexMap::new);
         let user_type_annotations = UserTypeAnnotations::new(i_ctx, body);
-        BodyTransCtx {
+
+        // Translate the local variables.
+        let mut locals = Locals {
+            arg_count: body.arg_count,
+            ..Default::default()
+        };
+        let mut locals_map = HashMap::default();
+        // Translate the parameters
+        for (index, var) in body.local_decls.iter_enumerated() {
+            // Find the name of the variable
+            let name = hax::name_of_local(index, &body.var_debug_info);
+
+            // Translate the type
+            let span = i_ctx.translate_span(&var.source_info.span);
+            let ty = i_ctx.translate_rustc_ty(span, &var.ty)?;
+
+            // Add the variable to the environment
+            let local_id = locals.locals.push_with(|index| Local {
+                index,
+                name,
+                span,
+                ty,
+                mutable: var.mutability.is_mut(),
+                drop_flag_for: None,
+            });
+            locals_map.insert(index.as_usize(), local_id);
+        }
+
+        Ok(BodyTransCtx {
             i_ctx,
             local_decls: &body.local_decls,
             user_type_annotations,
             drop_kind,
-            locals: Default::default(),
-            locals_map: Default::default(),
+            locals,
+            locals_map,
             blocks: Default::default(),
             blocks_map: Default::default(),
             blocks_stack: Default::default(),
-        }
+        })
     }
 }
 
@@ -275,7 +303,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Stopgap measure because there are still many panics in charon and hax.
         let res = panic::catch_unwind(move || {
             let body = Rc::new({ body }.0);
-            let ctx = BodyTransCtx::new(*ctx, &body, drop_kind);
+            let ctx = BodyTransCtx::new(*ctx, &body, drop_kind)?;
             ctx.translate_body(&body, source_text)
         });
         match res {
@@ -596,43 +624,6 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
         self.locals_map.get(&local.index()).copied()
     }
 
-    pub(crate) fn push_var(
-        &mut self,
-        rid: mir::Local,
-        ty: Ty,
-        name: Option<String>,
-        span: Span,
-        mutable: bool,
-    ) {
-        let local_id = self.locals.locals.push_with(|index| Local {
-            index,
-            name,
-            span,
-            ty,
-            mutable,
-            drop_flag_for: None,
-        });
-        self.locals_map.insert(rid.as_usize(), local_id);
-    }
-
-    /// Translate a function's local variables by adding them in the environment.
-    fn translate_body_locals(&mut self, body: &mir::Body<'tcx>) -> Result<(), Error> {
-        // Translate the parameters
-        for (index, var) in body.local_decls.iter_enumerated() {
-            // Find the name of the variable
-            let name: Option<String> = hax::name_of_local(index, &body.var_debug_info);
-
-            // Translate the type
-            let span = self.translate_span(&var.source_info.span);
-            let ty = self.translate_rustc_ty(span, &var.ty)?;
-
-            // Add the variable to the environment
-            self.push_var(index, ty, name, span, var.mutability.is_mut());
-        }
-
-        Ok(())
-    }
-
     /// Translate a basic block id and register it, if it hasn't been done.
     fn translate_basic_block_id(&mut self, block_id: mir::BasicBlock) -> BlockId {
         match self.blocks_map.get(&block_id) {
@@ -725,11 +716,6 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
     ) -> Result<Body, Error> {
         // Compute the span information
         let span = self.translate_span(&mir_body.span);
-
-        // Initialize the local variables
-        trace!("Translating the body locals");
-        self.locals.arg_count = mir_body.arg_count;
-        self.translate_body_locals(mir_body)?;
 
         // Translate the expression body
         trace!("Translating the expression body");
