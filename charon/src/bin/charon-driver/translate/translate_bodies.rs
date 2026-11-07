@@ -63,7 +63,7 @@ impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
         drop_kind: DropKind,
     ) -> Result<Self, Error> {
         i_ctx.lifetime_freshener = (!i_ctx.options.erase_body_lifetimes).then(IndexMap::new);
-        let mut user_type_annotations = UserTypeAnnotations::new(i_ctx, body)?;
+        let user_type_annotations = UserTypeAnnotations::new(i_ctx, body)?;
 
         // Translate the local variables.
         let mut locals = Locals {
@@ -78,7 +78,7 @@ impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
 
             // Translate the type
             let span = i_ctx.translate_span(&var.source_info.span);
-            let ty = user_type_annotations.translate_local_ty(
+            let (ty, borrowck_constraints) = user_type_annotations.translate_local_ty(
                 i_ctx,
                 span,
                 locals.locals.next_idx(),
@@ -92,6 +92,7 @@ impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
                 span,
                 ty,
                 mutable: var.mutability.is_mut(),
+                borrowck_constraints,
                 drop_flag_for: None,
             });
             locals_map.insert(index.as_usize(), local_id);
@@ -658,14 +659,6 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
             UnwindKind::Regular
         };
         let mut block_ctx = BlockTransCtx::new(self, block_id, kind);
-        if block_id == START_BLOCK_ID {
-            block_ctx.statements.extend(
-                block_ctx
-                    .b_ctx
-                    .user_type_annotations
-                    .take_body_start_constraints(),
-            );
-        }
         for statement in &block.statements {
             trace!("statement: {:?}", statement);
             block_ctx.translate_statement(source_scopes, statement)?;
@@ -754,6 +747,7 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
                 .lifetime_freshener
                 .take()
                 .map_or(0, |v| v.slot_count()),
+            body_outlives: self.user_type_annotations.body_outlives,
             body: self.blocks.make_contiguous(),
             comments,
         }))
@@ -1082,12 +1076,13 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         self.insert_assn_stmt(place.clone(), Rvalue::Use(operand, WithRetag::No));
                         self.statements.push(Statement::new(
                             span,
-                            StatementKind::Borrowck(BorrowckStatement::SetType {
-                                place: place.clone(),
-                                ty: annotated_ty,
-                                variance: Variance::Invariant,
-                                temporary: true,
-                            }),
+                            StatementKind::Borrowck(BorrowckStatement::SetType(
+                                PlaceTypeConstraint {
+                                    place: place.clone(),
+                                    ty: annotated_ty,
+                                    variance: Variance::Invariant,
+                                },
+                            )),
                         ));
                         Operand::Move(place)
                     }
@@ -1620,15 +1615,16 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 let ty = self
                     .user_type_annotations
                     .translate_projected_annotation(user_ty);
-                self.statements.push(Statement::new(
-                    span,
-                    StatementKind::Borrowck(BorrowckStatement::SetType {
+                // This is a statement for practical impl reasons, but semantically this constrains
+                // the local throughout the body.
+                let local_id = place.local_id().expect("MIR ascription without a local");
+                self.locals[local_id]
+                    .borrowck_constraints
+                    .push(PlaceTypeConstraint {
                         place,
                         ty,
                         variance,
-                        temporary: false,
-                    }),
-                ));
+                    });
                 None
             }
             // Used for coverage instrumentation.

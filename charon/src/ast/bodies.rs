@@ -119,6 +119,9 @@ pub struct Local {
     /// Whether this local was declared `mut`. Anonymous locals are always mutable.
     #[cfg_attr(feature = "charon_on_charon", charon::rename("is_mutable"))]
     pub mutable: bool,
+    /// List of constraints that apply to this local throughout the function body. For example,
+    /// `let x: Self = ...;` produces a `x == Self` constraint.
+    pub borrowck_constraints: Vec<PlaceTypeConstraint>,
     /// If this local is a drop flag, this is the place whose initialization state it tracks.
     pub drop_flag_for: Option<Place>,
 }
@@ -134,6 +137,8 @@ pub struct GExprBody<T> {
     /// The number of regions existentially bound in this body. We introduce fresh such regions
     /// during translation instead of the erased regions that rustc gives us.
     pub bound_body_regions: usize,
+    /// Outlives relationships between body regions that hold throughout the body.
+    pub body_outlives: Vec<OutlivesPred>,
     /// The local variables.
     pub locals: Locals,
     /// The statements and blocks that compose this body.
@@ -212,24 +217,26 @@ pub enum CallSafety {
     Unsafe,
 }
 
+/// Borrow-checking constraint that enforces a relation between the type of the given place and the
+/// provided type.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+pub struct PlaceTypeConstraint {
+    pub place: Place,
+    pub ty: Ty,
+    #[serde_state(stateless)]
+    pub variance: Variance,
+}
+
 /// Statements that only affect borrow-checking. They are no-ops at runtime.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum BorrowckStatement {
     /// Acts like a read of the place.
     FakeRead(Place),
-    /// Relate the type of a place to the provided type. For example, `let x: Self = value`
-    /// produces `SetType(x == Self)`.
-    SetType {
-        place: Place,
-        /// This type may contain body regions shared with subsequent `SetOutlives` statements.
-        ty: Ty,
-        #[serde_state(stateless)]
-        variance: Variance,
-        /// Whether this type relation holds for the whole rest of the function, or just at this
-        /// point.
-        temporary: bool,
-    },
+    /// Apply a constraint to this place at this point in the function. For example, `x =
+    /// Option::<&'static u32>::None;` emits a `tmp := Option::<&'static u32>` constraint.
+    SetType(PlaceTypeConstraint),
     /// Require an outlives predicate to hold.
     SetOutlives(OutlivesPred),
 }
@@ -362,6 +369,7 @@ impl Locals {
             span: Span::dummy(),
             ty: ty.clone(),
             mutable: true,
+            borrowck_constraints: Vec::new(),
             drop_flag_for: None,
         });
         Place::new(local_id, ty)

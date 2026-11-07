@@ -223,6 +223,7 @@ fn call_unsafe_fn()
 {
     let mut _0: (); // return
     let x: *const u32; // local
+        where x := *const u32;
     let mut _2: u32; // anonymous local
     let mut _3: *const u32; // anonymous local
 
@@ -232,7 +233,6 @@ fn call_unsafe_fn()
     x = null<u32>[{impl#7}<u32>[{built_in impl Pointee for u32 where Metadata  = ()}]]()
     ↳⚡ unwind_continue
     fake_read(x)
-    set x := *const u32
     storage_live(_2)
     storage_live(_3)
     _3 = copy x
@@ -250,6 +250,7 @@ fn deref_raw_ptr()
 {
     let mut _0: (); // return
     let x: *const u32; // local
+        where x := *const u32;
     let mut _2: u32; // anonymous local
 
     storage_live(_0)
@@ -258,7 +259,6 @@ fn deref_raw_ptr()
     x = null<u32>[{impl#7}<u32>[{built_in impl Pointee for u32 where Metadata  = ()}]]()
     ↳⚡ unwind_continue
     fake_read(x)
-    set x := *const u32
     storage_live(_2)
     _2 = copy (*x)
     storage_dead(_2)

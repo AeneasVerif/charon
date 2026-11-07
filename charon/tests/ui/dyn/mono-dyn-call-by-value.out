@@ -175,6 +175,7 @@ fn main()
 {
     let mut _0: (); // return
     let b: Box::<(dyn T), Global>; // local
+        where b := Box::<(dyn T), Global>;
     let mut _2: Box::<(), Global>; // anonymous local
     let mut _3: (); // anonymous local
     let _4: (); // anonymous local
@@ -182,6 +183,7 @@ fn main()
     let _6: (); // anonymous local
     let mut _7: Box::<(dyn T), Global>; // anonymous local
     let f: Box::<Foo::<(dyn T)>, Global>; // local
+        where f := Box::<Foo::<(dyn T)>, Global>;
     let mut _9: Box::<Foo::<()>, Global>; // anonymous local
     let mut _10: Foo::<()>; // anonymous local
     let mut _11: (); // anonymous local
@@ -210,7 +212,6 @@ fn main()
     storage_dead(_3)
     storage_dead(_2)
     fake_read(b)
-    set b := Box::<(dyn T), Global>
     storage_live(_4)
     storage_live(_5)
     _5 = &(*b) with_metadata(read b.metadata)
@@ -260,7 +261,6 @@ fn main()
     storage_dead(_10)
     storage_dead(_9)
     fake_read(f)
-    set f := Box::<Foo::<(dyn T)>, Global>
     storage_live(_12)
     storage_live(_13)
     _13 = &(*f)._0 with_metadata(read f.metadata)

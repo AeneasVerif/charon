@@ -301,13 +301,14 @@ where
 // Full name: test_crate::call_fn
 fn call_fn()
 {
+    where
+        '35: '35,
     let mut _0: (); // return
     let mut _1: Option<&'44 bool>[{built_in impl Sized for &'44 bool}]; // anonymous local
     let mut _2: Option<&'48 bool>[{built_in impl Sized for &'48 bool}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
-    set '35 :> '35
     storage_live(_1)
     storage_live(_2)
     _2 = Option::None {  }

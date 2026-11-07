@@ -140,8 +140,11 @@ where
 // Full name: test_crate::main
 fn main()
 {
+    where
+        '1: '0, '3: '2,
     let mut _0: (); // return
     let _m: &'0 (dyn Broken<Assoc = ()> + '1); // local
+        where _m := &'2 (dyn Broken<Assoc = ()> + '3);
     let mut _2: &'5 (); // anonymous local
     let _3: &'6 (); // anonymous local
     let mut _4: &'7 (); // anonymous local
@@ -158,8 +161,6 @@ fn main()
     storage_live(_0)
     storage_live(_4)
     _0 = ()
-    set '1 :> '0
-    set '3 :> '2
     storage_live(_m)
     storage_live(_2)
     storage_live(_3)
@@ -169,7 +170,6 @@ fn main()
     _m = unsize_cast<&'12 (dyn Broken<Assoc = ()> + '13), &impl_Broken_for_T::{vtable}<()>[{built_in impl Sized for ()}]>(move _2)
     storage_dead(_2)
     fake_read(_m)
-    set _m := &'2 (dyn Broken<Assoc = ()> + '3)
     storage_dead(_3)
     _0 = ()
     storage_dead(_m)

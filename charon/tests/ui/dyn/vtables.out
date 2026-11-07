@@ -477,9 +477,12 @@ where
     TraitClause1: (T: Clone),
     Outlives0: (T: '_0),
 {
+    where
+        T: '0, T: '2, '1: '0, '3: '2,
     let mut _0: T; // return
     let arg: &'5 T; // arg #1
     let x: &'0 mut (dyn Modifiable<T> + '1); // local
+        where x := &'2 mut (dyn Modifiable<T> + '3);
     let mut _3: &'7 mut i32; // anonymous local
     let mut _4: &'8 mut i32; // anonymous local
     let mut _5: i32; // anonymous local
@@ -487,10 +490,6 @@ where
     let mut _7: &'14 T; // anonymous local
 
     storage_live(_0)
-    set 'lub<T> :> '0
-    set '1 :> '0
-    set 'lub<T> :> '2
-    set '3 :> '2
     storage_live(x)
     storage_live(_3)
     storage_live(_4)
@@ -501,7 +500,6 @@ where
     x = unsize_cast<&'15 mut (dyn Modifiable<T> + '16), &impl_Modifiable_for_i32::{vtable}<T>[TraitClause0, TraitClause1]>(move _3)
     storage_dead(_3)
     fake_read(x)
-    set x := &'2 mut (dyn Modifiable<T> + '3)
     storage_dead(_4)
     storage_live(_6)
     _6 = &two-phase-mut (*x) with_metadata(read x.metadata)
@@ -1083,13 +1081,18 @@ pub const test_crate::main::{promoted_const#18}: str = "Hello" with_metadata(5us
 // Full name: test_crate::main
 fn main()
 {
+    where
+        '1: '0, '3: '2, '5: '4, '7: '6, '9: '8,
+        '11: '10, '13: '12, '15: '14, '17: '16, '19: '18,
     let mut _0: (); // return
     let x: &'0 (dyn Checkable<i32> + '1); // local
+        where x := &'2 (dyn Checkable<i32> + '3);
     let mut _2: &'21 i32; // anonymous local
     let _3: &'22 i32; // anonymous local
     let mut _4: bool; // anonymous local
     let mut _5: &'26 (dyn Checkable<i32> + '27); // anonymous local
     let y: &'4 mut (dyn Modifiable<i32> + '5); // local
+        where y := &'6 mut (dyn Modifiable<i32> + '7);
     let mut _7: &'29 mut i32; // anonymous local
     let mut _8: &'30 mut i32; // anonymous local
     let mut _9: i32; // anonymous local
@@ -1122,6 +1125,7 @@ fn main()
     let _36: &'65 i32; // anonymous local
     let mut _37: Option<Arguments<'74>>[{built_in impl Sized for Arguments<'74>}]; // anonymous local
     let z: &'8 (dyn NoParam + '9); // local
+        where z := &'10 (dyn NoParam + '11);
     let mut _39: &'81 (dyn NoParam + '82); // anonymous local
     let _40: &'83 (dyn NoParam + '84); // anonymous local
     let mut _41: &'85 i32; // anonymous local
@@ -1129,6 +1133,7 @@ fn main()
     let _43: (); // anonymous local
     let mut _44: &'87 (dyn NoParam + '88); // anonymous local
     let a: &'12 (dyn Both32And64 + '13); // local
+        where a := &'14 (dyn Both32And64 + '15);
     let mut _46: &'89 i32; // anonymous local
     let _47: &'90 i32; // anonymous local
     let _48: (); // anonymous local
@@ -1138,6 +1143,7 @@ fn main()
     let mut _52: &'99 i64; // anonymous local
     let _53: &'100 i64; // anonymous local
     let b: &'16 (dyn LifetimeTrait<Ty = i32> + '17); // local
+        where b := &'18 (dyn LifetimeTrait<Ty = i32> + '19);
     let mut _55: &'101 i32; // anonymous local
     let _56: &'102 i32; // anonymous local
     let mut _57: (&'103 i32, &'104 i32); // anonymous local
@@ -1214,16 +1220,6 @@ fn main()
     storage_live(_84)
     storage_live(_85)
     _0 = ()
-    set '1 :> '0
-    set '3 :> '2
-    set '5 :> '4
-    set '7 :> '6
-    set '9 :> '8
-    set '11 :> '10
-    set '13 :> '12
-    set '15 :> '14
-    set '17 :> '16
-    set '19 :> '18
     storage_live(x)
     storage_live(_2)
     storage_live(_3)
@@ -1233,7 +1229,6 @@ fn main()
     x = unsize_cast<&'140 (dyn Checkable<i32> + '141), &impl_Checkable_i32_for_i32::{vtable}>(move _2)
     storage_dead(_2)
     fake_read(x)
-    set x := &'2 (dyn Checkable<i32> + '3)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
@@ -1277,7 +1272,6 @@ fn main()
     y = unsize_cast<&'150 mut (dyn Modifiable<i32> + '151), &impl_Modifiable_for_i32::{vtable}<i32>[{built_in impl Sized for i32}, impl_Clone_for_i32]>(move _7)
     storage_dead(_7)
     fake_read(y)
-    set y := &'6 mut (dyn Modifiable<i32> + '7)
     storage_dead(_8)
     storage_live(_10)
     storage_live(_11)
@@ -1821,7 +1815,6 @@ fn main()
         storage_dead(_41)
         storage_dead(_39)
         fake_read(z)
-        set z := &'10 (dyn NoParam + '11)
         storage_dead(_42)
         storage_dead(_40)
         storage_live(_43)
@@ -1881,7 +1874,6 @@ fn main()
         a = unsize_cast<&'233 (dyn Both32And64 + '234), &impl_Both32And64_for_i32::{vtable}>(move _46)
         storage_dead(_46)
         fake_read(a)
-        set a := &'14 (dyn Both32And64 + '15)
         storage_dead(_47)
         storage_live(_48)
         storage_live(_49)
@@ -1948,7 +1940,6 @@ fn main()
         b = unsize_cast<&'250 (dyn LifetimeTrait<Ty = i32> + '251), &impl_LifetimeTrait_for_i32::{vtable}>(move _55)
         storage_dead(_55)
         fake_read(b)
-        set b := &'18 (dyn LifetimeTrait<Ty = i32> + '19)
         storage_dead(_56)
         storage_live(_57)
         storage_live(_58)

@@ -359,22 +359,9 @@ and borrowck_statement_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("FakeRead", _0) ] ->
         let* _0 = place_of_json ctx _0 in
         Ok (FakeRead _0)
-    | `Assoc
-        [
-          ( "SetType",
-            `Assoc
-              [
-                ("place", place);
-                ("ty", ty);
-                ("variance", variance);
-                ("temporary", temporary);
-              ] );
-        ] ->
-        let* place = place_of_json ctx place in
-        let* ty = ty_of_json ctx ty in
-        let* variance = variance_of_json ctx variance in
-        let* temporary = bool_of_json ctx temporary in
-        Ok (SetType (place, ty, variance, temporary))
+    | `Assoc [ ("SetType", _0) ] ->
+        let* _0 = place_type_constraint_of_json ctx _0 in
+        Ok (SetType _0)
     | `Assoc [ ("SetOutlives", _0) ] ->
         let* _0 = outlives_pred_of_json ctx _0 in
         Ok (SetOutlives _0)
@@ -1237,6 +1224,17 @@ and place_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Global", _0) ] ->
         let* _0 = global_decl_ref_of_json ctx _0 in
         Ok (PlaceGlobal _0)
+    | _ -> Error "")
+
+and place_type_constraint_of_json (ctx : of_json_ctx) (js : json) :
+    (place_type_constraint, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("place", place); ("ty", ty); ("variance", variance) ] ->
+        let* place = place_of_json ctx place in
+        let* ty = ty_of_json ctx ty in
+        let* variance = variance_of_json ctx variance in
+        Ok ({ place; ty; variance } : place_type_constraint)
     | _ -> Error "")
 
 and poly_trait_ref_of_json (ctx : of_json_ctx) (js : json) :
@@ -3166,15 +3164,21 @@ and gexpr_body_of_json :
         [
           ("span", span);
           ("bound_body_regions", bound_body_regions);
+          ("body_outlives", body_outlives);
           ("locals", locals);
           ("body", body);
           ("comments", _);
         ] ->
         let* span = span_of_json ctx span in
         let* bound_body_regions = int_of_json ctx bound_body_regions in
+        let* body_outlives =
+          list_of_json outlives_pred_of_json ctx body_outlives
+        in
         let* locals = locals_of_json ctx locals in
         let* body = arg0_of_json ctx body in
-        Ok ({ span; bound_body_regions; locals; body } : _ gexpr_body)
+        Ok
+          ({ span; bound_body_regions; body_outlives; locals; body }
+            : _ gexpr_body)
     | _ -> Error "")
 
 and global_decl_of_json (ctx : of_json_ctx) (js : json) :
@@ -3771,6 +3775,7 @@ and local_of_json (ctx : of_json_ctx) (js : json) : (local, string) result =
           ("span", span);
           ("ty", ty);
           ("mutable", mutable_);
+          ("borrowck_constraints", borrowck_constraints);
           ("drop_flag_for", drop_flag_for);
         ] ->
         let* index = local_id_of_json ctx index in
@@ -3778,8 +3783,21 @@ and local_of_json (ctx : of_json_ctx) (js : json) : (local, string) result =
         let* span = span_of_json ctx span in
         let* local_ty = ty_of_json ctx ty in
         let* is_mutable = bool_of_json ctx mutable_ in
+        let* borrowck_constraints =
+          list_of_json place_type_constraint_of_json ctx borrowck_constraints
+        in
         let* drop_flag_for = option_of_json place_of_json ctx drop_flag_for in
-        Ok ({ index; name; span; local_ty; is_mutable; drop_flag_for } : local)
+        Ok
+          ({
+             index;
+             name;
+             span;
+             local_ty;
+             is_mutable;
+             borrowck_constraints;
+             drop_flag_for;
+           }
+            : local)
     | _ -> Error "")
 
 and locals_of_json (ctx : of_json_ctx) (js : json) : (locals, string) result =

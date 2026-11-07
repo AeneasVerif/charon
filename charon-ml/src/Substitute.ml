@@ -439,22 +439,17 @@ let call_substitute (subst : subst) (call : call) : call =
 let block_substitute (subst : subst) (blk : block) : block =
   st_substitute_visitor#visit_block subst blk
 
-(** Apply a type substitution to a function body. Return the local variables and
-    the body. *)
-let expr_body_substitute (subst : subst) (body : expr_body) : local list * block
-    =
-  let locals =
-    List.map
-      (fun (v : local) ->
-        {
-          v with
-          local_ty = ty_substitute subst v.local_ty;
-          drop_flag_for = Option.map (place_substitute subst) v.drop_flag_for;
-        })
-      body.locals.locals
-  in
-  let body = block_substitute subst body.body in
-  (locals, body)
+(** Apply a type substitution to a function body. *)
+let expr_body_substitute (subst : subst) (body : expr_body) : expr_body =
+  {
+    body with
+    locals = st_substitute_visitor#visit_locals subst body.locals;
+    body_outlives =
+      List.map
+        (st_substitute_visitor#visit_outlives_pred subst)
+        body.body_outlives;
+    body = block_substitute subst body.body;
+  }
 
 let trait_type_constraint_substitute (subst : subst)
     (ttc : trait_type_constraint) : trait_type_constraint =

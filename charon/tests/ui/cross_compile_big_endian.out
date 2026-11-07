@@ -52,12 +52,15 @@ fn main()
 {
     let mut _0: (); // return
     let x: usize; // local
+        where x := usize;
     let y: usize; // local
+        where y := usize;
     let z: usize; // local
     let mut _4: usize; // anonymous local
     let mut _5: usize; // anonymous local
     let mut _6: usize; // anonymous local
     let a: u128; // local
+        where a := u128;
     let b: HasBEDiscr; // local
 
     storage_live(_0)
@@ -66,11 +69,9 @@ fn main()
     storage_live(x)
     x = const 52usize
     fake_read(x)
-    set x := usize
     storage_live(y)
     y = read MAX
     fake_read(y)
-    set y := usize
     storage_live(z)
     storage_live(_4)
     _4 = copy y
@@ -84,7 +85,6 @@ fn main()
     storage_live(a)
     a = const 102u128 panic.<< const 64i32
     fake_read(a)
-    set a := u128
     storage_live(b)
     b = HasBEDiscr::Second {  }
     fake_read(b)

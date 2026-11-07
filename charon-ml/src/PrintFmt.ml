@@ -1776,21 +1776,27 @@ let pp_assertion (env : fmt_env) (fmt : Format.formatter) (a : assertion) : unit
     (Bool.to_string a.expected)
     check_kind
 
+let pp_place_type_constraint (env : fmt_env) (fmt : Format.formatter)
+    (constraint_ : place_type_constraint) : unit =
+  let { place; ty; variance } = constraint_ in
+  let relation =
+    match variance with
+    | Covariant -> ":<"
+    | Invariant -> ":="
+    | Contravariant -> ":>"
+    | Bivariant | VaUnknown -> assert false
+  in
+  Format.fprintf fmt "%a %s %s" (pp_place env) place relation
+    (ty_to_string env ty)
+
 let pp_borrowck_statement (env : fmt_env) (fmt : Format.formatter)
     (statement : borrowck_statement) : unit =
   match statement with
   | FakeRead place -> Format.fprintf fmt "fake_read(%a)" (pp_place env) place
-  | SetType (place, ty, variance, temporary) ->
-      let relation =
-        match variance with
-        | Covariant -> ":<"
-        | Invariant -> ":="
-        | Contravariant -> ":>"
-        | Bivariant | VaUnknown -> assert false
-      in
-      let name = if temporary then "set_here" else "set" in
-      Format.fprintf fmt "%s %a %s %s" name (pp_place env) place relation
-        (ty_to_string env ty)
+  | SetType constraint_ ->
+      Format.fprintf fmt "set_here %a"
+        (pp_place_type_constraint env)
+        constraint_
   | SetOutlives (lhs, rhs) ->
       Format.fprintf fmt "set %s :> %s" (region_to_string env lhs)
         (region_to_string env rhs)
@@ -1884,6 +1890,18 @@ let pp_fun_sig (env : fmt_env) (indent : string) (indent_incr : string)
     Format.fprintf fmt " -> %s" (ty_to_string env sg.output);
   pp_string fmt clauses
 
+let pp_body_outlives (env : fmt_env) (indent : string) (indent_incr : string)
+    (fmt : Format.formatter) (outlives : outlives_pred list) : unit =
+  if outlives <> [] then (
+    Format.fprintf fmt "%swhere" indent;
+    List.iteri
+      (fun i pred ->
+        if i mod 5 = 0 then Format.fprintf fmt "\n%s%s" indent indent_incr
+        else pp_string fmt " ";
+        Format.fprintf fmt "%s," (outlives_to_string_with ty_to_string env pred))
+      outlives;
+    pp_string fmt "\n")
+
 let pp_locals (env : fmt_env) (indent : string) (fmt : Format.formatter)
     (locals : locals) : unit =
   let env = fmt_env_set_locals env locals in
@@ -1906,7 +1924,13 @@ let pp_locals (env : fmt_env) (indent : string) (fmt : Format.formatter)
       (if var.is_mutable then "mut " else "")
       (local_id_to_string env var.index)
       (ty_to_string env var.local_ty)
-      kind drop_flag_for
+      kind drop_flag_for;
+    List.iter
+      (fun constraint_ ->
+        Format.fprintf fmt "\n%s    where %a;" indent
+          (pp_place_type_constraint env)
+          constraint_)
+      var.borrowck_constraints
   in
   pp_sep_list "\n" pp_local_decl fmt locals.locals
 
@@ -2611,18 +2635,22 @@ let pp_fun_decl (env : fmt_env) (indent : string) (indent_incr : string)
     Format.fprintf fmt " -> %s" (ty_to_string env def.signature.output);
   pp_string fmt clauses;
   match def.body with
-  | StructuredBody { locals; body; _ } ->
+  | StructuredBody { locals; body; body_outlives; _ } ->
       let env = fmt_env_set_locals env locals in
       let body_indent = indent ^ indent_incr in
-      Format.fprintf fmt "\n%s{\n%a\n\n%a%s}" indent
+      Format.fprintf fmt "\n%s{\n" indent;
+      pp_body_outlives env body_indent indent_incr fmt body_outlives;
+      Format.fprintf fmt "%a\n\n%a%s}"
         (pp_locals env body_indent)
         locals
         (pp_llbc_block env body_indent indent_incr)
         body indent
-  | UnstructuredBody { locals; body; _ } ->
+  | UnstructuredBody { locals; body; body_outlives; _ } ->
       let env = fmt_env_set_locals env locals in
       let body_indent = indent ^ indent_incr in
-      Format.fprintf fmt "\n%s{\n%a\n\n%a\n%s}" indent
+      Format.fprintf fmt "\n%s{\n" indent;
+      pp_body_outlives env body_indent indent_incr fmt body_outlives;
+      Format.fprintf fmt "%a\n\n%a\n%s}"
         (pp_locals env body_indent)
         locals
         (pp_ullbc_blocks env body_indent indent_incr)

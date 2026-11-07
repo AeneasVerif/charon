@@ -327,6 +327,7 @@ fn foo()
     let mut _1: bool; // anonymous local
     let mut _2: &'3 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let slice: &'0 [bool]; // local
+        where slice := &'1 [bool];
     let mut _4: &'5 [bool; 1usize]; // anonymous local
     let _5: &'6 [bool; 1usize]; // anonymous local
     let mut _6: &'8 [bool]; // anonymous local
@@ -358,7 +359,6 @@ fn foo()
     ↳⚡ undefined_behavior
     storage_dead(_4)
     fake_read(slice)
-    set slice := &'1 [bool]
     storage_dead(_5)
     storage_live(_6)
     storage_live(_7)

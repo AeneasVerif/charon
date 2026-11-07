@@ -1378,6 +1378,7 @@ pub fn const_slice()
 {
     let mut _0: (); // return
     let mut _1: &'3 [u32]; // anonymous local
+        where _1 :< &'1 [u32];
     let mut _2: &'5 [u32; 2usize]; // anonymous local
     let _3: &'6 [u32; 2usize]; // anonymous local
     let mut _4: &'7 [u32; 2usize]; // anonymous local
@@ -1404,7 +1405,6 @@ pub fn const_slice()
     _1 = as_slice<'_, u32, 2usize>[{built_in impl Sized for u32}](move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
-    set _1 :< &'1 [u32]
     storage_dead(_3)
     storage_dead(_1)
     _0 = ()
@@ -1420,6 +1420,7 @@ pub fn take_all()
 {
     let mut _0: (); // return
     let mut x: [u32; 2usize]; // local
+        where x := [u32; 2usize];
     let _2: (); // anonymous local
     let mut _3: [u32; 2usize]; // anonymous local
     let _4: (); // anonymous local
@@ -1442,7 +1443,6 @@ pub fn take_all()
     x = repeat<u32, 2usize>[{built_in impl Sized for u32}, impl_Clone_for_u32](const 0u32)
     ↳⚡ undefined_behavior
     fake_read(x)
-    set x := [u32; 2usize]
     storage_live(_2)
     storage_live(_3)
     // x is deep copied (copy node appears in Charon, followed by a move)
@@ -1612,9 +1612,12 @@ pub fn index_all() -> u32
 {
     let mut _0: u32; // return
     let mut x: [u32; 2usize]; // local
+        where x := [u32; 2usize];
     let mut _2: bool; // anonymous local
     let _y: [u32; 2usize]; // local
+        where _y := [u32; 2usize];
     let _z: [u32; 1usize]; // local
+        where _z := [u32; 1usize];
     let mut _5: u32; // anonymous local
     let mut _6: u32; // anonymous local
     let mut _7: u32; // anonymous local
@@ -1647,7 +1650,6 @@ pub fn index_all() -> u32
     x = repeat<u32, 2usize>[{built_in impl Sized for u32}, impl_Clone_for_u32](const 0u32)
     ↳⚡ undefined_behavior
     fake_read(x)
-    set x := [u32; 2usize]
     storage_live(_2)
     _2 = const true
     if move _2 {
@@ -1655,13 +1657,11 @@ pub fn index_all() -> u32
         _y = repeat<u32, 2usize>[{built_in impl Sized for u32}, impl_Clone_for_u32](const 0u32)
         ↳⚡ undefined_behavior
         fake_read(_y)
-        set _y := [u32; 2usize]
         storage_dead(_y)
     } else {
         storage_live(_z)
         _z = [const 0u32]
         fake_read(_z)
-        set _z := [u32; 1usize]
         storage_dead(_z)
     }
     storage_dead(_2)
@@ -1847,6 +1847,7 @@ pub fn update_all()
 {
     let mut _0: (); // return
     let mut x: [u32; 2usize]; // local
+        where x := [u32; 2usize];
     let _2: (); // anonymous local
     let mut _3: [u32; 2usize]; // anonymous local
     let _4: (); // anonymous local
@@ -1865,7 +1866,6 @@ pub fn update_all()
     x = repeat<u32, 2usize>[{built_in impl Sized for u32}, impl_Clone_for_u32](const 0u32)
     ↳⚡ undefined_behavior
     fake_read(x)
-    set x := [u32; 2usize]
     storage_live(_2)
     storage_live(_3)
     _3 = copy x
@@ -1914,6 +1914,7 @@ pub fn range_all()
 {
     let mut _0: (); // return
     let mut x: [u32; 4usize]; // local
+        where x := [u32; 4usize];
     let _2: (); // anonymous local
     let mut _3: &'1 mut [u32]; // anonymous local
     let mut _4: &'2 mut [u32]; // anonymous local
@@ -1927,7 +1928,6 @@ pub fn range_all()
     x = repeat<u32, 4usize>[{built_in impl Sized for u32}, impl_Clone_for_u32](const 0u32)
     ↳⚡ undefined_behavior
     fake_read(x)
-    set x := [u32; 4usize]
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -1960,6 +1960,7 @@ pub fn deref_array_borrow<'_0>(x_1: &'_0 [u32; 2usize]) -> u32
     let mut _0: u32; // return
     let x_1: &'1 [u32; 2usize]; // arg #1
     let x_2: [u32; 2usize]; // local
+        where x_2 := [u32; 2usize];
     let _3: usize; // anonymous local
     let mut _4: &'_ [u32; 2usize]; // anonymous local
     let mut _5: &'_ u32; // anonymous local
@@ -1968,7 +1969,6 @@ pub fn deref_array_borrow<'_0>(x_1: &'_0 [u32; 2usize]) -> u32
     storage_live(x_2)
     x_2 = copy (*x_1)
     fake_read(x_2)
-    set x_2 := [u32; 2usize]
     storage_live(_3)
     _3 = const 0usize
     fake_read(x_2)
@@ -1992,6 +1992,7 @@ pub fn deref_array_mut_borrow<'_0>(x_1: &'_0 mut [u32; 2usize]) -> u32
     let mut _0: u32; // return
     let x_1: &'1 mut [u32; 2usize]; // arg #1
     let x_2: [u32; 2usize]; // local
+        where x_2 := [u32; 2usize];
     let _3: usize; // anonymous local
     let mut _4: &'_ [u32; 2usize]; // anonymous local
     let mut _5: &'_ u32; // anonymous local
@@ -2000,7 +2001,6 @@ pub fn deref_array_mut_borrow<'_0>(x_1: &'_0 mut [u32; 2usize]) -> u32
     storage_live(x_2)
     x_2 = copy (*x_1)
     fake_read(x_2)
-    set x_2 := [u32; 2usize]
     storage_live(_3)
     _3 = const 0usize
     fake_read(x_2)
@@ -2036,6 +2036,7 @@ pub fn non_copyable_array()
 {
     let mut _0: (); // return
     let x: [AB; 2usize]; // local
+        where x := [AB; 2usize];
     let mut _2: AB; // anonymous local
     let mut _3: AB; // anonymous local
     let _4: (); // anonymous local
@@ -2052,7 +2053,6 @@ pub fn non_copyable_array()
     storage_dead(_3)
     storage_dead(_2)
     fake_read(x)
-    set x := [AB; 2usize]
     storage_live(_4)
     storage_live(_5)
     // x is moved (not deep copied!)
@@ -2295,6 +2295,7 @@ pub fn f0()
 {
     let mut _0: (); // return
     let s: &'0 mut [u32]; // local
+        where s := &'1 mut [u32];
     let mut _2: &'3 mut [u32; 2usize]; // anonymous local
     let mut _3: &'4 mut [u32; 2usize]; // anonymous local
     let mut _4: [u32; 2usize]; // anonymous local
@@ -2315,7 +2316,6 @@ pub fn f0()
     ↳⚡ undefined_behavior
     storage_dead(_2)
     fake_read(s)
-    set s := &'1 mut [u32]
     storage_dead(_3)
     storage_live(_5)
     _5 = const 0usize
@@ -2339,6 +2339,7 @@ pub fn f1()
 {
     let mut _0: (); // return
     let mut s: [u32; 2usize]; // local
+        where s := [u32; 2usize];
     let _2: usize; // anonymous local
     let mut _3: &'_ mut [u32; 2usize]; // anonymous local
     let mut _4: &'_ mut u32; // anonymous local
@@ -2348,7 +2349,6 @@ pub fn f1()
     storage_live(s)
     s = [const 1u32, const 2u32]
     fake_read(s)
-    set s := [u32; 2usize]
     storage_live(_2)
     _2 = const 0usize
     fake_read(s)
@@ -2428,6 +2428,7 @@ pub fn f3() -> u32
 {
     let mut _0: u32; // return
     let a: [u32; 2usize]; // local
+        where a := [u32; 2usize];
     let _2: (); // anonymous local
     let mut _3: u32; // anonymous local
     let _4: usize; // anonymous local
@@ -2446,7 +2447,6 @@ pub fn f3() -> u32
     storage_live(a)
     a = [const 1u32, const 2u32]
     fake_read(a)
-    set a := [u32; 2usize]
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -2543,8 +2543,10 @@ pub fn ite()
 {
     let mut _0: (); // return
     let mut x: [u32; 2usize]; // local
+        where x := [u32; 2usize];
     let mut _2: bool; // anonymous local
     let mut y: [u32; 2usize]; // local
+        where y := [u32; 2usize];
     let _4: u32; // anonymous local
     let mut _5: &'1 mut [u32]; // anonymous local
     let mut _6: &'3 mut [u32; 2usize]; // anonymous local
@@ -2560,7 +2562,6 @@ pub fn ite()
     x = repeat<u32, 2usize>[{built_in impl Sized for u32}, impl_Clone_for_u32](const 0u32)
     ↳⚡ undefined_behavior
     fake_read(x)
-    set x := [u32; 2usize]
     storage_live(_2)
     _2 = const true
     if move _2 {
@@ -2574,7 +2575,6 @@ pub fn ite()
     y = repeat<u32, 2usize>[{built_in impl Sized for u32}, impl_Clone_for_u32](const 0u32)
     ↳⚡ undefined_behavior
     fake_read(y)
-    set y := [u32; 2usize]
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
@@ -2616,6 +2616,7 @@ pub fn zero_slice<'_0>(a: &'_0 mut [u8])
     let mut _0: (); // return
     let a: &'1 mut [u8]; // arg #1
     let mut i: usize; // local
+        where i := usize;
     let len: usize; // local
     let mut _4: &'3 [u8]; // anonymous local
     let mut _5: bool; // anonymous local
@@ -2632,7 +2633,6 @@ pub fn zero_slice<'_0>(a: &'_0 mut [u8])
     storage_live(i)
     i = const 0usize
     fake_read(i)
-    set i := usize
     storage_live(len)
     storage_live(_4)
     _4 = &(*a) with_metadata(read a.metadata)

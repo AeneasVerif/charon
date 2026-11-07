@@ -102,9 +102,12 @@ impl "impl_Foo_for_Bar" Foo for Bar {
 // Full name: test_crate::main
 fn main()
 {
+    where
+        '1: '0, '3: '2,
     let mut _0: (); // return
     let bar: Bar; // local
     let some_foo: &'0 (dyn Foo + '1); // local
+        where some_foo := &'2 (dyn Foo + '3);
     let mut _3: &'5 Bar; // anonymous local
     let _4: &'6 Bar; // anonymous local
     let _5: (); // anonymous local
@@ -114,8 +117,6 @@ fn main()
     bb0: {
         storage_live(_0);
         _0 = ();
-        set '1 :> '0;
-        set '3 :> '2;
         storage_live(bar);
         bar = Bar {  };
         fake_read(bar);
@@ -127,7 +128,6 @@ fn main()
         some_foo = unsize_cast<&'12 (dyn Foo + '13), &impl_Foo_for_Bar::{vtable}>(move _3);
         storage_dead(_3);
         fake_read(some_foo);
-        set some_foo := &'2 (dyn Foo + '3);
         storage_dead(_4);
         storage_live(_5);
         storage_live(_6);

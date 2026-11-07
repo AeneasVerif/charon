@@ -82,9 +82,12 @@ fn addr_of()
     let mut _0: (); // return
     let mut x: u32; // local
     let mut _2: *const u32; // anonymous local
+        where _2 :< *const u32;
     let _3: &'1 u32; // anonymous local
     let mut _4: *const u32; // anonymous local
+        where _4 :< *const u32;
     let mut _5: *mut u32; // anonymous local
+        where _5 :< *mut u32;
 
     storage_live(_0)
     _0 = ()
@@ -95,16 +98,13 @@ fn addr_of()
     storage_live(_3)
     _3 = &x
     _2 = &raw const (*_3)
-    set _2 :< *const u32
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
     _4 = &raw const x
-    set _4 :< *const u32
     storage_dead(_4)
     storage_live(_5)
     _5 = &raw mut x
-    set _5 :< *mut u32
     storage_dead(_5)
     _0 = ()
     storage_dead(x)
@@ -157,11 +157,13 @@ fn ptr_casts()
 {
     let mut _0: (); // return
     let array_ptr: *const [u32; 64usize]; // local
+        where array_ptr := *const [u32; 64usize];
     let _2: &'1 [u32; 64usize]; // anonymous local
     let mut _3: *const u32; // anonymous local
     let mut _4: *const [u32; 64usize]; // anonymous local
     let x_5: u8; // local
     let x_6: *const u8; // local
+        where x_6 := *const u8;
     let _7: &'3 u8; // anonymous local
     let mut _8: *const u8; // anonymous local
     let mut _9: *const u8; // anonymous local
@@ -199,7 +201,6 @@ fn ptr_casts()
     _2 = &(*_23)
     array_ptr = &raw const (*_2)
     fake_read(array_ptr)
-    set array_ptr := *const [u32; 64usize]
     storage_dead(_2)
     storage_live(_3)
     storage_live(_4)
@@ -215,7 +216,6 @@ fn ptr_casts()
     _7 = &x_5
     x_6 = &raw const (*_7)
     fake_read(x_6)
-    set x_6 := *const u8
     storage_dead(_7)
     storage_live(_8)
     storage_live(_9)

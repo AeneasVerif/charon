@@ -201,6 +201,7 @@ pub fn function_values(value: &'static u32)
     let mut _8: bar<&'30 u32>[{built_in impl Sized for &'30 u32}]; // anonymous local
     let mut _9: &'34 u32; // anonymous local
     let f_10: fn(&'static u32); // local
+        where f_10 := fn(&'static u32);
     let _11: (); // anonymous local
     let mut _12: fn(&'37 u32); // anonymous local
     let mut _13: &'38 u32; // anonymous local
@@ -238,7 +239,6 @@ pub fn function_values(value: &'static u32)
     storage_live(f_10)
     f_10 = fn_def_to_fn_ptr(const bar<&'static u32>[{built_in impl Sized for &'static u32}])
     fake_read(f_10)
-    set f_10 := fn(&'static u32)
     storage_live(_11)
     storage_live(_12)
     _12 = copy f_10
@@ -317,6 +317,8 @@ pub fn normalized_argument<'a, 'b>(value: u32)
 where
     Outlives0: ('b: 'a),
 {
+    where
+        'b: 'a,
     let mut _0: (); // return
     let value: u32; // arg #1
     let _2: (); // anonymous local
@@ -324,9 +326,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    set 'b :> 'a
-    set 'b :> 'a
-    set 'b :> 'a
     storage_live(_2)
     storage_live(_3)
     _3 = copy value
@@ -615,6 +614,8 @@ pub fn normalized_aggregate<'a, 'b>(borrowed: &'a u32, value: u32)
 where
     Outlives0: ('b: 'a),
 {
+    where
+        'b: 'a,
     let mut _0: (); // return
     let borrowed: &'1 u32; // arg #1
     let value: u32; // arg #2
@@ -624,13 +625,9 @@ where
 
     storage_live(_0)
     _0 = ()
-    // Normalizing the argument must also preserve the constraint `'b: 'a`.
-    set 'b :> 'a
-    set 'b :> 'a
-    set 'b :> 'a
-    set 'b :> 'a
     storage_live(record)
     storage_live(_4)
+    // Normalizing the argument must also preserve the constraint `'b: 'a`.
     _4 = copy borrowed
     storage_live(_5)
     _5 = copy value

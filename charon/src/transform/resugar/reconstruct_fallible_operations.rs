@@ -628,15 +628,15 @@ fn reconstruct_overflow_calls(ctx: &TransformCtx, body: &mut ExprBody) {
     // Count the uses of `r` and `r.0`.
     let mut tuple_mentions = body.locals.locals.map_ref(|_| 0usize);
     let mut integer_uses = body.locals.locals.map_ref(|_| 0usize);
+    body.dyn_visit_in_body(|place: &Place| {
+        if let Some(local) = place.as_local() {
+            tuple_mentions[local] += 1;
+        }
+    });
     for block in &body.body {
         for target in block.terminator.targets() {
             predecessors[target] += 1;
         }
-        block.dyn_visit_in_body(|place: &Place| {
-            if let Some(local) = place.as_local() {
-                tuple_mentions[local] += 1;
-            }
-        });
         block.dyn_visit_in_body(|operand: &Operand| {
             if let Operand::Move(place) | Operand::Copy(place, _) = operand
                 && let Some((base, ProjectionElem::Field(None, field))) = place.as_projection()

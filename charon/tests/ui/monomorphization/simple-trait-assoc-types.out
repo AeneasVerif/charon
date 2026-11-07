@@ -87,8 +87,11 @@ impl "impl_Trait_for_i32" Trait for i32 {
 // Full name: test_crate::main
 fn main()
 {
+    where
+        '1: '0, '3: '2,
     let mut _0: (); // return
     let a: &'0 (dyn Trait<Item = bool> + '1); // local
+        where a := &'2 (dyn Trait<Item = bool> + '3);
     let mut _2: &'5 i32; // anonymous local
     let _3: &'6 i32; // anonymous local
     let _4: (); // anonymous local
@@ -108,8 +111,6 @@ fn main()
     storage_live(_0)
     storage_live(_6)
     _0 = ()
-    set '1 :> '0
-    set '3 :> '2
     storage_live(a)
     storage_live(_2)
     storage_live(_3)
@@ -119,7 +120,6 @@ fn main()
     a = unsize_cast<&'14 (dyn Trait<Item = bool> + '15), &impl_Trait_for_i32::{vtable}>(move _2)
     storage_dead(_2)
     fake_read(a)
-    set a := &'2 (dyn Trait<Item = bool> + '3)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)

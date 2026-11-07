@@ -77,7 +77,9 @@ fn from_fn_def<'a>(x: &'a u8) -> &'a u8
     let mut _0: &'8 u8; // return
     let x: &'9 u8; // arg #1
     let f: fn<'b>(&'b u8) -> &'b u8; // local
+        where f := fn<'b>(&'b u8) -> &'b u8;
     let g: unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8; // local
+        where g := unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8;
     let _4: &'10 u8; // anonymous local
     let mut _5: unsafe fn<'b>(&'13 u8, &'b u8) -> &'b u8; // anonymous local
     let mut _6: &'14 u8; // anonymous local
@@ -91,13 +93,11 @@ fn from_fn_def<'a>(x: &'a u8) -> &'a u8
     storage_live(f)
     f = fn_def_to_fn_ptr(const identity<'20>)
     fake_read(f)
-    set f := fn<'b>(&'b u8) -> &'b u8
     storage_live(g)
     storage_live(_11)
     _11 = fn_def_to_fn_ptr(const with_early_and_late<'a, '43>[{built_in impl Sized for &'a u8}])
     g = fn_ptr_to_unsafe(move _11)
     fake_read(g)
-    set g := unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8
     storage_live(_4)
     storage_live(_5)
     _5 = copy g
@@ -139,6 +139,7 @@ fn from_inline_const<'a>(x: &'a u8) -> &'a u8
     let mut _0: &'1 u8; // return
     let x: &'2 u8; // arg #1
     let f: fn<'b>(&'b u8) -> &'b u8; // local
+        where f := fn<'b>(&'b u8) -> &'b u8;
     let _3: &'3 u8; // anonymous local
     let mut _4: fn<'b>(&'b u8) -> &'b u8; // anonymous local
     let mut _5: &'4 u8; // anonymous local
@@ -147,7 +148,6 @@ fn from_inline_const<'a>(x: &'a u8) -> &'a u8
     storage_live(f)
     f = fn_def_to_fn_ptr(const identity<'6>)
     fake_read(f)
-    set f := fn<'b>(&'b u8) -> &'b u8
     storage_live(_3)
     storage_live(_4)
     _4 = copy f
@@ -271,6 +271,7 @@ fn from_closure<'a>(x: &'a u8) -> &'a u8
     let mut _0: &'1 u8; // return
     let x: &'2 u8; // arg #1
     let f: unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8; // local
+        where f := unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8;
     let mut _3: {closure}<'28>; // anonymous local
     let _4: &'29 u8; // anonymous local
     let mut _5: unsafe fn<'b>(&'32 u8, &'b u8) -> &'b u8; // anonymous local
@@ -287,7 +288,6 @@ fn from_closure<'a>(x: &'a u8) -> &'a u8
     f = fn_ptr_to_unsafe(move _8)
     storage_dead(_3)
     fake_read(f)
-    set f := unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8
     storage_live(_4)
     storage_live(_5)
     _5 = copy f
@@ -316,6 +316,7 @@ fn from_fn_ptr(f: fn<'a, 'b>(&'a u8, &'b u8) -> &'a u8)
     let mut _0: (); // return
     let f: fn<'a, 'b>(&'a u8, &'b u8) -> &'a u8; // arg #1
     let mut _2: unsafe fn<'x, 'y>(&'y u8, &'x u8) -> &'y u8; // anonymous local
+        where _2 :< unsafe fn<'x, 'y>(&'y u8, &'x u8) -> &'y u8;
     let mut _3: fn<'a, 'b>(&'a u8, &'b u8) -> &'a u8; // anonymous local
 
     storage_live(_0)
@@ -325,7 +326,6 @@ fn from_fn_ptr(f: fn<'a, 'b>(&'a u8, &'b u8) -> &'a u8)
     _3 = copy f
     _2 = fn_ptr_to_unsafe(move _3)
     storage_dead(_3)
-    set _2 :< unsafe fn<'x, 'y>(&'y u8, &'x u8) -> &'y u8
     storage_dead(_2)
     _0 = ()
     storage_dead(f)
@@ -338,6 +338,7 @@ fn nested_binder(f: fn<'a>(fn<'b>(&'a u8, &'b u8)))
     let mut _0: (); // return
     let f: fn<'a>(fn<'b>(&'a u8, &'b u8)); // arg #1
     let mut _2: unsafe fn<'x>(fn<'y>(&'x u8, &'y u8)); // anonymous local
+        where _2 :< unsafe fn<'x>(fn<'y>(&'x u8, &'y u8));
     let mut _3: fn<'a>(fn<'b>(&'a u8, &'b u8)); // anonymous local
 
     storage_live(_0)
@@ -347,7 +348,6 @@ fn nested_binder(f: fn<'a>(fn<'b>(&'a u8, &'b u8)))
     _3 = copy f
     _2 = fn_ptr_to_unsafe(move _3)
     storage_dead(_3)
-    set _2 :< unsafe fn<'x>(fn<'y>(&'x u8, &'y u8))
     storage_dead(_2)
     _0 = ()
     storage_dead(f)
@@ -360,6 +360,7 @@ fn nested_binder_swapped(f: fn<'a, 'b>(fn<'c>(&'a (), &'b (), &'c ())))
     let mut _0: (); // return
     let f: fn<'a, 'b>(fn<'c>(&'a (), &'b (), &'c ())); // arg #1
     let mut _2: unsafe fn<'x, 'y>(fn<'z>(&'y (), &'x (), &'z ())); // anonymous local
+        where _2 :< unsafe fn<'x, 'y>(fn<'z>(&'y (), &'x (), &'z ()));
     let mut _3: fn<'a, 'b>(fn<'c>(&'a (), &'b (), &'c ())); // anonymous local
 
     storage_live(_0)
@@ -369,7 +370,6 @@ fn nested_binder_swapped(f: fn<'a, 'b>(fn<'c>(&'a (), &'b (), &'c ())))
     _3 = copy f
     _2 = fn_ptr_to_unsafe(move _3)
     storage_dead(_3)
-    set _2 :< unsafe fn<'x, 'y>(fn<'z>(&'y (), &'x (), &'z ()))
     storage_dead(_2)
     _0 = ()
     storage_dead(f)
@@ -382,6 +382,7 @@ fn doubly_nested_binder(f: fn<'a>(fn<'b>(fn<'c>(&'a (), &'b (), &'c ()))))
     let mut _0: (); // return
     let f: fn<'a>(fn<'b>(fn<'c>(&'a (), &'b (), &'c ()))); // arg #1
     let mut _2: unsafe fn<'x>(fn<'y>(fn<'z>(&'x (), &'y (), &'z ()))); // anonymous local
+        where _2 :< unsafe fn<'x>(fn<'y>(fn<'z>(&'x (), &'y (), &'z ())));
     let mut _3: fn<'a>(fn<'b>(fn<'c>(&'a (), &'b (), &'c ()))); // anonymous local
 
     storage_live(_0)
@@ -391,7 +392,6 @@ fn doubly_nested_binder(f: fn<'a>(fn<'b>(fn<'c>(&'a (), &'b (), &'c ()))))
     _3 = copy f
     _2 = fn_ptr_to_unsafe(move _3)
     storage_dead(_3)
-    set _2 :< unsafe fn<'x>(fn<'y>(fn<'z>(&'x (), &'y (), &'z ())))
     storage_dead(_2)
     _0 = ()
     storage_dead(f)

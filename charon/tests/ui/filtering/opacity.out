@@ -179,6 +179,7 @@ fn foo()
     let mut _1: bool; // anonymous local
     let mut _2: &'1 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let mut _3: u64; // anonymous local
+        where _3 :< u64;
     let mut _4: &'3 [i32]; // anonymous local
     let mut _5: &'5 i32; // anonymous local
     let _6: &'6 i32; // anonymous local
@@ -222,7 +223,6 @@ fn foo()
     _14 = const 0i32
     _13 = &_14
     _10 = move _13
-    set _3 :< u64
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)

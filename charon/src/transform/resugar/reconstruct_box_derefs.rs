@@ -114,6 +114,12 @@ fn collect_local_status(body: &ExprBody) -> IndexVec<LocalId, LocalStatus> {
         local_status: body.locals.locals.map_ref(|_| Default::default()),
         current_statement: None,
     };
+    // Use in a drop flag or a type annotation counts as a non-deref use.
+    body.locals.dyn_visit_in_body(|place: &Place| {
+        if let Some(local) = place.as_local() {
+            collector.local_status[local].used_outside_derefs = true;
+        }
+    });
     for (block, block_data) in body.body.iter_enumerated() {
         for (statement, st) in block_data.statements.iter().enumerate() {
             collector.current_statement = Some(StmtLoc::new(block, statement));

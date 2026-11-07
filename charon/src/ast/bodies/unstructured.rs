@@ -609,6 +609,7 @@ impl BodyBuilder {
             span,
             locals: Locals::new(arg_count),
             bound_body_regions: 0,
+            body_outlives: Vec::new(),
             body: IndexVec::new(),
             comments: vec![],
         };

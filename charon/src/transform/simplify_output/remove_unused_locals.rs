@@ -22,6 +22,7 @@ impl VisitBody for LocalsUsageVisitor {
     }
     fn visit_local(&mut self, local: &Local) -> ControlFlow<Self::Break> {
         // Skip the local id.
+        self.visit(&local.borrowck_constraints)?;
         self.visit(&local.drop_flag_for)
     }
     fn visit_llbc_statement(&mut self, st: &llbc_ast::Statement) -> ControlFlow<Self::Break> {

@@ -151,6 +151,10 @@ impl UllbcPass for Transform {
                 .locals
                 .extend(mem::take(&mut inner_body.locals.locals));
 
+            outer_body
+                .body_outlives
+                .append(&mut inner_body.body_outlives);
+
             // The inner body assumes the arg places are live; allocate them, and initialize the
             // args.
             inner_body.body[0].statements.splice(

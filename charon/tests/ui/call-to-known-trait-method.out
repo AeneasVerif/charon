@@ -183,7 +183,9 @@ fn main()
 {
     let mut _0: (); // return
     let _x: (u8, bool); // local
+        where _x := (u8, bool);
     let _y: Struct<bool>[{built_in impl Sized for bool}]; // local
+        where _y := Struct<bool>[{built_in impl Sized for bool}];
     let _3: (); // anonymous local
 
     storage_live(_0)
@@ -191,12 +193,10 @@ fn main()
     storage_live(_x)
     _x = (const 0u8, const false)
     fake_read(_x)
-    set _x := (u8, bool)
     storage_live(_y)
     _y = impl_Default_for_Struct::default<bool>[{built_in impl Sized for bool}, impl_Default_for_bool]()
     ↳⚡ unwind_continue
     fake_read(_y)
-    set _y := Struct<bool>[{built_in impl Sized for bool}]
     storage_live(_3)
     _3 = method<u8, bool, String>[{built_in impl Sized for u8}, {built_in impl Sized for bool}, impl_Clone_for_u8, impl_PartialEq_bool_for_bool, {built_in impl Sized for String}]()
     ↳⚡ unwind_continue

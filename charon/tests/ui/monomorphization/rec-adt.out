@@ -38,6 +38,7 @@ fn main()
 {
     let mut _0: (); // return
     let list: LinkedList::<u8>; // local
+        where list := LinkedList::<u8>;
 
     storage_live(_0)
     _0 = ()
@@ -45,7 +46,6 @@ fn main()
     list = new::<u8>()
     ↳⚡ unwind_continue
     fake_read(list)
-    set list := LinkedList::<u8>
     _0 = ()
     storage_dead(list)
     return

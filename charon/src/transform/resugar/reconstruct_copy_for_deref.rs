@@ -100,6 +100,7 @@ impl UllbcPass for Transform {
             has_candidate: false,
             current_st: None,
         };
+        collector.visit(&body.locals); // Look for uses in type annotations
         for (block, data) in body.body.iter_enumerated() {
             for (statement, st) in data.statements.iter().enumerate() {
                 collector.current_st = Some(StmtLoc::new(block, statement));

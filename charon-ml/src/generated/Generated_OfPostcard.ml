@@ -315,11 +315,8 @@ and borrowck_statement_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* _0 = place_of_postcard ctx st in
          Ok (FakeRead _0)
      | 1 ->
-         let* place = place_of_postcard ctx st in
-         let* ty = ty_of_postcard ctx st in
-         let* variance = variance_of_postcard ctx st in
-         let* temporary = bool_of_postcard ctx st in
-         Ok (SetType (place, ty, variance, temporary))
+         let* _0 = place_type_constraint_of_postcard ctx st in
+         Ok (SetType _0)
      | 2 ->
          let* _0 = outlives_pred_of_postcard ctx st in
          Ok (SetOutlives _0)
@@ -1106,6 +1103,14 @@ and place_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _0 = global_decl_ref_of_postcard ctx st in
          Ok (PlaceGlobal _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and place_type_constraint_of_postcard (ctx : of_postcard_ctx)
+    (st : postcard_state) : (place_type_constraint, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* place = place_of_postcard ctx st in
+     let* ty = ty_of_postcard ctx st in
+     let* variance = variance_of_postcard ctx st in
+     Ok ({ place; ty; variance } : place_type_constraint))
 
 and poly_trait_ref_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (poly_trait_ref, string) result =
@@ -2587,6 +2592,7 @@ and gexpr_body_of_postcard :
   combine_error_msgs st __FUNCTION__
     (let* span = span_of_postcard ctx st in
      let* bound_body_regions = usize_of_postcard ctx st in
+     let* body_outlives = list_of_postcard outlives_pred_of_postcard ctx st in
      let* locals = locals_of_postcard ctx st in
      let* body = arg0_of_postcard ctx st in
      let* _ =
@@ -2595,7 +2601,9 @@ and gexpr_body_of_postcard :
             (list_of_postcard string_of_postcard))
          ctx st
      in
-     Ok ({ span; bound_body_regions; locals; body } : _ gexpr_body))
+     Ok
+       ({ span; bound_body_regions; body_outlives; locals; body }
+         : _ gexpr_body))
 
 and global_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (global_decl, string) result =
@@ -3095,8 +3103,21 @@ and local_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* span = span_of_postcard ctx st in
      let* local_ty = ty_of_postcard ctx st in
      let* is_mutable = bool_of_postcard ctx st in
+     let* borrowck_constraints =
+       list_of_postcard place_type_constraint_of_postcard ctx st
+     in
      let* drop_flag_for = option_of_postcard place_of_postcard ctx st in
-     Ok ({ index; name; span; local_ty; is_mutable; drop_flag_for } : local))
+     Ok
+       ({
+          index;
+          name;
+          span;
+          local_ty;
+          is_mutable;
+          borrowck_constraints;
+          drop_flag_for;
+        }
+         : local))
 
 and locals_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (locals, string) result =

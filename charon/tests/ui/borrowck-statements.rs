@@ -150,3 +150,14 @@ pub fn unused_annotation<'a, 'b: 'a>() {
     // This annotation has obligations but no local or MIR statement.
     let _: <&'b u32 as Project<'a>>::Output;
 }
+
+pub fn branch_annotation(value: &'static u32, condition: bool) -> &'static u32 {
+    let x: &'static u32;
+    if condition {
+        let value: impl Copy + 'static = value;
+        x = value;
+    } else {
+        x = &0;
+    }
+    x
+}
