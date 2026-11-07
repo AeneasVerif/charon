@@ -497,6 +497,20 @@ pub trait TyVisitable: Sized + AstVisitable {
         self.visit_vars(&mut RefreshErasedRegions(f));
         self
     }
+
+    /// Compare two values, ignoring regions mismatches.
+    fn eq_modulo_regions(&self, other: &Self) -> bool {
+        struct EqModuloRegions;
+        impl Visitor for EqModuloRegions {
+            type Break = ();
+        }
+        impl ZipAst for EqModuloRegions {
+            fn visit_region(&mut self, _: &Region, _: &Region) -> ControlFlow<Self::Break> {
+                ControlFlow::Continue(())
+            }
+        }
+        EqModuloRegions.visit(self, other).is_continue()
+    }
 }
 
 impl<T: AstVisitable> TyVisitable for T {}
