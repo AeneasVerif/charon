@@ -44,7 +44,7 @@ fn str_tail<const W : &'static Wrap<str>[{built_in impl MetaSized for str}]>()
 fn main()
 {
     let mut _0: (); // return
-    let mut _1: &'1 str; // anonymous local
+    let mut _1: &'2 str; // anonymous local
     let _2: (); // anonymous local
 
     storage_live(_0)

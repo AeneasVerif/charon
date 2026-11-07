@@ -163,15 +163,19 @@ where
     Outlives0: (T: '_0),
 {
     let mut _0: T; // return
-    let arg: &'1 T; // arg #1
-    let x: &'5 mut (dyn Modifiable<T> + '6); // local
-    let mut _3: &'8 mut i32; // anonymous local
-    let mut _4: &'9 mut i32; // anonymous local
+    let arg: &'5 T; // arg #1
+    let x: &'0 mut (dyn Modifiable<T> + '1); // local
+    let mut _3: &'7 mut i32; // anonymous local
+    let mut _4: &'8 mut i32; // anonymous local
     let mut _5: i32; // anonymous local
-    let mut _6: &'10 mut (dyn Modifiable<T> + '11); // anonymous local
-    let mut _7: &'12 T; // anonymous local
+    let mut _6: &'12 mut (dyn Modifiable<T> + '13); // anonymous local
+    let mut _7: &'14 T; // anonymous local
 
     storage_live(_0)
+    set 'lub<T> :> '0
+    set '1 :> '0
+    set 'lub<T> :> '2
+    set '3 :> '2
     storage_live(x)
     storage_live(_3)
     storage_live(_4)
@@ -179,12 +183,10 @@ where
     _5 = const 199i32
     _4 = &mut _5
     _3 = &mut (*_4)
-    x = unsize_cast<&'13 mut (dyn Modifiable<T> + '14), &impl_Modifiable_for_i32::{vtable}<T>[TraitClause0, TraitClause1]>(move _3)
+    x = unsize_cast<&'15 mut (dyn Modifiable<T> + '16), &impl_Modifiable_for_i32::{vtable}<T>[TraitClause0, TraitClause1]>(move _3)
     storage_dead(_3)
     fake_read(x)
-    set 'lub<T> :> '15
-    set '16 :> '15
-    set x := &'15 mut (dyn Modifiable<T> + '16)
+    set x := &'2 mut (dyn Modifiable<T> + '3)
     storage_dead(_4)
     storage_live(_6)
     _6 = &two-phase-mut (*x) with_metadata(read x.metadata)

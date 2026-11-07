@@ -412,7 +412,7 @@ extern "rust-call" fn {impl FnMut<()> for test_attributes::tests::test_ignore::{
 extern "rust-call" fn {impl FnOnce<()> for test_attributes::tests::test_ignore::{closure}}::call_once(_1: test_attributes::tests::test_ignore::{closure}, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let mut _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let _1: test_attributes::tests::test_ignore::{closure}; // arg #1
+    let mut _1: test_attributes::tests::test_ignore::{closure}; // arg #1
     let _2: (); // arg #2
     let _3: &'1 mut test_attributes::tests::test_ignore::{closure}; // anonymous local
 
@@ -510,7 +510,7 @@ fn test_attributes::tests::test_should_panic#1()
 {
     let mut _0: (); // return
     let _1: !; // anonymous local
-    let mut _2: Arguments<'1>; // anonymous local
+    let mut _2: Arguments<'2>; // anonymous local
     let mut _3: &'7 str; // anonymous local
 
     storage_live(_0)
@@ -519,7 +519,7 @@ fn test_attributes::tests::test_should_panic#1()
     storage_live(_2)
     storage_live(_3)
     _3 = &test_attributes::tests::test_should_panic#1::{promoted_const} with_metadata(const 22usize)
-    _2 = from_str<'2>(move _3)
+    _2 = from_str<'0>(move _3)
     ↳⚡ unwind_continue
     _1 = panic_fmt<'11>(move _2)
     ↳⚡ unwind_continue
@@ -565,7 +565,7 @@ extern "rust-call" fn {impl FnMut<()> for test_attributes::tests::test_should_pa
 extern "rust-call" fn {impl FnOnce<()> for test_attributes::tests::test_should_panic::{closure}}::call_once(_1: test_attributes::tests::test_should_panic::{closure}, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let mut _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let _1: test_attributes::tests::test_should_panic::{closure}; // arg #1
+    let mut _1: test_attributes::tests::test_should_panic::{closure}; // arg #1
     let _2: (); // arg #2
     let _3: &'1 mut test_attributes::tests::test_should_panic::{closure}; // anonymous local
 
@@ -711,7 +711,7 @@ extern "rust-call" fn {impl FnMut<()> for test_attributes::tests::test_foo::{clo
 extern "rust-call" fn {impl FnOnce<()> for test_attributes::tests::test_foo::{closure}}::call_once(_1: test_attributes::tests::test_foo::{closure}, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let mut _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let _1: test_attributes::tests::test_foo::{closure}; // arg #1
+    let mut _1: test_attributes::tests::test_foo::{closure}; // arg #1
     let _2: (); // arg #2
     let _3: &'1 mut test_attributes::tests::test_foo::{closure}; // anonymous local
 

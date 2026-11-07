@@ -111,9 +111,9 @@ pub const test_crate::impl_Drop_for_Foo::drop::{promoted_const}: str = "Dropping
 pub fn impl_Drop_for_Foo::drop<'_0>(self: &'_0 mut Foo)
 {
     let mut _0: (); // return
-    let self: &'1 mut Foo; // arg #1
+    let self: &'2 mut Foo; // arg #1
     let _2: (); // anonymous local
-    let mut _3: Arguments<'3>; // anonymous local
+    let mut _3: Arguments<'4>; // anonymous local
     let mut _4: &'9 str; // anonymous local
 
     bb0: {
@@ -123,7 +123,7 @@ pub fn impl_Drop_for_Foo::drop<'_0>(self: &'_0 mut Foo)
         storage_live(_3);
         storage_live(_4);
         _4 = &test_crate::impl_Drop_for_Foo::drop::{promoted_const} with_metadata(const 13usize);
-        _3 = from_str<'4>(move _4) -> bb1 (unwind: bb3);
+        _3 = from_str<'0>(move _4) -> bb1 (unwind: bb3);
     }
 
     bb1: {

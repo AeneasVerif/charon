@@ -44,7 +44,7 @@ extern "rust-call" fn {impl FnMut<()> for test_crate::AS_FN::{closure}}::call_mu
 extern "rust-call" fn {impl FnOnce<()> for test_crate::AS_FN::{closure}}::call_once(_1: test_crate::AS_FN::{closure}, _2: ()) -> u8
 {
     let mut _0: u8; // return
-    let _1: test_crate::AS_FN::{closure}; // arg #1
+    let mut _1: test_crate::AS_FN::{closure}; // arg #1
     let _2: (); // arg #2
     let _3: &'1 mut test_crate::AS_FN::{closure}; // anonymous local
 
@@ -141,7 +141,7 @@ extern "rust-call" fn {impl FnMut<()> for test_crate::mk_closure::{closure}}::ca
 extern "rust-call" fn {impl FnOnce<()> for test_crate::mk_closure::{closure}}::call_once(_1: test_crate::mk_closure::{closure}, _2: ()) -> u8
 {
     let mut _0: u8; // return
-    let _1: test_crate::mk_closure::{closure}; // arg #1
+    let mut _1: test_crate::mk_closure::{closure}; // arg #1
     let _2: (); // arg #2
     let _3: &'1 mut test_crate::mk_closure::{closure}; // anonymous local
 

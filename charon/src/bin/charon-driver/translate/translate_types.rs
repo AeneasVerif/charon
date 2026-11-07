@@ -34,13 +34,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
     }
 
+    /// Generate a list of erased arguments, or fresh body lifetimes if we're inside a body.
+    pub(crate) fn translate_erased_region_args(&mut self, len: usize) -> RegionArgs {
+        RegionArgs::new((0..len).map(|_| self.translate_erased_region()).collect())
+    }
+
     /// Erase a region binder by supplying erased lifetimes (or fresh body lifetimes) for all its
     /// arguments.
     pub(crate) fn erase_region_binder<T: TyVisitable>(&mut self, b: RegionBinder<T>) -> T {
-        let regions = b
-            .regions
-            .map_ref_indexed(|_, _| self.translate_erased_region());
-        b.apply(RegionArgs::new(regions))
+        let args = self.translate_erased_region_args(b.regions.len());
+        b.apply(args)
     }
 
     // Translate a region

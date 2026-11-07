@@ -122,14 +122,14 @@ impl "impl_Trait_for_i32" Trait for i32 {
 fn main()
 {
     let mut _0: (); // return
-    let b: &'3 (dyn Trait + '4); // local
-    let mut _2: &'6 i32; // anonymous local
-    let _3: &'7 i32; // anonymous local
+    let b: &'0 (dyn Trait + '1); // local
+    let mut _2: &'5 i32; // anonymous local
+    let _3: &'6 i32; // anonymous local
     let _4: (); // anonymous local
-    let mut _5: &'8 (dyn Trait + '9); // anonymous local
-    let mut _6: &'10 i32; // anonymous local
-    let mut _7: fn(&'8 (dyn Trait + '9)); // anonymous local
-    let mut _8: &'11 i32; // anonymous local
+    let mut _5: &'10 (dyn Trait + '11); // anonymous local
+    let mut _6: &'12 i32; // anonymous local
+    let mut _7: fn(&'10 (dyn Trait + '11)); // anonymous local
+    let mut _8: &'13 i32; // anonymous local
     let mut _9: &'24 i32; // anonymous local
     let mut _10: i32; // anonymous local
 
@@ -142,23 +142,24 @@ fn main()
     storage_live(_0)
     storage_live(_6)
     _0 = ()
+    set '1 :> '0
+    set '3 :> '2
     storage_live(b)
     storage_live(_2)
     storage_live(_3)
     _6 = move _8
     _3 = &(*_6)
     _2 = &(*_3)
-    b = unsize_cast<&'12 (dyn Trait + '13), &impl_Trait_for_i32::{vtable}>(move _2)
+    b = unsize_cast<&'14 (dyn Trait + '15), &impl_Trait_for_i32::{vtable}>(move _2)
     storage_dead(_2)
     fake_read(b)
-    set '15 :> '14
-    set b := &'14 (dyn Trait + '15)
+    set b := &'2 (dyn Trait + '3)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*b) with_metadata(read b.metadata)
     storage_live(_7)
-    _7 = cast<fn(&'8 (dyn Trait + '9))>(read (*_5.metadata).method_consume)
+    _7 = cast<fn(&'10 (dyn Trait + '11))>(read (*_5.metadata).method_consume)
     _4 = (read _7)(move _5)
     ↳⚡ storage_dead(_6)
         unwind_continue

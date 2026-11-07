@@ -64,11 +64,11 @@ where
     Outlives0: ('_2: '_1),
 {
     let mut _0: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // return
-    let self: &'1 S; // arg #1
-    let f: &'5 mut Formatter<'6>; // arg #2
-    let mut _3: &'7 mut Formatter<'8>; // anonymous local
-    let mut _4: &'10 str; // anonymous local
-    let _5: &'11 str; // anonymous local
+    let self: &'4 S; // arg #1
+    let f: &'8 mut Formatter<'9>; // arg #2
+    let mut _3: &'10 mut Formatter<'11>; // anonymous local
+    let mut _4: &'13 str; // anonymous local
+    let _5: &'14 str; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -77,7 +77,7 @@ where
     storage_live(_5)
     _5 = &test_crate::impl_Debug_for_S::fmt::{promoted_const} with_metadata(const 1usize)
     _4 = &(*_5) with_metadata(read _5.metadata)
-    _0 = write_str<'16, '28, '29>(move _3, move _4)
+    _0 = write_str<'2, '28, '29>(move _3, move _4)
     ↳⚡ storage_dead(f)
         storage_dead(self)
         unwind_continue

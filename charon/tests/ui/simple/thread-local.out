@@ -269,7 +269,7 @@ extern "rust-call" fn call_mut<'_0, '_1>(state: &'_1 mut {closure}, args: (Optio
 extern "rust-call" fn impl_FnOnce_tuple_for_closure::call_once<'_0>(_1: {closure}, _2: (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)) -> *const u32
 {
     let mut _0: *const u32; // return
-    let _1: {closure}; // arg #1
+    let mut _1: {closure}; // arg #1
     let _2: (Option<&'12 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'12 mut Option<u32>[{built_in impl Sized for u32}]}],); // arg #2
     let _3: &'17 mut {closure}; // anonymous local
 

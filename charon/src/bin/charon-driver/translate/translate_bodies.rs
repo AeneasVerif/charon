@@ -36,7 +36,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'tctx, 'ictx> {
     /// List of body locals.
     pub local_decls: &'ictx rustc_index::IndexVec<mir::Local, mir::LocalDecl<'tcx>>,
     /// Types supplied explicitly by the user.
-    pub user_type_annotations: UserTypeAnnotations<'tcx>,
+    pub user_type_annotations: UserTypeAnnotations,
 
     /// What kind of drops we get in this body.
     pub drop_kind: DropKind,
@@ -63,7 +63,7 @@ impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
         drop_kind: DropKind,
     ) -> Result<Self, Error> {
         i_ctx.lifetime_freshener = (!i_ctx.options.erase_body_lifetimes).then(IndexMap::new);
-        let user_type_annotations = UserTypeAnnotations::new(i_ctx, body);
+        let mut user_type_annotations = UserTypeAnnotations::new(i_ctx, body)?;
 
         // Translate the local variables.
         let mut locals = Locals {
@@ -78,7 +78,12 @@ impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
 
             // Translate the type
             let span = i_ctx.translate_span(&var.source_info.span);
-            let ty = i_ctx.translate_rustc_ty(span, &var.ty)?;
+            let ty = user_type_annotations.translate_local_ty(
+                i_ctx,
+                span,
+                locals.locals.next_idx(),
+                var,
+            )?;
 
             // Add the variable to the environment
             let local_id = locals.locals.push_with(|index| Local {
@@ -653,6 +658,14 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
             UnwindKind::Regular
         };
         let mut block_ctx = BlockTransCtx::new(self, block_id, kind);
+        if block_id == START_BLOCK_ID {
+            block_ctx.statements.extend(
+                block_ctx
+                    .b_ctx
+                    .user_type_annotations
+                    .take_body_start_constraints(),
+            );
+        }
         for statement in &block.statements {
             trace!("statement: {:?}", statement);
             block_ctx.translate_statement(source_scopes, statement)?;
@@ -788,32 +801,6 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             ConstantExprKind::Opaque("Missing metadata".to_string()),
             Ty::mk_unit(),
         ))
-    }
-
-    fn insert_outlives_stmts(&mut self, span: Span, outlives: Vec<OutlivesPred>) {
-        for pred in outlives {
-            for pred in pred.normalize() {
-                self.statements.push(Statement::new(
-                    span,
-                    StatementKind::Borrowck(BorrowckStatement::SetOutlives(pred)),
-                ));
-            }
-        }
-    }
-
-    /// Translate this user-provided type annotation. May also register some outlives constraints
-    /// as statements as this point.
-    fn translate_user_type_projection(
-        &mut self,
-        span: Span,
-        user_ty: &mir::UserTypeProjection,
-    ) -> Result<Ty, Error> {
-        let (ty, outlives) = self
-            .b_ctx
-            .user_type_annotations
-            .translate_place_annotation(self.b_ctx.i_ctx, span, user_ty)?;
-        self.insert_outlives_stmts(span, outlives);
-        Ok(ty)
     }
 
     fn translate_thread_local_ref(
@@ -1056,17 +1043,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 Operand::Move(p)
             }
             mir::Operand::Constant(const_op) => {
-                let annotated_ty = if let Some(base) = const_op.user_ty
-                    && !self.user_type_annotations.is_empty()
-                {
-                    let ty = self.translate_user_type_projection(
-                        span,
-                        &mir::UserTypeProjection {
-                            base,
-                            projs: vec![],
-                        },
-                    )?;
-                    Some(ty)
+                let annotated_ty = if let Some(base) = const_op.user_ty {
+                    self.user_type_annotations.translate_annotation(base)
                 } else {
                     None
                 };
@@ -1459,16 +1437,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
 
                         let adt_kind = self.tcx.adt_def(*def_id).adt_kind();
                         let tref = if let Some(user_ty) = *user_ty
-                            && !self.user_type_annotations.is_empty()
+                            && let Some(ty) =
+                                self.user_type_annotations.translate_annotation(user_ty)
                         {
                             // Use the type annotation if there is one.
-                            let ty = self.translate_user_type_projection(
-                                span,
-                                &mir::UserTypeProjection {
-                                    base: user_ty,
-                                    projs: vec![],
-                                },
-                            )?;
                             let TyKind::Adt(tref) = ty.kind() else {
                                 raise_error!(self, span, "aggregate annotation has non-ADT type");
                             };
@@ -1645,7 +1617,9 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     ty::Variance::Bivariant => return Ok(()),
                 };
                 let place = self.translate_place(span, place)?;
-                let ty = self.translate_user_type_projection(span, user_ty)?;
+                let ty = self
+                    .user_type_annotations
+                    .translate_projected_annotation(user_ty);
                 self.statements.push(Statement::new(
                     span,
                     StatementKind::Borrowck(BorrowckStatement::SetType {

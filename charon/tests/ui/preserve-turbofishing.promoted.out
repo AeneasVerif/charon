@@ -144,14 +144,14 @@ where
 pub fn explicit_arguments(value: &'static u32)
 {
     let mut _0: (); // return
-    let value: &'1 u32; // arg #1
+    let value: &'55 u32; // arg #1
     let _2: (); // anonymous local
-    let mut _3: &'2 u32; // anonymous local
+    let mut _3: &'56 u32; // anonymous local
     let _4: (); // anonymous local
-    let mut _5: &'3 u32; // anonymous local
+    let mut _5: &'57 u32; // anonymous local
     let _6: (); // anonymous local
-    let mut _7: Option<&'11 u32>[{built_in impl Sized for &'11 u32}]; // anonymous local
-    let mut _8: &'15 u32; // anonymous local
+    let mut _7: Option<&'65 u32>[{built_in impl Sized for &'65 u32}]; // anonymous local
+    let mut _8: &'69 u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -191,19 +191,19 @@ pub fn explicit_arguments(value: &'static u32)
 pub fn function_values(value: &'static u32)
 {
     let mut _0: (); // return
-    let value: &'1 u32; // arg #1
-    let f_2: foo<'3>; // local
+    let value: &'13 u32; // arg #1
+    let f_2: foo<'15>; // local
     let _3: (); // anonymous local
-    let mut _4: foo<'4>; // anonymous local
-    let mut _5: &'5 u32; // anonymous local
-    let f_6: bar<&'14 u32>[{built_in impl Sized for &'14 u32}]; // local
+    let mut _4: foo<'16>; // anonymous local
+    let mut _5: &'17 u32; // anonymous local
+    let f_6: bar<&'26 u32>[{built_in impl Sized for &'26 u32}]; // local
     let _7: (); // anonymous local
-    let mut _8: bar<&'18 u32>[{built_in impl Sized for &'18 u32}]; // anonymous local
-    let mut _9: &'22 u32; // anonymous local
-    let f_10: fn(&'25 u32); // local
+    let mut _8: bar<&'30 u32>[{built_in impl Sized for &'30 u32}]; // anonymous local
+    let mut _9: &'34 u32; // anonymous local
+    let f_10: fn(&'static u32); // local
     let _11: (); // anonymous local
-    let mut _12: fn(&'26 u32); // anonymous local
-    let mut _13: &'27 u32; // anonymous local
+    let mut _12: fn(&'37 u32); // anonymous local
+    let mut _13: &'38 u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -215,7 +215,7 @@ pub fn function_values(value: &'static u32)
     _4 = copy f_2
     storage_live(_5)
     _5 = &(*value)
-    _3 = foo<'4>(move _5)
+    _3 = foo<'16>(move _5)
     ↳⚡ storage_dead(value)
         unwind_continue
     storage_dead(_5)
@@ -229,7 +229,7 @@ pub fn function_values(value: &'static u32)
     _8 = copy f_6
     storage_live(_9)
     _9 = &(*value)
-    _7 = bar<&'18 u32>[{built_in impl Sized for &'18 u32}](move _9)
+    _7 = bar<&'30 u32>[{built_in impl Sized for &'30 u32}](move _9)
     ↳⚡ storage_dead(value)
         unwind_continue
     storage_dead(_9)
@@ -262,12 +262,12 @@ pub fn function_values(value: &'static u32)
 pub fn named_arguments<'a, 'b>(value: &'a u32, other: &'b u32)
 {
     let mut _0: (); // return
-    let value: &'1 u32; // arg #1
-    let other: &'2 u32; // arg #2
+    let value: &'56 u32; // arg #1
+    let other: &'57 u32; // arg #2
     let _3: (); // anonymous local
-    let mut _4: (&'11 u32, &'12 u32); // anonymous local
-    let mut _5: &'16 u32; // anonymous local
-    let mut _6: &'17 u32; // anonymous local
+    let mut _4: (&'66 u32, &'67 u32); // anonymous local
+    let mut _5: &'71 u32; // anonymous local
+    let mut _6: &'72 u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -280,7 +280,7 @@ pub fn named_arguments<'a, 'b>(value: &'a u32, other: &'b u32)
     _4 = (move _5, move _6)
     storage_dead(_6)
     storage_dead(_5)
-    _3 = bar<(&'a u32, &'83 u32)>[{built_in impl Sized for (&'a u32, &'83 u32)}](move _4)
+    _3 = bar<(&'a u32, &'54 u32)>[{built_in impl Sized for (&'a u32, &'54 u32)}](move _4)
     ↳⚡ storage_dead(other)
         storage_dead(value)
         unwind_continue
@@ -324,12 +324,12 @@ where
 
     storage_live(_0)
     _0 = ()
+    set 'b :> 'a
+    set 'b :> 'a
+    set 'b :> 'a
     storage_live(_2)
     storage_live(_3)
     _3 = copy value
-    set 'b :> 'a
-    set 'b :> 'a
-    set 'b :> 'a
     _2 = bar<u32>[{built_in impl Sized for u32}](move _3)
     ↳⚡ storage_dead(value)
         unwind_continue
@@ -399,18 +399,18 @@ where
 pub fn associated_items(value: &'static u32)
 {
     let mut _0: (); // return
-    let value: &'1 u32; // arg #1
-    let x: Option<&'9 u32>[{built_in impl Sized for &'9 u32}]; // local
+    let value: &'19 u32; // arg #1
+    let x: Option<&'27 u32>[{built_in impl Sized for &'27 u32}]; // local
     let _3: (); // anonymous local
-    let mut _4: &'13 u32; // anonymous local
-    let mut _5: &'14 u32; // anonymous local
-    let mut _6: Option<&'21 u32>[{built_in impl Sized for &'21 u32}]; // anonymous local
+    let mut _4: &'31 u32; // anonymous local
+    let mut _5: &'32 u32; // anonymous local
+    let mut _6: Option<&'33 u32>[{built_in impl Sized for &'33 u32}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(x)
     storage_live(_6)
-    _6 = noretag read NONE<&'25 u32>[{built_in impl Sized for &'27 u32}]
+    _6 = noretag read NONE<&'37 u32>[{built_in impl Sized for &'39 u32}]
     set_here _6 := Option<&'static u32>[{built_in impl Sized for &'static u32}]
     x = move _6
     fake_read(x)
@@ -473,10 +473,10 @@ impl "impl_Method_for_unit" Method for () {
 pub fn trait_method(value: &'static u32)
 {
     let mut _0: (); // return
-    let value: &'1 u32; // arg #1
+    let value: &'7 u32; // arg #1
     let _2: (); // anonymous local
     let mut _3: (); // anonymous local
-    let mut _4: &'2 u32; // anonymous local
+    let mut _4: &'8 u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -523,16 +523,16 @@ pub union Union<'a> {
 pub fn explicit_aggregates(value: &'static u32)
 {
     let mut _0: (); // return
-    let value: &'1 u32; // arg #1
-    let record: Record<'13, &'14 u32>[{built_in impl Sized for &'14 u32}, {impl Copy for &'_0 T}<'14, u32>]; // local
-    let mut _3: &'20 u32; // anonymous local
-    let mut _4: &'21 u32; // anonymous local
-    let choice: Choice<&'29 u32>[{built_in impl Sized for &'29 u32}]; // local
-    let mut _6: &'33 u32; // anonymous local
-    let union: Union<'35>; // local
-    let mut _8: &'36 u32; // anonymous local
-    let tuple: WithConst<&'44 u32>[{built_in impl Sized for &'44 u32}]; // local
-    let mut _10: &'48 u32; // anonymous local
+    let value: &'21 u32; // arg #1
+    let record: Record<'33, &'34 u32>[{built_in impl Sized for &'34 u32}, {impl Copy for &'_0 T}<'34, u32>]; // local
+    let mut _3: &'40 u32; // anonymous local
+    let mut _4: &'41 u32; // anonymous local
+    let choice: Choice<&'49 u32>[{built_in impl Sized for &'49 u32}]; // local
+    let mut _6: &'53 u32; // anonymous local
+    let union: Union<'55>; // local
+    let mut _8: &'56 u32; // anonymous local
+    let tuple: WithConst<&'64 u32>[{built_in impl Sized for &'64 u32}]; // local
+    let mut _10: &'68 u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -576,13 +576,13 @@ pub fn explicit_aggregates(value: &'static u32)
 pub fn named_aggregate<'a, 'b>(value: &'a u32, other: &'b u32)
 {
     let mut _0: (); // return
-    let value: &'1 u32; // arg #1
-    let other: &'2 u32; // arg #2
-    let record: Record<'14, &'15 u32>[{built_in impl Sized for &'15 u32}, {impl Copy for &'_0 T}<'15, u32>]; // local
-    let mut _4: &'21 u32; // anonymous local
-    let mut _5: &'22 u32; // anonymous local
-    let updated: Record<'23, &'24 u32>[{built_in impl Sized for &'24 u32}, {impl Copy for &'_0 T}<'24, u32>]; // local
-    let mut _7: &'30 u32; // anonymous local
+    let value: &'19 u32; // arg #1
+    let other: &'20 u32; // arg #2
+    let record: Record<'32, &'33 u32>[{built_in impl Sized for &'33 u32}, {impl Copy for &'_0 T}<'33, u32>]; // local
+    let mut _4: &'39 u32; // anonymous local
+    let mut _5: &'40 u32; // anonymous local
+    let updated: Record<'41, &'42 u32>[{built_in impl Sized for &'42 u32}, {impl Copy for &'_0 T}<'42, u32>]; // local
+    let mut _7: &'48 u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -624,16 +624,16 @@ where
 
     storage_live(_0)
     _0 = ()
+    // Normalizing the argument must also preserve the constraint `'b: 'a`.
+    set 'b :> 'a
+    set 'b :> 'a
+    set 'b :> 'a
+    set 'b :> 'a
     storage_live(record)
     storage_live(_4)
-    // Normalizing the argument must also preserve the constraint `'b: 'a`.
     _4 = copy borrowed
     storage_live(_5)
     _5 = copy value
-    set 'b :> 'a
-    set 'b :> 'a
-    set 'b :> 'a
-    set 'b :> 'a
     record = Record { borrowed: move _4, value: move _5 }
     storage_dead(_5)
     storage_dead(_4)

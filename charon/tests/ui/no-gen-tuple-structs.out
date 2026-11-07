@@ -291,7 +291,7 @@ where
 extern "rust-call" fn call_once<'_0>(_1: {closure}<'_0>, _2: (u32, bool)) -> u32
 {
     let mut _0: u32; // return
-    let _1: {closure}<'_0>; // arg #1
+    let mut _1: {closure}<'_0>; // arg #1
     let _2: (u32, bool); // arg #2
     let _3: &'5 mut {closure}<'_0>; // anonymous local
 

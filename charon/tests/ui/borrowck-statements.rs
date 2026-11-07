@@ -119,3 +119,34 @@ where
 {
     let x: impl SameAs<&'a u32> + 'b = value;
 }
+
+pub fn deferred_annotation(value: &'static u32) {
+    let x: &'static u32;
+    x = value;
+}
+
+pub fn ref_annotations(mut value: &'static u32) {
+    let ref x: &'static u32 = value;
+    let ref mut y: &'static u32 = value;
+}
+
+pub struct Pair<'a> {
+    pub x: &'a u32,
+    pub y: &'a u32,
+}
+
+pub fn shared_projected_annotation(value: &'static u32) {
+    // Both locals must share the same inferred annotation lifetime.
+    let Pair { x, y }: Pair<'_>;
+    x = value;
+    y = value;
+}
+
+pub fn multiple_projected_annotations(value: &'static u32) {
+    let Foo::<'static>(ref x): Foo<'_> = Foo(value);
+}
+
+pub fn unused_annotation<'a, 'b: 'a>() {
+    // This annotation has obligations but no local or MIR statement.
+    let _: <&'b u32 as Project<'a>>::Output;
+}

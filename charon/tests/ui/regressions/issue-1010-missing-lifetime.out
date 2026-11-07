@@ -88,7 +88,7 @@ where
 extern "rust-call" fn {impl FnOnce<(&'_0 u16,)> for test_crate::main::{closure#1}<'_0>}::call_once<'_0>(_1: test_crate::main::{closure#1}<'_0>, _2: (&'_0 u16,))
 {
     let mut _0: (); // return
-    let _1: test_crate::main::{closure#1}<'_0>; // arg #1
+    let mut _1: test_crate::main::{closure#1}<'_0>; // arg #1
     let _2: (&'7 u16,); // arg #2
     let _3: &'9 mut test_crate::main::{closure#1}<'_0>; // anonymous local
 

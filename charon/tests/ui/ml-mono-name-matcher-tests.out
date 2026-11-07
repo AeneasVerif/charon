@@ -92,16 +92,16 @@ fn foo()
 {
     let mut _0: (); // return
     let mut _1: bool; // anonymous local
-    let mut _2: &'1 Option::<i32>; // anonymous local
-    let slice: &'3 [bool]; // local
+    let mut _2: &'3 Option::<i32>; // anonymous local
+    let slice: &'0 [bool]; // local
     let mut _4: &'5 [bool; 1usize]; // anonymous local
     let _5: &'6 [bool; 1usize]; // anonymous local
-    let mut _6: &'7 [bool]; // anonymous local
-    let _7: &'8 [bool]; // anonymous local
-    let mut _8: &'9 [bool]; // anonymous local
+    let mut _6: &'8 [bool]; // anonymous local
+    let _7: &'9 [bool]; // anonymous local
+    let mut _8: &'10 [bool]; // anonymous local
     let mut _9: RangeFrom::<usize>; // anonymous local
-    let mut _10: &'10 [bool; 1usize]; // anonymous local
-    let mut _11: &'11 Option::<i32>; // anonymous local
+    let mut _10: &'11 [bool; 1usize]; // anonymous local
+    let mut _11: &'12 Option::<i32>; // anonymous local
 
     storage_live(_0)
     storage_live(_10)
@@ -111,7 +111,7 @@ fn foo()
     storage_live(_2)
     _11 = read test_crate::foo::{promoted_const#1}
     _2 = &(*_11)
-    _1 = is_some::<i32><'16>(move _2)
+    _1 = is_some::<i32><'17>(move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)
@@ -121,10 +121,10 @@ fn foo()
     _10 = read test_crate::foo::{promoted_const}
     _5 = &(*_10)
     _4 = &(*_5)
-    slice = unsize_cast<&'18 [bool], 1usize>(move _4)
+    slice = unsize_cast<&'19 [bool], 1usize>(move _4)
     storage_dead(_4)
     fake_read(slice)
-    set slice := &'19 [bool]
+    set slice := &'1 [bool]
     storage_dead(_5)
     storage_live(_6)
     storage_live(_7)
@@ -222,8 +222,8 @@ fn test_crate::{MonoContainer::<i32>}::create::<i32>(item: i32) -> MonoContainer
 fn test_crate::{MonoContainer::<&'_ str>}::create::<&'_ str>(item: &'_ str) -> MonoContainer::<&'_ str>
 {
     let mut _0: MonoContainer::<&'_ str>; // return
-    let item: &'0 str; // arg #1
-    let mut _2: &'1 str; // anonymous local
+    let item: &'1 str; // arg #1
+    let mut _2: &'2 str; // anonymous local
 
     storage_live(_0)
     storage_live(_2)

@@ -46,7 +46,7 @@ pub const test_crate::main::{promoted_const}: str = "hello" with_metadata(5usize
 fn main()
 {
     let mut _0: (); // return
-    let mut _1: &'1 str; // anonymous local
+    let mut _1: &'2 str; // anonymous local
     let _2: (); // anonymous local
 
     storage_live(_0)

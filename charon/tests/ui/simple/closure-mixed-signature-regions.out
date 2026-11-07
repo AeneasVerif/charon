@@ -190,7 +190,7 @@ where
     TraitClause1: (T: Provide<'a>),
 {
     let mut _0: (&'9 u8, &'10 u8); // return
-    let _1: {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1
+    let mut _1: {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1
     let _2: (&'41 u8,); // arg #2
     let _3: &'44 mut {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // anonymous local
 
@@ -272,8 +272,8 @@ where
     storage_live(_5)
     _5 = &(*x)
     _4 = (move _5,)
-    _0 = TraitClause1<'24>::call<'30>(move _3, move _4)
-    ↳⚡ conditional_drop[{built_in impl Destruct for F}::drop_glue<'31>] f
+    _0 = TraitClause1<'25>::call<'32>(move _3, move _4)
+    ↳⚡ conditional_drop[{built_in impl Destruct for F}::drop_glue<'33>] f
         ↳⚡ storage_dead(x)
             storage_dead(f)
             unwind_terminate
@@ -283,7 +283,7 @@ where
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
-    conditional_drop[{built_in impl Destruct for F}::drop_glue<'32>] f
+    conditional_drop[{built_in impl Destruct for F}::drop_glue<'34>] f
     ↳⚡ storage_dead(x)
         storage_dead(f)
         unwind_continue

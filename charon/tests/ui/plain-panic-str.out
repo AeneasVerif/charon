@@ -26,7 +26,7 @@ pub const test_crate::main::{promoted_const}: str = "O no" with_metadata(4usize)
 fn main()
 {
     let mut _0: (); // return
-    let mut _1: Arguments<'1>; // anonymous local
+    let mut _1: Arguments<'2>; // anonymous local
     let mut _2: &'7 str; // anonymous local
 
     storage_live(_0)
@@ -34,7 +34,7 @@ fn main()
     storage_live(_1)
     storage_live(_2)
     _2 = &test_crate::main::{promoted_const} with_metadata(const 4usize)
-    _1 = from_str<'2>(move _2)
+    _1 = from_str<'0>(move _2)
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_2)

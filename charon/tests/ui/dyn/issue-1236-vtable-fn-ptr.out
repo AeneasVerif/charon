@@ -104,16 +104,18 @@ fn main()
 {
     let mut _0: (); // return
     let bar: Bar; // local
-    let some_foo: &'3 (dyn Foo + '4); // local
-    let mut _3: &'6 Bar; // anonymous local
-    let _4: &'7 Bar; // anonymous local
+    let some_foo: &'0 (dyn Foo + '1); // local
+    let mut _3: &'5 Bar; // anonymous local
+    let _4: &'6 Bar; // anonymous local
     let _5: (); // anonymous local
-    let mut _6: &'8 (dyn Foo + '9); // anonymous local
-    let mut _7: fn(&'8 (dyn Foo + '9)); // anonymous local
+    let mut _6: &'10 (dyn Foo + '11); // anonymous local
+    let mut _7: fn(&'10 (dyn Foo + '11)); // anonymous local
 
     bb0: {
         storage_live(_0);
         _0 = ();
+        set '1 :> '0;
+        set '3 :> '2;
         storage_live(bar);
         bar = Bar {  };
         fake_read(bar);
@@ -122,17 +124,16 @@ fn main()
         storage_live(_4);
         _4 = &bar;
         _3 = &(*_4);
-        some_foo = unsize_cast<&'10 (dyn Foo + '11), &impl_Foo_for_Bar::{vtable}>(move _3);
+        some_foo = unsize_cast<&'12 (dyn Foo + '13), &impl_Foo_for_Bar::{vtable}>(move _3);
         storage_dead(_3);
         fake_read(some_foo);
-        set '13 :> '12;
-        set some_foo := &'12 (dyn Foo + '13);
+        set some_foo := &'2 (dyn Foo + '3);
         storage_dead(_4);
         storage_live(_5);
         storage_live(_6);
         _6 = &(*some_foo) with_metadata(read some_foo.metadata);
         storage_live(_7);
-        _7 = cast<fn(&'8 (dyn Foo + '9))>(read (*_6.metadata).method_foo);
+        _7 = cast<fn(&'10 (dyn Foo + '11))>(read (*_6.metadata).method_foo);
         _5 = (read _7)(move _6) -> bb1 (unwind: bb2);
     }
 

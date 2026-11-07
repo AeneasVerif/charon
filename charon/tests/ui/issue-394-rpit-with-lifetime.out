@@ -102,7 +102,7 @@ where
 extern "rust-call" fn call_once<'a, '_1>(_1: {closure}<'a, '_1>, _2: ()) -> Option<u8>[{built_in impl Sized for u8}]
 {
     let mut _0: Option<u8>[{built_in impl Sized for u8}]; // return
-    let _1: {closure}<'a, '_1>; // arg #1
+    let mut _1: {closure}<'a, '_1>; // arg #1
     let _2: (); // arg #2
     let _3: &'4 mut {closure}<'a, '_1>; // anonymous local
 
