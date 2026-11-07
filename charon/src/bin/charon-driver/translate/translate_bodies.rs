@@ -21,6 +21,7 @@ use rustc_span::{Symbol, sym};
 
 use super::translate_crate::*;
 use super::translate_ctx::*;
+use super::user_type_annotations::UserTypeAnnotations;
 use charon_lib::formatter::{FmtCtx, IntoFormatter, compute_local_names};
 use charon_lib::name_matcher::NamePattern;
 use charon_lib::options::TranslateOptions;
@@ -35,7 +36,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'tctx, 'ictx> {
     /// List of body locals.
     pub local_decls: &'ictx rustc_index::IndexVec<mir::Local, mir::LocalDecl<'tcx>>,
     /// Types supplied explicitly by the user.
-    pub user_type_annotations: ty::CanonicalUserTypeAnnotations<'tcx>,
+    pub user_type_annotations: UserTypeAnnotations<'tcx>,
 
     /// What kind of drops we get in this body.
     pub drop_kind: DropKind,
@@ -62,21 +63,7 @@ impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
         drop_kind: DropKind,
     ) -> Self {
         i_ctx.lifetime_freshener = (!i_ctx.options.erase_body_lifetimes).then(IndexMap::new);
-        let mut user_type_annotations = body.user_type_annotations.clone();
-        if let RustcItem::Mono(item) = &i_ctx.item_src.item {
-            // `CanonicalUserTypeAnnotation::user_ty` is deliberately not folded when rustc
-            // instantiates a MIR body, so do the item substitution explicitly.
-            let item = item.clone();
-            let args = item.rustc_args(i_ctx.hax_state_with_id());
-            for annotation in &mut user_type_annotations {
-                annotation.user_ty.value = hax::substitute(
-                    i_ctx.tcx,
-                    hax::UnderOwnerState::typing_env(&i_ctx.hax_state),
-                    Some(args),
-                    annotation.user_ty.value,
-                );
-            }
-        }
+        let user_type_annotations = UserTypeAnnotations::new(i_ctx, body);
         BodyTransCtx {
             i_ctx,
             local_decls: &body.local_decls,
@@ -835,48 +822,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         span: Span,
         user_ty: &mir::UserTypeProjection,
     ) -> Result<Ty, Error> {
-        let Some(owner) = self.item_src.def_id().as_real_or_promoted() else {
-            raise_error!(self, span, "user type annotation without a rustc owner");
-        };
-        let ty_constraints = hax::rustc::recover_user_type(
-            self.tcx,
-            hax::UnderOwnerState::typing_env(&self.hax_state),
-            &self.user_type_annotations,
-            owner,
-            user_ty,
-        );
-        let ty_constraints = match ty_constraints {
-            Ok(ty_constraints) => ty_constraints,
-            Err(message) => raise_error!(self, span, "{message}"),
-        };
-        let ty_constraints: hax::Binder<(hax::Ty<'tcx>, Vec<hax::Clause<'tcx>>)> =
-            self.catch_sinto(span, &ty_constraints)?;
-        let bound_constraints =
-            self.translate_region_binder(span, &ty_constraints, |ctx, (ty, clauses)| {
-                let ty = ctx.translate_ty(span, ty)?;
-                let mut outlives = Vec::new();
-                for clause in clauses {
-                    let pred = ctx.translate_region_binder(span, &clause.kind, |ctx, kind| {
-                        Ok(match kind {
-                            hax::ClauseKind::RegionOutlives(p) => OutlivesPred(
-                                ctx.translate_region(span, &p.lhs)?,
-                                ctx.translate_region(span, &p.rhs)?,
-                            ),
-                            hax::ClauseKind::TypeOutlives(p) => OutlivesPred(
-                                Region::Lub(ctx.translate_ty(span, &p.lhs)?),
-                                ctx.translate_region(span, &p.rhs)?,
-                            ),
-                            _ => unreachable!(
-                                "recovered ascription contains a non-region constraint"
-                            ),
-                        })
-                    })?;
-                    outlives.push(pred.no_bound_vars());
-                }
-                Ok((ty, outlives))
-            })?;
-        // Instantiate the binder with body regions.
-        let (ty, outlives) = self.erase_region_binder(bound_constraints);
+        let (ty, outlives) = self
+            .b_ctx
+            .user_type_annotations
+            .translate_place_annotation(self.b_ctx.i_ctx, span, user_ty)?;
         self.insert_outlives_stmts(span, outlives);
         Ok(ty)
     }
