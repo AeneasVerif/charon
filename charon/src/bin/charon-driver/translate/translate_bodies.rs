@@ -1512,13 +1512,36 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                             operands_t,
                         ))
                     }
-                    mir::AggregateKind::Adt(def_id, variant_idx, generics, _, field_index) => {
+                    mir::AggregateKind::Adt(
+                        def_id,
+                        variant_idx,
+                        generics,
+                        user_ty,
+                        field_index,
+                    ) => {
                         use ty::AdtKind;
                         trace!("{:?}", rvalue);
 
                         let adt_kind = self.tcx.adt_def(*def_id).adt_kind();
-                        let item = hax::translate_item_ref(&self.hax_state, *def_id, generics);
-                        let tref = self.translate_type_decl_ref(span, &item)?;
+                        let tref = if let Some(user_ty) = *user_ty
+                            && !self.user_type_annotations.is_empty()
+                        {
+                            // Use the type annotation if there is one.
+                            let ty = self.translate_user_type_projection(
+                                span,
+                                &mir::UserTypeProjection {
+                                    base: user_ty,
+                                    projs: vec![],
+                                },
+                            )?;
+                            let TyKind::Adt(tref) = ty.kind() else {
+                                raise_error!(self, span, "aggregate annotation has non-ADT type");
+                            };
+                            tref.clone()
+                        } else {
+                            let item = hax::translate_item_ref(&self.hax_state, *def_id, generics);
+                            self.translate_type_decl_ref(span, &item)?
+                        };
                         let variant_id = match adt_kind {
                             AdtKind::Struct | AdtKind::Union => None,
                             AdtKind::Enum => Some(self.translate_variant_id(*variant_idx)),
