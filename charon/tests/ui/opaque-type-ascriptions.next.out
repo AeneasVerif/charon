@@ -1,0 +1,27 @@
+error: could not recover user type ascription
+  --> tests/ui/opaque-type-ascriptions.rs:24:13
+   |
+24 |     let _ = None::<Opaque>;
+   |             ^^^^^^^^^^^^^^
+
+note: no errors encountered even though delayed bugs were created
+
+note: those delayed bugs will now be shown as internal compiler errors
+
+error: internal compiler error: error performing operation: fully_perform
+  --> tests/ui/opaque-type-ascriptions.rs:24:13
+   |
+24 |     let _ = None::<Opaque>;
+   |             ^^^^^^^^^^^^^^
+   |
+note: delayed at /home/nadrieril/.rustup/toolchains/nightly-2026-09-17-x86_64-unknown-linux-gnu/lib/rustlib/rustc-src/rust/compiler/rustc_trait_selection/src/traits/query/type_op/custom.rs:126:26 - disabled backtrace
+  --> tests/ui/opaque-type-ascriptions.rs:24:13
+   |
+24 |     let _ = None::<Opaque>;
+   |             ^^^^^^^^^^^^^^
+
+
+thread 'rustc' panicked at /rustc-dev/923c95cdf5ba65cea505aa2ea829f578e1506ed8/compiler/rustc_errors/src/lib.rs:1518:9:
+Box<dyn Any>
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+ERROR Compilation panicked
