@@ -1,0 +1,41 @@
+# Final LLBC before serialization:
+
+struct () {}
+
+struct test_crate::Trait::{vtable} {
+  size: usize,
+  align: usize,
+  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait)),
+}
+
+// Full name: test_crate::Trait
+trait Trait<Self>
+
+// Full name: test_crate::Use
+trait Use<Self, C>
+{
+    fn method<'a, Outlives0: (C: 'a)>;
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Use<(dyn Trait + 'static)> for ()}::method
+fn method<'a>(context: &'a (dyn Trait + 'static))
+{
+    let mut _0: (); // return
+    let context: &'3 (dyn Trait + '4); // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(context)
+    return
+}
+
+// Full name: test_crate::{impl Use<(dyn Trait + 'static)> for ()}
+impl "impl_Use_for_unit" Use<(dyn Trait + 'static)> for () {
+    fn method<'a> = method<'a>
+    non-dyn-compatible
+}
+
+
+
