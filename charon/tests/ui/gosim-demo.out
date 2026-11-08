@@ -73,8 +73,6 @@ where
     TraitClause1: (T: Debug),
     Outlives0: (T: '_0),
 {
-    where
-        T: '10,
     let mut _0: (); // return
     let slice: &'13 [T]; // arg #1
     let mut _2: Iter<'15, T>[TraitClause0]; // anonymous local
@@ -99,6 +97,7 @@ where
 
     storage_live(_0)
     _0 = ()
+    set T: '10
     storage_live(_2)
     storage_live(_3)
     _3 = copy slice

@@ -137,8 +137,6 @@ pub struct GExprBody<T> {
     /// The number of regions existentially bound in this body. We introduce fresh such regions
     /// during translation instead of the erased regions that rustc gives us.
     pub bound_body_regions: usize,
-    /// Outlives relationships between body regions that hold throughout the body.
-    pub body_outlives: Vec<OutlivesPred>,
     /// The local variables.
     pub locals: Locals,
     /// The statements and blocks that compose this body.

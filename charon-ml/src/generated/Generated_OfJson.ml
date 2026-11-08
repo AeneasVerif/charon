@@ -3164,21 +3164,15 @@ and gexpr_body_of_json :
         [
           ("span", span);
           ("bound_body_regions", bound_body_regions);
-          ("body_outlives", body_outlives);
           ("locals", locals);
           ("body", body);
           ("comments", _);
         ] ->
         let* span = span_of_json ctx span in
         let* bound_body_regions = int_of_json ctx bound_body_regions in
-        let* body_outlives =
-          list_of_json outlives_pred_of_json ctx body_outlives
-        in
         let* locals = locals_of_json ctx locals in
         let* body = arg0_of_json ctx body in
-        Ok
-          ({ span; bound_body_regions; body_outlives; locals; body }
-            : _ gexpr_body)
+        Ok ({ span; bound_body_regions; locals; body } : _ gexpr_body)
     | _ -> Error "")
 
 and global_decl_of_json (ctx : of_json_ctx) (js : json) :

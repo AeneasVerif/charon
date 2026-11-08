@@ -265,9 +265,6 @@ where
 // Full name: test_crate::main
 fn main()
 {
-    where
-        '1: '0, '3: '2, '5: '4, '7: '6, '9: '8,
-        '11: '10,
     let mut _0: (); // return
     let cat: HouseCat; // local
     let dyn_cat: &'0 (dyn Cat + '1); // local
@@ -285,6 +282,12 @@ fn main()
 
     storage_live(_0)
     _0 = ()
+    set '1: '0
+    set '3: '2
+    set '5: '4
+    set '7: '6
+    set '9: '8
+    set '11: '10
     storage_live(cat)
     cat = HouseCat {  }
     fake_read(cat)

@@ -281,8 +281,6 @@ where
 // Full name: test_crate::foo
 fn foo()
 {
-    where
-        '3: '2, '5: '4,
     let mut _0: (); // return
     let array: [i32; 2usize]; // local
         where array := [i32; 2usize];
@@ -334,6 +332,8 @@ fn foo()
 
     storage_live(_0)
     _0 = ()
+    set '3: '2
+    set '5: '4
     storage_live(array)
     array = repeat<i32, 2usize>[{built_in impl Sized for i32}, impl_Clone_for_i32](const 0i32)
     ↳⚡ undefined_behavior

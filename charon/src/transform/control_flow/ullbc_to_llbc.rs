@@ -1378,7 +1378,6 @@ fn translate_body(ctx: &mut TransformCtx, body: &mut Body) {
         span: src_body.span,
         locals: src_body.locals.clone(),
         bound_body_regions: src_body.bound_body_regions,
-        body_outlives: src_body.body_outlives.clone(),
         body: tgt_body,
         comments: src_body.comments.clone(),
     };

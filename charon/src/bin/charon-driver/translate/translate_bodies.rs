@@ -737,6 +737,15 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
             self.translate_basic_block(block_id, &mir_body.source_scopes, mir_block)?;
         }
 
+        // Record the outlives that need to hold throughout the body.
+        let outlives = self.user_type_annotations.outlives.drain(..).map(|pred| {
+            let kind = StatementKind::Borrowck(BorrowckStatement::SetOutlives(pred));
+            Statement::new(span, kind)
+        });
+        self.blocks[START_BLOCK_ID]
+            .statements
+            .splice(0..0, outlives);
+
         // Create the body
         let comments = self.translate_body_comments(source_text, span);
         Ok(Body::Unstructured(ExprBody {
@@ -747,7 +756,6 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
                 .lifetime_freshener
                 .take()
                 .map_or(0, |v| v.slot_count()),
-            body_outlives: self.user_type_annotations.body_outlives,
             body: self.blocks.make_contiguous(),
             comments,
         }))

@@ -169,8 +169,6 @@ vtable impl_Trait_for_Struct::{vtable}: test_crate::Trait::{vtable} = test_crate
 // Full name: test_crate::main
 pub fn main()
 {
-    where
-        '1: '0, '3: '2,
     let mut _0: (); // return
     let b: &'0 (dyn Trait + '1); // local
         where b := &'2 (dyn Trait + '3);
@@ -192,6 +190,8 @@ pub fn main()
     storage_live(_0)
     storage_live(_6)
     _0 = ()
+    set '1: '0
+    set '3: '2
     storage_live(b)
     storage_live(_2)
     storage_live(_3)

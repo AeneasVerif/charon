@@ -71,14 +71,11 @@ class ['self] map_crate =
     inherit [_] map_statement
 
     method visit_expr_body env (body : expr_body) : expr_body =
-      let { span; locals; bound_body_regions; body_outlives; body } = body in
+      let { span; locals; bound_body_regions; body } = body in
       let span = self#visit_span env span in
       let locals = self#visit_locals env locals in
-      let body_outlives =
-        self#visit_list self#visit_outlives_pred env body_outlives
-      in
       let body = self#visit_block env body in
-      { span; locals; bound_body_regions; body_outlives; body }
+      { span; locals; bound_body_regions; body }
 
     method visit_fun_decl env (decl : fun_decl) : fun_decl =
       let { def_id; item_meta; generics; signature; src; body } = decl in
@@ -210,9 +207,8 @@ class ['self] iter_crate =
     inherit [_] iter_statement
 
     method visit_expr_body env (body : expr_body) : unit =
-      let { span; locals; bound_body_regions; body_outlives; body } = body in
+      let { span; locals; bound_body_regions; body } = body in
       self#visit_int env bound_body_regions;
-      self#visit_list self#visit_outlives_pred env body_outlives;
       self#visit_span env span;
       self#visit_locals env locals;
       self#visit_block env body

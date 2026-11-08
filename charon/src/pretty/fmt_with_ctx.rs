@@ -1059,17 +1059,6 @@ impl<T> GExprBody<T> {
         let ctx = &ctx.increase_indent();
         let tab = ctx.indent();
 
-        if !self.body_outlives.is_empty() {
-            writeln!(f, "{tab}where")?;
-            for preds in self.body_outlives.chunks(5) {
-                writeln!(
-                    f,
-                    "{tab}    {},",
-                    preds.iter().map(|pred| pred.with_ctx(ctx)).format(", ")
-                )?;
-            }
-        }
-
         // Format the local variables
         for v in &self.locals.locals {
             write!(f, "{tab}let ")?;
@@ -2475,8 +2464,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for BorrowckStatement {
             BorrowckStatement::SetType(constraint) => {
                 write!(f, "set {}", constraint.with_ctx(ctx))
             }
-            BorrowckStatement::SetOutlives(OutlivesPred(lhs, rhs)) => {
-                write!(f, "set {} :> {}", lhs.with_ctx(ctx), rhs.with_ctx(ctx))
+            BorrowckStatement::SetOutlives(pred) => {
+                write!(f, "set {}", pred.with_ctx(ctx))
             }
         }
     }

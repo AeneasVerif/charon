@@ -444,10 +444,6 @@ let expr_body_substitute (subst : subst) (body : expr_body) : expr_body =
   {
     body with
     locals = st_substitute_visitor#visit_locals subst body.locals;
-    body_outlives =
-      List.map
-        (st_substitute_visitor#visit_outlives_pred subst)
-        body.body_outlives;
     body = block_substitute subst body.body;
   }
 

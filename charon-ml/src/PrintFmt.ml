@@ -1795,9 +1795,9 @@ let pp_borrowck_statement (env : fmt_env) (fmt : Format.formatter)
   | FakeRead place -> Format.fprintf fmt "fake_read(%a)" (pp_place env) place
   | SetType constraint_ ->
       Format.fprintf fmt "set %a" (pp_place_type_constraint env) constraint_
-  | SetOutlives (lhs, rhs) ->
-      Format.fprintf fmt "set %s :> %s" (region_to_string env lhs)
-        (region_to_string env rhs)
+  | SetOutlives pred ->
+      Format.fprintf fmt "set %s"
+        (outlives_to_string_with ty_to_string env pred)
 
 let pp_abort_kind (env : fmt_env) (fmt : Format.formatter) (a : abort_kind) :
     unit =
@@ -1887,18 +1887,6 @@ let pp_fun_sig (env : fmt_env) (indent : string) (indent_incr : string)
   if not (ty_is_unit sg.output) then
     Format.fprintf fmt " -> %s" (ty_to_string env sg.output);
   pp_string fmt clauses
-
-let pp_body_outlives (env : fmt_env) (indent : string) (indent_incr : string)
-    (fmt : Format.formatter) (outlives : outlives_pred list) : unit =
-  if outlives <> [] then (
-    Format.fprintf fmt "%swhere" indent;
-    List.iteri
-      (fun i pred ->
-        if i mod 5 = 0 then Format.fprintf fmt "\n%s%s" indent indent_incr
-        else pp_string fmt " ";
-        Format.fprintf fmt "%s," (outlives_to_string_with ty_to_string env pred))
-      outlives;
-    pp_string fmt "\n")
 
 let pp_locals (env : fmt_env) (indent : string) (fmt : Format.formatter)
     (locals : locals) : unit =
@@ -2633,22 +2621,18 @@ let pp_fun_decl (env : fmt_env) (indent : string) (indent_incr : string)
     Format.fprintf fmt " -> %s" (ty_to_string env def.signature.output);
   pp_string fmt clauses;
   match def.body with
-  | StructuredBody { locals; body; body_outlives; _ } ->
+  | StructuredBody { locals; body; _ } ->
       let env = fmt_env_set_locals env locals in
       let body_indent = indent ^ indent_incr in
-      Format.fprintf fmt "\n%s{\n" indent;
-      pp_body_outlives env body_indent indent_incr fmt body_outlives;
-      Format.fprintf fmt "%a\n\n%a%s}"
+      Format.fprintf fmt "\n%s{\n%a\n\n%a%s}" indent
         (pp_locals env body_indent)
         locals
         (pp_llbc_block env body_indent indent_incr)
         body indent
-  | UnstructuredBody { locals; body; body_outlives; _ } ->
+  | UnstructuredBody { locals; body; _ } ->
       let env = fmt_env_set_locals env locals in
       let body_indent = indent ^ indent_incr in
-      Format.fprintf fmt "\n%s{\n" indent;
-      pp_body_outlives env body_indent indent_incr fmt body_outlives;
-      Format.fprintf fmt "%a\n\n%a\n%s}"
+      Format.fprintf fmt "\n%s{\n%a\n\n%a\n%s}" indent
         (pp_locals env body_indent)
         locals
         (pp_ullbc_blocks env body_indent indent_incr)

@@ -317,8 +317,6 @@ pub fn normalized_argument<'a, 'b>(value: u32)
 where
     Outlives0: ('b: 'a),
 {
-    where
-        'b: 'a,
     let mut _0: (); // return
     let value: u32; // arg #1
     let _2: (); // anonymous local
@@ -326,6 +324,7 @@ where
 
     storage_live(_0)
     _0 = ()
+    set 'b: 'a
     storage_live(_2)
     storage_live(_3)
     _3 = copy value
@@ -614,8 +613,6 @@ pub fn normalized_aggregate<'a, 'b>(borrowed: &'a u32, value: u32)
 where
     Outlives0: ('b: 'a),
 {
-    where
-        'b: 'a,
     let mut _0: (); // return
     let borrowed: &'1 u32; // arg #1
     let value: u32; // arg #2
@@ -625,6 +622,7 @@ where
 
     storage_live(_0)
     _0 = ()
+    set 'b: 'a
     storage_live(record)
     storage_live(_4)
     // Normalizing the argument must also preserve the constraint `'b: 'a`.

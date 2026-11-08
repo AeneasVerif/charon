@@ -477,8 +477,6 @@ where
     TraitClause1: (T: Clone),
     Outlives0: (T: '_0),
 {
-    where
-        T: '0, T: '2, '1: '0, '3: '2,
     let mut _0: T; // return
     let arg: &'5 T; // arg #1
     let x: &'0 mut (dyn Modifiable<T> + '1); // local
@@ -490,6 +488,10 @@ where
     let mut _7: &'14 T; // anonymous local
 
     storage_live(_0)
+    set T: '0
+    set T: '2
+    set '1: '0
+    set '3: '2
     storage_live(x)
     storage_live(_3)
     storage_live(_4)
@@ -1081,9 +1083,6 @@ pub const test_crate::main::{promoted_const#18}: str = "Hello" with_metadata(5us
 // Full name: test_crate::main
 fn main()
 {
-    where
-        '1: '0, '3: '2, '5: '4, '7: '6, '9: '8,
-        '11: '10, '13: '12, '15: '14, '17: '16, '19: '18,
     let mut _0: (); // return
     let x: &'0 (dyn Checkable<i32> + '1); // local
         where x := &'2 (dyn Checkable<i32> + '3);
@@ -1220,6 +1219,16 @@ fn main()
     storage_live(_84)
     storage_live(_85)
     _0 = ()
+    set '1: '0
+    set '3: '2
+    set '5: '4
+    set '7: '6
+    set '9: '8
+    set '11: '10
+    set '13: '12
+    set '15: '14
+    set '17: '16
+    set '19: '18
     storage_live(x)
     storage_live(_2)
     storage_live(_3)

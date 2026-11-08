@@ -45,8 +45,6 @@ vtable core::marker::Send::{vtable}<Self>: core::marker::Send::{vtable} = core::
 // Full name: test_crate::main
 fn main()
 {
-    where
-        '1: '0, '3: '2,
     let mut _0: (); // return
     let _x: &'0 (dyn Send + '1); // local
         where _x := &'2 (dyn Send + '3);
@@ -66,6 +64,8 @@ fn main()
     storage_live(_0)
     storage_live(_4)
     _0 = ()
+    set '1: '0
+    set '3: '2
     storage_live(_x)
     storage_live(_2)
     storage_live(_3)

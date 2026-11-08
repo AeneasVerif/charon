@@ -644,9 +644,6 @@ type 'a0 gexpr_body = {
       (** The number of regions existentially bound in this body. We introduce
           fresh such regions during translation instead of the erased regions
           that rustc gives us. *)
-  body_outlives : outlives_pred list;
-      (** Outlives relationships between body regions that hold throughout the
-          body. *)
   locals : locals;  (** The local variables. *)
   body : 'a0;  (** The statements and blocks that compose this body. *)
 }

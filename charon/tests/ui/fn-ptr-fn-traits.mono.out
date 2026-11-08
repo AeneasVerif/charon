@@ -1018,8 +1018,6 @@ fn increment(x: u32) -> u32
 // Full name: test_crate::test_dyn_fn
 pub fn test_dyn_fn(x: u32) -> u32
 {
-    where
-        '1: '0, '3: '2,
     let mut _0: u32; // return
     let x: u32; // arg #1
     let fn_ptr: fn(u32) -> u32; // local
@@ -1034,6 +1032,8 @@ pub fn test_dyn_fn(x: u32) -> u32
     let mut _9: fn(&'10 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '11), (u32,)) -> u32; // anonymous local
 
     storage_live(_0)
+    set '1: '0
+    set '3: '2
     storage_live(fn_ptr)
     fn_ptr = fn_def_to_fn_ptr(const increment)
     fake_read(fn_ptr)
@@ -1070,8 +1070,6 @@ pub fn test_dyn_fn(x: u32) -> u32
 // Full name: test_crate::test_dyn_fn_mut
 pub fn test_dyn_fn_mut(x: u32) -> u32
 {
-    where
-        '1: '0, '3: '2,
     let mut _0: u32; // return
     let x: u32; // arg #1
     let mut fn_ptr: fn(u32) -> u32; // local
@@ -1086,6 +1084,8 @@ pub fn test_dyn_fn_mut(x: u32) -> u32
     let mut _9: fn(&'10 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '11), (u32,)) -> u32; // anonymous local
 
     storage_live(_0)
+    set '1: '0
+    set '3: '2
     storage_live(fn_ptr)
     fn_ptr = fn_def_to_fn_ptr(const increment)
     fake_read(fn_ptr)

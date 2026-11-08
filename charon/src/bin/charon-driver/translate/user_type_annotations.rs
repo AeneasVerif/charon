@@ -15,7 +15,7 @@ struct UserTypeAnnotation {
 /// User-provided type annotations for this MIR body.
 pub(crate) struct UserTypeAnnotations {
     annotations: rustc_index::IndexVec<ty::UserTypeAnnotationIndex, UserTypeAnnotation>,
-    pub body_outlives: Vec<OutlivesPred>,
+    pub outlives: Vec<OutlivesPred>,
 }
 
 impl UserTypeAnnotations {
@@ -45,7 +45,7 @@ impl UserTypeAnnotations {
 
         let mut recovered = Self {
             annotations: Default::default(),
-            body_outlives: Vec::new(),
+            outlives: Vec::new(),
         };
         if annotations.is_empty() {
             return Ok(recovered);
@@ -80,10 +80,10 @@ impl UserTypeAnnotations {
                 projections: projections.into_iter().zip_eq(tys).collect(),
             };
             assert_eq!(recovered.annotations.push(annotation), base);
-            recovered.body_outlives.extend(outlives);
+            recovered.outlives.extend(outlives);
         }
-        recovered.body_outlives.sort_unstable();
-        recovered.body_outlives.dedup();
+        recovered.outlives.sort_unstable();
+        recovered.outlives.dedup();
         Ok(recovered)
     }
 

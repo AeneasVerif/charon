@@ -2592,7 +2592,6 @@ and gexpr_body_of_postcard :
   combine_error_msgs st __FUNCTION__
     (let* span = span_of_postcard ctx st in
      let* bound_body_regions = usize_of_postcard ctx st in
-     let* body_outlives = list_of_postcard outlives_pred_of_postcard ctx st in
      let* locals = locals_of_postcard ctx st in
      let* body = arg0_of_postcard ctx st in
      let* _ =
@@ -2601,9 +2600,7 @@ and gexpr_body_of_postcard :
             (list_of_postcard string_of_postcard))
          ctx st
      in
-     Ok
-       ({ span; bound_body_regions; body_outlives; locals; body }
-         : _ gexpr_body))
+     Ok ({ span; bound_body_regions; locals; body } : _ gexpr_body))
 
 and global_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (global_decl, string) result =

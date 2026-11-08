@@ -159,8 +159,6 @@ impl "impl_Trait_bool_for_bool" Trait<bool> for bool {
 // Full name: test_crate::main
 fn main()
 {
-    where
-        '1: '0, '3: '2, '5: '4, '7: '6,
     let mut _0: (); // return
     let a: &'0 (dyn Trait<usize, Item = bool> + '1); // local
         where a := &'2 (dyn Trait<usize, Item = bool> + '3);
@@ -195,6 +193,10 @@ fn main()
     storage_live(_11)
     storage_live(_12)
     _0 = ()
+    set '1: '0
+    set '3: '2
+    set '5: '4
+    set '7: '6
     storage_live(a)
     storage_live(_2)
     storage_live(_3)
