@@ -51,8 +51,8 @@ impl UserTypeAnnotations {
             return Ok(recovered);
         }
 
-        // Gather all the projections on user annotations. We always include at least the
-        // unprojected annotation.
+        // Gather the projections on user annotations that are actually used. Unused annotation
+        // types can reference items like intrinsics that have already been lowered away.
         struct CollectProjections(
             rustc_index::IndexVec<
                 ty::UserTypeAnnotationIndex,
@@ -63,13 +63,29 @@ impl UserTypeAnnotations {
             fn visit_user_type_projection(&mut self, projection: &mir::UserTypeProjection) {
                 self.0[projection.base].insert(projection.projs.clone());
             }
+
+            fn visit_const_operand(
+                &mut self,
+                operand: &mir::ConstOperand<'tcx>,
+                location: mir::Location,
+            ) {
+                if let Some(base) = operand.user_ty {
+                    self.0[base].insert(vec![]);
+                }
+                self.super_const_operand(operand, location);
+            }
+
+            fn visit_rvalue(&mut self, rvalue: &mir::Rvalue<'tcx>, location: mir::Location) {
+                if let mir::Rvalue::Aggregate(kind, _) = rvalue
+                    && let mir::AggregateKind::Adt(_, _, _, Some(base), _) = **kind
+                {
+                    self.0[base].insert(vec![]);
+                }
+                self.super_rvalue(rvalue, location);
+            }
         }
-        let mut projections = CollectProjections(
-            annotations
-                .iter()
-                .map(|_| SeqHashSet::from([vec![]]))
-                .collect(),
-        );
+        let mut projections =
+            CollectProjections(annotations.iter().map(|_| SeqHashSet::default()).collect());
         projections.visit_body(body);
         for (base, projections) in projections.0.into_iter_enumerated() {
             let annotation = &annotations[base];

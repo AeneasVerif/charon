@@ -262,11 +262,11 @@ where
 // Full name: test_crate::destructure
 pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]) -> &'a u32
 {
-    let mut _0: &'3 u32; // return
-    let input: &'5 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // arg #1
-    let x: &'6 u32; // local
-    let mut _3: &'7 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // anonymous local
-        where _3 :< &'1 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}];
+    let mut _0: &'2 u32; // return
+    let input: &'4 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // arg #1
+    let x: &'5 u32; // local
+    let mut _3: &'6 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // anonymous local
+        where _3 :< &'0 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}];
 
     storage_live(_0)
     storage_live(_3)

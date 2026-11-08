@@ -177,8 +177,8 @@ pub static EMPTY: &'static [u8] = unsize_cast<&'_ [u8], 0usize>(no-provenance 1)
 pub fn inline_const()
 {
     let mut _0: (); // return
-    let mut _1: &'3 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
-        where _1 :< &'1 Outer<[u16]>[{built_in impl MetaSized for [u16]}];
+    let mut _1: &'2 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
+        where _1 :< &'0 Outer<[u16]>[{built_in impl MetaSized for [u16]}];
     let mut _2: *const MaybeUninit<[u8; 12usize]>[{built_in impl Sized for [u8; 12usize]}]; // anonymous local
     let mut _3: *const Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
 

@@ -1377,13 +1377,13 @@ pub fn const_array() -> [u32; 2usize]
 pub fn const_slice()
 {
     let mut _0: (); // return
-    let mut _1: &'3 [u32]; // anonymous local
-        where _1 :< &'1 [u32];
-    let mut _2: &'5 [u32; 2usize]; // anonymous local
-    let _3: &'6 [u32; 2usize]; // anonymous local
-    let mut _4: &'7 [u32; 2usize]; // anonymous local
-    let mut _5: &'8 [u32; 2usize]; // anonymous local
-    let mut _6: &'10 [u32; 2usize]; // anonymous local
+    let mut _1: &'2 [u32]; // anonymous local
+        where _1 :< &'0 [u32];
+    let mut _2: &'4 [u32; 2usize]; // anonymous local
+    let _3: &'5 [u32; 2usize]; // anonymous local
+    let mut _4: &'6 [u32; 2usize]; // anonymous local
+    let mut _5: &'7 [u32; 2usize]; // anonymous local
+    let mut _6: &'9 [u32; 2usize]; // anonymous local
     let mut _7: [u32; 2usize]; // anonymous local
 
     storage_live(_5)
