@@ -1,0 +1,15 @@
+error: Coroutine types are not supported yet
+ --> tests/ui/coroutines/gen-block.rs:7:1
+  |
+7 | / fn gen_block() -> impl Iterator<Item = ()> {
+8 | |     gen { yield () }
+9 | | }
+  | |_^
+
+error: Coroutines are not supported
+ --> tests/ui/coroutines/gen-block.rs:8:5
+  |
+8 |     gen { yield () }
+  |     ^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (2 errors)

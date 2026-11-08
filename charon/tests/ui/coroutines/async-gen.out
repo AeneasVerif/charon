@@ -1,0 +1,15 @@
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/async-gen.rs:8:1
+   |
+ 8 | / fn async_gen() -> impl AsyncIterator<Item = ()> {
+ 9 | |     async gen { yield () }
+10 | | }
+   | |_^
+
+error: Coroutines are not supported
+ --> tests/ui/coroutines/async-gen.rs:9:5
+  |
+9 |     async gen { yield () }
+  |     ^^^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (2 errors)

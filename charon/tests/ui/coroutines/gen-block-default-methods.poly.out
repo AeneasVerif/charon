@@ -1,0 +1,19 @@
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/gen-block-default-methods.rs:11:5
+   |
+11 | /     gen {
+12 | |         yield 1u32;
+13 | |         yield 2;
+14 | |     }
+   | |_____^
+
+error: Coroutines are not supported
+  --> tests/ui/coroutines/gen-block-default-methods.rs:11:5
+   |
+11 | /     gen {
+12 | |         yield 1u32;
+13 | |         yield 2;
+14 | |     }
+   | |_____^
+
+ERROR Charon failed to translate this code (2 errors)

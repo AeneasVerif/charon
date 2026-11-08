@@ -1,0 +1,96 @@
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/layout.rs:8:1
+   |
+ 8 | / fn mk(x: u8, y: u64) -> impl Coroutine<Yield = (), Return = ()> {
+ 9 | |     #[coroutine]
+10 | |     move || {
+...  |
+28 | | }
+   | |_^
+
+error: Coroutines are not supported
+  --> tests/ui/coroutines/layout.rs:10:5
+   |
+10 | /     move || {
+11 | |         // saved across all yields: goes in the prefix next to upvars/tag
+12 | |         let a = 0u32;
+13 | |         yield;
+...  |
+26 | |         drop(c);
+27 | |     }
+   | |_____^
+
+warning: calls to `std::mem::drop` with a value that implements `Copy` does nothing
+  --> tests/ui/coroutines/layout.rs:18:13
+   |
+18 |             drop(b);
+   |             ^^^^^-^
+   |                  |
+   |                  argument has type `u16`
+   |
+   = note: `#[warn(dropping_copy_types)]` on by default
+help: use `let _ = ...` to ignore the expression or result
+   |
+18 -             drop(b);
+18 +             let _ = b;
+   |
+
+warning: calls to `std::mem::drop` with a value that implements `Copy` does nothing
+  --> tests/ui/coroutines/layout.rs:23:9
+   |
+23 |         drop(x);
+   |         ^^^^^-^
+   |              |
+   |              argument has type `u8`
+   |
+help: use `let _ = ...` to ignore the expression or result
+   |
+23 -         drop(x);
+23 +         let _ = x;
+   |
+
+warning: calls to `std::mem::drop` with a value that implements `Copy` does nothing
+  --> tests/ui/coroutines/layout.rs:24:9
+   |
+24 |         drop(y);
+   |         ^^^^^-^
+   |              |
+   |              argument has type `u64`
+   |
+help: use `let _ = ...` to ignore the expression or result
+   |
+24 -         drop(y);
+24 +         let _ = y;
+   |
+
+warning: calls to `std::mem::drop` with a value that implements `Copy` does nothing
+  --> tests/ui/coroutines/layout.rs:25:9
+   |
+25 |         drop(a);
+   |         ^^^^^-^
+   |              |
+   |              argument has type `u32`
+   |
+help: use `let _ = ...` to ignore the expression or result
+   |
+25 -         drop(a);
+25 +         let _ = a;
+   |
+
+warning: calls to `std::mem::drop` with a value that implements `Copy` does nothing
+  --> tests/ui/coroutines/layout.rs:26:9
+   |
+26 |         drop(c);
+   |         ^^^^^-^
+   |              |
+   |              argument has type `u64`
+   |
+help: use `let _ = ...` to ignore the expression or result
+   |
+26 -         drop(c);
+26 +         let _ = c;
+   |
+
+warning: 5 warnings emitted
+
+ERROR Charon failed to translate this code (2 errors)

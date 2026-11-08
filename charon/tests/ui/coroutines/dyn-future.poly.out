@@ -1,0 +1,79 @@
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/dyn-future.rs:10:5
+   |
+10 |     Box::pin(async { 1 })
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/dyn-future.rs:10:5
+   |
+10 |     Box::pin(async { 1 })
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/dyn-future.rs:10:5
+   |
+10 |     Box::pin(async { 1 })
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/dyn-future.rs:10:5
+   |
+10 |     Box::pin(async { 1 })
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/dyn-future.rs:10:5
+   |
+10 |     Box::pin(async { 1 })
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/dyn-future.rs:10:5
+   |
+10 |     Box::pin(async { 1 })
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/dyn-future.rs:10:5
+   |
+10 |     Box::pin(async { 1 })
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/dyn-future.rs:10:5
+   |
+10 |     Box::pin(async { 1 })
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/dyn-future.rs:10:5
+   |
+10 |     Box::pin(async { 1 })
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/dyn-future.rs:10:5
+   |
+10 |     Box::pin(async { 1 })
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/dyn-future.rs:10:5
+   |
+10 |     Box::pin(async { 1 })
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/dyn-future.rs:10:5
+   |
+10 |     Box::pin(async { 1 })
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutines are not supported
+  --> tests/ui/coroutines/dyn-future.rs:10:14
+   |
+10 |     Box::pin(async { 1 })
+   |              ^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (13 errors)

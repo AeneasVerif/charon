@@ -1,0 +1,21 @@
+error: Unsupported type: "CoroutineClosure(test_crate::mk::{closure#0}, [i8, Binder { value: extern \"RustCall\" fn(std::future::ResumeTy, ()) -> ((), ()), bound_vars: [] }, (), Binder { value: fn(), bound_vars: [Region(BrEnv)] }])"
+ --> tests/ui/coroutines/async-closure.rs:5:1
+  |
+5 | / fn mk() -> impl AsyncFn() {
+6 | |     async || {}
+7 | | }
+  | |_^
+
+error: Unsupported type: "CoroutineClosure(test_crate::mk::{closure#0}, [i8, Binder { value: extern \"RustCall\" fn(std::future::ResumeTy, ()) -> ((), ()), bound_vars: [] }, (), Binder { value: fn(), bound_vars: [] }])"
+ --> tests/ui/coroutines/async-closure.rs:5:12
+  |
+5 | fn mk() -> impl AsyncFn() {
+  |            ^^^^^^^^^^^^^^
+
+error: Coroutines are not supported
+ --> tests/ui/coroutines/async-closure.rs:6:5
+  |
+6 |     async || {}
+  |     ^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (3 errors)
