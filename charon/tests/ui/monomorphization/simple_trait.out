@@ -89,6 +89,7 @@ fn main()
 {
     let mut _0: (); // return
     let b: &'0 (dyn Trait + '1); // local
+        where b := &'2 (dyn Trait + '3);
     let mut _2: &'5 i32; // anonymous local
     let _3: &'6 i32; // anonymous local
     let _4: (); // anonymous local
@@ -108,8 +109,8 @@ fn main()
     storage_live(_0)
     storage_live(_6)
     _0 = ()
-    set '1 :> '0
-    set '3 :> '2
+    set '1: '0
+    set '3: '2
     storage_live(b)
     storage_live(_2)
     storage_live(_3)
@@ -119,7 +120,6 @@ fn main()
     b = unsize_cast<&'14 (dyn Trait + '15), &impl_Trait_for_i32::{vtable}>(move _2)
     storage_dead(_2)
     fake_read(b)
-    set b := &'2 (dyn Trait + '3)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)

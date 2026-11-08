@@ -64,6 +64,7 @@ fn main()
 {
     let mut _0: (); // return
     let slice: &'0 [i32]; // local
+        where slice := &'1 [i32];
     let mut _2: &'3 [i32; 1usize]; // anonymous local
     let _3: &'4 [i32; 1usize]; // anonymous local
     let mut _4: Option<&'13 i32>[{built_in impl Sized for &'13 i32}]; // anonymous local
@@ -94,7 +95,6 @@ fn main()
     ↳⚡ undefined_behavior
     storage_dead(_2)
     fake_read(slice)
-    set slice := &'1 [i32]
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)

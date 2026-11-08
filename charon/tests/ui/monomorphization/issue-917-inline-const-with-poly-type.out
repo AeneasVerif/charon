@@ -105,6 +105,7 @@ fn foo::<()>(x: ())
     let mut _0: (); // return
     let x: (); // arg #1
     let f: fn(()); // local
+        where f := fn(());
     let mut _3: fn(()); // anonymous local
     let mut _4: (); // anonymous local
 
@@ -113,7 +114,6 @@ fn foo::<()>(x: ())
     storage_live(f)
     f = fn_def_to_fn_ptr(const {as_fn}::<()>)
     fake_read(f)
-    set f := fn(())
     storage_live(_3)
     _3 = copy f
     storage_live(_4)

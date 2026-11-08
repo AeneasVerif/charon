@@ -257,6 +257,7 @@ pub fn test_vec_push()
 {
     let mut _0: (); // return
     let mut v: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // local
+        where v := Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}];
     let _2: (); // anonymous local
     let mut _3: &'1 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
 
@@ -266,7 +267,6 @@ pub fn test_vec_push()
     v = alloc::vec::{Vec<T>[TraitClause0, {built_in impl Sized for Global}]}::new<u32>[{built_in impl Sized for u32}]()
     ↳⚡ unwind_continue
     fake_read(v)
-    set v := Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]
     storage_live(_2)
     storage_live(_3)
     _3 = &two-phase-mut v

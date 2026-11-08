@@ -29,7 +29,9 @@ fn main()
 {
     let mut _0: (); // return
     let mut x: usize; // local
+        where x := usize;
     let y: usize; // local
+        where y := usize;
     let z: usize; // local
     let mut _4: usize; // anonymous local
     let mut _5: usize; // anonymous local
@@ -44,11 +46,9 @@ fn main()
     storage_live(x)
     x = const 52usize
     fake_read(x)
-    set x := usize
     storage_live(y)
     y = read MAX
     fake_read(y)
-    set y := usize
     storage_live(z)
     storage_live(_4)
     _4 = copy y

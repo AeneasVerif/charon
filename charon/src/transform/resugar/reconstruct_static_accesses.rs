@@ -62,6 +62,12 @@ impl UllbcPass for Transform {
                 Some((local, info))
             })
             .collect();
+        // Discard locals mentioned in drop flags or type constraints.
+        body.locals.dyn_visit_in_body(|place: &Place| {
+            if let Some(local) = place.as_local() {
+                statics.remove(&local);
+            }
+        });
         if statics.is_empty() {
             return;
         }

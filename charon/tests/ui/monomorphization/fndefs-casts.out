@@ -116,8 +116,11 @@ fn main()
 {
     let mut _0: (); // return
     let fooint1: fn<'_0_1>(&'_0_1 u8); // local
+        where fooint1 := fn<'_0_1>(&'_0_1 u8);
     let fooint2: fn<'_0_1>(&'_0_1 u8); // local
+        where fooint2 := fn<'_0_1>(&'_0_1 u8);
     let foochar: fn<'_0_1>(&'_0_1 char); // local
+        where foochar := fn<'_0_1>(&'_0_1 char);
     let a: u8; // local
     let _5: (); // anonymous local
     let mut _6: fn<'_0_1>(&'_0_1 u8); // anonymous local
@@ -152,15 +155,12 @@ fn main()
     storage_live(fooint1)
     fooint1 = fn_def_to_fn_ptr(const foo::<u8><'15>)
     fake_read(fooint1)
-    set fooint1 := fn<'_0_1>(&'_0_1 u8)
     storage_live(fooint2)
     fooint2 = fn_def_to_fn_ptr(const foo::<u8><'17>)
     fake_read(fooint2)
-    set fooint2 := fn<'_0_1>(&'_0_1 u8)
     storage_live(foochar)
     foochar = fn_def_to_fn_ptr(const foo::<char><'20>)
     fake_read(foochar)
-    set foochar := fn<'_0_1>(&'_0_1 char)
     storage_live(a)
     a = const 11u8
     fake_read(a)

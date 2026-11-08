@@ -350,16 +350,21 @@ pub fn test2()
 {
     let mut _0: (); // return
     let x: u32; // local
+        where x := u32;
     let y: u32; // local
+        where y := u32;
     let z: u32; // local
     let mut _4: u32; // anonymous local
     let mut _5: u32; // anonymous local
     let mut _6: u32; // anonymous local
     let p: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // local
+        where p := Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}];
     let mut _8: u32; // anonymous local
     let mut _9: u32; // anonymous local
     let s: Sum<u32, bool>[{built_in impl Sized for u32}, {built_in impl Sized for bool}]; // local
+        where s := Sum<u32, bool>[{built_in impl Sized for u32}, {built_in impl Sized for bool}];
     let o: One<u64>[{built_in impl Sized for u64}]; // local
+        where o := One<u64>[{built_in impl Sized for u64}];
     let e0: EmptyEnum; // local
     let e1: EmptyEnum; // local
     let enum0: Enum; // local
@@ -370,11 +375,9 @@ pub fn test2()
     storage_live(x)
     x = const 23u32
     fake_read(x)
-    set x := u32
     storage_live(y)
     y = const 44u32
     fake_read(y)
-    set y := u32
     storage_live(z)
     storage_live(_4)
     _4 = copy x
@@ -394,15 +397,12 @@ pub fn test2()
     storage_dead(_9)
     storage_dead(_8)
     fake_read(p)
-    set p := Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]
     storage_live(s)
     s = Sum::Right { _0: const true }
     fake_read(s)
-    set s := Sum<u32, bool>[{built_in impl Sized for u32}, {built_in impl Sized for bool}]
     storage_live(o)
     o = One::One { _0: const 3u64 }
     fake_read(o)
-    set o := One<u64>[{built_in impl Sized for u64}]
     storage_live(e0)
     e0 = EmptyEnum::Empty {  }
     fake_read(e0)
@@ -468,6 +468,7 @@ pub fn test_list1()
 {
     let mut _0: (); // return
     let l: List<i32>[{built_in impl Sized for i32}]; // local
+        where l := List<i32>[{built_in impl Sized for i32}];
     let mut _2: Box<List<i32>[{built_in impl Sized for i32}]>[{built_in impl MetaSized for List<i32>[{built_in impl Sized for i32}]}, {built_in impl Sized for Global}]; // anonymous local
     let mut _3: List<i32>[{built_in impl Sized for i32}]; // anonymous local
 
@@ -487,7 +488,6 @@ pub fn test_list1()
     ↳⚡ unwind_continue
     storage_dead(_2)
     fake_read(l)
-    set l := List<i32>[{built_in impl Sized for i32}]
     _0 = ()
     conditional_drop[impl_Destruct_for_List::drop_glue<'2, i32>[{built_in impl Sized for i32}]] l
     ↳⚡ unwind_continue
@@ -500,6 +500,7 @@ pub fn test_box1()
 {
     let mut _0: (); // return
     let mut b: Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]; // local
+        where b := Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}];
     let x_2: &'1 mut i32; // local
     let mut _3: &'3 mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]; // anonymous local
     let x_4: &'5 i32; // local
@@ -513,7 +514,6 @@ pub fn test_box1()
     b = new<i32>[{built_in impl Sized for i32}](const 0i32)
     ↳⚡ unwind_continue
     fake_read(b)
-    set b := Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]
     storage_live(x_2)
     storage_live(_3)
     _3 = &two-phase-mut b

@@ -1080,8 +1080,10 @@ fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
     let s: &'3 [u32]; // arg #3
     let i: usize; // arg #4
     let mut _5: i32; // anonymous local
+        where _5 :< i32;
     let mut _6: u32; // anonymous local
     let mut _7: &'5 u32; // anonymous local
+        where _7 :< &'1 u32;
     let mut _8: &'6 [u32]; // anonymous local
     let mut _9: usize; // anonymous local
     let mut _10: u32; // anonymous local
@@ -1102,7 +1104,6 @@ fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
         storage_dead(x)
         unwind_continue
     storage_dead(_6)
-    set _5 :< i32
     storage_dead(_5)
     storage_live(_7)
     storage_live(_8)
@@ -1118,7 +1119,6 @@ fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
         unwind_continue
     storage_dead(_9)
     storage_dead(_8)
-    set _7 :< &'1 u32
     storage_dead(_7)
     storage_live(_10)
     storage_live(_11)

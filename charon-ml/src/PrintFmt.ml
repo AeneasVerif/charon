@@ -1776,24 +1776,28 @@ let pp_assertion (env : fmt_env) (fmt : Format.formatter) (a : assertion) : unit
     (Bool.to_string a.expected)
     check_kind
 
+let pp_place_type_constraint (env : fmt_env) (fmt : Format.formatter)
+    (constraint_ : place_type_constraint) : unit =
+  let { place; ty; variance } = constraint_ in
+  let relation =
+    match variance with
+    | Covariant -> ":<"
+    | Invariant -> ":="
+    | Contravariant -> ":>"
+    | Bivariant | VaUnknown -> assert false
+  in
+  Format.fprintf fmt "%a %s %s" (pp_place env) place relation
+    (ty_to_string env ty)
+
 let pp_borrowck_statement (env : fmt_env) (fmt : Format.formatter)
     (statement : borrowck_statement) : unit =
   match statement with
   | FakeRead place -> Format.fprintf fmt "fake_read(%a)" (pp_place env) place
-  | SetType (place, ty, variance, temporary) ->
-      let relation =
-        match variance with
-        | Covariant -> ":<"
-        | Invariant -> ":="
-        | Contravariant -> ":>"
-        | Bivariant | VaUnknown -> assert false
-      in
-      let name = if temporary then "set_here" else "set" in
-      Format.fprintf fmt "%s %a %s %s" name (pp_place env) place relation
-        (ty_to_string env ty)
-  | SetOutlives (lhs, rhs) ->
-      Format.fprintf fmt "set %s :> %s" (region_to_string env lhs)
-        (region_to_string env rhs)
+  | SetType constraint_ ->
+      Format.fprintf fmt "set %a" (pp_place_type_constraint env) constraint_
+  | SetOutlives pred ->
+      Format.fprintf fmt "set %s"
+        (outlives_to_string_with ty_to_string env pred)
 
 let pp_abort_kind (env : fmt_env) (fmt : Format.formatter) (a : abort_kind) :
     unit =
@@ -1906,7 +1910,13 @@ let pp_locals (env : fmt_env) (indent : string) (fmt : Format.formatter)
       (if var.is_mutable then "mut " else "")
       (local_id_to_string env var.index)
       (ty_to_string env var.local_ty)
-      kind drop_flag_for
+      kind drop_flag_for;
+    List.iter
+      (fun constraint_ ->
+        Format.fprintf fmt "\n%s    where %a;" indent
+          (pp_place_type_constraint env)
+          constraint_)
+      var.borrowck_constraints
   in
   pp_sep_list "\n" pp_local_decl fmt locals.locals
 

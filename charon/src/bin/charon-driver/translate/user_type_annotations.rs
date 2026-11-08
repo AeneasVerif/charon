@@ -1,6 +1,4 @@
 //! Recover the type annotations provided by the user inside a body.
-use std::mem;
-
 use itertools::Itertools;
 use rustc_hash::FxHashMap as HashMap;
 use rustc_middle::{mir, ty};
@@ -9,7 +7,6 @@ use super::translate_crate::RustcItem;
 use super::translate_ctx::*;
 use crate::hax;
 use charon_lib::ast::*;
-use charon_lib::ullbc_ast::{Statement, StatementKind};
 
 struct UserTypeAnnotation {
     projections: HashMap<Vec<mir::ProjectionKind>, Ty>,
@@ -18,13 +15,12 @@ struct UserTypeAnnotation {
 /// User-provided type annotations for this MIR body.
 pub(crate) struct UserTypeAnnotations {
     annotations: rustc_index::IndexVec<ty::UserTypeAnnotationIndex, UserTypeAnnotation>,
-    extra_constraints: Vec<Statement>,
+    pub outlives: Vec<OutlivesPred>,
 }
 
 impl UserTypeAnnotations {
-    /// Translate the annotations for this body. The computed `extra_constraints` must be enforced
-    /// at the start of the body. The returned value can then be used to fetch the type of
-    /// annotations.
+    /// Translate the annotations for this body. The returned value can then be used to fetch the
+    /// types of annotations.
     pub(crate) fn new<'tcx>(
         ctx: &mut ItemTransCtx<'tcx, '_>,
         body: &mir::Body<'tcx>,
@@ -49,7 +45,7 @@ impl UserTypeAnnotations {
 
         let mut recovered = Self {
             annotations: Default::default(),
-            extra_constraints: Vec::new(),
+            outlives: Vec::new(),
         };
         if annotations.is_empty() {
             return Ok(recovered);
@@ -79,30 +75,30 @@ impl UserTypeAnnotations {
             let annotation = &annotations[base];
             let span = ctx.translate_span(&annotation.span);
             let projections = projections.into_iter().collect_vec();
-            let (tys, outlives_statements) =
-                translate_user_annotation(ctx, span, annotation, &projections)?;
+            let (tys, outlives) = translate_user_annotation(ctx, span, annotation, &projections)?;
             let annotation = UserTypeAnnotation {
                 projections: projections.into_iter().zip_eq(tys).collect(),
             };
             assert_eq!(recovered.annotations.push(annotation), base);
-            recovered.extra_constraints.extend(outlives_statements);
+            recovered.outlives.extend(outlives);
         }
+        recovered.outlives.sort_unstable();
+        recovered.outlives.dedup();
         Ok(recovered)
     }
 
-    /// Get the annotated type of this local, if there was such an annotation. If there were
-    /// multiple annotations, we add the rest as constraints in `self.extra_constraints`.
+    /// Get the annotated type of this local, if there was such an annotation, and any additional
+    /// constraints from other annotations on the same local.
     pub(crate) fn translate_local_ty<'tcx>(
-        &mut self,
+        &self,
         ctx: &mut ItemTransCtx<'tcx, '_>,
         span: Span,
         local_id: LocalId,
         decl: &mir::LocalDecl<'tcx>,
-    ) -> Result<Ty, Error> {
+    ) -> Result<(Ty, Vec<PlaceTypeConstraint>), Error> {
         if let Some(user_tys) = &decl.user_ty
             && user_tys.projections().len() != 0
         {
-            let mut extra_constraints = mem::take(&mut self.extra_constraints);
             let outer_ref = if decl.is_nonref_binding() {
                 None
             } else {
@@ -126,28 +122,18 @@ impl UserTypeAnnotations {
                     }
                 });
             let ty = annotated_tys.next().unwrap();
+            let mut constraints = Vec::new();
             for annotated_ty in annotated_tys {
-                extra_constraints.push(Statement::new(
-                    span,
-                    StatementKind::Borrowck(BorrowckStatement::SetType {
-                        place: Place::new(local_id, ty.clone()),
-                        ty: annotated_ty,
-                        variance: Variance::Invariant,
-                        temporary: false,
-                    }),
-                ));
+                constraints.push(PlaceTypeConstraint {
+                    place: Place::new(local_id, ty.clone()),
+                    ty: annotated_ty,
+                    variance: Variance::Invariant,
+                });
             }
-            self.extra_constraints = extra_constraints;
-            Ok(ty)
+            Ok((ty, constraints))
         } else {
-            ctx.translate_rustc_ty(span, &decl.ty)
+            Ok((ctx.translate_rustc_ty(span, &decl.ty)?, Vec::new()))
         }
-    }
-
-    /// The borrowck constraints that must be enforced for the annotations to be valid. Must be
-    /// emitted once at the start of the function.
-    pub(crate) fn take_body_start_constraints(&mut self) -> Vec<Statement> {
-        mem::take(&mut self.extra_constraints)
     }
 
     /// Look up the (unprojected) type of an annotation.
@@ -175,7 +161,7 @@ fn translate_user_annotation<'tcx>(
     span: Span,
     annotation: &ty::CanonicalUserTypeAnnotation<'tcx>,
     projections: &[hax::rustc::UserAnnotationProj],
-) -> Result<(Vec<Ty>, Vec<Statement>), Error> {
+) -> Result<(Vec<Ty>, Vec<OutlivesPred>), Error> {
     let Some(owner) = ctx.item_src.def_id().as_real_or_promoted() else {
         raise_error!(ctx, span, "user type annotation without a rustc owner");
     };
@@ -219,14 +205,6 @@ fn translate_user_annotation<'tcx>(
         })?;
     // Instantiate the binder with fresh body regions.
     let (tys, outlives) = ctx.erase_region_binder(bound_constraints);
-    let mut outlives_statements = Vec::new();
-    for pred in outlives {
-        for pred in pred.normalize() {
-            outlives_statements.push(Statement::new(
-                span,
-                StatementKind::Borrowck(BorrowckStatement::SetOutlives(pred)),
-            ));
-        }
-    }
-    Ok((tys, outlives_statements))
+    let outlives = outlives.iter().flat_map(|pred| pred.normalize()).collect();
+    Ok((tys, outlives))
 }

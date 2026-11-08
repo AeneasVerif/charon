@@ -165,6 +165,7 @@ where
     let mut _0: T; // return
     let arg: &'5 T; // arg #1
     let x: &'0 mut (dyn Modifiable<T> + '1); // local
+        where x := &'2 mut (dyn Modifiable<T> + '3);
     let mut _3: &'7 mut i32; // anonymous local
     let mut _4: &'8 mut i32; // anonymous local
     let mut _5: i32; // anonymous local
@@ -172,10 +173,10 @@ where
     let mut _7: &'14 T; // anonymous local
 
     storage_live(_0)
-    set 'lub<T> :> '0
-    set '1 :> '0
-    set 'lub<T> :> '2
-    set '3 :> '2
+    set T: '0
+    set T: '2
+    set '1: '0
+    set '3: '2
     storage_live(x)
     storage_live(_3)
     storage_live(_4)
@@ -186,7 +187,6 @@ where
     x = unsize_cast<&'15 mut (dyn Modifiable<T> + '16), &impl_Modifiable_for_i32::{vtable}<T>[TraitClause0, TraitClause1]>(move _3)
     storage_dead(_3)
     fake_read(x)
-    set x := &'2 mut (dyn Modifiable<T> + '3)
     storage_dead(_4)
     storage_live(_6)
     _6 = &two-phase-mut (*x) with_metadata(read x.metadata)

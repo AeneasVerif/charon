@@ -1082,6 +1082,9 @@ impl<T> GExprBody<T> {
                 write!(f, "; drop flag for {}", place.with_ctx(ctx))?;
             }
             writeln!(f)?;
+            for constraint in &v.borrowck_constraints {
+                writeln!(f, "{tab}    where {};", constraint.with_ctx(ctx))?;
+            }
         }
 
         fmt_body(f, ctx, &self.body)?;
@@ -2434,35 +2437,35 @@ impl Display for IntegerValue {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for PlaceTypeConstraint {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let relation = match self.variance {
+            Variance::Covariant => ":<",
+            Variance::Invariant => ":=",
+            Variance::Contravariant => ":>",
+            Variance::Bivariant => panic!("bivariant place type constraint"),
+            Variance::Unknown => panic!("place type constraint with unknown variance"),
+        };
+        write!(
+            f,
+            "{} {relation} {}",
+            self.place.with_ctx(ctx),
+            self.ty.with_ctx(ctx)
+        )
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for BorrowckStatement {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             BorrowckStatement::FakeRead(place) => {
                 write!(f, "fake_read({})", place.with_ctx(ctx))
             }
-            BorrowckStatement::SetType {
-                place,
-                ty,
-                variance,
-                temporary,
-            } => {
-                let relation = match variance {
-                    Variance::Covariant => ":<",
-                    Variance::Invariant => ":=",
-                    Variance::Contravariant => ":>",
-                    Variance::Bivariant => panic!("bivariant SetType statement"),
-                    Variance::Unknown => panic!("SetType statement with unknown variance"),
-                };
-                let name = if *temporary { "set_here" } else { "set" };
-                write!(
-                    f,
-                    "{name} {} {relation} {}",
-                    place.with_ctx(ctx),
-                    ty.with_ctx(ctx)
-                )
+            BorrowckStatement::SetType(constraint) => {
+                write!(f, "set {}", constraint.with_ctx(ctx))
             }
-            BorrowckStatement::SetOutlives(OutlivesPred(lhs, rhs)) => {
-                write!(f, "set {} :> {}", lhs.with_ctx(ctx), rhs.with_ctx(ctx))
+            BorrowckStatement::SetOutlives(pred) => {
+                write!(f, "set {}", pred.with_ctx(ctx))
             }
         }
     }

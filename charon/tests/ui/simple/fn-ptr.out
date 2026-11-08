@@ -18,6 +18,7 @@ fn main()
 {
     let mut _0: (); // return
     let f: fn(); // local
+        where f := fn();
     let _2: (); // anonymous local
     let mut _3: fn(); // anonymous local
 
@@ -26,7 +27,6 @@ fn main()
     storage_live(f)
     f = fn_def_to_fn_ptr(const foo)
     fake_read(f)
-    set f := fn()
     storage_live(_2)
     storage_live(_3)
     _3 = copy f

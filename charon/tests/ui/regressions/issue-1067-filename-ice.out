@@ -99,6 +99,7 @@ fn main()
 {
     let mut _0: (); // return
     let mut buf: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
+        where buf := Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}];
     let _2: (); // anonymous local
     let mut _3: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
     let mut _4: &'1 mut Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // anonymous local
@@ -113,7 +114,6 @@ fn main()
     buf = new<u8>[{built_in impl Sized for u8}]()
     ↳⚡ unwind_continue
     fake_read(buf)
-    set buf := Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)

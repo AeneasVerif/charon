@@ -37,6 +37,7 @@ fn main()
 {
     let mut _0: (); // return
     let _x: &'0 (dyn Send + '1); // local
+        where _x := &'2 (dyn Send + '3);
     let mut _2: &'5 i32; // anonymous local
     let _3: &'6 i32; // anonymous local
     let mut _4: &'7 i32; // anonymous local
@@ -53,8 +54,8 @@ fn main()
     storage_live(_0)
     storage_live(_4)
     _0 = ()
-    set '1 :> '0
-    set '3 :> '2
+    set '1: '0
+    set '3: '2
     storage_live(_x)
     storage_live(_2)
     storage_live(_3)
@@ -64,7 +65,6 @@ fn main()
     _x = unsize_cast<&'12 (dyn Send + '13), &{vtable}::<i32>>(move _2)
     storage_dead(_2)
     fake_read(_x)
-    set _x := &'2 (dyn Send + '3)
     storage_dead(_3)
     _0 = ()
     storage_dead(_x)

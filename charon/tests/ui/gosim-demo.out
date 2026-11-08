@@ -97,7 +97,7 @@ where
 
     storage_live(_0)
     _0 = ()
-    set 'lub<T> :> '10
+    set T: '10
     storage_live(_2)
     storage_live(_3)
     _3 = copy slice

@@ -156,17 +156,10 @@ and assertion = {
 (** Statements that only affect borrow-checking. They are no-ops at runtime. *)
 and borrowck_statement =
   | FakeRead of place  (** Acts like a read of the place. *)
-  | SetType of place * ty * variance * bool
-      (** Relate the type of a place to the provided type. For example,
-          [let x: Self = value] produces [SetType(x == Self)].
-
-          Fields:
-          - [place]
-          - [ty]: This type may contain body regions shared with subsequent
-            [SetOutlives] statements.
-          - [variance]
-          - [temporary]: Whether this type relation holds for the whole rest of
-            the function, or just at this point. *)
+  | SetType of place_type_constraint
+      (** Apply a constraint to this place at this point in the function. For
+          example, [x = Option::<&'static u32>::None;] emits a
+          [tmp := Option::<&'static u32>] constraint. *)
   | SetOutlives of outlives_pred  (** Require an outlives predicate to hold. *)
 
 and branch_id = (BranchId.id[@visitors.opaque])
@@ -345,6 +338,10 @@ and local = {
   is_mutable : bool;
       (** Whether this local was declared [mut]. Anonymous locals are always
           mutable. *)
+  borrowck_constraints : place_type_constraint list;
+      (** List of constraints that apply to this local throughout the function
+          body. For example, [let x: Self = ...;] produces a [x == Self]
+          constraint. *)
   drop_flag_for : place option;
       (** If this local is a drop flag, this is the place whose initialization
           state it tracks. *)
@@ -360,6 +357,10 @@ and locals = {
           - the [arg_count] input arguments
           - the remaining locals, used for the intermediate computations *)
 }
+
+(** Borrow-checking constraint that enforces a relation between the type of the
+    given place and the provided type. *)
+and place_type_constraint = { place : place; ty : ty; variance : variance }
 
 (** A branching operation. *)
 and switch_data = {

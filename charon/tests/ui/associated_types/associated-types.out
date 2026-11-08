@@ -307,7 +307,7 @@ fn call_fn()
 
     storage_live(_0)
     _0 = ()
-    set '35 :> '35
+    set '35: '35
     storage_live(_1)
     storage_live(_2)
     _2 = Option::None {  }

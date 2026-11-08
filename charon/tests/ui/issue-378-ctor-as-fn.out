@@ -126,6 +126,7 @@ fn main()
     let mut _2: Option<u8>[{built_in impl Sized for u8}]; // anonymous local
     let mut _3: Some<u8>[{built_in impl Sized for u8}]; // anonymous local
     let f_4: fn(u8) -> Option<u8>[{built_in impl Sized for u8}]; // local
+        where f_4 := fn(u8) -> Option<u8>[{built_in impl Sized for u8}];
     let mut _5: Some<u8>[{built_in impl Sized for u8}]; // anonymous local
     let mut _6: Option<u8>[{built_in impl Sized for u8}]; // anonymous local
     let mut _7: fn(u8) -> Option<u8>[{built_in impl Sized for u8}]; // anonymous local
@@ -163,7 +164,6 @@ fn main()
     f_4 = fn_def_to_fn_ptr(move _5)
     storage_dead(_5)
     fake_read(f_4)
-    set f_4 := fn(u8) -> Option<u8>[{built_in impl Sized for u8}]
     storage_live(_6)
     storage_live(_7)
     _7 = copy f_4
