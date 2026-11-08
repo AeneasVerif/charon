@@ -254,10 +254,16 @@ impl TransformPass for Transform {
             let mut visitor =
                 OutlivesGatherer::new(&mut fun_decl.generics, type_decls, trait_decls);
             visitor.visit(&mut fun_decl.signature);
-            if let FunSource::InherentImpl { self_ty } = &mut fun_decl.src {
-                // The inherent impl header contributes to the implied bounds even if that type is
-                // not mentioned in the signature.
-                visitor.visit(self_ty);
+            // The impl header contributes to the implied bounds even if its types are
+            // not mentioned in the signature.
+            match &mut fun_decl.src {
+                FunSource::InherentImpl { self_ty } => {
+                    visitor.visit(self_ty);
+                }
+                FunSource::TraitImpl { trait_ref, .. } => {
+                    visitor.visit(trait_ref);
+                }
+                _ => {}
             }
             visitor.finish();
 
