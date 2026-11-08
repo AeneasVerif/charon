@@ -1,4 +1,3 @@
-//@ known-panic
 //@ revisions=current,next
 //@ charon-args=--mir promoted
 //@[current] rustc-args=-Znext-solver=coherence

@@ -53,18 +53,27 @@ pub fn translate_user_annotation<'tcx>(
     // Compute the inferred type of the place, and constraints needed to match it with the
     // user-provided type.
     let (projected_tys, constraints): (Vec<ty::Ty<'tcx>>, QueryRegionConstraints<'tcx>) = {
-        let mut constraints = param_env
+        let mut all_constraints: Vec<Option<&'tcx QueryRegionConstraints<'tcx>>> = Vec::new();
+
+        // `AscribeUserType` needs a normalized type.
+        let normalized = param_env
+            .and(Normalize {
+                value: ty::set_opaques_to_non_rigid(tcx, inferred_ty),
+            })
+            .fully_perform(&infcx, owner, span)
+            .map_err(|_| "could not normalize inferred annotation type".to_owned())?;
+        let inferred_ty = normalized.output;
+        all_constraints.push(normalized.constraints);
+
+        let ascribe_result = param_env
             .and(AscribeUserType {
                 mir_ty: inferred_ty,
                 user_ty,
             })
             .fully_perform(&infcx, owner, span)
-            .map_err(|_| "could not recover user type ascription".to_owned())?
-            .constraints
-            .cloned()
-            .unwrap_or_default();
-        // Add any normalization obligations coming from projections. In particular, projecting a field
-        // can expose an associated type with lifetime requirements.
+            .map_err(|_| "could not recover user type ascription".to_owned())?;
+        all_constraints.push(ascribe_result.constraints);
+
         let mut projected_tys = Vec::new();
         for projections in projections {
             let mut projected_ty = mir::PlaceTy::from_ty(inferred_ty);
@@ -77,14 +86,7 @@ pub fn translate_user_annotation<'tcx>(
                     .fully_perform(&infcx, owner, span)
                     .map_err(|_| "could not normalize user type projection".to_owned())?;
                 projected_ty.ty = resolved.output;
-                if let Some(extra) = resolved.constraints {
-                    constraints
-                        .constraints
-                        .extend(extra.constraints.iter().copied());
-                    constraints
-                        .assumptions
-                        .extend(extra.assumptions.iter().copied());
-                }
+                all_constraints.push(resolved.constraints);
                 let Some(projection) = iter.next() else { break };
                 if matches!(
                     projection,
@@ -104,6 +106,18 @@ pub fn translate_user_annotation<'tcx>(
             }
             projected_tys.push(projected_ty.ty);
         }
+
+        // Merge the constraints we got from normalizing, relating and projecting.
+        let mut constraints: QueryRegionConstraints<'tcx> = Default::default();
+        for c in all_constraints.into_iter().flatten() {
+            constraints
+                .constraints
+                .extend(c.constraints.iter().copied());
+            constraints
+                .assumptions
+                .extend(c.assumptions.iter().copied());
+        }
+
         (projected_tys, constraints)
     };
 

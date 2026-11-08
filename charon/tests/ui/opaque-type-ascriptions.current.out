@@ -1,45 +1,95 @@
-error: could not recover user type ascription
-  --> tests/ui/opaque-type-ascriptions.rs:12:17
-   |
-12 |     let (x, _): Pair<'a> = (x, 0u32);
-   |                 ^^^^^^^^
+# Final LLBC before serialization:
 
-error: could not recover user type ascription
-  --> tests/ui/opaque-type-ascriptions.rs:24:13
-   |
-24 |     let _ = None::<Opaque>;
-   |             ^^^^^^^^^^^^^^
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
 
-note: no errors encountered even though delayed bugs were created
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
 
-note: those delayed bugs will now be shown as internal compiler errors
+// Full name: core::option::Option
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
+pub enum Option<T>
+where
+    TraitClause0: (T: Sized),
+{
+  None,
+  Some { _0: T },
+}
 
-error: internal compiler error: error performing operation: fully_perform
-  --> tests/ui/opaque-type-ascriptions.rs:12:17
-   |
-12 |     let (x, _): Pair<'a> = (x, 0u32);
-   |                 ^^^^^^^^
-   |
-note: delayed at /home/nadrieril/.rustup/toolchains/nightly-2026-09-17-x86_64-unknown-linux-gnu/lib/rustlib/rustc-src/rust/compiler/rustc_trait_selection/src/traits/query/type_op/custom.rs:126:26 - disabled backtrace
-  --> tests/ui/opaque-type-ascriptions.rs:12:17
-   |
-12 |     let (x, _): Pair<'a> = (x, 0u32);
-   |                 ^^^^^^^^
+struct () {}
 
-error: internal compiler error: error performing operation: fully_perform
-  --> tests/ui/opaque-type-ascriptions.rs:24:13
-   |
-24 |     let _ = None::<Opaque>;
-   |             ^^^^^^^^^^^^^^
-   |
-note: delayed at /home/nadrieril/.rustup/toolchains/nightly-2026-09-17-x86_64-unknown-linux-gnu/lib/rustlib/rustc-src/rust/compiler/rustc_trait_selection/src/traits/query/type_op/custom.rs:126:26 - disabled backtrace
-  --> tests/ui/opaque-type-ascriptions.rs:24:13
-   |
-24 |     let _ = None::<Opaque>;
-   |             ^^^^^^^^^^^^^^
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+// Full name: test_crate::destructure
+pub fn destructure<'a>(x_1: &'a u32) -> &'a u32
+{
+    let mut _0: &'13 u32; // return
+    let x_1: &'14 u32; // arg #1
+    let x_2: &'a u32; // local
+    let mut _3: (&'22 u32, u32); // anonymous local
+        where _3 :< (&'a u32, u32);
+    let mut _4: &'26 u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = copy x_1
+    _3 = (move _4, const 0u32)
+    storage_dead(_4)
+    storage_live(x_2)
+    x_2 = copy _3._0
+    storage_dead(_3)
+    _0 = &(*x_2)
+    storage_dead(x_2)
+    storage_dead(x_1)
+    return
+}
+
+// Full name: test_crate::destructure::Pair
+type Pair<'a> = (&'a u32, u32)
+
+// Full name: test_crate::Opaque
+type Opaque = u32
+
+// Full name: test_crate::define
+fn define() -> u32
+{
+    let mut _0: u32; // return
+
+    storage_live(_0)
+    _0 = const 0u32
+    return
+}
+
+// Full name: test_crate::construct
+pub fn construct()
+{
+    let mut _0: (); // return
+    let mut _1: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    _1 = Option::None {  }
+    storage_dead(_1)
+    _0 = ()
+    return
+}
 
 
-thread 'rustc' panicked at /rustc-dev/923c95cdf5ba65cea505aa2ea829f578e1506ed8/compiler/rustc_errors/src/lib.rs:1518:9:
-Box<dyn Any>
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-ERROR Compilation panicked
+
