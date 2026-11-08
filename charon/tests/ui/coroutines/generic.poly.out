@@ -1,0 +1,172 @@
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:9:1
+   |
+ 9 | / fn wrap<T>(x: T) -> impl Coroutine<Yield = (), Return = T> {
+10 | |     #[coroutine]
+11 | |     move || {
+12 | |         yield;
+...  |
+15 | | }
+   | |_^
+
+error: Coroutines are not supported
+  --> tests/ui/coroutines/generic.rs:11:5
+   |
+11 | /     move || {
+12 | |         yield;
+13 | |         x
+14 | |     }
+   | |_____^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:18:9
+   |
+18 |     let mut c = wrap(());
+   |         ^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:20:1
+   |
+20 | }
+   | ^
+
+
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_predicates.rs:17:55:
+internal error: entered unreachable code
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting body.
+  --> tests/ui/coroutines/generic.rs:17:1
+   |
+17 | / fn resume() {
+18 | |     let mut c = wrap(());
+19 | |     let _ = Pin::new(&mut c).resume(());
+20 | | }
+   | |_^
+
+ERROR Charon failed to translate this code (26 errors)
