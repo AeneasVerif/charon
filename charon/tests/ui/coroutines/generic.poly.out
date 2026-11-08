@@ -1,0 +1,237 @@
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:9:1
+   |
+ 9 | / fn wrap<T>(x: T) -> impl Coroutine<Yield = (), Return = T> {
+10 | |     #[coroutine]
+11 | |     move || {
+12 | |         yield;
+...  |
+15 | | }
+   | |_^
+
+error: Coroutines are not supported
+  --> tests/ui/coroutines/generic.rs:11:5
+   |
+11 | /     move || {
+12 | |         yield;
+13 | |         x
+14 | |     }
+   | |_____^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:18:9
+   |
+18 |     let mut c = wrap(());
+   |         ^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:20:1
+   |
+20 | }
+   | ^
+
+error: failed to translate drop glue for type Ty { kind: Coroutine(CoroutineTy { item: ItemRef { contents: ItemRefContents { def_id: test_crate::wrap::{closure#0}, rustc_args: [(), (), (), (), (), ((),)], generic_args: [Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_1>, rustc_args: [()], generic_args: [Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) })], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) })], trait_proofs: [TraitProof { contents: TraitProofContents { pred: Binder { value: ItemRef { contents: ItemRefContents { def_id: core::marker::Sized, rustc_args: [()], generic_args: [Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) })], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } }, bound_vars: [] }, kind: Builtin { trait_data: Other(Sized), proofs: [TraitProof { contents: TraitProofContents { pred: Binder { value: ItemRef { contents: ItemRefContents { def_id: core::marker::MetaSized, rustc_args: [()], generic_args: [Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) })], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } }, bound_vars: [] }, kind: Builtin { trait_data: Other(MetaSized), proofs: [], types: [] } } }], types: [] } } }], in_trait: None, has_param: false, has_non_lt_param: false } } }) }
+  --> tests/ui/coroutines/generic.rs:20:1
+   |
+20 | }
+   | ^
+
+error: Error during trait resolution: failed to translate drop glue for type Ty { kind: Coroutine(CoroutineTy { item: ItemRef { contents: ItemRefContents { def_id: test_crate::wrap::{closure#0}, rustc_args: [(), (), (), (), (), ((),)], generic_args: [Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_1>, rustc_args: [()], generic_args: [Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) })], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) })], trait_proofs: [TraitProof { contents: TraitProofContents { pred: Binder { value: ItemRef { contents: ItemRefContents { def_id: core::marker::Sized, rustc_args: [()], generic_args: [Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) })], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } }, bound_vars: [] }, kind: Builtin { trait_data: Other(Sized), proofs: [TraitProof { contents: TraitProofContents { pred: Binder { value: ItemRef { contents: ItemRefContents { def_id: core::marker::MetaSized, rustc_args: [()], generic_args: [Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) })], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } }, bound_vars: [] }, kind: Builtin { trait_data: Other(MetaSized), proofs: [], types: [] } } }], types: [] } } }], in_trait: None, has_param: false, has_non_lt_param: false } } }) }
+  --> tests/ui/coroutines/generic.rs:20:1
+   |
+20 | }
+   | ^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:19:13
+   |
+19 |     let _ = Pin::new(&mut c).resume(());
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/generic.rs:20:1
+   |
+20 | }
+   | ^
+
+error: failed to translate drop glue for type Ty { kind: Coroutine(CoroutineTy { item: ItemRef { contents: ItemRefContents { def_id: test_crate::wrap::{closure#0}, rustc_args: [(), (), (), (), (), ((),)], generic_args: [Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_1>, rustc_args: [()], generic_args: [Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) })], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) })], trait_proofs: [TraitProof { contents: TraitProofContents { pred: Binder { value: ItemRef { contents: ItemRefContents { def_id: core::marker::Sized, rustc_args: [()], generic_args: [Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) })], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } }, bound_vars: [] }, kind: Builtin { trait_data: Other(Sized), proofs: [TraitProof { contents: TraitProofContents { pred: Binder { value: ItemRef { contents: ItemRefContents { def_id: core::marker::MetaSized, rustc_args: [()], generic_args: [Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) })], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } }, bound_vars: [] }, kind: Builtin { trait_data: Other(MetaSized), proofs: [], types: [] } } }], types: [] } } }], in_trait: None, has_param: false, has_non_lt_param: false } } }) }
+  --> tests/ui/coroutines/generic.rs:20:1
+   |
+20 | }
+   | ^
+
+error: Error during trait resolution: failed to translate drop glue for type Ty { kind: Coroutine(CoroutineTy { item: ItemRef { contents: ItemRefContents { def_id: test_crate::wrap::{closure#0}, rustc_args: [(), (), (), (), (), ((),)], generic_args: [Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) }), Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_1>, rustc_args: [()], generic_args: [Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) })], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) })], trait_proofs: [TraitProof { contents: TraitProofContents { pred: Binder { value: ItemRef { contents: ItemRefContents { def_id: core::marker::Sized, rustc_args: [()], generic_args: [Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) })], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } }, bound_vars: [] }, kind: Builtin { trait_data: Other(Sized), proofs: [TraitProof { contents: TraitProofContents { pred: Binder { value: ItemRef { contents: ItemRefContents { def_id: core::marker::MetaSized, rustc_args: [()], generic_args: [Type(Ty { kind: Tuple(TupleTy { item: ItemRef { contents: ItemRefContents { def_id: <tuple_0>, rustc_args: [], generic_args: [], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } } }) })], trait_proofs: [], in_trait: None, has_param: false, has_non_lt_param: false } }, bound_vars: [] }, kind: Builtin { trait_data: Other(MetaSized), proofs: [], types: [] } } }], types: [] } } }], in_trait: None, has_param: false, has_non_lt_param: false } } }) }
+  --> tests/ui/coroutines/generic.rs:20:1
+   |
+20 | }
+   | ^
+
+ERROR Charon failed to translate this code (38 errors)

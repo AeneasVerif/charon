@@ -1,0 +1,51 @@
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/coroutine.rs:6:1
+   |
+ 6 | / fn movable(x: &u8, y: u8) -> impl Coroutine<u8, Yield = u8, Return = u8> + '_ {
+ 7 | |     #[coroutine]
+ 8 | |     move |a: u8| {
+ 9 | |         let b = yield *x;
+...  |
+14 | | }
+   | |_^
+
+error: Coroutine types are not supported yet
+ --> tests/ui/coroutines/coroutine.rs:6:30
+  |
+6 | fn movable(x: &u8, y: u8) -> impl Coroutine<u8, Yield = u8, Return = u8> + '_ {
+  |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Coroutines are not supported
+  --> tests/ui/coroutines/coroutine.rs:8:5
+   |
+ 8 | /     move |a: u8| {
+ 9 | |         let b = yield *x;
+10 | |         yield a;
+11 | |         yield y;
+12 | |         b
+13 | |     }
+   | |_____^
+
+error: Coroutine types are not supported yet
+  --> tests/ui/coroutines/coroutine.rs:16:1
+   |
+16 | / fn immovable() -> impl Coroutine<Yield = (), Return = ()> {
+17 | |     #[coroutine]
+18 | |     static || {
+19 | |         let x = ();
+...  |
+24 | | }
+   | |_^
+
+error: Coroutines are not supported
+  --> tests/ui/coroutines/coroutine.rs:18:5
+   |
+18 | /     static || {
+19 | |         let x = ();
+20 | |         let r = &x;
+21 | |         yield;
+22 | |         *r
+23 | |     }
+   | |_____^
+
+ERROR Charon failed to translate this code (5 errors)
