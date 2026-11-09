@@ -1,4 +1,3 @@
-//@ known-failure
 //@ revisions=poly,mono
 //@ charon-args=--mir elaborated --include core::future::future::Future
 //@[mono] charon-args=--monomorphize

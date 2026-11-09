@@ -66,6 +66,9 @@ pub enum TraitImplSource {
         #[serde_state(stateless)]
         kind: ClosureKind,
     },
+    /// The implementation of `Coroutine`, `Future`, `Iterator` or `AsyncIterator`,
+    /// generated for a coroutine.
+    Coroutine,
     /// The `Destruct` implementation generated for an ADT or closure.
     Destruct,
 }

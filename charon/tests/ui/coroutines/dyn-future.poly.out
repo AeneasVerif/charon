@@ -1,13 +1,177 @@
+# Final LLBC before serialization:
 
-thread 'rustc' panicked at /Users/opale/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/index_vec-0.1.4/src/indexing.rs:37:10:
-index out of bounds: the len is 0 but the index is 0
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting item `core::future::future::Future`.
- --> /rustc/library/core/src/future/future.rs:37:1
+struct () {}
 
-note: the error occurred when translating `core::future::future::Future::{vtable}`, which is (transitively) used at the following location(s):
-  --> tests/ui/coroutines/dyn-future.rs:10:5
-   |
-10 |     Box::pin(async { 1 })
-   |     ---------------------
-ERROR Charon failed to translate this code (1 errors)
+// Full name: core::task::wake::Context
+#[lang_item(Context)]
+pub opaque type Context<mut 'a>
+
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::task::poll::Poll
+#[lang_item(Poll)]
+pub enum Poll<T>
+where
+    TraitClause0: (T: Sized),
+{
+  Ready { _0: T },
+  Pending,
+}
+
+// Full name: core::pin::Pin
+#[fundamental]
+#[lang_item(Pin)]
+pub opaque type Pin<Ptr>
+where
+    TraitClause0: (Ptr: Sized),
+
+struct core::future::future::Future::{vtable}<Ty0> {
+  size: usize,
+  align: usize,
+  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn Future<Output = Ty0>)),
+  method_poll: fn<'_0_1, '_1_1, '_2_1>(Pin<&'_0_1 mut (dyn Future<Output = Ty0>)>[{built_in impl Sized for &'_0_1 mut (dyn Future<Output = Ty0>)}], &'_1_1 mut Context<'_2_1>) -> Poll<Ty0>[Future<(dyn Future<Output = Ty0>)>::ImpliedClause1],
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: core::future::future::Future
+#[lang_item(Future)]
+pub trait Future<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Output: Sized)
+    type Output
+    fn poll<'_0_1, '_1_1, '_2_1, Outlives0: (Self: '_0_1), Outlives1: ('_2_1: '_1_1)>;
+    vtable: core::future::future::Future::{vtable}<Self::Output>
+}
+
+// Full name: core::future::ResumeTy
+#[lang_item(ResumeTy)]
+pub opaque type ResumeTy
+
+// Full name: core::ptr::non_null::NonNull
+#[lang_item(NonNull)]
+pub opaque type NonNull<T>
+
+// Full name: alloc::alloc::Global
+#[lang_item(GlobalAlloc)]
+pub struct Global {}
+
+// Full name: alloc::boxed::Box
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box<T>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
+
+// Full name: alloc::boxed::{Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::pin
+pub fn pin<T>(_1: T) -> Pin<Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]>[{built_in impl Sized for Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: test_crate::boxed::{impl Future for {async}}::{vtable}
+vtable impl_Future_for_async::{vtable}: core::future::future::Future::{vtable}<u32> = Opaque(Vtables of coroutines are not supported yet)
+
+// Full name: test_crate::boxed::{async}
+enum {async} {
+  Unresumed,
+  Returned,
+  Panicked,
+}
+
+// Full name: test_crate::boxed::{impl Future for {async}}::poll
+fn poll<'_0, '_1, '_2>(_1: Pin<&'_0 mut {async}>[{built_in impl Sized for &'_0 mut {async}}], _2: &'_1 mut Context<'_2>) -> Poll<u32>[{built_in impl Sized for u32}]
+where
+    Outlives0: ('_2: '_1),
+{
+    let mut _0: Poll<u32>[{built_in impl Sized for u32}]; // return
+    let mut _1: Pin<&'8 mut {async}>[{built_in impl Sized for &'8 mut {async}}]; // arg #1
+    let mut _2: &'15 mut Context<'16>; // arg #2
+    let mut _3: u32; // anonymous local
+    let mut _4: &'17 mut {async}; // anonymous local
+    let mut _task_context: ResumeTy; // local
+    let mut _6: NonNull<Context<'19>>; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_task_context)
+    storage_live(_6)
+    _6 = transmute<NonNull<Context<'20>>>(move _2)
+    _task_context = ResumeTy { 0: move _6 }
+    _4 = read _1.0
+    match (*_4) {
+        {async}::Unresumed => {
+        },
+        {async}::Returned => {
+            loop {
+                assert(const false == true) (resumed_after_return) else panic
+                ↳⚡ unwind_continue
+                continue 0
+            }
+        },
+        _ => {
+            undefined_behavior
+        },
+    }
+    _3 = const 1u32
+    _0 = Poll::Ready { _0: move _3 }
+    @discriminant((*_4)) = 1
+    storage_dead(_6)
+    storage_dead(_task_context)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::boxed::{impl Future for {async}}
+impl "impl_Future_for_async" Future for {async} {
+    proof ImpliedClause0: ({async}: MetaSized) = {built_in impl MetaSized for {async}}
+    proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
+    type Output = u32
+    fn poll<'_0_1, '_1_1, '_2_1> = poll<'_0_1, '_1_1, '_2_1>
+    vtable: impl_Future_for_async::{vtable}
+}
+
+// Full name: test_crate::boxed
+fn boxed() -> Pin<Box<(dyn Future<Output = u32> + 'static)>[{built_in impl MetaSized for (dyn Future<Output = u32> + 'static)}, {built_in impl Sized for Global}]>[{built_in impl Sized for Box<(dyn Future<Output = u32> + 'static)>[{built_in impl MetaSized for (dyn Future<Output = u32> + 'static)}, {built_in impl Sized for Global}]}]
+{
+    let mut _0: Pin<Box<(dyn Future<Output = u32> + '36)>[{built_in impl MetaSized for (dyn Future<Output = u32> + '38)}, {built_in impl Sized for Global}]>[{built_in impl Sized for Box<(dyn Future<Output = u32> + '45)>[{built_in impl MetaSized for (dyn Future<Output = u32> + '47)}, {built_in impl Sized for Global}]}]; // return
+    let mut _1: Pin<Box<(dyn Future<Output = u32> + '48)>[{built_in impl MetaSized for (dyn Future<Output = u32> + '50)}, {built_in impl Sized for Global}]>[{built_in impl Sized for Box<(dyn Future<Output = u32> + '57)>[{built_in impl MetaSized for (dyn Future<Output = u32> + '59)}, {built_in impl Sized for Global}]}]; // anonymous local
+    let mut _2: Pin<Box<{async}>[{built_in impl MetaSized for {async}}, {built_in impl Sized for Global}]>[{built_in impl Sized for Box<{async}>[{built_in impl MetaSized for {async}}, {built_in impl Sized for Global}]}]; // anonymous local
+    let mut _3: {async}; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = {async}::Unresumed {  }
+    _2 = pin<{async}>[{built_in impl Sized for {async}}](move _3)
+    ↳⚡ unwind_continue
+    _1 = unsize_cast<Pin<Box<(dyn Future<Output = u32> + '60)>[{built_in impl MetaSized for (dyn Future<Output = u32> + '62)}, {built_in impl Sized for Global}]>[{built_in impl Sized for Box<(dyn Future<Output = u32> + '69)>[{built_in impl MetaSized for (dyn Future<Output = u32> + '71)}, {built_in impl Sized for Global}]}], &impl_Future_for_async::{vtable}>(move _2)
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 = unsize_cast<Pin<Box<(dyn Future<Output = u32> + '72)>[{built_in impl MetaSized for (dyn Future<Output = u32> + '74)}, {built_in impl Sized for Global}]>[{built_in impl Sized for Box<(dyn Future<Output = u32> + '81)>[{built_in impl MetaSized for (dyn Future<Output = u32> + '83)}, {built_in impl Sized for Global}]}],  at []>(move _1)
+    storage_dead(_1)
+    return
+}
+
+
+

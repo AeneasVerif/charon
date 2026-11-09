@@ -121,17 +121,8 @@ enum test_crate::unit::{async} {
   Panicked,
 }
 
-// Full name: test_crate::unit
-fn unit() -> test_crate::unit::{async}
-{
-    let mut _0: test_crate::unit::{async}; // return
-
-    storage_live(_0)
-    _0 = test_crate::unit::{async}::Unresumed {  }
-    return
-}
-
-fn test_crate::unit::{async}::poll<'_0, '_1, '_2>(_1: Pin<&'_0 mut test_crate::unit::{async}>[{built_in impl Sized for &'_0 mut test_crate::unit::{async}}], _2: &'_1 mut Context<'_2>) -> Poll<()>[{built_in impl Sized for ()}]
+// Full name: test_crate::unit::{impl Future for test_crate::unit::{async}}::poll
+fn {impl Future for test_crate::unit::{async}}::poll<'_0, '_1, '_2>(_1: Pin<&'_0 mut test_crate::unit::{async}>[{built_in impl Sized for &'_0 mut test_crate::unit::{async}}], _2: &'_1 mut Context<'_2>) -> Poll<()>[{built_in impl Sized for ()}]
 where
     Outlives0: ('_2: '_1),
 {
@@ -177,6 +168,25 @@ where
     return
 }
 
+// Full name: test_crate::unit::{impl Future for test_crate::unit::{async}}
+impl Future for test_crate::unit::{async} {
+    proof ImpliedClause0: (test_crate::unit::{async}: MetaSized) = {built_in impl MetaSized for test_crate::unit::{async}}
+    proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
+    type Output = ()
+    fn poll<'_0_1, '_1_1, '_2_1> = {impl Future for test_crate::unit::{async}}::poll<'_0_1, '_1_1, '_2_1>
+    vtable: lazy
+}
+
+// Full name: test_crate::unit
+fn unit() -> test_crate::unit::{async}
+{
+    let mut _0: test_crate::unit::{async}; // return
+
+    storage_live(_0)
+    _0 = test_crate::unit::{async}::Unresumed {  }
+    return
+}
+
 // Full name: test_crate::unit::{async}::{impl Destruct for test_crate::unit::{async}}::drop_glue
 unsafe fn drop_glue<'_0>(_1: &'_0 mut test_crate::unit::{async})
 {
@@ -214,7 +224,8 @@ fn chain() -> test_crate::chain::{async}
     return
 }
 
-fn test_crate::chain::{async}::poll<'_0, '_1, '_2>(_1: Pin<&'_0 mut test_crate::chain::{async}>[{built_in impl Sized for &'_0 mut test_crate::chain::{async}}], _2: &'_1 mut Context<'_2>) -> Poll<()>[{built_in impl Sized for ()}]
+// Full name: test_crate::chain::{impl Future for test_crate::chain::{async}}::poll
+fn {impl Future for test_crate::chain::{async}}::poll<'_0, '_1, '_2>(_1: Pin<&'_0 mut test_crate::chain::{async}>[{built_in impl Sized for &'_0 mut test_crate::chain::{async}}], _2: &'_1 mut Context<'_2>) -> Poll<()>[{built_in impl Sized for ()}]
 where
     Outlives0: ('_2: '_1),
 {
@@ -260,7 +271,7 @@ where
                 storage_dead(_2)
                 storage_dead(_1)
                 unwind_continue
-            _3 = into_future<test_crate::unit::{async}>[{built_in impl Sized for test_crate::unit::{async}}, {built_in impl Future for test_crate::unit::{async} where Output  = ()}](move _4)
+            _3 = into_future<test_crate::unit::{async}>[{built_in impl Sized for test_crate::unit::{async}}, {impl Future for test_crate::unit::{async}}](move _4)
             ↳⚡ storage_dead(_4)
                 storage_dead(_3)
                 @discriminant((*_15)) = 2
@@ -332,7 +343,7 @@ where
     _10 = transmute<&'68 mut Context<'69>>(copy _11.0)
     _9 = &two-phase-mut (*_10)
     storage_dead(_11)
-    _5 = {built_in impl Future for test_crate::unit::{async} where Output  = ()}::poll<'79, '80, '81>(move _6, move _9)
+    _5 = {impl Future for test_crate::unit::{async}}::poll<'79, '80, '81>(move _6, move _9)
     ↳⚡ storage_dead(_9)
         storage_dead(_6)
         storage_dead(_10)

@@ -95,7 +95,7 @@ fn async_gen() -> {async_gen}
     return
 }
 
-// Full name: test_crate::async_gen::{async_gen}::poll_next
+// Full name: test_crate::async_gen::{impl AsyncIterator for {async_gen}}::poll_next
 fn poll_next<'_0, '_1, '_2>(_1: Pin<&'_0 mut {async_gen}>[{built_in impl Sized for &'_0 mut {async_gen}}], _2: &'_1 mut Context<'_2>) -> Poll<Option<()>[{built_in impl Sized for ()}]>[{built_in impl Sized for Option<()>[{built_in impl Sized for ()}]}]
 where
     Outlives0: ('_2: '_1),

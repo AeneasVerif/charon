@@ -200,6 +200,9 @@ pub struct CoroutineInfo {
     /// The method that resumes the coroutine, i.e. its `Coroutine::resume`, `Future::poll`,
     /// `Iterator::next` or `AsyncIterator::poll_next` method depending on `kind`.
     pub resume: FunDeclRef,
+    /// The implementation of `Coroutine`, `Future`, `Iterator` or `AsyncIterator` (depending on
+    /// `kind`) for this coroutine.
+    pub trait_impl: TraitImplRef,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]

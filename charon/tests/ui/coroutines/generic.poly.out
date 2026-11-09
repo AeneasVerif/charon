@@ -39,28 +39,6 @@ where
   Complete { _0: R },
 }
 
-// Full name: core::pin::Pin
-#[fundamental]
-#[lang_item(Pin)]
-pub opaque type Pin<Ptr>
-where
-    TraitClause0: (Ptr: Sized),
-
-// Full name: core::ops::coroutine::Coroutine
-#[fundamental]
-#[lang_item(Coroutine)]
-pub trait Coroutine<Self, R>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (R: Sized)
-    proof ImpliedClause2: (Self::Yield: Sized)
-    proof ImpliedClause3: (Self::Return: Sized)
-    type Yield
-    type Return
-    fn resume<'_0_1, Outlives0: (Self: '_0_1)>;
-    vtable: core::ops::coroutine::Coroutine::{vtable}<R, Self::Yield, Self::Return>
-}
-
 // Full name: core::ops::deref::Deref
 #[lang_item(Deref)]
 #[diagnostic_item("Deref")]
@@ -92,6 +70,13 @@ where
     fn deref<'_0_1> = deref<'_0, '_0_1, T>[TraitClause0]
     vtable: lazy
 }
+
+// Full name: core::pin::Pin
+#[fundamental]
+#[lang_item(Pin)]
+pub opaque type Pin<Ptr>
+where
+    TraitClause0: (Ptr: Sized),
 
 // Full name: core::pin::{Pin<Ptr>[TraitClause0]}::new
 pub fn new<Ptr>(_1: Ptr) -> Pin<Ptr>[TraitClause0]
@@ -126,7 +111,8 @@ where
     return
 }
 
-fn test_crate::wrap::{coroutine}::resume<'_0, T>(_1: Pin<&'_0 mut {coroutine}<T>[TraitClause0]>[{built_in impl Sized for &'_0 mut {coroutine}<T>[TraitClause0]}], _2: ()) -> CoroutineState<(), T>[{built_in impl Sized for ()}, TraitClause0]
+// Full name: test_crate::wrap::{impl Coroutine<()> for {coroutine}<T>[TraitClause0]}::resume
+fn impl_Coroutine_unit_for_coroutine::resume<'_0, T>(_1: Pin<&'_0 mut {coroutine}<T>[TraitClause0]>[{built_in impl Sized for &'_0 mut {coroutine}<T>[TraitClause0]}], _2: ()) -> CoroutineState<(), T>[{built_in impl Sized for ()}, TraitClause0]
 where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
@@ -246,7 +232,7 @@ fn test_crate::resume()
     storage_dead(_5)
     storage_live(_6)
     _6 = ()
-    _3 = {built_in impl Coroutine<()> for {coroutine}<()>[{built_in impl Sized for ()}] where Yield  = (), Return  = ()}::resume<'43>(move _4, move _6)
+    _3 = impl_Coroutine_unit_for_coroutine::resume<'43, ()>[{built_in impl Sized for ()}](move _4, move _6)
     ↳⚡ drop[drop_glue<'41, ()>[{built_in impl Sized for ()}]] c
         ↳⚡ unwind_terminate
         unwind_continue

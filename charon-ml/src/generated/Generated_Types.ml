@@ -243,8 +243,6 @@ and builtin_impl_data =
   | BuiltinAsyncFnOnce
   | BuiltinCoroutine
   | BuiltinFuture
-  | BuiltinIterator
-  | BuiltinAsyncIterator
   | BuiltinTryAsDynCompatible
       (** Auto-trait used for [try_as_dyn] (see
           https://github.com/rust-lang/rust/issues/144361) *)
@@ -948,6 +946,9 @@ and builtin_path_elem =
       (** [str], which is a struct containing a [[u8]] the standard library
           expects to be valid UTF-8. *)
   | PeClosure  (** A closure. *)
+  | PeCoroutine of coroutine_kind
+      (** A coroutine, i.e. a [#[coroutine]] closure, an [async] block or a
+          [gen] block. *)
   | PeUse  (** A [use] declaration. *)
   | PeAnonConst  (** An anonymous constant. *)
   | PePromotedConst  (** A constant that rustc promoted out of a body. *)
@@ -978,6 +979,18 @@ and closure_info = {
 }
 
 and closure_kind = Fn | FnMut | FnOnce
+
+(** Additional information for coroutines. *)
+and coroutine_info = {
+  kind : coroutine_kind;
+  resume : fun_decl_ref;
+      (** The method that resumes the coroutine, i.e. its [Coroutine::resume],
+          [Future::poll], [Iterator::next] or [AsyncIterator::poll_next] method
+          depending on [kind]. *)
+  trait_impl : trait_impl_ref;
+      (** The implementation of [Coroutine], [Future], [Iterator] or
+          [AsyncIterator] (depending on [kind]) for this coroutine. *)
+}
 
 (** What a coroutine was written as. *)
 and coroutine_kind =
@@ -1649,19 +1662,12 @@ and type_source =
 
           Fields:
           - [info] *)
-  | CoroutineType of coroutine_kind * fun_decl_ref
+  | CoroutineType of coroutine_info
       (** The state of a coroutine. This is an enum with one variant per state
-          of the coroutine (unresumed, returned, poisoned, and one per
-          suspension point). Each variant contains the captured variables then
-          the locals that are saved at that suspension point, wrapped in
-          [MaybeUninit]. The captured variables have the same offset in every
-          variant.
+          of the coroutine.
 
           Fields:
-          - [kind]
-          - [resume]: The function that resumes the coroutine, i.e. its
-            [Coroutine::resume], [Future::poll], [Iterator::next] or
-            [AsyncIterator::poll_next] method depending on [kind]. *)
+          - [info] *)
   | VTableType of dyn_predicate * v_table_field list * field_id option list
       (** Defines the vtable struct for a trait.
 

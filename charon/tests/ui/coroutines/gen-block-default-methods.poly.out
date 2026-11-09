@@ -98,21 +98,7 @@ impl "impl_Destruct_for_gen" Destruct for {gen} {
     non-dyn-compatible
 }
 
-fn test_crate::count() -> usize
-{
-    let mut _0: usize; // return
-    let mut _1: {gen}; // anonymous local
-
-    storage_live(_0)
-    storage_live(_1)
-    _1 = {gen}::Unresumed {  }
-    _0 = {built_in impl Iterator for {gen} where Item  = u32}::count[{built_in impl Sized for {gen}}, impl_Destruct_for_gen, {built_in impl Destruct for u32}](move _1)
-    ↳⚡ unwind_continue
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::count::{gen}::next
+// Full name: test_crate::count::{impl Iterator for {gen}}::next
 fn next<'_0>(_1: &'_0 mut {gen}) -> Option<u32>[{built_in impl Sized for u32}]
 {
     let mut _0: Option<u32>[{built_in impl Sized for u32}]; // return
@@ -145,6 +131,30 @@ fn next<'_0>(_1: &'_0 mut {gen}) -> Option<u32>[{built_in impl Sized for u32}]
     }
     _0 = Option::Some { _0: const 1u32 }
     @discriminant((*_1)) = 3
+    return
+}
+
+// Full name: test_crate::count::{impl Iterator for {gen}}
+impl "impl_Iterator_for_gen" Iterator for {gen} {
+    proof ImpliedClause0: ({gen}: MetaSized) = {built_in impl MetaSized for {gen}}
+    proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
+    type Item = u32
+    fn next<'_0_1> = next<'_0_1>
+    fn count<TraitClause0_1: ({gen}: Sized), TraitClause1_1: ({gen}: Destruct), TraitClause2_1: (u32: Destruct)> = core::iter::traits::iterator::Iterator::count<{gen}>[impl_Iterator_for_gen, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    vtable: lazy
+}
+
+fn test_crate::count() -> usize
+{
+    let mut _0: usize; // return
+    let mut _1: {gen}; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = {gen}::Unresumed {  }
+    _0 = core::iter::traits::iterator::Iterator::count<{gen}>[impl_Iterator_for_gen, {built_in impl Sized for {gen}}, impl_Destruct_for_gen, {built_in impl Destruct for u32}](move _1)
+    ↳⚡ unwind_continue
+    storage_dead(_1)
     return
 }
 

@@ -437,11 +437,12 @@ impl<'tcx> TranslateCtx<'tcx> {
 
             TransItemSourceKind::TraitImpl(
                 kind @ (TransImplSource::Callable(..)
+                | TransImplSource::Coroutine
                 | TransImplSource::ImplicitDestruct
                 | TransImplSource::TraitAlias),
             ) => {
-                if let TransImplSource::Callable(..) = kind {
-                    let _ = name.name.pop(); // Pop the `{closure}`
+                if let TransImplSource::Callable(..) | TransImplSource::Coroutine = kind {
+                    let _ = name.name.pop(); // Pop the `{closure}`/`{async}`/etc
                 }
                 let impl_id = self.register_and_enqueue(&None, src.clone()).expect_item();
                 name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));

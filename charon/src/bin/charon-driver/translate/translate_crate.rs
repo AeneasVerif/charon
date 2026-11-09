@@ -69,8 +69,8 @@ pub enum TransItemSourceKind {
     CallableMethod(ClosureKind),
     /// A cast of a stateless closure to a function pointer.
     ClosureAsFnCast,
-    /// The function that resumes a coroutine (see [`TypeSource::Coroutine`]). The `DefId` is that
-    /// of the coroutine.
+    /// The method of the generated `Coroutine`/`Future`/`Iterator`/`AsyncIterator` impl of a
+    /// coroutine. The `DefId` is that of the coroutine.
     CoroutineResume,
     /// The `drop_glue` method of a `Destruct` impl. It contains the drop glue that calls
     /// `Drop::drop` for the type and then drops its fields. This is a method implementation (and
@@ -100,6 +100,9 @@ pub enum TransImplSource {
     TraitAlias,
     /// An impl of the appropriate `Fn*` trait for a closure or function item.
     Callable(ClosureKind),
+    /// The impl of `Coroutine`, `Future`, `Iterator` or `AsyncIterator` for a coroutine. The
+    /// `DefId` is that of the coroutine.
+    Coroutine,
     /// A fictitious `impl Destruct for T` that contains the drop glue code for the given ADT or
     /// closure. The `DefId` is that of the ADT or closure.
     ImplicitDestruct,
@@ -173,6 +176,9 @@ impl<'tcx> TransItemSource<'tcx> {
             TransItemSourceKind::CallableMethod(kind)
             | TransItemSourceKind::VTableMethod(TransImplSource::Callable(kind)) => {
                 TransItemSourceKind::TraitImpl(TransImplSource::Callable(kind))
+            }
+            TransItemSourceKind::CoroutineResume => {
+                TransItemSourceKind::TraitImpl(TransImplSource::Coroutine)
             }
             TransItemSourceKind::DropGlueMethod(TransImplSource::Marker)
             | TransItemSourceKind::VTableInstance(TransImplSource::Marker)

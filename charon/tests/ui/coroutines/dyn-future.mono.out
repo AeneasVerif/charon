@@ -1,13 +1,149 @@
+# Final LLBC before serialization:
 
-thread 'rustc' panicked at /Users/opale/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/index_vec-0.1.4/src/indexing.rs:37:10:
-index out of bounds: the len is 0 but the index is 0
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting item `core::future::future::Future`.
- --> /rustc/library/core/src/future/future.rs:37:1
+opaque type core::marker::MetaSized::{vtable}
 
-note: the error occurred when translating `core::future::future::Future::{vtable}::<test_crate::boxed::{async}>`, which is (transitively) used at the following location(s):
-  --> tests/ui/coroutines/dyn-future.rs:10:5
-   |
-10 |     Box::pin(async { 1 })
-   |     ---------------------
-ERROR Charon failed to translate this code (1 errors)
+struct core::future::future::Future::{vtable} {
+  size: usize,
+  align: usize,
+  drop: *const (),
+  method_poll: *const (),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::future::future::Future
+#[lang_item(Future)]
+pub trait Future<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: core::future::future::Future::{vtable}
+}
+
+// Full name: core::future::ResumeTy
+#[lang_item(ResumeTy)]
+pub opaque type ResumeTy
+
+// Full name: core::pin::Pin::<Box::<(dyn Future<Output = u32>), Global>>
+#[fundamental]
+#[lang_item(Pin)]
+pub opaque type Pin::<Box::<(dyn Future<Output = u32>), Global>>
+
+// Full name: core::pin::Pin::<Box::<{async}, Global>>
+#[fundamental]
+#[lang_item(Pin)]
+pub opaque type Pin::<Box::<{async}, Global>>
+
+// Full name: core::pin::Pin::<&'_ mut {async}>
+#[fundamental]
+#[lang_item(Pin)]
+pub opaque type Pin::<&'_ mut {async}>
+
+// Full name: core::ptr::non_null::NonNull::<Context::<'_>>
+#[lang_item(NonNull)]
+pub opaque type NonNull::<Context::<'_>>
+
+// Full name: core::task::poll::Poll::<u32>
+#[lang_item(Poll)]
+pub enum Poll::<u32> {
+  Ready { _0: u32 },
+  Pending,
+}
+
+// Full name: core::task::wake::Context::<'_>
+#[lang_item(Context)]
+pub opaque type Context::<'_>
+
+// Full name: test_crate::boxed::{async}
+enum {async} {
+  Unresumed,
+  Returned,
+  Panicked,
+}
+
+// Full name: alloc::boxed::{Box::<{async}, Global>}::pin::<{async}>
+pub fn pin::<{async}>(_1: {async}) -> Pin::<Box::<{async}, Global>>
+= <opaque>
+
+// Full name: test_crate::boxed::{impl Future for {async}}::{vtable}
+vtable impl_Future_for_async::{vtable}: core::future::future::Future::{vtable} = Opaque(Vtables of coroutines are not supported yet)
+
+// Full name: test_crate::boxed::{impl Future for {async}}
+impl "impl_Future_for_async" Future for {async} {
+    proof ImpliedClause0: ({async}: MetaSized) = {built_in impl MetaSized for {async}}
+    vtable: impl_Future_for_async::{vtable}
+}
+
+// Full name: test_crate::boxed
+fn boxed() -> Pin::<Box::<(dyn Future<Output = u32>), Global>>
+{
+    let mut _0: Pin::<Box::<(dyn Future<Output = u32>), Global>>; // return
+    let mut _1: Pin::<Box::<(dyn Future<Output = u32>), Global>>; // anonymous local
+    let mut _2: Pin::<Box::<{async}, Global>>; // anonymous local
+    let mut _3: {async}; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = {async}::Unresumed {  }
+    _2 = pin::<{async}>(move _3)
+    ↳⚡ unwind_continue
+    _1 = unsize_cast<Pin::<Box::<(dyn Future<Output = u32>), Global>>, &impl_Future_for_async::{vtable}>(move _2)
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 = unsize_cast<Pin::<Box::<(dyn Future<Output = u32>), Global>>,  at []>(move _1)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::boxed::{impl Future for {async}}::poll
+fn poll<'_0, '_1, '_2>(_1: Pin::<&'_ mut {async}>, _2: &'_1 mut Context::<'_>) -> Poll::<u32>
+{
+    let mut _0: Poll::<u32>; // return
+    let mut _1: Pin::<&'_ mut {async}>; // arg #1
+    let mut _2: &'1 mut Context::<'_>; // arg #2
+    let mut _3: u32; // anonymous local
+    let mut _4: &'3 mut {async}; // anonymous local
+    let mut _task_context: ResumeTy; // local
+    let mut _6: NonNull::<Context::<'_>>; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_task_context)
+    storage_live(_6)
+    _6 = transmute<NonNull::<Context::<'_>>>(move _2)
+    _task_context = ResumeTy { 0: move _6 }
+    _4 = read _1.0
+    match (*_4) {
+        {async}::Unresumed => {
+        },
+        {async}::Returned => {
+            loop {
+                assert(const false == true) (resumed_after_return) else panic
+                ↳⚡ unwind_continue
+                continue 0
+            }
+        },
+        _ => {
+            undefined_behavior
+        },
+    }
+    _3 = const 1u32
+    _0 = Poll::<u32>::Ready { _0: move _3 }
+    @discriminant((*_4)) = 1
+    storage_dead(_6)
+    storage_dead(_task_context)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+
+

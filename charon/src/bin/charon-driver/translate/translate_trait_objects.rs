@@ -643,6 +643,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     self.translate_region_binder(span, &trait_proof.pred, |ctx, tref| {
                         // We're inside the binder of `trait_proof.pred`, so we can skip the
                         // binder of the `Self` type.
+                        let coroutine = ctx.recognize_coroutine_impl_proof(trait_proof);
                         let (impl_item, impl_kind) = match (&trait_proof.kind, fn_trait_impl) {
                             (hax::TraitProofKind::Concrete(impl_item), _) => {
                                 (impl_item, TransImplSource::Normal)
@@ -654,6 +655,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                     unreachable!("builtin `Fn*` impl for {self_ty:?}")
                                 };
                                 (item, TransImplSource::Callable(kind))
+                            }
+                            (_, None) if let Some(item) = &coroutine => {
+                                (item, TransImplSource::Coroutine)
                             }
                             (_, None) => (tref, TransImplSource::Marker),
                         };
@@ -842,6 +846,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let align = Size::from_expr(SizeExpr::align_of(&ty));
         let kind = if item_meta.opacity.with_private_contents().is_opaque() {
             ConstantExprKind::Opaque("VTable was chosen to be opaque".to_string())
+        } else if impl_kind == TransImplSource::Coroutine {
+            ConstantExprKind::Opaque("Vtables of coroutines are not supported yet".to_string())
         } else if matches!(
             impl_kind,
             TransImplSource::Marker | TransImplSource::Normal | TransImplSource::Callable(..)
@@ -908,6 +914,15 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 implied_trait_proofs: t.implied_trait_proofs(self.hax_state()),
                 methods: VTableMethodSource::ImplMethods(IndexVec::new()),
             },
+            // We don't fill in the vtables of coroutines yet, so we don't need their methods.
+            (TransImplSource::Coroutine, hax::FullDefKind::Coroutine(c)) => {
+                let vimpl = c.trait_impl(self.hax_state());
+                VTableInstanceData {
+                    implemented_trait_ref: &vimpl.trait_pred.trait_ref,
+                    implied_trait_proofs: &vimpl.implied_trait_proofs,
+                    methods: VTableMethodSource::ImplMethods(IndexVec::new()),
+                }
+            }
             _ => unreachable!(),
         }
     }
