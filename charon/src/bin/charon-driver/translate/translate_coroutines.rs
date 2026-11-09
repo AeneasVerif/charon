@@ -41,7 +41,7 @@ use crate::hax::{self, UnderOwnerState};
 use rustc_hir as hir;
 use rustc_middle::ty::{self, CoroutineArgsExt};
 
-use super::translate_crate::TransItemSourceKind;
+use super::translate_crate::{TransImplSource, TransItemSourceKind};
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::ids::IndexVec;
@@ -132,9 +132,15 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let hax::FullDefKind::Coroutine(coroutine) = def.kind() else {
             unreachable!()
         };
+        let trait_impl = self.translate_item(
+            span,
+            def.this(),
+            TransItemSourceKind::TraitImpl(TransImplSource::Coroutine),
+        )?;
         Ok(CoroutineInfo {
             kind: translate_coroutine_kind(coroutine.kind()),
             resume: self.translate_item(span, def.this(), TransItemSourceKind::CoroutineResume)?,
+            trait_impl,
         })
     }
 
@@ -202,7 +208,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         })
     }
 
-    /// Translate the function that resumes a coroutine.
+    /// Translate the method that resumes a coroutine, which contains the coroutine body.
     #[tracing::instrument(skip(self, item_meta))]
     pub fn translate_coroutine_resume(
         mut self,
@@ -214,7 +220,22 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let hax::FullDefKind::Coroutine(coroutine) = def.kind() else {
             unreachable!()
         };
+        let vimpl = coroutine.trait_impl(self.hax_state());
         let method = coroutine.resume_method(self.hax_state());
+        let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
+        let item_id = self.translate_trait_method_id(implemented_trait.id, &method.def_id)?;
+        let impl_ref = self.translate_item(
+            span,
+            def.this(),
+            TransItemSourceKind::TraitImpl(TransImplSource::Coroutine),
+        )?;
+        let src = FunSource::TraitImpl {
+            impl_ref,
+            trait_ref: implemented_trait,
+            item_id,
+            reuses_default: false,
+        };
+
         let signature = self.translate_fun_sig(span, &method.sig.value)?;
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque
@@ -226,13 +247,76 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             item_meta,
             generics: self.into_generics(),
             signature: Box::new(signature),
-            src: FunSource::Normal,
+            src,
             body,
         })
     }
 
+    /// Translate the `Coroutine`, `Future`, `Iterator` or `AsyncIterator` impl of a coroutine.
+    #[tracing::instrument(skip(self, item_meta))]
+    pub fn translate_coroutine_trait_impl(
+        mut self,
+        def_id: TraitImplId,
+        item_meta: ItemMeta,
+        def: &hax::FullDef<'tcx>,
+    ) -> Result<TraitImpl, Error> {
+        let span = item_meta.span;
+        let hax::FullDefKind::Coroutine(coroutine) = def.kind() else {
+            unreachable!()
+        };
+        let vimpl = coroutine.trait_impl(self.hax_state());
+        let mut timpl = self.translate_virtual_trait_impl(
+            def_id,
+            item_meta,
+            def.this(),
+            TransImplSource::Coroutine,
+            vimpl,
+        )?;
+
+        if self.monomorphize() {
+            return Ok(timpl);
+        }
+
+        let trait_id = timpl.impl_trait.id;
+        let resume_method = coroutine.resume_method(self.hax_state());
+        let resume_id = self.translate_trait_method_id(trait_id, &resume_method.def_id)?;
+        let bound_resume = self
+            .translate_coroutine_resume_bound_ref(span, def.this())?
+            .into_binder(BinderKind::TraitMethod(trait_id, resume_id));
+        timpl.methods.set_slot_extend(resume_id, bound_resume);
+
+        // The other methods (of `Iterator` and `AsyncIterator`) reuse the defaults of the trait.
+        let self_predicate = TraitRef::new(
+            TraitRefKind::TraitImpl(TraitImplRef {
+                id: def_id,
+                generics: Box::new(self.the_only_binder().params.identity_args()),
+            }),
+            timpl.impl_trait.clone(),
+        );
+        let trait_def = self.poly_hax_def(&vimpl.trait_pred.trait_ref.def_id)?;
+        let hax::FullDefKind::Trait(t) = trait_def.kind() else {
+            unreachable!()
+        };
+        for assoc in t.items(self.hax_state()) {
+            if !matches!(assoc.kind, hax::AssocKind::Fn { .. })
+                || assoc.def_id == resume_method.def_id
+            {
+                continue;
+            }
+            let method_id = self.translate_trait_method_id_no_enqueue(trait_id, &assoc.def_id)?;
+            let Some(bound_fn_ref) = self.translate_default_method_impl(&self_predicate, method_id)
+            else {
+                continue;
+            };
+            self.register_method_impl(trait_id, method_id, bound_fn_ref.skip_binder.id);
+            timpl.methods.set_slot_extend(method_id, bound_fn_ref);
+        }
+
+        Ok(timpl)
+    }
+
     /// In mono mode, a call to the method of the built-in trait impl of a coroutine (e.g.
-    /// `Future::poll` for an `async` block) becomes a call to the function that resumes the
+    /// `Future::poll` for an `async` block) becomes a call to the method that resumes the
     /// coroutine.
     pub(crate) fn translate_coroutine_resume_fn_ptr(
         &mut self,

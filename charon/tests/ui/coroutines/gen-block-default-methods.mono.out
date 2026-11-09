@@ -83,6 +83,12 @@ impl "impl_Destruct_for_gen" Destruct for {gen} {
     non-dyn-compatible
 }
 
+// Full name: test_crate::count::{impl Iterator for {gen}}
+impl "impl_Iterator_for_gen" Iterator for {gen} {
+    proof ImpliedClause0: ({gen}: MetaSized) = {built_in impl MetaSized for {gen}}
+    vtable: lazy
+}
+
 // Full name: test_crate::count
 fn count() -> usize
 {
@@ -92,13 +98,13 @@ fn count() -> usize
     storage_live(_0)
     storage_live(_1)
     _1 = {gen}::Unresumed {  }
-    _0 = {built_in impl Iterator for {gen}}::count[{built_in impl Sized for {gen}}, impl_Destruct_for_gen, {built_in impl Destruct for u32}](move _1)
+    _0 = impl_Iterator_for_gen::count[{built_in impl Sized for {gen}}, impl_Destruct_for_gen, {built_in impl Destruct for u32}](move _1)
     ↳⚡ unwind_continue
     storage_dead(_1)
     return
 }
 
-// Full name: test_crate::count::{gen}::next
+// Full name: test_crate::count::{impl Iterator for {gen}}::next
 fn next<'_0>(_1: &'_0 mut {gen}) -> Option::<u32>
 {
     let mut _0: Option::<u32>; // return

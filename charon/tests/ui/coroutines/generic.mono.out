@@ -38,7 +38,8 @@ fn wrap::<()>(x: ()) -> {coroutine}::<()>
     return
 }
 
-fn test_crate::wrap::{coroutine}::resume::<()><'_0>(_1: Pin::<&'_ mut {coroutine}::<()>>, _2: ()) -> CoroutineState::<(), ()>
+// Full name: test_crate::wrap::{impl Coroutine<()> for {coroutine}::<()>}::resume::<()>
+fn {impl Coroutine<()> for {coroutine}::<()>}::resume::<()><'_0>(_1: Pin::<&'_ mut {coroutine}::<()>>, _2: ()) -> CoroutineState::<(), ()>
 {
     let mut _0: CoroutineState::<(), ()>; // return
     let mut _1: Pin::<&'_ mut {coroutine}::<()>>; // arg #1
@@ -146,7 +147,7 @@ fn test_crate::resume()
     storage_dead(_5)
     storage_live(_6)
     _6 = ()
-    _3 = test_crate::wrap::{coroutine}::resume::<()><'6>(move _4, move _6)
+    _3 = {impl Coroutine<()> for {coroutine}::<()>}::resume::<()><'6>(move _4, move _6)
     ↳⚡ drop[drop_glue::<()><'2>] c
         ↳⚡ unwind_terminate
         unwind_continue

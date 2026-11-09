@@ -69,7 +69,8 @@ fn movable<'_0>(x: &'_0 u8, y: u8) -> test_crate::movable::{coroutine}<'_0>
     return
 }
 
-fn test_crate::movable::{coroutine}::resume<'_0, '_1>(_1: Pin<&'_1 mut test_crate::movable::{coroutine}<'_0>>[{built_in impl Sized for &'_1 mut test_crate::movable::{coroutine}<'_0>}], _2: u8) -> CoroutineState<u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}]
+// Full name: test_crate::movable::{impl Coroutine<u8> for test_crate::movable::{coroutine}<'_0>}::resume
+fn impl_Coroutine_u8_for_coroutine::resume<'_0, '_1>(_1: Pin<&'_1 mut test_crate::movable::{coroutine}<'_0>>[{built_in impl Sized for &'_1 mut test_crate::movable::{coroutine}<'_0>}], _2: u8) -> CoroutineState<u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}]
 where
     Outlives0: ('_0: '_1),
 {
@@ -183,7 +184,8 @@ fn immovable() -> test_crate::immovable::{coroutine}
     return
 }
 
-fn test_crate::immovable::{coroutine}::resume<'_0>(_1: Pin<&'_0 mut test_crate::immovable::{coroutine}>[{built_in impl Sized for &'_0 mut test_crate::immovable::{coroutine}}], _2: ()) -> CoroutineState<(), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}]
+// Full name: test_crate::immovable::{impl Coroutine<()> for test_crate::immovable::{coroutine}}::resume
+fn impl_Coroutine_unit_for_coroutine::resume<'_0>(_1: Pin<&'_0 mut test_crate::immovable::{coroutine}>[{built_in impl Sized for &'_0 mut test_crate::immovable::{coroutine}}], _2: ()) -> CoroutineState<(), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}]
 {
     let mut _0: CoroutineState<(), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}]; // return
     let mut _1: Pin<&'8 mut test_crate::immovable::{coroutine}>[{built_in impl Sized for &'8 mut test_crate::immovable::{coroutine}}]; // arg #1

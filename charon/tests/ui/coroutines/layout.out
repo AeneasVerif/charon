@@ -146,7 +146,7 @@ fn mk(x: u8, y: u64) -> {coroutine}
     return
 }
 
-// Full name: test_crate::mk::{coroutine}::resume
+// Full name: test_crate::mk::{impl Coroutine<()> for {coroutine}}::resume
 fn resume<'_0>(_1: Pin<&'_0 mut {coroutine}>[{built_in impl Sized for &'_0 mut {coroutine}}], _2: ()) -> CoroutineState<(), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}]
 = <opaque>
 

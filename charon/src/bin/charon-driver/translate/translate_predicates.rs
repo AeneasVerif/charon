@@ -27,7 +27,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     SolverTraitLangItem::AsyncFnKindHelper => return None,
                     SolverTraitLangItem::AsyncFnMut => BuiltinImplData::AsyncFnMut,
                     SolverTraitLangItem::AsyncFnOnce => BuiltinImplData::AsyncFnOnce,
-                    SolverTraitLangItem::AsyncIterator => BuiltinImplData::AsyncIterator,
+                    SolverTraitLangItem::AsyncIterator => return None,
                     SolverTraitLangItem::BikeshedGuaranteedNoDrop => return None,
                     SolverTraitLangItem::Clone => BuiltinImplData::Clone,
                     SolverTraitLangItem::Copy => BuiltinImplData::Copy,
@@ -42,7 +42,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     SolverTraitLangItem::FnPtrTrait => BuiltinImplData::FnPtr,
                     SolverTraitLangItem::FusedIterator => return None,
                     SolverTraitLangItem::Future => BuiltinImplData::Future,
-                    SolverTraitLangItem::Iterator => BuiltinImplData::Iterator,
+                    SolverTraitLangItem::Iterator => return None,
                     SolverTraitLangItem::MetaSized => BuiltinImplData::MetaSized,
                     SolverTraitLangItem::PointeeSized => BuiltinImplData::PointeeSized,
                     SolverTraitLangItem::PointeeTrait => BuiltinImplData::Pointee,
@@ -402,6 +402,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             span,
                             &item,
                             closure_kind,
+                        )?)
+                    }
+                    _ if let Some(item) = self.recognize_coroutine_impl_proof(impl_source) => {
+                        TraitRefKind::TraitImpl(self.translate_item(
+                            span,
+                            &item,
+                            TransItemSourceKind::TraitImpl(TransImplSource::Coroutine),
                         )?)
                     }
                     _ if let Some(builtin_data) = self.recognize_builtin_impl(trait_data) => {

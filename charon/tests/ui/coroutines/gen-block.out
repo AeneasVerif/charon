@@ -45,7 +45,7 @@ fn gen_block() -> {gen}
     return
 }
 
-// Full name: test_crate::gen_block::{gen}::next
+// Full name: test_crate::gen_block::{impl Iterator for {gen}}::next
 fn next<'_0>(_1: &'_0 mut {gen}) -> Option<()>[{built_in impl Sized for ()}]
 {
     let mut _0: Option<()>[{built_in impl Sized for ()}]; // return
