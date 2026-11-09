@@ -735,6 +735,16 @@ impl<T> RegionBinder<T> {
         let args = RegionArgs::erased(self.regions.len());
         self.apply(args)
     }
+
+    /// Generalises this `RegionBinder` into a [`Binder`]
+    pub fn into_binder(self, kind: BinderKind) -> Binder<T> {
+        let params = GenericParams {
+            regions: self.regions,
+            outlives: self.outlives,
+            ..GenericParams::default()
+        };
+        Binder::new(kind, params, self.skip_binder)
+    }
 }
 
 impl<Id: TypeLevelVar> std::ops::Index<Id> for GenericArgs {
