@@ -526,23 +526,24 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 // arg-N, rest...
                 // We then add N statements of the form `locals[N+3] := move locals[2].N`,
                 // to destructure the arguments.
-                let Body::Unstructured(GExprBody {
-                    locals,
-                    body: blocks,
-                    ..
-                }) = &mut body
-                else {
+                let Body::Unstructured(inner_body) = &mut body else {
                     return Ok(body);
                 };
 
-                // The (Arg1, Arg2, ..) type.
-                let tupled_ty = &signature.inputs[1];
-
-                blocks.dyn_visit_mut(|local: &mut LocalId| {
+                inner_body.dyn_visit_in_body_mut(|local: &mut LocalId| {
                     if local.index() >= 2 {
                         *local += 1;
                     }
                 });
+
+                let GExprBody {
+                    locals,
+                    body: blocks,
+                    ..
+                } = inner_body;
+
+                // The (Arg1, Arg2, ..) type.
+                let tupled_ty = &signature.inputs[1];
 
                 // Remember how many arguments there are
                 let closure_arg_count = locals.arg_count - 1;
@@ -551,10 +552,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 locals.locals.push(old_locals.next().unwrap()); // ret
                 locals.locals.push(old_locals.next().unwrap()); // state
                 let tupled_arg = locals.new_var(Some("tupled_args".to_string()), tupled_ty.clone());
-                locals.locals.extend(old_locals.map(|mut l| {
-                    l.index += 1;
-                    l
-                }));
+                locals.locals.extend(old_locals);
 
                 let untupled_args = locals
                     .locals

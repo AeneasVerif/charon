@@ -287,10 +287,13 @@ impl OutlivesPred {
                     }
                 }
 
-                fn enter_ty(&mut self, ty: &Ty) {
+                fn visit_ty(&mut self, ty: &Ty) -> ControlFlow<Self::Break> {
                     if matches!(ty.kind(), TyKind::TypeVar(_) | TyKind::TraitType(..)) {
                         self.enter_region(&Region::Lub(ty.clone()));
+                        // `T::Assoc: 'a` does not imply `T: 'a`.
+                        return ControlFlow::Continue(());
                     }
+                    self.visit_inner(ty)
                 }
             }
 

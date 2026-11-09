@@ -500,8 +500,8 @@ pub const test_crate::inline_const::{promoted_const}: Outer<[u16]>[{built_in imp
 pub fn inline_const()
 {
     let mut _0: (); // return
-    let mut _1: &'3 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
-        where _1 :< &'1 Outer<[u16]>[{built_in impl MetaSized for [u16]}];
+    let mut _1: &'2 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
+        where _1 :< &'0 Outer<[u16]>[{built_in impl MetaSized for [u16]}];
 
     storage_live(_0)
     _0 = ()

@@ -35,6 +35,7 @@ impl OutlivesAtBinder {
 #[derive(Visitor)]
 struct OutlivesGatherer<'a> {
     type_decls: &'a IndexMap<TypeDeclId, TypeDecl>,
+    trait_decls: &'a IndexMap<TraitDeclId, TraitDecl>,
     item_params: &'a mut GenericParams,
     binders: BindingStack<OutlivesAtBinder>,
 }
@@ -43,9 +44,11 @@ impl<'a> OutlivesGatherer<'a> {
     fn new(
         item_params: &'a mut GenericParams,
         type_decls: &'a IndexMap<TypeDeclId, TypeDecl>,
+        trait_decls: &'a IndexMap<TraitDeclId, TraitDecl>,
     ) -> Self {
         Self {
             type_decls,
+            trait_decls,
             item_params,
             binders: BindingStack::new(OutlivesAtBinder::default()),
         }
@@ -117,6 +120,16 @@ impl VisitAstMut for OutlivesGatherer<'_> {
     }
 
     fn visit_ty(&mut self, ty: &mut Ty) -> ControlFlow<Self::Break> {
+        if let TyKind::TraitType(proof, type_id, args) = ty.kind()
+            && let Some(decl) = self.trait_decls.get(proof.trait_id())
+            && let Some(assoc) = decl.types.get(*type_id)
+        {
+            // Instantiate the trait parameters under the GAT binder, then the GAT parameters.
+            let assoc = assoc.clone().substitute_with_tref(proof);
+            for pred in assoc.params.outlives.substitute_inner_binder(args) {
+                self.add_outlives(pred);
+            }
+        }
         match ty.kind() {
             TyKind::TypeVar(_) | TyKind::TraitType(..) => {
                 self.add_outliving_region(&Region::Lub(ty.clone()));
@@ -166,12 +179,16 @@ impl VisitAstMut for OutlivesGatherer<'_> {
 
 struct ClosureOutlivesComputer<'a> {
     type_decls: &'a mut IndexMap<TypeDeclId, TypeDecl>,
+    trait_decls: &'a IndexMap<TraitDeclId, TraitDecl>,
     /// Map of types we want to process.
     closure_tys: SeqHashMap<TypeDeclId, CycleDetector<()>>,
 }
 
 impl<'a> ClosureOutlivesComputer<'a> {
-    fn new(type_decls: &'a mut IndexMap<TypeDeclId, TypeDecl>) -> Self {
+    fn new(
+        type_decls: &'a mut IndexMap<TypeDeclId, TypeDecl>,
+        trait_decls: &'a IndexMap<TraitDeclId, TraitDecl>,
+    ) -> Self {
         let closure_tys = type_decls
             .iter()
             .filter(|decl| matches!(decl.src, TypeSource::Closure { .. }))
@@ -179,6 +196,7 @@ impl<'a> ClosureOutlivesComputer<'a> {
             .collect();
         Self {
             type_decls,
+            trait_decls,
             closure_tys,
         }
     }
@@ -206,7 +224,7 @@ impl<'a> ClosureOutlivesComputer<'a> {
             // Move the kind out so that the crate can inspect the rest of the decls.
             let mut kind = mem::replace(&mut self.type_decls[type_id].kind, TypeDeclKind::Opaque);
             let mut params = mem::take(&mut self.type_decls[type_id].generics);
-            let mut visitor = OutlivesGatherer::new(&mut params, self.type_decls);
+            let mut visitor = OutlivesGatherer::new(&mut params, self.type_decls, self.trait_decls);
             visitor.visit(&mut kind);
             visitor.finish();
             self.type_decls[type_id].generics = params;
@@ -225,41 +243,53 @@ pub struct Transform;
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         let type_decls = &mut ctx.translated.type_decls;
+        let trait_decls = &mut ctx.translated.trait_decls;
 
         // Rustc gives us explicit outlives for ADTs, but we make fake ADTs for closures, so we
         // infer their outlives predicates here. Thankfully they can't be recursive, which makes
         // the implementation much easier than having to deal with all ADTs.
-        ClosureOutlivesComputer::new(type_decls).compute_all();
+        ClosureOutlivesComputer::new(type_decls, trait_decls).compute_all();
 
         for fun_decl in &mut ctx.translated.fun_decls {
-            let mut visitor = OutlivesGatherer::new(&mut fun_decl.generics, type_decls);
+            let mut visitor =
+                OutlivesGatherer::new(&mut fun_decl.generics, type_decls, trait_decls);
             visitor.visit(&mut fun_decl.signature);
-            if let FunSource::InherentImpl { self_ty } = &mut fun_decl.src {
-                // The inherent impl header contributes to the implied bounds even if that type is
-                // not mentioned in the signature.
-                visitor.visit(self_ty);
+            // The impl header contributes to the implied bounds even if its types are
+            // not mentioned in the signature.
+            match &mut fun_decl.src {
+                FunSource::InherentImpl { self_ty } => {
+                    visitor.visit(self_ty);
+                }
+                FunSource::TraitImpl { trait_ref, .. } => {
+                    visitor.visit(trait_ref);
+                }
+                _ => {}
             }
             visitor.finish();
 
             // Also add implied bounds to the inner binders inside bodies. Implied bounds involving
             // only body or signature lifetimes must not be kept; they must be checked by
             // borrow-checking.
-            OutlivesGatherer::new(&mut GenericParams::default(), type_decls)
+            OutlivesGatherer::new(&mut GenericParams::default(), type_decls, trait_decls)
                 .visit(&mut fun_decl.body);
         }
 
         for timpl in &mut ctx.translated.trait_impls {
-            let mut visitor = OutlivesGatherer::new(&mut timpl.generics, type_decls);
+            let mut visitor = OutlivesGatherer::new(&mut timpl.generics, type_decls, trait_decls);
             visitor.visit(&mut timpl.impl_trait);
             visitor.finish();
         }
 
-        for trait_decl in &mut ctx.translated.trait_decls {
-            for method in &mut trait_decl.methods {
-                let mut visitor = OutlivesGatherer::new(&mut method.params, type_decls);
+        for trait_id in trait_decls.iter_indices().collect_vec() {
+            // Keep the associated type declarations available while visiting method signatures.
+            let mut methods = mem::take(&mut trait_decls[trait_id].methods);
+            for method in &mut methods {
+                let mut visitor =
+                    OutlivesGatherer::new(&mut method.params, type_decls, trait_decls);
                 visitor.visit(&mut method.skip_binder.signature);
                 visitor.finish();
             }
+            trait_decls[trait_id].methods = methods;
         }
     }
 }

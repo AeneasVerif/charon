@@ -147,6 +147,7 @@ fn {impl Trait<T> for &'_0 [T]}::method<'_0, T, U>()
 where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
+    Outlives0: (T: '_0),
 {
     let mut _0: (); // return
 
