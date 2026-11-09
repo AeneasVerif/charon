@@ -511,8 +511,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // Add generics from the parent item, recursively (recursivity is important for closures,
         // as they can be nested). Instantiated defs have no generics, so we can skip it.
         let def_is_instantiated = self.monomorphize() && !self.item_src.kind.is_for_trait();
-        if !def_is_instantiated && let Some(parent_item) = def.typing_parent(self.hax_state()) {
-            let parent_def = self.hax_def(&parent_item)?;
+        if !def_is_instantiated
+            && let Some(param_env) = def.param_env()
+            && let Some(parent_item) = &param_env.parent
+        {
+            let parent_def = self.hax_def(parent_item)?;
             self.push_generics_for_def(span, &parent_def)?;
         }
         self.push_generics_for_def_without_parents(span, def)?;
@@ -537,9 +540,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn predicate_origin_for_def(def: &hax::FullDef<'tcx>) -> PredicateOrigin {
         use crate::hax::FullDefKind;
         match &def.kind {
-            FullDefKind::Adt(_) | FullDefKind::TyAlias(_) | FullDefKind::AssocTy(_) => {
-                PredicateOrigin::WhereClauseOnType
-            }
+            FullDefKind::Adt(_)
+            | FullDefKind::Variant(_)
+            | FullDefKind::TyAlias(_)
+            | FullDefKind::AssocTy(_) => PredicateOrigin::WhereClauseOnType,
             FullDefKind::Fn(_)
             | FullDefKind::FnPtr(_)
             | FullDefKind::AssocFn(_)

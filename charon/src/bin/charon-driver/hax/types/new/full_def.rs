@@ -69,7 +69,7 @@ where
     let kind;
     match def_id.base {
         DefIdBase::Synthetic(item) => {
-            let param_env = get_param_env(s, args);
+            let param_env = get_param_env(s, args, this.typing_parent(s));
             match item {
                 SyntheticItem::Array
                 | SyntheticItem::Slice
@@ -126,9 +126,7 @@ where
             diagnostic_item = Default::default();
         }
         DefIdBase::Promoted(rust_def_id, promoted_id) => {
-            let parent_def_id = rust_def_id.sinto(s);
-            let parent_def = parent_def_id.full_def_maybe_instantiated(s, args);
-            let param_env = ParamEnv::empty(s, Some(parent_def.this()));
+            let param_env = ParamEnv::empty(s, this.typing_parent(s).as_ref());
             let (span, ty) =
                 rustc_const_uneval::promoted_body(tcx, rust_def_id, promoted_id, |body| {
                     (
@@ -149,7 +147,7 @@ where
         }
         DefIdBase::Real(rust_def_id) => {
             let mut param_env = if def_id.can_have_generics(s) {
-                get_param_env(s, args)
+                get_param_env(s, args, this.typing_parent(s))
             } else {
                 ParamEnv::empty(s, None)
             };
@@ -440,7 +438,7 @@ pub enum FullDefKind<'tcx> {
 
     // ADT parts
     /// Refers to the variant definition, [`DefKind::Ctor`] refers to its constructor if it exists.
-    Variant,
+    Variant(ParamEnv<'tcx>),
     /// The constructor function of a tuple/unit struct or tuple/unit enum variant.
     Ctor(Ctor<'tcx>),
     /// A field in a struct, enum or union. e.g.
@@ -730,9 +728,8 @@ impl<'tcx> TraitImpl<'tcx> {
                     let param_env = {
                         // Pass `None` to get the generics, but add the known parent.
                         // FIXME: maybe a custom enum instead of `Option<Args>`.
-                        let mut param_env = get_param_env(s, None);
+                        let mut param_env = get_param_env(s, None, Some(this.clone()));
                         param_env.generics.parent = Some(this.def_id.clone());
-                        param_env.parent = Some(this.clone());
                         param_env.late_bound =
                             late_bound_for_def(s, impl_assoc.def_id, Some(item_impl_args));
                         param_env
@@ -1546,7 +1543,7 @@ where
         RDefKind::TyParam => FullDefKind::TyParam,
         RDefKind::ConstParam => FullDefKind::ConstParam,
         RDefKind::LifetimeParam => FullDefKind::LifetimeParam,
-        RDefKind::Variant => FullDefKind::Variant,
+        RDefKind::Variant => FullDefKind::Variant(param_env),
         RDefKind::Ctor(ctor_of, _) => {
             let adt_args = args_or_default;
             let ctor_of = ctor_of.sinto(s);
@@ -1802,17 +1799,13 @@ impl<'tcx> FullDef<'tcx> {
             FullDefKind::Closure(d) => Some(d.param_env()),
             FullDefKind::Const(d) => Some(d.param_env()),
             FullDefKind::Ctor(d) => Some(d.param_env()),
+            FullDefKind::Variant(param_env) => Some(param_env),
             FullDefKind::AssocConst(d) => Some(d.param_env()),
             FullDefKind::Static(d) => Some(d.param_env()),
             FullDefKind::TraitImpl(d) => Some(d.param_env()),
             FullDefKind::InherentImpl(d) => Some(d.param_env()),
             _ => None,
         }
-    }
-
-    /// Return the parent of this item if the item inherits the typing context from its parent.
-    pub fn typing_parent(&self, s: &impl BaseState<'tcx>) -> Option<ItemRef<'tcx>> {
-        self.this().typing_parent(s)
     }
 
     /// Whether the item has any generics at all (including parent generics).
@@ -2005,17 +1998,10 @@ where
 fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     args: Option<ty::GenericArgsRef<'tcx>>,
+    parent: Option<ItemRef<'tcx>>,
 ) -> ParamEnv<'tcx> {
-    let tcx = s.base().tcx;
     let owner = s.owner();
     let generics = owner.generics_of(s).sinto(s);
-
-    let parent = generics.parent.as_ref().map(|parent| {
-        let parent_args = args
-            .map(|args| args.truncate_to(tcx, parent.generics_of(s)))
-            .unwrap_or_else(|| parent.identity_args(s));
-        ItemRef::translate_from_hax_def_id(s, parent.clone(), parent_args)
-    });
     match args {
         None => ParamEnv {
             generics,
