@@ -104,12 +104,16 @@ where
                     };
                     let sig = sig_tys.with(*header);
                     let late_bound_scope = item.late_bound_scope(s);
+                    let hax_sig: PolyFnSig<'tcx> = sig.sinto(s);
                     kind = FullDefKind::FnPtr(FnPointer {
                         def_id: def_id.clone(),
                         self_ty,
                         rustc_sig: sig,
-                        param_env: get_param_env(s, args),
-                        sig: sig.sinto(s),
+                        param_env: ParamEnv {
+                            late_bound: hax_sig.rebind(()),
+                            ..get_param_env(s, args)
+                        },
+                        sig: hax_sig,
                         late_bound_scope,
                         fn_trait_impls: OnceCell::new(),
                     });
@@ -278,10 +282,33 @@ impl<'tcx> ItemRef<'tcx> {
 }
 
 /// The combination of type generics and related predicates.
+///
+/// Hax serves as a bridge between rustc's handling of generics and a more consistent scheme.
+/// `ParamEnv` lists all the kinds of variables that may be mentioned in this item's scope: its
+/// normal generics, its late bound lifetimes if any, and extra lifetimes that come from the fact
+/// that we partially instantiate some definitions to hide type parameters that rustc only uses for
+/// inference (namely, closures and inline consts get special inference-only parameters; we retain
+/// their inferred value, and the lifetimes mentioned therein become the `extra_early_regions`
+/// parameters).
 #[derive(Debug, Clone)]
 pub struct ParamEnv<'tcx> {
-    /// Generic parameters of the item.
+    /// "True" generic parameters of the item, matching what rustc uses i.e. `TyCtxt::generics_of`.
+    ///
+    /// This does not include parameters of its parent; any `GenericArgs` for this item will start
+    /// with a prefix that apply to the parents, and a suffix that corresponds to this `TyGenerics`
+    /// list.
     pub generics: TyGenerics<'tcx>,
+    /// The item's late-bound parameters: when the item denotes a `for<'a> fn(...)` higher-ranked
+    /// function, these are the parameters bound in that higher-ranked binder. We treat them as
+    /// normal parameters to unify parameter handling; for example a nested closure can name a
+    /// late-bound param of its parent function, so pretending they only show up in the signature
+    /// doesn't work.
+    ///
+    /// See those blog posts for more explanations on the difference:
+    /// - https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
+    /// - https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
+    /// Note that only lifetimes can be late bound at the moment.
+    pub late_bound: Binder<()>,
     /// Extra early regions that we add to replace regions that rustc normally erases. We represent
     /// them with placeholders so the types that mention them can still flow through rustc APIs.
     pub extra_early_regions: Vec<PlaceholderRegion>,
@@ -316,6 +343,7 @@ impl<'tcx> ParamEnv<'tcx> {
                 params: vec![],
             },
             predicates: GenericPredicates { predicates: vec![] },
+            late_bound: Binder::empty(),
             extra_early_regions: vec![],
             parent: parent.cloned(),
         }
@@ -700,10 +728,11 @@ impl<'tcx> TraitImpl<'tcx> {
                         let mut param_env = get_param_env(s, None);
                         param_env.generics.parent = Some(this.def_id.clone());
                         param_env.parent = Some(this.clone());
+                        param_env.late_bound =
+                            late_bound_for_def(s, impl_assoc.def_id, Some(item_impl_args));
                         param_env
                     };
                     let item = ItemRef::translate(s, impl_assoc.def_id, item_impl_args);
-                    let late_bound = late_bound_for_def(s, impl_assoc.def_id, Some(item_impl_args));
                     let value = ImplAssocItemValue {
                         item,
                         assoc_ty_value,
@@ -712,7 +741,6 @@ impl<'tcx> TraitImpl<'tcx> {
                     TraitItemBinder {
                         def_id: virtual_item_def_id,
                         param_env,
-                        late_bound,
                         skip_binder: value,
                     }
                 });
@@ -1138,6 +1166,7 @@ impl ForeignMod {
 #[derive(Debug, Clone)]
 pub struct Ctor<'tcx> {
     def_id: DefId,
+    param_env: ParamEnv<'tcx>,
     args: ty::GenericArgsRef<'tcx>,
     /// The signature, instantiated with `args`.
     rustc_sig: ty::PolyFnSig<'tcx>,
@@ -1152,6 +1181,9 @@ pub struct Ctor<'tcx> {
 }
 
 impl<'tcx> Ctor<'tcx> {
+    pub fn param_env(&self) -> &ParamEnv<'tcx> {
+        &self.param_env
+    }
     pub fn adt_def_id(&self) -> &DefId {
         &self.adt_def_id
     }
@@ -1415,27 +1447,35 @@ where
         RDefKind::Fn { .. } => {
             let sig = tcx.fn_sig(def_id);
             let sig = inst_binder(tcx, s.typing_env(), args, sig);
+            let hax_sig: PolyFnSig<'tcx> = sig.sinto(s);
             FullDefKind::Fn(Fn {
                 def_id: hax_def_id.clone(),
                 args,
                 rustc_sig: sig,
-                param_env: get_param_env(s, args),
+                param_env: ParamEnv {
+                    late_bound: hax_sig.rebind(()),
+                    ..get_param_env(s, args)
+                },
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
-                sig: sig.sinto(s),
+                sig: hax_sig,
                 fn_trait_impls: OnceCell::new(),
             })
         }
         RDefKind::AssocFn { .. } => {
             let item = tcx.associated_item(def_id);
             let sig = get_method_sig(tcx, s.typing_env(), def_id, args);
+            let hax_sig: PolyFnSig<'tcx> = sig.sinto(s);
             FullDefKind::AssocFn(AssocFn {
                 def_id: hax_def_id.clone(),
                 args,
                 rustc_sig: sig,
-                param_env: get_param_env(s, args),
+                param_env: ParamEnv {
+                    late_bound: hax_sig.rebind(()),
+                    ..get_param_env(s, args)
+                },
                 associated_item: AssocItem::sfrom_instantiated(s, &item, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
-                sig: sig.sinto(s),
+                sig: hax_sig,
                 fn_trait_impls: OnceCell::new(),
             })
         }
@@ -1446,12 +1486,16 @@ where
             let raw_sig = closure.sig();
             let sig = tcx.signature_unclosure(raw_sig, hir::Safety::Safe);
             let input_ty = tcx.liberate_late_bound_regions(def_id, raw_sig).inputs()[0];
+            let hax_sig: PolyFnSig<'tcx> = sig.sinto(s);
             FullDefKind::Closure(Closure {
                 def_id: hax_def_id.clone(),
                 kind: closure.kind().sinto(s),
-                param_env: get_param_env(s, args),
+                param_env: ParamEnv {
+                    late_bound: hax_sig.rebind(()),
+                    ..get_param_env(s, args)
+                },
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
-                sig: sig.sinto(s),
+                sig: hax_sig,
                 fn_trait_args: [closure_ty, input_ty],
                 upvar_tys: closure.upvar_tys().sinto(s),
                 fn_trait_impls: Default::default(),
@@ -1517,16 +1561,21 @@ where
                 .collect();
             let output_ty = ty::Ty::new_adt(tcx, adt_def, adt_args).sinto(s);
             let sig = inst_binder(tcx, s.typing_env(), args, tcx.fn_sig(def_id));
+            let hax_sig: PolyFnSig<'tcx> = sig.sinto(s);
             FullDefKind::Ctor(Ctor {
                 def_id: hax_def_id.clone(),
                 args: adt_args,
                 rustc_sig: sig,
+                param_env: ParamEnv {
+                    late_bound: hax_sig.rebind(()),
+                    ..get_param_env(s, args)
+                },
                 adt_def_id: adt_def_id.sinto(s),
                 ctor_of,
                 variant_id: variant_id.sinto(s),
                 fields,
                 output_ty,
-                sig: sig.sinto(s),
+                sig: hax_sig,
                 fn_trait_impls: OnceCell::new(),
             })
         }
@@ -1574,8 +1623,6 @@ pub struct TraitItemBinder<'tcx, T> {
     pub def_id: DefId,
     /// Parameters bound by the item.
     pub param_env: ParamEnv<'tcx>,
-    /// Late-bound parameters, if any.
-    pub late_bound: Binder<()>,
     pub skip_binder: T,
 }
 
@@ -1749,6 +1796,7 @@ impl<'tcx> FullDef<'tcx> {
             FullDefKind::AssocFn(d) => Some(d.param_env()),
             FullDefKind::Closure(d) => Some(d.param_env()),
             FullDefKind::Const(d) => Some(d.param_env()),
+            FullDefKind::Ctor(d) => Some(d.param_env()),
             FullDefKind::AssocConst(d) => Some(d.param_env()),
             FullDefKind::Static(d) => Some(d.param_env()),
             FullDefKind::TraitImpl(d) => Some(d.param_env()),
@@ -1794,17 +1842,6 @@ impl<'tcx> FullDef<'tcx> {
                 self.has_own_generics() || has_predicates
             }
             None => false,
-        }
-    }
-
-    /// Returns the late bound parameters of this item, if any. Returns an empty binder if there a
-    /// are none.
-    pub fn late_bound(&self) -> Binder<()> {
-        match self.kind() {
-            FullDefKind::Fn(f) => f.sig().as_ref().rebind(()),
-            FullDefKind::FnPtr(f) => f.sig().as_ref().rebind(()),
-            FullDefKind::AssocFn(f) => f.sig().as_ref().rebind(()),
-            _ => Binder::empty(),
         }
     }
 
@@ -1977,6 +2014,7 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
     match args {
         None => ParamEnv {
             generics,
+            late_bound: Binder::empty(),
             extra_early_regions: vec![],
             predicates: owner.required_predicates(s).sinto(s),
             parent,
@@ -1988,6 +2026,7 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
                 params: Default::default(),
                 ..generics
             },
+            late_bound: Binder::empty(),
             extra_early_regions: vec![],
             predicates: GenericPredicates::default(),
             parent,

@@ -212,17 +212,20 @@ impl<'tcx> BindingLevel<'tcx> {
     }
 
     /// Translate a binder of regions by appending the stored reguions to the given vector.
-    pub(crate) fn push_params_from_binder(&mut self, binder: hax::Binder<()>) -> Result<(), Error> {
+    pub(crate) fn push_params_from_binder(
+        &mut self,
+        binder: &hax::Binder<()>,
+    ) -> Result<(), Error> {
         assert!(
             self.bound_region_vars.is_empty(),
             "Trying to use two binders at the same binding level"
         );
         use crate::hax::BoundVariableKind::*;
-        for p in binder.bound_vars {
+        for p in &binder.bound_vars {
             match p {
                 Region(region, variance) => {
                     let variance = translate_variance(variance.as_ref());
-                    self.push_bound_region(region, variance);
+                    self.push_bound_region(region.clone(), variance);
                 }
                 Ty(_) => {
                     panic!("Unexpected locally bound type variable");
@@ -489,30 +492,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Ok(())
     }
 
-    // The parameters (and in particular the lifetimes) are split between
-    // early bound and late bound parameters. See those blog posts for explanations:
-    // https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
-    // https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
-    // Note that only lifetimes can be late bound at the moment.
-    //
-    // [TyCtxt.generics_of] gives us the early-bound parameters. We add the late-bound parameters
-    // here.
-    fn push_late_bound_generics_for_def(
-        &mut self,
-        _span: Span,
-        def: &hax::FullDef<'tcx>,
-    ) -> Result<(), Error> {
-        let sig = match def.kind() {
-            hax::FullDefKind::Fn(f) => Some(f.sig()),
-            hax::FullDefKind::FnPtr(f) => Some(f.sig()),
-            hax::FullDefKind::AssocFn(f) => Some(f.sig()),
-            hax::FullDefKind::Ctor(f) => Some(f.sig()),
-            _ => None,
-        };
-        if let Some(sig) = sig {
-            let innermost_binder = self.innermost_binder_mut();
-            assert!(innermost_binder.bound_region_vars.is_empty());
-            innermost_binder.push_params_from_binder(sig.rebind(()))?;
+    /// Push the item's late-bound parameters in the current binding level.
+    fn push_late_bound_generics_for_def(&mut self, def: &hax::FullDef<'tcx>) -> Result<(), Error> {
+        if let Some(param_env) = def.param_env() {
+            self.innermost_binder_mut()
+                .push_params_from_binder(&param_env.late_bound)?;
         }
         if let hax::FullDefKind::FnPtr(f) = def.kind() {
             self.innermost_binder_mut().late_bound_scope_alias = Some(f.late_bound_scope());
@@ -559,6 +543,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             FullDefKind::Fn(_)
             | FullDefKind::FnPtr(_)
             | FullDefKind::AssocFn(_)
+            | FullDefKind::Ctor(_)
             | FullDefKind::Closure(_)
             | FullDefKind::Const(_)
             | FullDefKind::AssocConst(_)
@@ -604,20 +589,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.binding_levels
             .push(BindingLevel::new(Some(def.def_id().clone())));
         self.push_generics_for_def(span, def)?;
-        self.push_late_bound_generics_for_def(span, def)?;
-
-        if let hax::FullDefKind::Closure(c) = def.kind() {
-            // Add the lifetime generics coming from the higher-kindedness of the signature.
-            if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))
-            | TransItemSourceKind::VTableInstance(TransImplSource::Callable(..))
-            | TransItemSourceKind::VTableDropShim(TransImplSource::Callable(..))
-            | TransItemSourceKind::CallableMethod(..)
-            | TransItemSourceKind::VTableMethod(TransImplSource::Callable(..))
-            | TransItemSourceKind::ClosureAsFnCast = kind
-            {
-                self.the_only_binder_mut()
-                    .push_params_from_binder(c.sig().rebind(()))?;
-            }
+        // Add the lifetime generics coming from the higher-kindedness of the signature. For
+        // closures, late-bound variables are only bound on the impl, not the state struct.
+        if !matches!(def.kind(), hax::FullDefKind::Closure(_)) || kind.has_closure_late_params() {
+            self.push_late_bound_generics_for_def(def)?;
         }
 
         if let hax::FullDefKind::Fn(_)
@@ -692,7 +667,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let outer_hax_state = mem::replace(&mut self.hax_state, inner_hax_state);
         let ret = self.inside_binder(kind, Some(def.def_id().clone()), |this| {
             this.push_generics_for_def_without_parents(span, def)?;
-            this.push_late_bound_generics_for_def(span, def)?;
+            this.push_late_bound_generics_for_def(def)?;
             this.innermost_binder().params.check_consistency();
             f(this)
         });
@@ -718,7 +693,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let ret = self.inside_binder(kind, Some(binder.def_id.clone()), |this| {
             this.push_param_env_without_parents(&binder.param_env, predicate_origin)?;
             this.innermost_binder_mut()
-                .push_params_from_binder(binder.late_bound.clone())?;
+                .push_params_from_binder(&binder.param_env.late_bound)?;
             this.innermost_binder().params.check_consistency();
             f(this, &binder.skip_binder)
         });
@@ -740,7 +715,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     {
         let binder = self.inside_binder(BinderKind::Other, None, |this| {
             this.innermost_binder_mut()
-                .push_params_from_binder(binder.rebind(()))?;
+                .push_params_from_binder(&binder.rebind(()))?;
             f(this, binder.hax_skip_binder_ref())
         })?;
         // Convert to a region-only binder.
