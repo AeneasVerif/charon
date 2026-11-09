@@ -66,9 +66,10 @@ where
     let source_span;
     let lang_item;
     let diagnostic_item;
-    let mut kind;
+    let kind;
     match def_id.base {
         DefIdBase::Synthetic(item) => {
+            let param_env = get_param_env(s, args);
             match item {
                 SyntheticItem::Array
                 | SyntheticItem::Slice
@@ -84,7 +85,7 @@ where
                     kind = FullDefKind::Adt(Adt {
                         def_id: def_id.clone(),
                         self_ty: inst_binder(tcx, s.typing_env(), args, def_id.type_of(s)),
-                        param_env: get_param_env(s, args),
+                        param_env,
                         adt_kind,
                         variants: [].into_iter().collect(),
                         repr: ReprOptions {
@@ -111,7 +112,7 @@ where
                         rustc_sig: sig,
                         param_env: ParamEnv {
                             late_bound: hax_sig.rebind(()),
-                            ..get_param_env(s, args)
+                            ..param_env
                         },
                         sig: hax_sig,
                         late_bound_scope,
@@ -147,7 +148,29 @@ where
             diagnostic_item = Default::default();
         }
         DefIdBase::Real(rust_def_id) => {
-            kind = translate_full_def_kind(s, &this, args);
+            let mut param_env = if def_id.can_have_generics(s) {
+                get_param_env(s, args)
+            } else {
+                ParamEnv::empty(s, None)
+            };
+            if def_id.is_typeck_child(s) {
+                // Record the value of the inference-only type vars.
+                let identity_args = this.rustc_args(s);
+                for param in &mut param_env.generics.params {
+                    let GenericParamDefKind::Type {
+                        inference_value, ..
+                    } = &mut param.kind
+                    else {
+                        unreachable!("typeck_child inference parameters must be types")
+                    };
+                    *inference_value =
+                        Some(identity_args[param.index as usize].expect_ty().sinto(s));
+                }
+                // Record the extra early regions added into these vars.
+                param_env.extra_early_regions = extra_early_regions.sinto(s);
+            }
+
+            kind = translate_full_def_kind(s, &this, args, param_env);
 
             source_span = rust_def_id.as_local().map(|ldid| tcx.source_span(ldid));
             lang_item = s
@@ -177,25 +200,6 @@ where
         DefIdBase::ImplAssocItem(_) => {
             panic!("virtual trait impl associated items do not have `FullDef`s")
         }
-    }
-
-    if let FullDefKind::Closure(Closure { param_env, .. })
-    | FullDefKind::Const(Const { param_env, .. }) = &mut kind
-        && def_id.is_typeck_child(s)
-    {
-        // Record the value of the inference-only type vars.
-        let identity_args = this.rustc_args(s);
-        for param in &mut param_env.generics.params {
-            let GenericParamDefKind::Type {
-                inference_value, ..
-            } = &mut param.kind
-            else {
-                unreachable!("typeck_child inference parameters must be types")
-            };
-            *inference_value = Some(identity_args[param.index as usize].expect_ty().sinto(s));
-        }
-        // Record the extra early regions added into these vars.
-        param_env.extra_early_regions = extra_early_regions.sinto(s);
     }
 
     let attributes = def_id.attrs(tcx).to_vec();
@@ -307,6 +311,7 @@ pub struct ParamEnv<'tcx> {
     /// See those blog posts for more explanations on the difference:
     /// - https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
     /// - https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
+    ///
     /// Note that only lifetimes can be late bound at the moment.
     pub late_bound: Binder<()>,
     /// Extra early regions that we add to replace regions that rustc normally erases. We represent
@@ -1336,6 +1341,7 @@ fn translate_full_def_kind<'tcx, S>(
     s: &S,
     this: &ItemRef<'tcx>,
     args: Option<ty::GenericArgsRef<'tcx>>,
+    param_env: ParamEnv<'tcx>,
 ) -> FullDefKind<'tcx>
 where
     S: BaseState<'tcx>,
@@ -1374,7 +1380,7 @@ where
             FullDefKind::Adt(Adt {
                 def_id: hax_def_id.clone(),
                 self_ty: type_of_self(),
-                param_env: get_param_env(s, args),
+                param_env,
                 adt_kind: def.adt_kind().sinto(s),
                 variants,
                 repr: def.repr().sinto(s),
@@ -1382,14 +1388,14 @@ where
             })
         }
         RDefKind::TyAlias { .. } => FullDefKind::TyAlias(TyAlias {
-            param_env: get_param_env(s, args),
+            param_env,
             ty: type_of_self().sinto(s),
         }),
         RDefKind::ForeignTy => FullDefKind::ForeignTy,
         RDefKind::AssocTy { .. } => FullDefKind::AssocTy(AssocTy {
             def_id: hax_def_id.clone(),
             args,
-            param_env: get_param_env(s, args),
+            param_env,
             implied_predicates: get_implied_predicates(s, args),
             associated_item: AssocItem::sfrom_instantiated(s, &tcx.associated_item(def_id), args),
         }),
@@ -1398,7 +1404,7 @@ where
             def_id: hax_def_id.clone(),
             args,
             is_unsafe: tcx.trait_is_unsafe(def_id),
-            param_env: get_param_env(s, args),
+            param_env,
             implied_predicates: get_implied_predicates(s, args),
             self_predicate: get_self_predicate(s, args),
             dyn_self: get_trait_decl_dyn_self_ty(s, args).sinto(s),
@@ -1406,13 +1412,12 @@ where
             items: OnceCell::new(),
         }),
         RDefKind::TraitAlias { .. } => FullDefKind::TraitAlias(TraitAlias {
-            param_env: get_param_env(s, args),
+            param_env,
             implied_predicates: get_implied_predicates(s, args),
             self_predicate: get_self_predicate(s, args),
             dyn_self: get_trait_decl_dyn_self_ty(s, args).sinto(s),
         }),
         RDefKind::Impl { of_trait, .. } => {
-            let param_env = get_param_env(s, args);
             if !of_trait {
                 FullDefKind::InherentImpl(InherentImpl {
                     def_id: hax_def_id.clone(),
@@ -1454,7 +1459,7 @@ where
                 rustc_sig: sig,
                 param_env: ParamEnv {
                     late_bound: hax_sig.rebind(()),
-                    ..get_param_env(s, args)
+                    ..param_env
                 },
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
                 sig: hax_sig,
@@ -1471,7 +1476,7 @@ where
                 rustc_sig: sig,
                 param_env: ParamEnv {
                     late_bound: hax_sig.rebind(()),
-                    ..get_param_env(s, args)
+                    ..param_env
                 },
                 associated_item: AssocItem::sfrom_instantiated(s, &item, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
@@ -1492,7 +1497,7 @@ where
                 kind: closure.kind().sinto(s),
                 param_env: ParamEnv {
                     late_bound: hax_sig.rebind(()),
-                    ..get_param_env(s, args)
+                    ..param_env
                 },
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
                 sig: hax_sig,
@@ -1510,20 +1515,20 @@ where
             };
 
             FullDefKind::Const(Const {
-                param_env: get_param_env(s, args),
+                param_env,
                 ty: type_of_self().sinto(s),
                 kind,
             })
         }
         RDefKind::AssocConst => FullDefKind::AssocConst(AssocConst {
-            param_env: get_param_env(s, args),
+            param_env,
             associated_item: AssocItem::sfrom_instantiated(s, &tcx.associated_item(def_id), args),
             ty: type_of_self().sinto(s),
         }),
         RDefKind::Static {
             safety, mutability, ..
         } => FullDefKind::Static(Static {
-            param_env: get_param_env(s, args),
+            param_env,
             safety: safety.sinto(s),
             mutability: mutability.sinto(s),
             thread_local: tcx.is_thread_local_static(def_id),
@@ -1568,7 +1573,7 @@ where
                 rustc_sig: sig,
                 param_env: ParamEnv {
                     late_bound: hax_sig.rebind(()),
-                    ..get_param_env(s, args)
+                    ..param_env
                 },
                 adt_def_id: adt_def_id.sinto(s),
                 ctor_of,
