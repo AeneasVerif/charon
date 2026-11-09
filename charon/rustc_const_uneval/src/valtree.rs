@@ -65,6 +65,17 @@ impl<'tcx> ConstReader<'tcx> {
                     .collect();
                 ConstKind::str(bytes)
             }
+            // Valtrees are interned, so equal elements are the same pointer.
+            (ty::ValTreeKind::Branch(fields), ty::Array(..))
+                if let [first, rest @ ..] = &fields[..]
+                    && !rest.is_empty()
+                    && rest.iter().all(|field| field == first) =>
+            {
+                ConstKind::Repeat {
+                    value: Box::new(read_field(*first)?),
+                    count: fields.len() as u64,
+                }
+            }
             (ty::ValTreeKind::Branch(fields), ty::Array(..) | ty::Slice(..) | ty::Tuple(..)) => {
                 ConstKind::Aggregate {
                     variant: None,

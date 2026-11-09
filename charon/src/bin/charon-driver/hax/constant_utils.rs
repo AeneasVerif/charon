@@ -39,6 +39,9 @@ pub enum ConstantExprKind<'tcx> {
     Array {
         fields: Vec<ConstantExpr<'tcx>>,
     },
+    Repeat {
+        value: ConstantExpr<'tcx>,
+    },
     Tuple {
         fields: Vec<ConstantExpr<'tcx>>,
     },

@@ -155,6 +155,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     ConstantExprKind::Array(fields)
                 }
             }
+            hax::ConstantExprKind::Repeat { value } => {
+                let TyKind::Array(_, count, value_is_sized) = ty.kind() else {
+                    unreachable!("Unexpected type for a repeat constant: {ty:?}")
+                };
+                ConstantExprKind::Repeat {
+                    value: self.translate_constant_expr(span, value)?,
+                    count: count.clone(),
+                    value_is_sized: value_is_sized.clone(),
+                }
+            }
             hax::ConstantExprKind::Tuple { fields } => {
                 let fields: IndexVec<FieldId, ConstantExpr> = fields
                     .iter()
