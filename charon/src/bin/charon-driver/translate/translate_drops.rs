@@ -43,11 +43,26 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         span: Span,
         def: &hax::FullDef<'tcx>,
     ) -> Result<Body, Error> {
-        let (hax::FullDefKind::Adt(_) | hax::FullDefKind::Closure(_)) = def.kind() else {
+        let (hax::FullDefKind::Adt(_)
+        | hax::FullDefKind::Closure(_)
+        | hax::FullDefKind::Coroutine(_)) = def.kind()
+        else {
             return Ok(Body::Missing);
         };
 
-        let body = def.this().drop_glue_shim(self.hax_state());
+        let body = if let hax::FullDefKind::Coroutine(_) = def.kind() {
+            // Coroutine drop glue is handled via its body -- `drop_glue_shim` panics for it.
+            let Some(body) = self.get_mir(def.this(), span)? else {
+                return Ok(Body::Missing);
+            };
+            let Some(drop_glue) = body.coroutine_drop() else {
+                raise_error!(self, span, "Coroutines with async drops are not supported");
+            };
+            drop_glue.clone()
+        } else {
+            def.this().drop_glue_shim(self.hax_state())
+        };
+
         Ok(self.translate_body(span, body, &def.source_text))
     }
 
@@ -69,6 +84,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let trait_pred = match def.kind() {
             FullDefKind::Adt(adt) => &adt.destruct_impl(self.hax_state()).trait_pred,
             FullDefKind::Closure(c) => &c.destruct_impl(self.hax_state()).trait_pred,
+            FullDefKind::Coroutine(c) => &c.destruct_impl(self.hax_state()).trait_pred,
             _ => unreachable!(),
         };
 
@@ -174,6 +190,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let destruct_impl = match def.kind() {
             FullDefKind::Adt(adt) => adt.destruct_impl(self.hax_state()),
             FullDefKind::Closure(c) => c.destruct_impl(self.hax_state()),
+            FullDefKind::Coroutine(c) => c.destruct_impl(self.hax_state()),
             _ => unreachable!("{:?}", def.def_id()),
         };
         let mut timpl = self.translate_virtual_trait_impl(

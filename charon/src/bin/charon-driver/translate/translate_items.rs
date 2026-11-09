@@ -192,6 +192,11 @@ impl<'tcx> TranslateCtx<'tcx> {
                 let fun_decl = bt_ctx.translate_stateless_closure_as_fn(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
+            TransItemSourceKind::CoroutineResume => {
+                let id = trans_id.expect_item();
+                let fun_decl = bt_ctx.translate_coroutine_resume(id, item_meta, &def)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
             &TransItemSourceKind::DropGlueMethod(impl_kind) => {
                 let id = trans_id.expect_item();
                 let fun_decl = bt_ctx.translate_drop_glue_method(id, item_meta, &def, impl_kind)?;
@@ -431,6 +436,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let src = if let hax::FullDefKind::Closure(_) = def.kind() {
             let info = self.translate_closure_info(span, def)?;
             TypeSource::Closure { info }
+        } else if let hax::FullDefKind::Coroutine(_) = def.kind() {
+            let info = self.translate_coroutine_info(span, def)?;
+            TypeSource::Coroutine { info }
         } else if let Some(builtin) = self.recognize_builtin_adt(def.this()) {
             TypeSource::Builtin(builtin)
         } else {
@@ -448,6 +456,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             }
             hax::FullDefKind::Adt(_) => self.translate_adt_def(trans_id, span, &item_meta, def),
             hax::FullDefKind::Closure(c) => self.translate_closure_adt(span, c),
+            hax::FullDefKind::Coroutine(c) => self.translate_coroutine_adt(span, def, c),
             _ => panic!("Unexpected item when translating types: {def:?}"),
         };
 

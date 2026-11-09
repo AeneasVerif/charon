@@ -174,6 +174,8 @@ pub enum BuiltinImplData {
     AsyncFnOnce,
     Coroutine,
     Future,
+    Iterator,
+    AsyncIterator,
 
     /// Auto-trait used for `try_as_dyn` (see https://github.com/rust-lang/rust/issues/144361)
     TryAsDynCompatible,

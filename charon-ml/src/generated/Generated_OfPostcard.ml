@@ -399,10 +399,12 @@ and builtin_impl_data_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
      | 17 -> Ok BuiltinAsyncFnOnce
      | 18 -> Ok BuiltinCoroutine
      | 19 -> Ok BuiltinFuture
-     | 20 -> Ok BuiltinTryAsDynCompatible
-     | 21 -> Ok BuiltinNoopDestruct
-     | 22 -> Ok BuiltinUntrackedDestruct
-     | 23 -> Ok BuiltinRemovedAdtClause
+     | 20 -> Ok BuiltinIterator
+     | 21 -> Ok BuiltinAsyncIterator
+     | 22 -> Ok BuiltinTryAsDynCompatible
+     | 23 -> Ok BuiltinNoopDestruct
+     | 24 -> Ok BuiltinUntrackedDestruct
+     | 25 -> Ok BuiltinRemovedAdtClause
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and byte_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -2183,6 +2185,17 @@ and closure_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 2 -> Ok FnOnce
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and coroutine_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (coroutine_kind, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok Coroutine
+     | 1 -> Ok Async
+     | 2 -> Ok Gen
+     | 3 -> Ok AsyncGen
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and declaration_group_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
     : (declaration_group, string) result =
   combine_error_msgs st __FUNCTION__
@@ -3625,6 +3638,10 @@ and type_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* info = closure_info_of_postcard ctx st in
          Ok (ClosureType info)
      | 2 ->
+         let* kind = coroutine_kind_of_postcard ctx st in
+         let* resume = fun_decl_ref_of_postcard ctx st in
+         Ok (CoroutineType (kind, resume))
+     | 3 ->
          let* dyn_predicate = dyn_predicate_of_postcard ctx st in
          let* field_map =
            index_vec_of_postcard field_id_of_postcard v_table_field_of_postcard
@@ -3636,7 +3653,7 @@ and type_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
              ctx st
          in
          Ok (VTableType (dyn_predicate, field_map, supertrait_map))
-     | 3 ->
+     | 4 ->
          let* _0 = builtin_adt_of_postcard ctx st in
          Ok (BuiltinType _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))

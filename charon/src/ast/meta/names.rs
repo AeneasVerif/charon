@@ -51,6 +51,8 @@ pub enum BuiltinPathElem {
     Str,
     /// A closure.
     Closure,
+    /// A coroutine, i.e. a `#[coroutine]` closure, an `async` block or a `gen` block.
+    Coroutine(CoroutineKind),
     /// A `use` declaration.
     Use,
     /// An anonymous constant.
@@ -316,6 +318,10 @@ impl BuiltinPathElem {
             BuiltinPathElem::Tuple(_) => "tuple",
             BuiltinPathElem::Str => "str",
             BuiltinPathElem::Closure => "closure",
+            BuiltinPathElem::Coroutine(CoroutineKind::Coroutine) => "coroutine",
+            BuiltinPathElem::Coroutine(CoroutineKind::Async) => "async",
+            BuiltinPathElem::Coroutine(CoroutineKind::Gen) => "gen",
+            BuiltinPathElem::Coroutine(CoroutineKind::AsyncGen) => "async_gen",
             BuiltinPathElem::Use => "use",
             BuiltinPathElem::AnonConst => "const",
             BuiltinPathElem::PromotedConst => "promoted_const",

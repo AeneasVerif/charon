@@ -1,15 +1,86 @@
-error: Coroutine types are not supported yet
- --> tests/ui/coroutines/gen-block.rs:7:1
-  |
-7 | / fn gen_block() -> impl Iterator<Item = ()> {
-8 | |     gen { yield () }
-9 | | }
-  | |_^
+# Final LLBC before serialization:
 
-error: Coroutines are not supported
- --> tests/ui/coroutines/gen-block.rs:8:5
-  |
-8 |     gen { yield () }
-  |     ^^^^^^^^^^^^^^^^
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
 
-ERROR Charon failed to translate this code (2 errors)
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::option::Option
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
+pub enum Option<T>
+where
+    TraitClause0: (T: Sized),
+{
+  None,
+  Some { _0: T },
+}
+
+struct () {}
+
+// Full name: test_crate::gen_block::{gen}
+enum {gen} {
+  Unresumed,
+  Returned,
+  Panicked,
+  Suspend0,
+}
+
+// Full name: test_crate::gen_block
+fn gen_block() -> {gen}
+{
+    let mut _0: {gen}; // return
+
+    storage_live(_0)
+    _0 = {gen}::Unresumed {  }
+    return
+}
+
+// Full name: test_crate::gen_block::{gen}::next
+fn next<'_0>(_1: &'_0 mut {gen}) -> Option<()>[{built_in impl Sized for ()}]
+{
+    let mut _0: Option<()>[{built_in impl Sized for ()}]; // return
+    let mut _1: &'1 mut {gen}; // arg #1
+    let mut _2: (); // anonymous local
+    let mut _3: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = @discriminant((*_1))
+    switch move _3 {
+        0u32 => {
+        },
+        1u32 => {
+            _0 = Option::None {  }
+            return
+        },
+        3u32 => {
+            storage_live(_2)
+            storage_dead(_2)
+            _0 = Option::None {  }
+            @discriminant((*_1)) = 1
+            return
+        },
+        _ => {
+            undefined_behavior
+        },
+    }
+    storage_live(_2)
+    _2 = ()
+    _0 = Option::Some { _0: move _2 }
+    storage_dead(_2)
+    @discriminant((*_1)) = 3
+    return
+}
+
+
+
