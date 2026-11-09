@@ -1,96 +1,154 @@
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/layout.rs:8:1
-   |
- 8 | / fn mk(x: u8, y: u64) -> impl Coroutine<Yield = (), Return = ()> {
- 9 | |     #[coroutine]
-10 | |     move || {
-...  |
-28 | | }
-   | |_^
+# Final LLBC before serialization:
 
-error: Coroutines are not supported
-  --> tests/ui/coroutines/layout.rs:10:5
-   |
-10 | /     move || {
-11 | |         // saved across all yields: goes in the prefix next to upvars/tag
-12 | |         let a = 0u32;
-13 | |         yield;
-...  |
-26 | |         drop(c);
-27 | |     }
-   | |_____^
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
 
-warning: calls to `std::mem::drop` with a value that implements `Copy` does nothing
-  --> tests/ui/coroutines/layout.rs:18:13
-   |
-18 |             drop(b);
-   |             ^^^^^-^
-   |                  |
-   |                  argument has type `u16`
-   |
-   = note: `#[warn(dropping_copy_types)]` on by default
-help: use `let _ = ...` to ignore the expression or result
-   |
-18 -             drop(b);
-18 +             let _ = b;
-   |
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
 
-warning: calls to `std::mem::drop` with a value that implements `Copy` does nothing
-  --> tests/ui/coroutines/layout.rs:23:9
-   |
-23 |         drop(x);
-   |         ^^^^^-^
-   |              |
-   |              argument has type `u8`
-   |
-help: use `let _ = ...` to ignore the expression or result
-   |
-23 -         drop(x);
-23 +         let _ = x;
-   |
+// Full name: core::mem::maybe_uninit::MaybeUninit
+#[lang_item(MaybeUninit)]
+pub opaque type MaybeUninit<T>
+where
+    TraitClause0: (T: Sized),
+// layout: none
 
-warning: calls to `std::mem::drop` with a value that implements `Copy` does nothing
-  --> tests/ui/coroutines/layout.rs:24:9
-   |
-24 |         drop(y);
-   |         ^^^^^-^
-   |              |
-   |              argument has type `u64`
-   |
-help: use `let _ = ...` to ignore the expression or result
-   |
-24 -         drop(y);
-24 +         let _ = y;
-   |
+// Full name: core::ops::coroutine::CoroutineState
+#[lang_item(CoroutineState)]
+pub enum CoroutineState<Y, R>
+where
+    TraitClause0: (Y: Sized),
+    TraitClause1: (R: Sized),
+{
+  Yielded { _0: Y },
+  Complete { _0: R },
+}
+// layout:
+//     size: ?,
+//     align: ?,
+//     discriminator: none,
+//     inhabited: ((if_inhabited(Y)) || (if_inhabited(R))),
+//     variants: [
+//         Yielded: {
+//             offset of _0: ?,
+//             inhabited: (if_inhabited(Y)),
+//             tagger: [],
+//         },
+//         Complete: {
+//             offset of _0: ?,
+//             inhabited: (if_inhabited(R)),
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
 
-warning: calls to `std::mem::drop` with a value that implements `Copy` does nothing
-  --> tests/ui/coroutines/layout.rs:25:9
-   |
-25 |         drop(a);
-   |         ^^^^^-^
-   |              |
-   |              argument has type `u32`
-   |
-help: use `let _ = ...` to ignore the expression or result
-   |
-25 -         drop(a);
-25 +         let _ = a;
-   |
+// Full name: core::pin::Pin
+#[fundamental]
+#[lang_item(Pin)]
+pub opaque type Pin<Ptr>
+where
+    TraitClause0: (Ptr: Sized),
+// layout: none
 
-warning: calls to `std::mem::drop` with a value that implements `Copy` does nothing
-  --> tests/ui/coroutines/layout.rs:26:9
-   |
-26 |         drop(c);
-   |         ^^^^^-^
-   |              |
-   |              argument has type `u64`
-   |
-help: use `let _ = ...` to ignore the expression or result
-   |
-26 -         drop(c);
-26 +         let _ = c;
-   |
+struct () {}
+// layout:
+//     size: 0usize,
+//     align: 1usize,
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
 
-warning: 5 warnings emitted
+// Full name: test_crate::mk::{coroutine}
+enum {coroutine} {
+  Unresumed { _0: u8, _1: u64 },
+  Returned { _0: u8, _1: u64 },
+  Panicked { _0: u8, _1: u64 },
+  Suspend0 { _0: u8, _1: u64, _s0: MaybeUninit<u32>[{built_in impl Sized for u32}] },
+  Suspend1 { _0: u8, _1: u64, _s0: MaybeUninit<u32>[{built_in impl Sized for u32}], _s1: MaybeUninit<u16>[{built_in impl Sized for u16}] },
+  Suspend2 { _0: u8, _1: u64, _s0: MaybeUninit<u32>[{built_in impl Sized for u32}], _s2: MaybeUninit<u64>[{built_in impl Sized for u64}] },
+}
+// layout:
+//     size: 24usize,
+//     align: 8usize,
+//     discriminator: read at offset 13 { 0u8 => Unresumed, 1u8 => Returned, 2u8 => Panicked, 3u8 => Suspend0, 4u8 => Suspend1, 5u8 => Suspend2, _ => invalid },
+//     inhabited: true,
+//     variants: [
+//         Unresumed: {
+//             offset of _0: 12,
+//             offset of _1: 0,
+//             inhabited: true,
+//             tagger: [13 := 0u8],
+//         },
+//         Returned: {
+//             offset of _0: 12,
+//             offset of _1: 0,
+//             inhabited: true,
+//             tagger: [13 := 1u8],
+//         },
+//         Panicked: {
+//             offset of _0: 12,
+//             offset of _1: 0,
+//             inhabited: true,
+//             tagger: [13 := 2u8],
+//         },
+//         Suspend0: {
+//             offset of _0: 12,
+//             offset of _1: 0,
+//             offset of _s0: 8,
+//             inhabited: true,
+//             tagger: [13 := 3u8],
+//         },
+//         Suspend1: {
+//             offset of _0: 12,
+//             offset of _1: 0,
+//             offset of _s0: 8,
+//             offset of _s1: 16,
+//             inhabited: true,
+//             tagger: [13 := 4u8],
+//         },
+//         Suspend2: {
+//             offset of _0: 12,
+//             offset of _1: 0,
+//             offset of _s0: 8,
+//             offset of _s2: 16,
+//             inhabited: true,
+//             tagger: [13 := 5u8],
+//         },
+//     ],
+//     repr(Rust),
 
-ERROR Charon failed to translate this code (2 errors)
+// Full name: test_crate::mk
+fn mk(x: u8, y: u64) -> {coroutine}
+{
+    let mut _0: {coroutine}; // return
+    let x: u8; // arg #1
+    let y: u64; // arg #2
+
+    storage_live(_0)
+    _0 = {coroutine}::Unresumed { _0: copy x, _1: copy y }
+    // saved across all yields: goes in the prefix next to upvars/tag
+    // only saved for this yield -- overlaps with `c`
+    // only saved for this yield -- overlaps with `b`
+    return
+}
+
+// Full name: test_crate::mk::{coroutine}::resume
+fn resume<'_0>(_1: Pin<&'_0 mut {coroutine}>[{built_in impl Sized for &'_0 mut {coroutine}}], _2: ()) -> CoroutineState<(), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}]
+= <opaque>
+
+
+

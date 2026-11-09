@@ -1,13 +1,37 @@
-error: Coroutine types are not supported yet
+error: Coroutines are only supported with `--mir elaborated|optimized`
  --> tests/ui/simple/coroutine.rs:2:1
   |
 2 | pub async fn f() {}
   | ^^^^^^^^^^^^^^^^^^^
 
-error: Coroutines are not supported
- --> tests/ui/simple/coroutine.rs:2:18
+error: Coroutines are only supported with `--mir elaborated|optimized`
+ --> tests/ui/simple/coroutine.rs:2:1
   |
 2 | pub async fn f() {}
-  |                  ^^
+  | ^^^^^^^^^^^^^^^^^^^
 
-ERROR Charon failed to translate this code (2 errors)
+error: Coroutines are only supported with `--mir elaborated|optimized`
+ --> tests/ui/simple/coroutine.rs:2:1
+  |
+2 | pub async fn f() {}
+  | ^^^^^^^^^^^^^^^^^^^
+
+error: Coroutines are only supported with `--mir elaborated|optimized`
+ --> tests/ui/simple/coroutine.rs:2:1
+  |
+2 | pub async fn f() {}
+  | ^^^^^^^^^^^^^^^^^^^
+
+error: Coroutines are only supported with `--mir elaborated|optimized`
+ --> tests/ui/simple/coroutine.rs:2:1
+  |
+2 | pub async fn f() {}
+  | ^^^^^^^^^^^^^^^^^^^
+
+error: Coroutines are only supported with `--mir elaborated|optimized`
+ --> tests/ui/simple/coroutine.rs:2:1
+  |
+2 | pub async fn f() {}
+  | ^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (6 errors)

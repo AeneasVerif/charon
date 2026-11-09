@@ -10,7 +10,7 @@ use rustc_middle::ty;
 use charon_lib::ast::*;
 use charon_lib::options::MirLevel;
 
-use super::translate_ctx::ItemTransCtx;
+use super::translate_ctx::{ItemTransCtx, TranslateCtx};
 
 impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn get_mir(
@@ -21,7 +21,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let _guard = charon_lib::timing::scope("get-mir");
         // Stopgap measure because there are still many panics in charon and hax.
         let mut this = panic::AssertUnwindSafe(&mut *self);
-        let res = panic::catch_unwind(move || this.get_mir_inner(item_ref));
+        let res = panic::catch_unwind(move || this.get_mir_inner(item_ref, span));
         match res {
             Ok(Ok(body)) => Ok(body),
             // Translation error
@@ -35,11 +35,22 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     fn get_mir_inner(
         &mut self,
         item_ref: &hax::ItemRef<'tcx>,
+        span: Span,
     ) -> Result<Option<mir::Body<'tcx>>, Error> {
         let tcx = self.t_ctx.tcx;
         let mir_level = self.t_ctx.options.mir_level;
         let def_id = &item_ref.def_id;
-        Ok(match get_mir_for_def_id_and_level(tcx, def_id, mir_level) {
+
+        // We need to special-case coroutines with a cache to avoid stealing issues.
+        let body = if let Some(rdef_id) = def_id.as_real_def_id()
+            && tcx.is_coroutine(rdef_id)
+        {
+            self.t_ctx.cached_coroutine_mir(def_id, span)?
+        } else {
+            get_mir_for_def_id_and_level(tcx, def_id, mir_level)
+        };
+
+        Ok(match body {
             Some(body) => {
                 let s = self.hax_state_with_id();
                 Some(if self.monomorphize() {
@@ -52,6 +63,32 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             }
             None => None,
         })
+    }
+}
+
+impl<'tcx> TranslateCtx<'tcx> {
+    /// Caches and returns the MIR of a coroutine. This avoids stealing issues, as coroutine layouts
+    /// needs optimised MIR, which steals all preceding bodies.
+    pub(crate) fn cached_coroutine_mir(
+        &mut self,
+        def_id: &hax::DefId,
+        span: Span,
+    ) -> Result<Option<mir::Body<'tcx>>, Error> {
+        if self.options.mir_level < MirLevel::Elaborated {
+            raise_error!(
+                self,
+                span,
+                "Coroutines are only supported with `--mir elaborated|optimized`"
+            );
+        }
+
+        if !self.cached_coroutine_bodies.contains_key(def_id)
+            && let Some(body) =
+                get_mir_for_def_id_and_level(self.tcx, def_id, self.options.mir_level)
+        {
+            self.cached_coroutine_bodies.insert(def_id.clone(), body);
+        }
+        Ok(self.cached_coroutine_bodies.get(def_id).cloned())
     }
 }
 

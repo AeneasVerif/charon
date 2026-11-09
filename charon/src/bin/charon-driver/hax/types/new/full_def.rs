@@ -176,6 +176,7 @@ where
     }
 
     if let FullDefKind::Closure(Closure { param_env, .. })
+    | FullDefKind::Coroutine(Coroutine { param_env, .. })
     | FullDefKind::Const(Const { param_env, .. }) = &mut kind
         && def_id.is_typeck_child(s)
     {
@@ -381,8 +382,11 @@ pub enum FullDefKind<'tcx> {
     /// Associated function: `impl MyStruct { fn associated() {} }` or `trait Foo { fn associated()
     /// {} }`
     AssocFn(AssocFn<'tcx>),
-    /// A closure, coroutine, or coroutine-closure.
+    /// A closure or coroutine-closure.
     Closure(Closure<'tcx>),
+    /// A coroutine, i.e. the state machine behind a `#[coroutine]` closure, an `async` block or a
+    /// `gen` block.
+    Coroutine(Coroutine<'tcx>),
 
     // Constants
     Const(Const<'tcx>),
@@ -967,7 +971,7 @@ impl<'tcx> FnPointer<'tcx> {
     }
 }
 
-/// A closure, coroutine, or coroutine-closure.
+/// A closure or coroutine-closure.
 #[derive(Debug, Clone)]
 pub struct Closure<'tcx> {
     def_id: DefId,
@@ -1033,6 +1037,75 @@ impl<'tcx> Closure<'tcx> {
     pub fn destruct_impl(&self, s: &impl BaseState<'tcx>) -> &VirtualTraitImpl<'tcx> {
         self.destruct_impl
             .get_or_init(|| self.virtual_impl(s, LangItem::Destruct, &self.fn_trait_args[..1]))
+    }
+}
+
+/// A coroutine, i.e. the state machine behind a `#[coroutine]` closure, an `async` block or a
+/// `gen` block.
+#[derive(Debug, Clone)]
+pub struct Coroutine<'tcx> {
+    def_id: DefId,
+    /// The coroutine type.
+    self_ty: ty::Ty<'tcx>,
+    kind: hir::CoroutineKind,
+    /// Like closures, coroutines inherit their generics from their parent; see
+    /// [`Closure::param_env`].
+    param_env: ParamEnv<'tcx>,
+    /// The captured variables.
+    upvar_tys: Vec<Ty<'tcx>>,
+    /// Computed on demand, see [`Coroutine::trait_impl`].
+    trait_impl: OnceCell<Box<VirtualTraitImpl<'tcx>>>,
+    /// Computed on demand, see [`Coroutine::destruct_impl`].
+    destruct_impl: OnceCell<Box<VirtualTraitImpl<'tcx>>>,
+}
+
+impl<'tcx> Coroutine<'tcx> {
+    pub fn param_env(&self) -> &ParamEnv<'tcx> {
+        &self.param_env
+    }
+    pub fn kind(&self) -> hir::CoroutineKind {
+        self.kind
+    }
+    pub fn upvar_tys(&self) -> &[Ty<'tcx>] {
+        &self.upvar_tys
+    }
+    /// The virtual impl of `Coroutine`, `Future`, `Iterator` or `AsyncIterator` (depending on
+    /// `kind`) for this coroutine. Its only method is the one that resumes the coroutine.
+    pub fn trait_impl(&self, s: &impl BaseState<'tcx>) -> &VirtualTraitImpl<'tcx> {
+        use hir::CoroutineDesugaring::*;
+        self.trait_impl.get_or_init(|| {
+            let s = &s.with_hax_owner(&self.def_id);
+            let tcx = s.base().tcx;
+            let ty::Coroutine(_, args) = self.self_ty.kind() else {
+                unreachable!()
+            };
+            let trait_item = match self.kind {
+                hir::CoroutineKind::Coroutine(_) => LangItem::Coroutine,
+                hir::CoroutineKind::Desugared(Async, _) => LangItem::Future,
+                hir::CoroutineKind::Desugared(Gen, _) => LangItem::Iterator,
+                hir::CoroutineKind::Desugared(AsyncGen, _) => LangItem::AsyncIterator,
+            };
+            let trait_def_id = tcx.require_lang_item(trait_item, rustc_span::DUMMY_SP);
+            // `Coroutine` is the only one of these traits that has a parameter: the resume type.
+            let resume_ty = matches!(self.kind, hir::CoroutineKind::Coroutine(_))
+                .then(|| args.as_coroutine().resume_ty().into());
+            let trait_args = tcx.mk_args_trait(self.self_ty, resume_ty);
+            virtual_impl_for(s, ty::TraitRef::new(tcx, trait_def_id, trait_args))
+        })
+    }
+    /// The method that resumes this coroutine: `Coroutine::resume`, `Future::poll`,
+    /// `Iterator::next` or `AsyncIterator::poll_next` depending on `kind`.
+    pub fn resume_method(&self, s: &impl BaseState<'tcx>) -> &VirtualTraitMethod<'tcx> {
+        &self.trait_impl(s).methods[0]
+    }
+    /// Info required to construct a virtual `Drop` impl for this coroutine.
+    pub fn destruct_impl(&self, s: &impl BaseState<'tcx>) -> &VirtualTraitImpl<'tcx> {
+        self.destruct_impl.get_or_init(|| {
+            let s = &s.with_hax_owner(&self.def_id);
+            let tcx = s.base().tcx;
+            let destruct = tcx.lang_items().get(LangItem::Destruct).unwrap();
+            virtual_impl_for(s, ty::TraitRef::new(tcx, destruct, [self.self_ty]))
+        })
     }
 }
 
@@ -1439,6 +1512,18 @@ where
                 fn_trait_impls: OnceCell::new(),
             })
         }
+        RDefKind::Closure { .. } if let Some(kind) = tcx.coroutine_kind(def_id) => {
+            let self_ty = ty::Ty::new_coroutine(tcx, def_id, args_or_default);
+            FullDefKind::Coroutine(Coroutine {
+                def_id: hax_def_id.clone(),
+                self_ty,
+                kind,
+                param_env: get_param_env(s, args),
+                upvar_tys: args_or_default.as_coroutine().upvar_tys().sinto(s),
+                trait_impl: Default::default(),
+                destruct_impl: Default::default(),
+            })
+        }
         RDefKind::Closure { .. } => {
             let closure_ty = ty::Ty::new_closure(tcx, def_id, args_or_default);
             let closure = args_or_default.as_closure();
@@ -1610,7 +1695,7 @@ pub struct VirtualTraitImpl<'tcx> {
     pub implied_trait_proofs: Vec<TraitProof<'tcx>>,
     /// The associated types and their predicates, in definition order.
     pub types: Vec<(Ty<'tcx>, Vec<TraitProof<'tcx>>)>,
-    /// The methods, in definition order.
+    /// The required methods, in definition order.
     pub methods: Vec<VirtualTraitMethod<'tcx>>,
     /// The item under which this impl was built.
     owner: DefId,
@@ -1684,6 +1769,7 @@ impl<'tcx> FullDef<'tcx> {
         Some(match &self.kind {
             FullDefKind::Adt(adt) => adt.self_ty,
             FullDefKind::Closure(closure) => closure.fn_trait_args[0],
+            FullDefKind::Coroutine(coroutine) => coroutine.self_ty,
             _ => {
                 let def_id = self.def_id().as_real_def_id()?;
                 let args = self.this().rustc_args(s);
@@ -1748,6 +1834,7 @@ impl<'tcx> FullDef<'tcx> {
             FullDefKind::FnPtr(d) => Some(d.param_env()),
             FullDefKind::AssocFn(d) => Some(d.param_env()),
             FullDefKind::Closure(d) => Some(d.param_env()),
+            FullDefKind::Coroutine(d) => Some(d.param_env()),
             FullDefKind::Const(d) => Some(d.param_env()),
             FullDefKind::AssocConst(d) => Some(d.param_env()),
             FullDefKind::Static(d) => Some(d.param_env()),
@@ -1940,6 +2027,7 @@ where
         .associated_items(trait_ref.def_id)
         .in_definition_order()
         .filter(|assoc| matches!(assoc.kind, ty::AssocKind::Fn { .. }))
+        .filter(|assoc| !assoc.defaultness(tcx).has_value())
         .map(|assoc| {
             let sig = tcx.fn_sig(assoc.def_id).instantiate(tcx, trait_ref.args);
             let sig = normalize(tcx, s.typing_env(), sig);

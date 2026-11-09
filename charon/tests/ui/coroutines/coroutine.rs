@@ -1,4 +1,3 @@
-//@ known-failure
 //@ charon-args=--mir elaborated
 #![feature(coroutines, coroutine_trait, stmt_expr_attributes)]
 use std::ops::Coroutine;

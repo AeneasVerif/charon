@@ -1,4 +1,3 @@
-//@ known-failure
 //@ revisions=poly,mono
 //@ charon-args=--mir elaborated
 //@[mono] charon-args=--monomorphize

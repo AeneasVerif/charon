@@ -69,6 +69,9 @@ pub enum TransItemSourceKind {
     CallableMethod(ClosureKind),
     /// A cast of a stateless closure to a function pointer.
     ClosureAsFnCast,
+    /// The function that resumes a coroutine (see [`TypeSource::Coroutine`]). The `DefId` is that
+    /// of the coroutine.
+    CoroutineResume,
     /// The `drop_glue` method of a `Destruct` impl. It contains the drop glue that calls
     /// `Drop::drop` for the type and then drops its fields. This is a method implementation (and
     /// the DefId is that of the ADT or closure for which to generate the drop glue).
@@ -469,10 +472,9 @@ impl<'tcx> TranslateCtx<'tcx> {
                     Global | VTableInstance(..) => {
                         ItemId::Global(self.translated.global_decls.reserve_slot())
                     }
-                    Fun | CallableMethod(..) | ClosureAsFnCast | DropGlueMethod(..)
-                    | VTableMethod(..) | VTableDropShim(..) | IntrinsicFallback => {
-                        ItemId::Fun(self.translated.fun_decls.reserve_slot())
-                    }
+                    Fun | CallableMethod(..) | ClosureAsFnCast | CoroutineResume
+                    | DropGlueMethod(..) | VTableMethod(..) | VTableDropShim(..)
+                    | IntrinsicFallback => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
                     InherentImpl | Module => {
                         return ItemOrModuleId::Module(src.def_id().real_rust_def_id());
                     }
@@ -878,6 +880,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 {
                     Some(c.sig())
                 }
+                hax::FullDefKind::Coroutine(c)
+                    if let TransItemSourceKind::CoroutineResume = kind =>
+                {
+                    Some(&c.resume_method(self.hax_state()).sig)
+                }
                 _ => None,
             };
             if let Some(sig) = sig {
@@ -1070,6 +1077,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         if let Some(fn_ptr) = self.translate_callable_method_fn_ptr(span, item)? {
             return Ok(fn_ptr);
         }
+        if let Some(fn_ptr) = self.translate_coroutine_resume_fn_ptr(span, item)? {
+            return Ok(fn_ptr);
+        }
         if let Some(fn_ptr) = self.translate_method_decl_fn_ptr(span, item)? {
             return Ok(fn_ptr);
         }
@@ -1214,6 +1224,7 @@ pub fn translate<'tcx>(
         cached_names: Default::default(),
         cached_item_metas: Default::default(),
         lt_mutability_computer: Default::default(),
+        cached_coroutine_bodies: Default::default(),
     };
     ctx.register_target_info();
     ctx.reserve_unit_decl();

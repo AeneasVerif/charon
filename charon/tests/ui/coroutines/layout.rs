@@ -1,6 +1,5 @@
-//@ known-failure
 //@ charon-args=--mir elaborated --print-layouts --no-compute-layout-guarantees
-//@ charon-args=--opaque=test_crate::mk::closure::resume
+//@ charon-args=--opaque=test_crate::mk::coroutine::resume
 //@ no-default-options
 #![feature(coroutines, coroutine_trait, stmt_expr_attributes)]
 use std::ops::Coroutine;

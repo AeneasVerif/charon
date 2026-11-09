@@ -122,6 +122,8 @@ use derive_generic_visitor::*;
         ConstGenericParam,
         ConstGenericVarId,
         ConstProjectionElem,
+        CoroutineInfo,
+        CoroutineKind,
         Deprecation,
         Disambiguator,
         Discriminator,

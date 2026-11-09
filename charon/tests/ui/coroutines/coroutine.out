@@ -1,51 +1,240 @@
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/coroutine.rs:6:1
-   |
- 6 | / fn movable(x: &u8, y: u8) -> impl Coroutine<u8, Yield = u8, Return = u8> + '_ {
- 7 | |     #[coroutine]
- 8 | |     move |a: u8| {
- 9 | |         let b = yield *x;
-...  |
-14 | | }
-   | |_^
+# Final LLBC before serialization:
 
-error: Coroutine types are not supported yet
- --> tests/ui/coroutines/coroutine.rs:6:30
-  |
-6 | fn movable(x: &u8, y: u8) -> impl Coroutine<u8, Yield = u8, Return = u8> + '_ {
-  |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
 
-error: Coroutines are not supported
-  --> tests/ui/coroutines/coroutine.rs:8:5
-   |
- 8 | /     move |a: u8| {
- 9 | |         let b = yield *x;
-10 | |         yield a;
-11 | |         yield y;
-12 | |         b
-13 | |     }
-   | |_____^
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/coroutine.rs:16:1
-   |
-16 | / fn immovable() -> impl Coroutine<Yield = (), Return = ()> {
-17 | |     #[coroutine]
-18 | |     static || {
-19 | |         let x = ();
-...  |
-24 | | }
-   | |_^
+// Full name: core::mem::manually_drop::ManuallyDrop
+#[lang_item(ManuallyDrop)]
+pub opaque type ManuallyDrop<T>
+where
+    TraitClause0: (T: MetaSized),
 
-error: Coroutines are not supported
-  --> tests/ui/coroutines/coroutine.rs:18:5
-   |
-18 | /     static || {
-19 | |         let x = ();
-20 | |         let r = &x;
-21 | |         yield;
-22 | |         *r
-23 | |     }
-   | |_____^
+// Full name: core::mem::maybe_uninit::MaybeUninit
+#[lang_item(MaybeUninit)]
+pub opaque type MaybeUninit<T>
+where
+    TraitClause0: (T: Sized),
 
-ERROR Charon failed to translate this code (5 errors)
+// Full name: core::ops::coroutine::CoroutineState
+#[lang_item(CoroutineState)]
+pub enum CoroutineState<Y, R>
+where
+    TraitClause0: (Y: Sized),
+    TraitClause1: (R: Sized),
+{
+  Yielded { _0: Y },
+  Complete { _0: R },
+}
+
+// Full name: core::pin::Pin
+#[fundamental]
+#[lang_item(Pin)]
+pub opaque type Pin<Ptr>
+where
+    TraitClause0: (Ptr: Sized),
+
+struct () {}
+
+enum test_crate::movable::{coroutine}<'_0> {
+  Unresumed { _0: &'_0 u8, _1: u8 },
+  Returned { _0: &'_0 u8, _1: u8 },
+  Panicked { _0: &'_0 u8, _1: u8 },
+  Suspend0 { _0: &'_0 u8, _1: u8, _s0: MaybeUninit<u8>[{built_in impl Sized for u8}] },
+  Suspend1 { _0: &'_0 u8, _1: u8, _s1: MaybeUninit<u8>[{built_in impl Sized for u8}] },
+  Suspend2 { _0: &'_0 u8, _1: u8, _s1: MaybeUninit<u8>[{built_in impl Sized for u8}] },
+}
+
+// Full name: test_crate::movable
+fn movable<'_0>(x: &'_0 u8, y: u8) -> test_crate::movable::{coroutine}<'_0>
+{
+    let mut _0: test_crate::movable::{coroutine}<'19>; // return
+    let x: &'20 u8; // arg #1
+    let y: u8; // arg #2
+
+    storage_live(_0)
+    _0 = test_crate::movable::{coroutine}::Unresumed { _0: copy x, _1: copy y }
+    storage_dead(y)
+    storage_dead(x)
+    return
+}
+
+fn test_crate::movable::{coroutine}::resume<'_0, '_1>(_1: Pin<&'_1 mut test_crate::movable::{coroutine}<'_0>>[{built_in impl Sized for &'_1 mut test_crate::movable::{coroutine}<'_0>}], _2: u8) -> CoroutineState<u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}]
+where
+    Outlives0: ('_0: '_1),
+{
+    let mut _0: CoroutineState<u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}]; // return
+    let mut _1: Pin<&'84 mut test_crate::movable::{coroutine}<'_0>>[{built_in impl Sized for &'84 mut test_crate::movable::{coroutine}<'_0>}]; // arg #1
+    let _2: u8; // arg #2
+    let mut _3: u8; // anonymous local
+    let _4: u8; // anonymous local
+    let mut _5: u8; // anonymous local
+    let _6: u8; // anonymous local
+    let mut _7: u8; // anonymous local
+    let mut _8: u8; // anonymous local
+    let mut _9: &'89 mut test_crate::movable::{coroutine}<'_0>; // anonymous local
+
+    storage_live(_0)
+    storage_live(_8)
+    storage_live(_9)
+    _9 = read _1.0
+    match (*_9) {
+        test_crate::movable::{coroutine}::Unresumed => {
+        },
+        test_crate::movable::{coroutine}::Returned => {
+            loop {
+                assert(const false == true) (resumed_after_return) else panic
+                ↳⚡ unwind_continue
+                continue 0
+            }
+        },
+        test_crate::movable::{coroutine}::Suspend0 => {
+            storage_live(_3)
+            ((*_9) as variant test_crate::movable::{coroutine}::Suspend2)._s1.1.0 = move _2
+            storage_dead(_3)
+            storage_live(_4)
+            storage_live(_5)
+            _5 = copy ((*_9) as variant test_crate::movable::{coroutine}::Suspend0)._s0.1.0
+            _0 = CoroutineState::Yielded { _0: move _5 }
+            storage_dead(_4)
+            storage_dead(_5)
+            @discriminant((*_9)) = 4
+            storage_dead(_9)
+            storage_dead(_8)
+            storage_dead(_2)
+            storage_dead(_1)
+            return
+        },
+        test_crate::movable::{coroutine}::Suspend1 => {
+            storage_live(_4)
+            storage_live(_5)
+            _4 = move _2
+            storage_dead(_5)
+            storage_dead(_4)
+            storage_live(_6)
+            storage_live(_7)
+            _7 = copy ((*_9) as variant test_crate::movable::{coroutine}::Unresumed)._1
+            _0 = CoroutineState::Yielded { _0: move _7 }
+            storage_dead(_6)
+            storage_dead(_7)
+            @discriminant((*_9)) = 5
+            storage_dead(_9)
+            storage_dead(_8)
+            storage_dead(_2)
+            storage_dead(_1)
+            return
+        },
+        test_crate::movable::{coroutine}::Suspend2 => {
+            storage_live(_6)
+            storage_live(_7)
+            _6 = move _2
+            storage_dead(_7)
+            storage_dead(_6)
+            _8 = copy ((*_9) as variant test_crate::movable::{coroutine}::Suspend2)._s1.1.0
+            _0 = CoroutineState::Complete { _0: move _8 }
+            @discriminant((*_9)) = 1
+            storage_dead(_9)
+            storage_dead(_8)
+            storage_dead(_2)
+            storage_dead(_1)
+            return
+        },
+        _ => {
+            undefined_behavior
+        },
+    }
+    ((*_9) as variant test_crate::movable::{coroutine}::Suspend0)._s0.1.0 = move _2
+    storage_live(_3)
+    _3 = copy (*((*_9) as variant test_crate::movable::{coroutine}::Unresumed)._0)
+    _0 = CoroutineState::Yielded { _0: move _3 }
+    storage_dead(_3)
+    @discriminant((*_9)) = 3
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+enum test_crate::immovable::{coroutine} {
+  Unresumed,
+  Returned,
+  Panicked,
+  Suspend0 { _s0: MaybeUninit<()>[{built_in impl Sized for ()}], _s1: MaybeUninit<&'_ ()>[{built_in impl Sized for &'_ ()}] },
+}
+
+// Full name: test_crate::immovable
+fn immovable() -> test_crate::immovable::{coroutine}
+{
+    let mut _0: test_crate::immovable::{coroutine}; // return
+
+    storage_live(_0)
+    _0 = test_crate::immovable::{coroutine}::Unresumed {  }
+    return
+}
+
+fn test_crate::immovable::{coroutine}::resume<'_0>(_1: Pin<&'_0 mut test_crate::immovable::{coroutine}>[{built_in impl Sized for &'_0 mut test_crate::immovable::{coroutine}}], _2: ()) -> CoroutineState<(), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}]
+{
+    let mut _0: CoroutineState<(), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}]; // return
+    let mut _1: Pin<&'8 mut test_crate::immovable::{coroutine}>[{built_in impl Sized for &'8 mut test_crate::immovable::{coroutine}}]; // arg #1
+    let mut _2: (); // arg #2
+    let mut _3: (); // anonymous local
+    let mut _4: (); // anonymous local
+    let mut _5: &'14 mut test_crate::immovable::{coroutine}; // anonymous local
+
+    storage_live(_0)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = read _1.0
+    match (*_5) {
+        test_crate::immovable::{coroutine}::Unresumed => {
+        },
+        test_crate::immovable::{coroutine}::Returned => {
+            loop {
+                assert(const false == true) (resumed_after_return) else panic
+                ↳⚡ unwind_continue
+                continue 0
+            }
+        },
+        test_crate::immovable::{coroutine}::Suspend0 => {
+            storage_live(_3)
+            storage_dead(_3)
+            _4 = copy (*((*_5) as variant test_crate::immovable::{coroutine}::Suspend0)._s1.1.0)
+            _0 = CoroutineState::Complete { _0: move _4 }
+            @discriminant((*_5)) = 1
+            storage_dead(_5)
+            storage_dead(_4)
+            storage_dead(_2)
+            storage_dead(_1)
+            return
+        },
+        _ => {
+            undefined_behavior
+        },
+    }
+    ((*_5) as variant test_crate::immovable::{coroutine}::Suspend0)._s0.1.0 = ()
+    ((*_5) as variant test_crate::immovable::{coroutine}::Suspend0)._s1.1.0 = &((*_5) as variant test_crate::immovable::{coroutine}::Suspend0)._s0.1.0
+    storage_live(_3)
+    _3 = ()
+    _0 = CoroutineState::Yielded { _0: move _3 }
+    storage_dead(_3)
+    @discriminant((*_5)) = 3
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+
+

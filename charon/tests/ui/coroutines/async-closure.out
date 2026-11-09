@@ -12,7 +12,7 @@ error: Unsupported type: "CoroutineClosure(test_crate::mk::{closure#0}, [i8, Bin
 5 | fn mk() -> impl AsyncFn() {
   |            ^^^^^^^^^^^^^^
 
-error: Coroutines are not supported
+error: Coroutine closures are not supported
  --> tests/ui/coroutines/async-closure.rs:6:5
   |
 6 |     async || {}

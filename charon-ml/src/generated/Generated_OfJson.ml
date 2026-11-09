@@ -447,6 +447,8 @@ and builtin_impl_data_of_json (ctx : of_json_ctx) (js : json) :
     | `String "AsyncFnOnce" -> Ok BuiltinAsyncFnOnce
     | `String "Coroutine" -> Ok BuiltinCoroutine
     | `String "Future" -> Ok BuiltinFuture
+    | `String "Iterator" -> Ok BuiltinIterator
+    | `String "AsyncIterator" -> Ok BuiltinAsyncIterator
     | `String "TryAsDynCompatible" -> Ok BuiltinTryAsDynCompatible
     | `String "NoopDestruct" -> Ok BuiltinNoopDestruct
     | `String "UntrackedDestruct" -> Ok BuiltinUntrackedDestruct
@@ -2875,6 +2877,16 @@ and const_handling_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Bytes" -> Ok Bytes
     | _ -> Error "")
 
+and coroutine_kind_of_json (ctx : of_json_ctx) (js : json) :
+    (coroutine_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Coroutine" -> Ok Coroutine
+    | `String "Async" -> Ok Async
+    | `String "Gen" -> Ok Gen
+    | `String "AsyncGen" -> Ok AsyncGen
+    | _ -> Error "")
+
 and declaration_group_of_json (ctx : of_json_ctx) (js : json) :
     (declaration_group, string) result =
   combine_error_msgs js __FUNCTION__
@@ -4563,6 +4575,10 @@ and type_source_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Closure", `Assoc [ ("info", info) ]) ] ->
         let* info = closure_info_of_json ctx info in
         Ok (ClosureType info)
+    | `Assoc [ ("Coroutine", `Assoc [ ("kind", kind); ("resume", resume) ]) ] ->
+        let* kind = coroutine_kind_of_json ctx kind in
+        let* resume = fun_decl_ref_of_json ctx resume in
+        Ok (CoroutineType (kind, resume))
     | `Assoc
         [
           ( "VTable",

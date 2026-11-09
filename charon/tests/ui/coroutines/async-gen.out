@@ -1,15 +1,171 @@
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/async-gen.rs:8:1
-   |
- 8 | / fn async_gen() -> impl AsyncIterator<Item = ()> {
- 9 | |     async gen { yield () }
-10 | | }
-   | |_^
+# Final LLBC before serialization:
 
-error: Coroutines are not supported
- --> tests/ui/coroutines/async-gen.rs:9:5
-  |
-9 |     async gen { yield () }
-  |     ^^^^^^^^^^^^^^^^^^^^^^
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
 
-ERROR Charon failed to translate this code (2 errors)
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::task::poll::Poll
+#[lang_item(Poll)]
+pub enum Poll<T>
+where
+    TraitClause0: (T: Sized),
+{
+  Ready { _0: T },
+  Pending,
+}
+
+// Full name: core::option::Option
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
+pub enum Option<T>
+where
+    TraitClause0: (T: Sized),
+{
+  None,
+  Some { _0: T },
+}
+
+// Full name: core::async_iter::async_iter::{Poll<Option<T>[TraitClause0]>[{built_in impl Sized for Option<T>[TraitClause0]}]}::async_gen_ready
+#[lang_item(AsyncGenReady)]
+pub fn async_gen_ready<T>(_1: T) -> Poll<Option<T>[TraitClause0]>[{built_in impl Sized for Option<T>[TraitClause0]}]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: core::async_iter::async_iter::{Poll<Option<T>[TraitClause0]>[{built_in impl Sized for Option<T>[TraitClause0]}]}::FINISHED
+#[lang_item(AsyncGenFinished)]
+pub fn FINISHED<T>() -> Poll<Option<T>[TraitClause0]>[{built_in impl Sized for Option<T>[TraitClause0]}]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+struct () {}
+
+// Full name: core::async_iter::async_iter::{Poll<Option<T>[TraitClause0]>[{built_in impl Sized for Option<T>[TraitClause0]}]}::FINISHED
+#[lang_item(AsyncGenFinished)]
+pub const FINISHED<T>: Poll<Option<T>[TraitClause0]>[{built_in impl Sized for Option<T>[TraitClause0]}]
+where
+    TraitClause0: (T: Sized),
+ = FINISHED<T>[TraitClause0]()
+
+// Full name: core::future::ResumeTy
+#[lang_item(ResumeTy)]
+pub opaque type ResumeTy
+
+// Full name: core::pin::Pin
+#[fundamental]
+#[lang_item(Pin)]
+pub opaque type Pin<Ptr>
+where
+    TraitClause0: (Ptr: Sized),
+
+// Full name: core::ptr::non_null::NonNull
+#[lang_item(NonNull)]
+pub opaque type NonNull<T>
+
+// Full name: core::task::wake::Context
+#[lang_item(Context)]
+pub opaque type Context<mut 'a>
+
+// Full name: test_crate::async_gen::{async_gen}
+enum {async_gen} {
+  Unresumed,
+  Returned,
+  Panicked,
+  Suspend0,
+}
+
+// Full name: test_crate::async_gen
+fn async_gen() -> {async_gen}
+{
+    let mut _0: {async_gen}; // return
+
+    storage_live(_0)
+    _0 = {async_gen}::Unresumed {  }
+    return
+}
+
+// Full name: test_crate::async_gen::{async_gen}::poll_next
+fn poll_next<'_0, '_1, '_2>(_1: Pin<&'_0 mut {async_gen}>[{built_in impl Sized for &'_0 mut {async_gen}}], _2: &'_1 mut Context<'_2>) -> Poll<Option<()>[{built_in impl Sized for ()}]>[{built_in impl Sized for Option<()>[{built_in impl Sized for ()}]}]
+where
+    Outlives0: ('_2: '_1),
+{
+    let mut _0: Poll<Option<()>[{built_in impl Sized for ()}]>[{built_in impl Sized for Option<()>[{built_in impl Sized for ()}]}]; // return
+    let mut _1: Pin<&'8 mut {async_gen}>[{built_in impl Sized for &'8 mut {async_gen}}]; // arg #1
+    let mut _2: &'15 mut Context<'16>; // arg #2
+    let mut _3: ResumeTy; // anonymous local
+    let mut _4: Poll<Option<()>[{built_in impl Sized for ()}]>[{built_in impl Sized for Option<()>[{built_in impl Sized for ()}]}]; // anonymous local
+    let mut _5: (); // anonymous local
+    let mut _6: u32; // anonymous local
+    let mut _7: &'17 mut {async_gen}; // anonymous local
+    let mut _task_context: ResumeTy; // local
+    let mut _9: NonNull<Context<'19>>; // anonymous local
+
+    storage_live(_0)
+    storage_live(_6)
+    storage_live(_7)
+    storage_live(_task_context)
+    storage_live(_9)
+    _9 = transmute<NonNull<Context<'20>>>(move _2)
+    _task_context = ResumeTy { 0: move _9 }
+    _7 = read _1.0
+    _6 = @discriminant((*_7))
+    switch move _6 {
+        0u32 => {
+        },
+        1u32 => {
+            _0 = read FINISHED<()>[{built_in impl Sized for ()}]
+            return
+        },
+        2u32 => {
+            loop {
+                assert(const false == true) (resumed_after_panic) else panic
+                ↳⚡ unwind_continue
+                continue 0
+            }
+        },
+        3u32 => {
+            storage_live(_3)
+            storage_live(_4)
+            _3 = move _task_context
+            storage_dead(_4)
+            _task_context = move _3
+            storage_dead(_3)
+            _0 = read FINISHED<()>[{built_in impl Sized for ()}]
+            @discriminant((*_7)) = 1
+            return
+        },
+        _ => {
+            undefined_behavior
+        },
+    }
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = ()
+    _4 = async_gen_ready<()>[{built_in impl Sized for ()}](move _5)
+    ↳⚡ storage_dead(_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        @discriminant((*_7)) = 2
+        unwind_continue
+    storage_dead(_5)
+    _0 = move _4
+    storage_dead(_3)
+    storage_dead(_4)
+    @discriminant((*_7)) = 3
+    return
+}
+
+
+

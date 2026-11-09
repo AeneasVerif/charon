@@ -8,6 +8,7 @@ use std::{
     sync::LazyLock,
 };
 
+use super::translate_coroutines::translate_coroutine_kind;
 use super::translate_crate::RustcItem;
 use super::translate_ctx::*;
 use crate::hax;
@@ -312,7 +313,11 @@ impl<'tcx> TranslateCtx<'tcx> {
             // we should be able to extract closures in local let-bindings
             // (i.e., we shouldn't have to introduce top-level let-bindings).
             DefPathItem::Closure => {
-                Some(PathElem::Builtin(BuiltinPathElem::Closure, disambiguator))
+                let elem = match self.tcx.coroutine_kind(def_id.real_rust_def_id()) {
+                    Some(kind) => BuiltinPathElem::Coroutine(translate_coroutine_kind(kind)),
+                    None => BuiltinPathElem::Closure,
+                };
+                Some(PathElem::Builtin(elem, disambiguator))
             }
             // Do nothing, functions in `extern` blocks are in the same namespace as the
             // block.
@@ -460,6 +465,13 @@ impl<'tcx> TranslateCtx<'tcx> {
                     BuiltinPathElem::ClosureAsFn,
                     Disambiguator::ZERO,
                 ));
+            }
+            TransItemSourceKind::CoroutineResume => {
+                let def_id = src.def_id().real_rust_def_id();
+                let kind = self.tcx.coroutine_kind(def_id).unwrap();
+                let fn_name = translate_coroutine_kind(kind).method_name().to_string();
+                name.name
+                    .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
             }
             TransItemSourceKind::VTable | TransItemSourceKind::VTableInstance(..) => {
                 name.name.push(PathElem::Builtin(

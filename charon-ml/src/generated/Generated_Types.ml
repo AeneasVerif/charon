@@ -243,6 +243,8 @@ and builtin_impl_data =
   | BuiltinAsyncFnOnce
   | BuiltinCoroutine
   | BuiltinFuture
+  | BuiltinIterator
+  | BuiltinAsyncIterator
   | BuiltinTryAsDynCompatible
       (** Auto-trait used for [try_as_dyn] (see
           https://github.com/rust-lang/rust/issues/144361) *)
@@ -976,6 +978,15 @@ and closure_info = {
 }
 
 and closure_kind = Fn | FnMut | FnOnce
+
+(** What a coroutine was written as. *)
+and coroutine_kind =
+  | Coroutine  (** A [#[coroutine]] closure; implements [Coroutine]. *)
+  | Async  (** An [async] block or function; implements [Future]. *)
+  | Gen  (** A [gen] block or function; implements [Iterator]. *)
+  | AsyncGen
+      (** An [async gen] block or function; implements [AsyncIterator]. *)
+
 and disambiguator = (Disambiguator.id[@visitors.opaque])
 
 (** Decision tree used to determine the active variant by reading memory.
@@ -1638,6 +1649,19 @@ and type_source =
 
           Fields:
           - [info] *)
+  | CoroutineType of coroutine_kind * fun_decl_ref
+      (** The state of a coroutine. This is an enum with one variant per state
+          of the coroutine (unresumed, returned, poisoned, and one per
+          suspension point). Each variant contains the captured variables then
+          the locals that are saved at that suspension point, wrapped in
+          [MaybeUninit]. The captured variables have the same offset in every
+          variant.
+
+          Fields:
+          - [kind]
+          - [resume]: The function that resumes the coroutine, i.e. its
+            [Coroutine::resume], [Future::poll], [Iterator::next] or
+            [AsyncIterator::poll_next] method depending on [kind]. *)
   | VTableType of dyn_predicate * v_table_field list * field_id option list
       (** Defines the vtable struct for a trait.
 

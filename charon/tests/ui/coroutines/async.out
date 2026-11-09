@@ -1,30 +1,411 @@
-error: Coroutine types are not supported yet
- --> tests/ui/coroutines/async.rs:4:1
-  |
-4 | async fn unit() {}
-  | ^^^^^^^^^^^^^^^^^^
+# Final LLBC before serialization:
 
-error: Coroutines are not supported
- --> tests/ui/coroutines/async.rs:4:17
-  |
-4 | async fn unit() {}
-  |                 ^^
+// Full name: core::task::wake::Context
+#[lang_item(Context)]
+pub opaque type Context<mut 'a>
 
-error: Coroutine types are not supported yet
- --> tests/ui/coroutines/async.rs:6:1
-  |
-6 | / async fn chain() {
-7 | |     unit().await
-8 | | }
-  | |_^
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
 
-error: Coroutines are not supported
- --> tests/ui/coroutines/async.rs:6:18
-  |
-6 |   async fn chain() {
-  |  __________________^
-7 | |     unit().await
-8 | | }
-  | |_^
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
 
-ERROR Charon failed to translate this code (4 errors)
+// Full name: core::task::poll::Poll
+#[lang_item(Poll)]
+pub enum Poll<T>
+where
+    TraitClause0: (T: Sized),
+{
+  Ready { _0: T },
+  Pending,
+}
+
+// Full name: core::pin::Pin
+#[fundamental]
+#[lang_item(Pin)]
+pub opaque type Pin<Ptr>
+where
+    TraitClause0: (Ptr: Sized),
+
+// Full name: core::future::future::Future
+#[lang_item(Future)]
+pub trait Future<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Output: Sized)
+    type Output
+    fn poll<'_0_1, '_1_1, '_2_1, Outlives0: (Self: '_0_1), Outlives1: ('_2_1: '_1_1)>;
+    vtable: core::future::future::Future::{vtable}<Self::Output>
+}
+
+// Full name: core::future::into_future::{impl IntoFuture for F}::into_future
+pub fn into_future<F>(_1: F) -> F
+where
+    TraitClause0: (F: Sized),
+    TraitClause1: (F: Future),
+= <opaque>
+
+// Full name: core::future::ResumeTy
+#[lang_item(ResumeTy)]
+pub opaque type ResumeTy
+
+// Full name: core::mem::manually_drop::ManuallyDrop
+#[lang_item(ManuallyDrop)]
+pub opaque type ManuallyDrop<T>
+where
+    TraitClause0: (T: MetaSized),
+
+// Full name: core::mem::maybe_uninit::MaybeUninit
+#[lang_item(MaybeUninit)]
+pub opaque type MaybeUninit<T>
+where
+    TraitClause0: (T: Sized),
+
+// Full name: core::ops::deref::Deref
+#[lang_item(Deref)]
+#[diagnostic_item("Deref")]
+pub trait Deref<Self>
+{
+    proof ImpliedClause0: (Self::Target: MetaSized)
+    type Target
+    fn deref<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Self::Target: '_0_1)>;
+    vtable: core::ops::deref::Deref::{vtable}<Self::Target>
+}
+
+// Full name: core::ops::deref::{impl Deref for &'_0 mut T}::deref
+pub fn deref<'_0, '_1, T>(_1: &'_1 &'_0 mut T) -> &'_1 T
+where
+    TraitClause0: (T: MetaSized),
+    Outlives0: ('_0: '_1),
+    Outlives1: (T: '_0),
+    Outlives2: (T: '_1),
+= <opaque>
+
+// Full name: core::ops::deref::{impl Deref for &'_0 mut T}
+impl<'_0, T> Deref for &'_0 mut T
+where
+    TraitClause0: (T: MetaSized),
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (T: MetaSized) = TraitClause0
+    type Target = T
+    fn deref<'_0_1> = deref<'_0, '_0_1, T>[TraitClause0]
+    vtable: lazy
+}
+
+// Full name: core::pin::{Pin<Ptr>[TraitClause0]}::new_unchecked
+#[lang_item(PinNewUnchecked)]
+pub unsafe fn new_unchecked<Ptr>(_1: Ptr) -> Pin<Ptr>[TraitClause0]
+where
+    TraitClause0: (Ptr: Sized),
+    TraitClause1: (Ptr: Deref),
+= <opaque>
+
+// Full name: core::ptr::non_null::NonNull
+#[lang_item(NonNull)]
+pub opaque type NonNull<T>
+
+struct () {}
+
+enum test_crate::unit::{async} {
+  Unresumed,
+  Returned,
+  Panicked,
+}
+
+// Full name: test_crate::unit
+fn unit() -> test_crate::unit::{async}
+{
+    let mut _0: test_crate::unit::{async}; // return
+
+    storage_live(_0)
+    _0 = test_crate::unit::{async}::Unresumed {  }
+    return
+}
+
+fn test_crate::unit::{async}::poll<'_0, '_1, '_2>(_1: Pin<&'_0 mut test_crate::unit::{async}>[{built_in impl Sized for &'_0 mut test_crate::unit::{async}}], _2: &'_1 mut Context<'_2>) -> Poll<()>[{built_in impl Sized for ()}]
+where
+    Outlives0: ('_2: '_1),
+{
+    let mut _0: Poll<()>[{built_in impl Sized for ()}]; // return
+    let mut _1: Pin<&'8 mut test_crate::unit::{async}>[{built_in impl Sized for &'8 mut test_crate::unit::{async}}]; // arg #1
+    let mut _2: &'15 mut Context<'16>; // arg #2
+    let mut _3: (); // anonymous local
+    let mut _4: &'17 mut test_crate::unit::{async}; // anonymous local
+    let mut _task_context: ResumeTy; // local
+    let mut _6: NonNull<Context<'19>>; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_task_context)
+    storage_live(_6)
+    _6 = transmute<NonNull<Context<'20>>>(move _2)
+    _task_context = ResumeTy { 0: move _6 }
+    _4 = read _1.0
+    match (*_4) {
+        test_crate::unit::{async}::Unresumed => {
+        },
+        test_crate::unit::{async}::Returned => {
+            loop {
+                assert(const false == true) (resumed_after_return) else panic
+                ↳⚡ unwind_continue
+                continue 0
+            }
+        },
+        _ => {
+            undefined_behavior
+        },
+    }
+    _3 = ()
+    _0 = Poll::Ready { _0: move _3 }
+    @discriminant((*_4)) = 1
+    storage_dead(_6)
+    storage_dead(_task_context)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::unit::{async}::{impl Destruct for test_crate::unit::{async}}::drop_glue
+unsafe fn drop_glue<'_0>(_1: &'_0 mut test_crate::unit::{async})
+{
+    let mut _0: (); // return
+    let mut _1: &'1 mut test_crate::unit::{async}; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    match (*_1) {
+        test_crate::unit::{async}::Unresumed => {
+            storage_dead(_1)
+            return
+        },
+        _ => {
+            storage_dead(_1)
+            return
+        },
+    }
+}
+
+enum test_crate::chain::{async} {
+  Unresumed,
+  Returned,
+  Panicked,
+  Suspend0 { _s0: MaybeUninit<test_crate::unit::{async}>[{built_in impl Sized for test_crate::unit::{async}}] },
+}
+
+// Full name: test_crate::chain
+fn chain() -> test_crate::chain::{async}
+{
+    let mut _0: test_crate::chain::{async}; // return
+
+    storage_live(_0)
+    _0 = test_crate::chain::{async}::Unresumed {  }
+    return
+}
+
+fn test_crate::chain::{async}::poll<'_0, '_1, '_2>(_1: Pin<&'_0 mut test_crate::chain::{async}>[{built_in impl Sized for &'_0 mut test_crate::chain::{async}}], _2: &'_1 mut Context<'_2>) -> Poll<()>[{built_in impl Sized for ()}]
+where
+    Outlives0: ('_2: '_1),
+{
+    let mut _0: Poll<()>[{built_in impl Sized for ()}]; // return
+    let mut _1: Pin<&'8 mut test_crate::chain::{async}>[{built_in impl Sized for &'8 mut test_crate::chain::{async}}]; // arg #1
+    let mut _2: &'15 mut Context<'16>; // arg #2
+    let mut _3: test_crate::unit::{async}; // anonymous local
+    let mut _4: test_crate::unit::{async}; // anonymous local
+    let mut _5: Poll<()>[{built_in impl Sized for ()}]; // anonymous local
+    let mut _6: Pin<&'25 mut test_crate::unit::{async}>[{built_in impl Sized for &'25 mut test_crate::unit::{async}}]; // anonymous local
+    let mut _7: &'29 mut test_crate::unit::{async}; // anonymous local
+    let mut _8: &'30 mut test_crate::unit::{async}; // anonymous local
+    let mut _9: &'31 mut Context<'32>; // anonymous local
+    let mut _10: &'33 mut Context<'34>; // anonymous local
+    let mut _11: ResumeTy; // anonymous local
+    let result: (); // local
+    let mut _13: ResumeTy; // anonymous local
+    let mut _14: (); // anonymous local
+    let mut _15: &'35 mut test_crate::chain::{async}; // anonymous local
+    let mut _task_context: ResumeTy; // local
+    let mut _17: NonNull<Context<'37>>; // anonymous local
+
+    storage_live(_0)
+    storage_live(_14)
+    storage_live(_15)
+    storage_live(_task_context)
+    storage_live(_17)
+    _17 = transmute<NonNull<Context<'38>>>(move _2)
+    _task_context = ResumeTy { 0: move _17 }
+    _15 = read _1.0
+    match (*_15) {
+        test_crate::chain::{async}::Unresumed => {
+            storage_live(_3)
+            storage_live(_4)
+            _4 = unit()
+            ↳⚡ storage_dead(_4)
+                storage_dead(_3)
+                @discriminant((*_15)) = 2
+                storage_dead(_17)
+                storage_dead(_task_context)
+                storage_dead(_15)
+                storage_dead(_14)
+                storage_dead(_2)
+                storage_dead(_1)
+                unwind_continue
+            _3 = into_future<test_crate::unit::{async}>[{built_in impl Sized for test_crate::unit::{async}}, {built_in impl Future for test_crate::unit::{async} where Output  = ()}](move _4)
+            ↳⚡ storage_dead(_4)
+                storage_dead(_3)
+                @discriminant((*_15)) = 2
+                storage_dead(_17)
+                storage_dead(_task_context)
+                storage_dead(_15)
+                storage_dead(_14)
+                storage_dead(_2)
+                storage_dead(_1)
+                unwind_continue
+            storage_dead(_4)
+            ((*_15) as variant test_crate::chain::{async}::Suspend0)._s0.1.0 = move _3
+        },
+        test_crate::chain::{async}::Returned => {
+            loop {
+                assert(const false == true) (resumed_after_return) else panic
+                ↳⚡ unwind_continue
+                continue 0
+            }
+        },
+        test_crate::chain::{async}::Panicked => {
+            loop {
+                assert(const false == true) (resumed_after_panic) else panic
+                ↳⚡ unwind_continue
+                continue 0
+            }
+        },
+        test_crate::chain::{async}::Suspend0 => {
+            storage_live(_3)
+            storage_live(_13)
+            _13 = move _task_context
+            _task_context = move _13
+            storage_dead(_13)
+        },
+    }
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    storage_live(_8)
+    _8 = &mut ((*_15) as variant test_crate::chain::{async}::Suspend0)._s0.1.0
+    _7 = &two-phase-mut (*_8)
+    _6 = new_unchecked<&'51 mut test_crate::unit::{async}>[{built_in impl Sized for &'51 mut test_crate::unit::{async}}, {impl Deref for &'_0 mut T}<'51, test_crate::unit::{async}>[{built_in impl MetaSized for test_crate::unit::{async}}]](move _7)
+    ↳⚡ storage_dead(_7)
+        storage_dead(_6)
+        storage_dead(_8)
+        storage_dead(_5)
+        drop[drop_glue<'82>] ((*_15) as variant test_crate::chain::{async}::Suspend0)._s0.1.0
+        ↳⚡ storage_dead(_17)
+            storage_dead(_task_context)
+            storage_dead(_15)
+            storage_dead(_14)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        @discriminant((*_15)) = 2
+        storage_dead(_17)
+        storage_dead(_task_context)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_7)
+    storage_live(_9)
+    storage_live(_10)
+    storage_live(_11)
+    _11 = copy _task_context
+    _10 = transmute<&'68 mut Context<'69>>(copy _11.0)
+    _9 = &two-phase-mut (*_10)
+    storage_dead(_11)
+    _5 = {built_in impl Future for test_crate::unit::{async} where Output  = ()}::poll<'79, '80, '81>(move _6, move _9)
+    ↳⚡ storage_dead(_9)
+        storage_dead(_6)
+        storage_dead(_10)
+        storage_dead(_8)
+        storage_dead(_5)
+        drop[drop_glue<'82>] ((*_15) as variant test_crate::chain::{async}::Suspend0)._s0.1.0
+        ↳⚡ storage_dead(_17)
+            storage_dead(_task_context)
+            storage_dead(_15)
+            storage_dead(_14)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        @discriminant((*_15)) = 2
+        storage_dead(_17)
+        storage_dead(_task_context)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_9)
+    storage_dead(_6)
+    match _5 {
+        Poll::Ready => {
+        },
+        Poll::Pending => {
+            storage_dead(_10)
+            storage_dead(_8)
+            storage_dead(_5)
+            storage_live(_13)
+            _0 = Poll::Pending {  }
+            storage_dead(_3)
+            storage_dead(_13)
+            @discriminant((*_15)) = 3
+            storage_dead(_17)
+            storage_dead(_task_context)
+            storage_dead(_15)
+            storage_dead(_14)
+            storage_dead(_2)
+            storage_dead(_1)
+            return
+        },
+    }
+    storage_live(result)
+    result = copy (_5 as variant Poll::Ready)._0
+    _14 = ()
+    storage_dead(result)
+    storage_dead(_10)
+    storage_dead(_8)
+    storage_dead(_5)
+    drop[drop_glue<'83>] ((*_15) as variant test_crate::chain::{async}::Suspend0)._s0.1.0
+    ↳⚡ storage_dead(_3)
+        @discriminant((*_15)) = 2
+        storage_dead(_17)
+        storage_dead(_task_context)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    _0 = Poll::Ready { _0: move _14 }
+    @discriminant((*_15)) = 1
+    storage_dead(_17)
+    storage_dead(_task_context)
+    storage_dead(_15)
+    storage_dead(_14)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+
+
