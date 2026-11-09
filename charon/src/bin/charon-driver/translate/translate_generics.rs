@@ -24,15 +24,15 @@ use charon_lib::utils::CycleDetector;
 /// this level, and various maps from the rustc-internal indices to our indices.
 #[derive(Debug, Default)]
 pub(crate) struct BindingLevel<'tcx> {
-    /// Whether this binding level exists in Hax's De Bruijn indices. `dyn Trait` introduces an
-    /// existential binder in Charon that has no corresponding binder in rustc/Hax.
-    pub is_hax_binder: bool,
     /// The definition whose generics this binding level contains, if this is an item binder.
     pub def_id: Option<hax::DefId>,
     /// Dummy rustc `DefId` that we use to `liberate_bound_regions` for our synthetic fn pointer items.
     pub late_bound_scope_alias: Option<RDefId>,
     /// The parameters and predicates bound at this level.
     pub params: GenericParams,
+    /// Whether this binding level exists in Hax's De Bruijn indices. `dyn Trait` introduces an
+    /// existential binder in Charon that has no corresponding binder in rustc/Hax.
+    pub counts_for_de_bruijn: bool,
     /// Rust makes the distinction between early and late-bound region parameters. We do not make
     /// this distinction, and merge early and late bound regions. For details, see:
     /// <https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/>
@@ -88,14 +88,14 @@ impl<'tcx> BindingLevel<'tcx> {
     pub(crate) fn new(def_id: Option<hax::DefId>) -> Self {
         Self {
             def_id,
-            is_hax_binder: true,
+            counts_for_de_bruijn: true,
             ..Default::default()
         }
     }
 
     pub(crate) fn new_dyn() -> Self {
         let mut level = Self::new(None);
-        level.is_hax_binder = false;
+        level.counts_for_de_bruijn = false;
         level
     }
 
@@ -288,7 +288,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         if let Some((charon_dbid, level)) = self
             .binding_levels
             .iter_enumerated()
-            .filter(|(_, l)| l.is_hax_binder)
+            .filter(|(_, l)| l.counts_for_de_bruijn)
             .nth(hax_dbid)
             && let Some(rid) = level.bound_region_vars.get(var)
         {

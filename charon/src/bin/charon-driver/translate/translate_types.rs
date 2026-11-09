@@ -523,7 +523,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let template = {
             let template = self.inside_binder(BinderKind::Other, None, |this| {
                 let binder = this.innermost_binder_mut();
-                binder.is_hax_binder = false;
+                binder.counts_for_de_bruijn = false;
                 for region in &param_env.extra_early_regions {
                     binder.push_unerased_region(region.clone());
                 }
