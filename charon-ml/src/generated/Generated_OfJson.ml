@@ -2374,12 +2374,14 @@ and attr_info_of_json (ctx : of_json_ctx) (js : json) :
           ("inline", inline);
           ("rename", rename);
           ("public", public);
+          ("exported", exported);
         ] ->
         let* attributes = list_of_json attribute_of_json ctx attributes in
         let* inline = option_of_json inline_attr_of_json ctx inline in
         let* rename = option_of_json string_of_json ctx rename in
         let* public = bool_of_json ctx public in
-        Ok ({ attributes; inline; rename; public } : attr_info)
+        let* exported = bool_of_json ctx exported in
+        Ok ({ attributes; inline; rename; public; exported } : attr_info)
     | _ -> Error "")
 
 and attribute_of_json (ctx : of_json_ctx) (js : json) :

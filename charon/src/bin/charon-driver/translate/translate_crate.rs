@@ -1213,6 +1213,7 @@ pub fn translate<'tcx>(
         cached_file_ids: Default::default(),
         cached_names: Default::default(),
         cached_item_metas: Default::default(),
+        exported_foreign_items: Default::default(),
         lt_mutability_computer: Default::default(),
     };
     ctx.register_target_info();

@@ -1974,7 +1974,8 @@ and attr_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* inline = option_of_postcard inline_attr_of_postcard ctx st in
      let* rename = option_of_postcard string_of_postcard ctx st in
      let* public = bool_of_postcard ctx st in
-     Ok ({ attributes; inline; rename; public } : attr_info))
+     let* exported = bool_of_postcard ctx st in
+     Ok ({ attributes; inline; rename; public; exported } : attr_info))
 
 and attribute_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (attribute, string) result =

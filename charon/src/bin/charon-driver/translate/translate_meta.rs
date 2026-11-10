@@ -1,7 +1,9 @@
 //! Translate information about items: name, attributes, etc.
 use itertools::Itertools;
-use rustc_middle::mir;
+use rustc_hash::FxHashSet as HashSet;
+use rustc_middle::{mir, ty};
 use rustc_span::RemapPathScopeComponents;
+use rustc_span::def_id::DefId as RDefId;
 use std::{
     cmp::Ord,
     path::{Component, PathBuf},
@@ -905,9 +907,103 @@ impl<'tcx> TranslateCtx<'tcx> {
         }
     }
 
+    /// Whether this item can be named from outside its crate.
+    pub(crate) fn is_exported(&mut self, def_id: RDefId) -> bool {
+        use rustc_hir::def::DefKind;
+        let tcx = self.tcx;
+        // rustc only stores whether items are exported for local crates.
+        if let Some(local_def_id) = def_id.as_local() {
+            return tcx.effective_visibilities(()).is_exported(local_def_id);
+        }
+        // otherwise, we compute it ourselves!
+        let parent = tcx.opt_parent(def_id);
+        let parent_kind = parent.map(|parent| tcx.def_kind(parent));
+        match tcx.def_kind(def_id) {
+            DefKind::Field => {
+                // the field is exported if it's `pub` and its parent is exported.
+                return tcx.visibility(def_id).is_public() && self.is_exported(parent.unwrap());
+            }
+            DefKind::Impl { of_trait } => {
+                // an impl is exported if the "shallow" versions of its self type and trait are.
+                let self_ty = tcx.type_of(def_id).instantiate_identity().skip_norm_wip();
+                // so we collect all referenced DefIds
+                let mut def_ids = match *self_ty.kind() {
+                    ty::Adt(adt_def, _) => vec![adt_def.did()],
+                    ty::Foreign(id)
+                    | ty::FnDef(id, _)
+                    | ty::Closure(id, _)
+                    | ty::CoroutineClosure(id, _)
+                    | ty::Coroutine(id, _) => vec![id],
+                    ty::Dynamic(preds, ..) => preds
+                        .iter()
+                        .map(|pred| match pred.skip_binder() {
+                            ty::ExistentialPredicate::Trait(tref) => tref.def_id,
+                            ty::ExistentialPredicate::Projection(proj) => {
+                                proj.trait_ref(tcx).def_id
+                            }
+                            ty::ExistentialPredicate::AutoTrait(id) => id,
+                        })
+                        .collect(),
+                    _ => vec![],
+                };
+                if of_trait {
+                    def_ids.push(tcx.impl_trait_id(def_id));
+                }
+                // ... and check that all referenced items are exported or in another crate.
+                // this is also what rustc does!
+                return def_ids
+                    .into_iter()
+                    .all(|id| id.krate != def_id.krate || self.is_exported(id));
+            }
+            DefKind::AssocConst | DefKind::AssocFn | DefKind::AssocTy
+                if let Some(DefKind::Impl { of_trait }) = parent_kind =>
+            {
+                // items of trait impls follow the impl, and for inherent impls they must be pub
+                return (of_trait || tcx.visibility(def_id).is_public())
+                    && self.is_exported(parent.unwrap());
+            }
+            _ => {}
+        };
+
+        let krate = def_id.krate;
+        self.exported_foreign_items
+            .entry(krate)
+            .or_insert_with(|| {
+                // no easy way out: we recursively traverse the crate for all
+                // its public exported items
+                let mut exported = HashSet::default();
+                let mut stack = vec![krate.as_def_id()];
+                while let Some(id) = stack.pop() {
+                    // mod/enum/traits are the only items with "module" children
+                    if exported.insert(id)
+                        && matches!(
+                            tcx.def_kind(id),
+                            DefKind::Mod | DefKind::Enum | DefKind::Trait
+                        )
+                    {
+                        stack.extend(
+                            tcx.module_children(id)
+                                .iter()
+                                .filter(|c| c.vis.is_public())
+                                .filter_map(|c| c.res.opt_def_id())
+                                .filter(|c| c.krate == krate),
+                        );
+                    }
+                }
+                exported
+            })
+            .contains(&def_id)
+    }
+
     pub(crate) fn translate_attr_info(&mut self, def: &hax::FullDef<'tcx>) -> AttrInfo {
         // Default to `false` for impl blocks and closures.
         let public = def.visibility.unwrap_or(false);
+        let exported = match def.def_id().base {
+            hax::DefIdBase::Real(def_id) => self.is_exported(def_id),
+            // Synthetic items stand for builtin types like tuples, which can be named anywhere.
+            hax::DefIdBase::Synthetic(_) => true,
+            _ => false,
+        };
         let inline = self.translate_inline(def);
         let attributes = def
             .attributes
@@ -934,6 +1030,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             attributes,
             inline,
             public,
+            exported,
             rename,
         }
     }
