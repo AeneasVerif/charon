@@ -95,8 +95,11 @@ pub struct AttrInfo {
     /// ```
     /// Without the `pub use ...`, neither `X` nor `something` would be part of the crate's public
     /// API (this is called "pub-in-priv" items). With or without the `pub use`, we set `public =
-    /// true`; computing item reachability is harder.
+    /// true`; see `exported` for whether the item is part of the public API.
     pub public: bool,
+    /// Whether this item can be named or used (for impls) from outside its crate. In the example
+    /// above, `X` and `something` are exported iff the `pub use` is present.
+    pub exported: bool,
 }
 
 impl Attribute {
@@ -124,6 +127,7 @@ impl AttrInfo {
     pub fn dummy_private() -> Self {
         AttrInfo {
             public: false,
+            exported: false,
             ..Default::default()
         }
     }
@@ -131,6 +135,7 @@ impl AttrInfo {
     pub fn dummy_public() -> Self {
         AttrInfo {
             public: true,
+            exported: true,
             ..Default::default()
         }
     }
