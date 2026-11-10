@@ -19,7 +19,7 @@ pub trait MetaSized<Self>
 
 // Full name: core::ffi::va_list::VaArgSafe
 #[lang_item(VaArgSafe)]
-pub unsafe trait VaArgSafe<Self>
+pub impl(in core::ffi::va_list) unsafe trait VaArgSafe<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible

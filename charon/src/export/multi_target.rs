@@ -130,6 +130,12 @@ impl CrateMerger {
                     // Don't modify the name found there
                     ControlFlow::Continue(())
                 }
+                fn visit_impl_restriction(
+                    &mut self,
+                    _x: &mut ImplRestriction,
+                ) -> ControlFlow<Self::Break> {
+                    ControlFlow::Continue(())
+                }
                 fn enter_name(&mut self, name: &mut Name) {
                     name.name.push(PathElem::Target(self.target.clone()));
                 }

@@ -389,7 +389,7 @@ where
 // Full name: core::slice::index::SliceIndex
 // unsafe to implement
 #[diagnostic_item("SliceIndex")]
-pub unsafe trait SliceIndex<Self, T>
+pub impl(in core) unsafe trait SliceIndex<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: MetaSized)

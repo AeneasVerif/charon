@@ -56,6 +56,8 @@ pub struct TraitDecl {
     pub src: TraitDeclSource,
     /// Whether this is an `unsafe trait`, i.e. implementing it requires `unsafe impl`.
     pub is_unsafe: bool,
+    /// Where this trait may be implemented.
+    pub impl_restriction: ImplRestriction,
     pub generics: GenericParams,
     /// The "parent" clauses: the supertraits.
     ///
@@ -122,6 +124,17 @@ pub struct TraitMethod {
     pub signature: FunSig,
     /// The default method implementation, if there is one.
     pub default: Option<FunDeclRef>,
+}
+
+/// Where a trait may be implemented.
+#[derive(Debug, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+pub enum ImplRestriction {
+    /// The trait can be implemented anywhere it is visible.
+    Unrestricted,
+    /// The trait can only be implemented within the given module, e.g. `pub impl(crate) trait Foo {}`,
+    /// or `pub impl(in crate::foo) trait Foo {}`. Related to `feature(impl_restriction)`.
+    Restricted(Name),
 }
 
 /// Where the trait comes from.

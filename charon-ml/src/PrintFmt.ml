@@ -1922,7 +1922,13 @@ let pp_locals (env : fmt_env) (indent : string) (fmt : Format.formatter)
 
 let pp_trait_decl (env : fmt_env) (indent : string) (indent_incr : string)
     (fmt : Format.formatter) (def : trait_decl) : unit =
-  let keyword = if def.is_unsafe then "unsafe trait" else "trait" in
+  let restriction =
+    match def.impl_restriction with
+    | Unrestricted -> ""
+    | Restricted name -> "impl(in " ^ name_to_string env name ^ ") "
+  in
+  let safety = if def.is_unsafe then "unsafe " else "" in
+  let keyword = restriction ^ safety ^ "trait" in
   let intro =
     item_intro_to_string env indent keyword (IdTraitDecl def.def_id)
       def.item_meta

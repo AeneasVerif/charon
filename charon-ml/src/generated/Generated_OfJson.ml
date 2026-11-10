@@ -3292,6 +3292,16 @@ and rustc_ident_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ name; span } : rustc_ident)
     | _ -> Error "")
 
+and impl_restriction_of_json (ctx : of_json_ctx) (js : json) :
+    (impl_restriction, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Unrestricted" -> Ok Unrestricted
+    | `Assoc [ ("Restricted", _0) ] ->
+        let* _0 = name_of_json ctx _0 in
+        Ok (Restricted _0)
+    | _ -> Error "")
+
 and implements_marker_traits_of_json (ctx : of_json_ctx) (js : json) :
     (implements_marker_traits, string) result =
   combine_error_msgs js __FUNCTION__
@@ -4215,6 +4225,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("item_meta", item_meta);
           ("src", src);
           ("is_unsafe", is_unsafe);
+          ("impl_restriction", impl_restriction);
           ("generics", generics);
           ("implied_clauses", implied_clauses);
           ("consts", consts);
@@ -4226,6 +4237,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* item_meta = item_meta_of_json ctx item_meta in
         let* src = trait_decl_source_of_json ctx src in
         let* is_unsafe = bool_of_json ctx is_unsafe in
+        let* impl_restriction = impl_restriction_of_json ctx impl_restriction in
         let* generics = generic_params_of_json ctx generics in
         let* implied_clauses =
           index_vec_of_json trait_clause_id_of_json trait_param_of_json ctx
@@ -4261,6 +4273,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
              item_meta;
              src;
              is_unsafe;
+             impl_restriction;
              generics;
              implied_clauses;
              consts;
