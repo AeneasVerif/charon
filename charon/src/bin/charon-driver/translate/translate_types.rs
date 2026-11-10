@@ -328,8 +328,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::TyKind::Infer(_) => {
                 raise_error!(self, span, "Unsupported type: infer type")
             }
-            hax::TyKind::Coroutine(..) => {
-                raise_error!(self, span, "Coroutine types are not supported yet")
+            hax::TyKind::Coroutine(coroutine) => {
+                // Cache the coroutine's MIR, so there are no stealing issues later on.
+                let _ = self
+                    .t_ctx
+                    .cached_coroutine_mir(&coroutine.item.def_id, span);
+                TyKind::Adt(self.translate_type_decl_ref(span, &coroutine.item)?)
             }
             hax::TyKind::Bound(_) => {
                 raise_error!(self, span, "Unexpected type kind: bound")
@@ -871,6 +875,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             .type_of(hax_state)
             .instantiate(tcx, item.rustc_args(hax_state));
         let ty = hax::normalize(tcx, ty_env, ty);
+        // The layout of coroutines is not available outside of codegen.
+        let ty_env = ty::TypingEnv::new(ty_env.param_env, ty::TypingMode::Codegen);
         let pseudo_input = ty_env.as_query_input(ty);
         let ptr_size = self.translated.the_target_information().target_pointer_size;
 
@@ -957,6 +963,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         r_abi::TagEncoding::Direct => {
                             let value = if uninhabited {
                                 None
+                            } else if ty.is_coroutine() {
+                                // `tag_for_variant` only supports enums.
+                                let discr = ty.discriminant_for_variant(tcx, id).unwrap();
+                                Some(tag_from_bits(discr.val))
                             } else {
                                 let tag = tcx
                                     .tag_for_variant(ty_env.as_query_input((ty, id)))
@@ -1010,9 +1020,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         vec![]
                     };
 
-                    let field_offsets = variant_layout
-                        .field_offsets
+                    // We include coroutine upvars in all variants
+                    let upvar_offsets = if ty.is_coroutine() {
+                        &offsets.raw[..tag_field.index()]
+                    } else {
+                        &[]
+                    };
+                    let field_offsets = upvar_offsets
                         .iter()
+                        .chain(&variant_layout.field_offsets)
                         .map(|o| OffsetExpr::new(o.bytes()))
                         .collect();
                     variant_layouts[variant_id] = Some(VariantLayout {

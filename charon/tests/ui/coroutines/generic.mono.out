@@ -1,0 +1,165 @@
+# Final LLBC before serialization:
+
+struct () {}
+
+// Full name: core::ops::coroutine::CoroutineState::<(), ()>
+#[lang_item(CoroutineState)]
+pub enum CoroutineState::<(), ()> {
+  Yielded { _0: () },
+  Complete { _0: () },
+}
+
+// Full name: core::pin::Pin::<&'_ mut {coroutine}::<()>>
+#[fundamental]
+#[lang_item(Pin)]
+pub opaque type Pin::<&'_ mut {coroutine}::<()>>
+
+// Full name: test_crate::wrap::{coroutine}::<()>
+enum {coroutine}::<()> {
+  Unresumed { _0: () },
+  Returned { _0: () },
+  Panicked { _0: () },
+  Suspend0 { _0: () },
+}
+
+// Full name: core::pin::{Pin::<&'_ mut {coroutine}::<()>>}::new::<&'_ mut {coroutine}::<()>>
+pub fn new::<&'_ mut {coroutine}::<()>>(_1: &'_ mut {coroutine}::<()>) -> Pin::<&'_ mut {coroutine}::<()>>
+= <opaque>
+
+// Full name: test_crate::wrap::<()>
+fn wrap::<()>(x: ()) -> {coroutine}::<()>
+{
+    let mut _0: {coroutine}::<()>; // return
+    let x: (); // arg #1
+
+    storage_live(_0)
+    _0 = {coroutine}::<()>::Unresumed { _0: move x }
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::wrap::{impl Coroutine<()> for {coroutine}::<()>}::resume::<()>
+fn {impl Coroutine<()> for {coroutine}::<()>}::resume::<()><'_0>(_1: Pin::<&'_ mut {coroutine}::<()>>, _2: ()) -> CoroutineState::<(), ()>
+{
+    let mut _0: CoroutineState::<(), ()>; // return
+    let mut _1: Pin::<&'_ mut {coroutine}::<()>>; // arg #1
+    let mut _2: (); // arg #2
+    let mut _3: (); // anonymous local
+    let mut _4: (); // anonymous local
+    let mut _5: &'1 mut {coroutine}::<()>; // anonymous local
+
+    storage_live(_0)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = read _1.0
+    match (*_5) {
+        {coroutine}::<()>::Unresumed => {
+        },
+        {coroutine}::<()>::Returned => {
+            loop {
+                assert(const false == true) (resumed_after_return) else panic
+                ↳⚡ unwind_continue
+                continue 0
+            }
+        },
+        {coroutine}::<()>::Panicked => {
+            loop {
+                assert(const false == true) (resumed_after_panic) else panic
+                ↳⚡ unwind_continue
+                continue 0
+            }
+        },
+        {coroutine}::<()>::Suspend0 => {
+            storage_live(_3)
+            storage_dead(_3)
+            _4 = move ((*_5) as variant {coroutine}::<()>::Unresumed)._0
+            _0 = CoroutineState::<(), ()>::Complete { _0: move _4 }
+            @discriminant((*_5)) = 1
+            storage_dead(_5)
+            storage_dead(_4)
+            storage_dead(_2)
+            storage_dead(_1)
+            return
+        },
+    }
+    storage_live(_3)
+    _3 = ()
+    _0 = CoroutineState::<(), ()>::Yielded { _0: move _3 }
+    storage_dead(_3)
+    @discriminant((*_5)) = 3
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::wrap::{coroutine}::{impl Destruct for {coroutine}::<()>}::drop_glue::<()>
+unsafe fn drop_glue::<()><'_0>(_1: &'_0 mut {coroutine}::<()>)
+{
+    let mut _0: (); // return
+    let mut _1: &'1 mut {coroutine}::<()>; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    match (*_1) {
+        {coroutine}::<()>::Unresumed => {
+            storage_dead(_1)
+            return
+        },
+        {coroutine}::<()>::Suspend0 => {
+            storage_dead(_1)
+            return
+        },
+        _ => {
+            storage_dead(_1)
+            return
+        },
+    }
+}
+
+fn test_crate::resume()
+{
+    let mut _0: (); // return
+    let mut c: {coroutine}::<()>; // local
+    let mut _2: (); // anonymous local
+    let mut _3: CoroutineState::<(), ()>; // anonymous local
+    let mut _4: Pin::<&'_ mut {coroutine}::<()>>; // anonymous local
+    let mut _5: &'1 mut {coroutine}::<()>; // anonymous local
+    let mut _6: (); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(c)
+    storage_live(_2)
+    _2 = ()
+    c = wrap::<()>(move _2)
+    ↳⚡ unwind_continue
+    storage_dead(_2)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &mut c
+    _4 = new::<&'_ mut {coroutine}::<()>>(move _5)
+    ↳⚡ drop[drop_glue::<()><'2>] c
+        ↳⚡ unwind_terminate
+        unwind_continue
+    storage_dead(_5)
+    storage_live(_6)
+    _6 = ()
+    _3 = {impl Coroutine<()> for {coroutine}::<()>}::resume::<()><'6>(move _4, move _6)
+    ↳⚡ drop[drop_glue::<()><'2>] c
+        ↳⚡ unwind_terminate
+        unwind_continue
+    storage_dead(_6)
+    storage_dead(_4)
+    storage_dead(_3)
+    _0 = ()
+    drop[drop_glue::<()><'7>] c
+    ↳⚡ unwind_continue
+    storage_dead(c)
+    return
+}
+
+
+

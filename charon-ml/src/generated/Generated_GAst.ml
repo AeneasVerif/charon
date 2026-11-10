@@ -691,6 +691,9 @@ and trait_impl_source =
 
           Fields:
           - [kind] *)
+  | CoroutineTraitImpl
+      (** The implementation of [Coroutine], [Future], [Iterator] or
+          [AsyncIterator], generated for a coroutine. *)
   | DestructTraitImpl
       (** The [Destruct] implementation generated for an ADT or closure. *)
 

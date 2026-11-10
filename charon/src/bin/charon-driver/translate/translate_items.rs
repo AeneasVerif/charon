@@ -173,6 +173,9 @@ impl<'tcx> TranslateCtx<'tcx> {
                     &TransImplSource::Callable(kind) => {
                         bt_ctx.translate_closure_trait_impl(id, item_meta, &def, kind)?
                     }
+                    TransImplSource::Coroutine => {
+                        bt_ctx.translate_coroutine_trait_impl(id, item_meta, &def)?
+                    }
                     TransImplSource::ImplicitDestruct => {
                         bt_ctx.translate_implicit_destruct_impl(id, item_meta, &def)?
                     }
@@ -190,6 +193,11 @@ impl<'tcx> TranslateCtx<'tcx> {
             TransItemSourceKind::ClosureAsFnCast => {
                 let id = trans_id.expect_item();
                 let fun_decl = bt_ctx.translate_stateless_closure_as_fn(id, item_meta, &def)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
+            TransItemSourceKind::CoroutineResume => {
+                let id = trans_id.expect_item();
+                let fun_decl = bt_ctx.translate_coroutine_resume(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             &TransItemSourceKind::DropGlueMethod(impl_kind) => {
@@ -431,6 +439,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let src = if let hax::FullDefKind::Closure(_) = def.kind() {
             let info = self.translate_closure_info(span, def)?;
             TypeSource::Closure { info }
+        } else if let hax::FullDefKind::Coroutine(_) = def.kind() {
+            let info = self.translate_coroutine_info(span, def)?;
+            TypeSource::Coroutine { info }
         } else if let Some(builtin) = self.recognize_builtin_adt(def.this()) {
             TypeSource::Builtin(builtin)
         } else {
@@ -448,6 +459,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             }
             hax::FullDefKind::Adt(_) => self.translate_adt_def(trans_id, span, &item_meta, def),
             hax::FullDefKind::Closure(c) => self.translate_closure_adt(span, c),
+            hax::FullDefKind::Coroutine(c) => self.translate_coroutine_adt(span, def, c),
             _ => panic!("Unexpected item when translating types: {def:?}"),
         };
 
@@ -1306,23 +1318,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                             )?
                         }
                         None => {
-                            // Reuse the default method from the trait declaration.
-                            let bound_method = match self.get_or_translate(trait_id.into()) {
-                                Ok(ItemRef::TraitDecl(tdecl)) => {
-                                    tdecl.methods.get(trait_method_id).cloned()
-                                }
-                                _ => None,
-                            };
-                            let Some(bound_method) = bound_method else {
+                            let Some(bound_fn_ref) = self
+                                .translate_default_method_impl(&self_predicate, trait_method_id)
+                            else {
                                 continue;
                             };
-                            bound_method
-                                .substitute_with_tref(&self_predicate)
-                                .map(|method| {
-                                    method
-                                        .default
-                                        .expect("default method should have a default")
-                                })
+                            bound_fn_ref
                         }
                     };
 
@@ -1542,6 +1543,29 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         Ok(timpl)
     }
 
+    /// Reuse the default implementation of this method from the trait declaration, for the impl
+    /// that `self_predicate` points to.
+    pub fn translate_default_method_impl(
+        &mut self,
+        self_predicate: &TraitRef,
+        method_id: TraitMethodId,
+    ) -> Option<Binder<FunDeclRef>> {
+        let trait_id = self_predicate.trait_id();
+        let bound_method = match self.get_or_translate(trait_id.into()) {
+            Ok(ItemRef::TraitDecl(tdecl)) => tdecl.methods.get(method_id).cloned(),
+            _ => None,
+        }?;
+        Some(
+            bound_method
+                .substitute_with_tref(self_predicate)
+                .map(|method| {
+                    method
+                        .default
+                        .expect("default method should have a default")
+                }),
+        )
+    }
+
     /// Make a trait impl from a hax `VirtualTraitImpl`. Used for constructing fake trait impls for
     /// builtin types like `FnOnce`.
     #[tracing::instrument(skip(self, item_meta))]
@@ -1556,6 +1580,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let span = item_meta.span;
         let src = match impl_kind {
             TransImplSource::Callable(kind) => TraitImplSource::Closure { kind },
+            TransImplSource::Coroutine => TraitImplSource::Coroutine,
             TransImplSource::ImplicitDestruct => TraitImplSource::Destruct,
             _ => unreachable!("not a virtual impl source: {impl_kind:?}"),
         };

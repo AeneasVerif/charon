@@ -946,6 +946,9 @@ and builtin_path_elem =
       (** [str], which is a struct containing a [[u8]] the standard library
           expects to be valid UTF-8. *)
   | PeClosure  (** A closure. *)
+  | PeCoroutine of coroutine_kind
+      (** A coroutine, i.e. a [#[coroutine]] closure, an [async] block or a
+          [gen] block. *)
   | PeUse  (** A [use] declaration. *)
   | PeAnonConst  (** An anonymous constant. *)
   | PePromotedConst  (** A constant that rustc promoted out of a body. *)
@@ -976,6 +979,27 @@ and closure_info = {
 }
 
 and closure_kind = Fn | FnMut | FnOnce
+
+(** Additional information for coroutines. *)
+and coroutine_info = {
+  kind : coroutine_kind;
+  resume : fun_decl_ref;
+      (** The method that resumes the coroutine, i.e. its [Coroutine::resume],
+          [Future::poll], [Iterator::next] or [AsyncIterator::poll_next] method
+          depending on [kind]. *)
+  trait_impl : trait_impl_ref;
+      (** The implementation of [Coroutine], [Future], [Iterator] or
+          [AsyncIterator] (depending on [kind]) for this coroutine. *)
+}
+
+(** What a coroutine was written as. *)
+and coroutine_kind =
+  | Coroutine  (** A [#[coroutine]] closure; implements [Coroutine]. *)
+  | Async  (** An [async] block or function; implements [Future]. *)
+  | Gen  (** A [gen] block or function; implements [Iterator]. *)
+  | AsyncGen
+      (** An [async gen] block or function; implements [AsyncIterator]. *)
+
 and disambiguator = (Disambiguator.id[@visitors.opaque])
 
 (** Decision tree used to determine the active variant by reading memory.
@@ -1635,6 +1659,12 @@ and type_source =
   | NormalType  (** A normal type declaration. *)
   | ClosureType of closure_info
       (** The struct that carries the captured variables of a closure.
+
+          Fields:
+          - [info] *)
+  | CoroutineType of coroutine_info
+      (** The state of a coroutine. This is an enum with one variant per state
+          of the coroutine.
 
           Fields:
           - [info] *)

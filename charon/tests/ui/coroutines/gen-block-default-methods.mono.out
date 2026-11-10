@@ -1,0 +1,144 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::iter::traits::iterator::Iterator
+#[lang_item(Iterator)]
+#[diagnostic_item("Iterator")]
+pub trait Iterator<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: core::iter::traits::iterator::Iterator::{vtable}
+}
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::option::Option::<u32>
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
+pub enum Option::<u32> {
+  None,
+  Some { _0: u32 },
+}
+
+// Full name: test_crate::count::{gen}
+enum {gen} {
+  Unresumed,
+  Returned,
+  Panicked,
+  Suspend0,
+  Suspend1,
+}
+
+// Full name: test_crate::count::{gen}::{impl Destruct for {gen}}::drop_glue
+unsafe fn drop_glue<'_0>(_1: &'_0 mut {gen})
+{
+    let mut _0: (); // return
+    let mut _1: &'1 mut {gen}; // arg #1
+    let mut _2: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _0 = ()
+    _2 = @discriminant((*_1))
+    switch move _2 {
+        0u32 => {
+            return
+        },
+        3u32 => {
+            return
+        },
+        4u32 => {
+            return
+        },
+        _ => {
+            return
+        },
+    }
+}
+
+// Full name: test_crate::count::{gen}::{impl Destruct for {gen}}
+impl "impl_Destruct_for_gen" Destruct for {gen} {
+    fn drop_glue<'_0_1> = drop_glue<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::count::{impl Iterator for {gen}}
+impl "impl_Iterator_for_gen" Iterator for {gen} {
+    proof ImpliedClause0: ({gen}: MetaSized) = {built_in impl MetaSized for {gen}}
+    vtable: lazy
+}
+
+// Full name: test_crate::count
+fn count() -> usize
+{
+    let mut _0: usize; // return
+    let mut _1: {gen}; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = {gen}::Unresumed {  }
+    _0 = impl_Iterator_for_gen::count[{built_in impl Sized for {gen}}, impl_Destruct_for_gen, {built_in impl Destruct for u32}](move _1)
+    ↳⚡ unwind_continue
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::count::{impl Iterator for {gen}}::next
+fn next<'_0>(_1: &'_0 mut {gen}) -> Option::<u32>
+{
+    let mut _0: Option::<u32>; // return
+    let mut _1: &'1 mut {gen}; // arg #1
+    let mut _2: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = @discriminant((*_1))
+    switch move _2 {
+        0u32 => {
+        },
+        1u32 => {
+            _0 = Option::<u32>::None {  }
+            return
+        },
+        3u32 => {
+            _0 = Option::<u32>::Some { _0: const 2u32 }
+            @discriminant((*_1)) = 4
+            return
+        },
+        4u32 => {
+            _0 = Option::<u32>::None {  }
+            @discriminant((*_1)) = 1
+            return
+        },
+        _ => {
+            undefined_behavior
+        },
+    }
+    _0 = Option::<u32>::Some { _0: const 1u32 }
+    @discriminant((*_1)) = 3
+    return
+}
+
+
+

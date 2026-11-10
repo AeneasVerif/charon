@@ -10,6 +10,7 @@ use charon_lib::ids::IndexVec;
 use charon_lib::options::TranslateOptions;
 use petgraph::graphmap::DiGraphMap;
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
+use rustc_middle::mir;
 use rustc_middle::ty::TyCtxt;
 use rustc_span::def_id::DefId as RDefId;
 use std::borrow::Cow;
@@ -147,6 +148,8 @@ pub struct TranslateCtx<'tcx> {
     pub cached_item_metas: HashMap<TransItemSource<'tcx>, ItemMeta>,
     /// Compute which lifetimes are used in a `&'a mut T`. This is a global fixpoint analysis.
     pub lt_mutability_computer: LifetimeMutabilityComputer,
+    /// Cache for [`TranslateCtx::cached_coroutine_mir`].
+    pub cached_coroutine_bodies: HashMap<hax::DefId, mir::Body<'tcx>>,
 }
 
 /// Tracks whether a method is used (i.e. called or (non-opaquely) implemented).

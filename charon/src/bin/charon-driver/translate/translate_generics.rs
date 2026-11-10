@@ -560,6 +560,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             | FullDefKind::FnPtr(_)
             | FullDefKind::AssocFn(_)
             | FullDefKind::Closure(_)
+            | FullDefKind::Coroutine(_)
             | FullDefKind::Const(_)
             | FullDefKind::AssocConst(_)
             | FullDefKind::Static(_) => PredicateOrigin::WhereClauseOnFn,
@@ -637,6 +638,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 .regions
                 .push_with(|index| RegionParam::new(index, None, Variance::Covariant));
             self.the_only_binder_mut().closure_call_method_region = Some(rid);
+        }
+
+        if let TransItemSourceKind::CoroutineResume = kind
+            && let hax::FullDefKind::Coroutine(c) = def.kind()
+        {
+            let sig = c.resume_method(self.hax_state()).sig.rebind(());
+            self.the_only_binder_mut().push_params_from_binder(sig)?;
         }
 
         if matches!(

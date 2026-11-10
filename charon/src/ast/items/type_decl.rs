@@ -134,6 +134,8 @@ pub enum TypeSource {
     Normal,
     /// The struct that carries the captured variables of a closure.
     Closure { info: ClosureInfo },
+    /// The state of a coroutine. This is an enum with one variant per state of the coroutine.
+    Coroutine { info: CoroutineInfo },
     /// Defines the vtable struct for a trait.
     VTable {
         /// The `dyn Trait` predicate implemented by this vtable.
@@ -189,12 +191,40 @@ pub struct ClosureInfo {
     pub signature: RegionBinder<FunSig>,
 }
 
+/// Additional information for coroutines.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+pub struct CoroutineInfo {
+    #[serde_state(stateless)]
+    pub kind: CoroutineKind,
+    /// The method that resumes the coroutine, i.e. its `Coroutine::resume`, `Future::poll`,
+    /// `Iterator::next` or `AsyncIterator::poll_next` method depending on `kind`.
+    pub resume: FunDeclRef,
+    /// The implementation of `Coroutine`, `Future`, `Iterator` or `AsyncIterator` (depending on
+    /// `kind`) for this coroutine.
+    pub trait_impl: TraitImplRef,
+}
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 pub enum ClosureKind {
     Fn,
     FnMut,
     FnOnce,
+}
+
+/// What a coroutine was written as.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
+pub enum CoroutineKind {
+    /// A `#[coroutine]` closure; implements `Coroutine`.
+    Coroutine,
+    /// An `async` block or function; implements `Future`.
+    Async,
+    /// A `gen` block or function; implements `Iterator`.
+    Gen,
+    /// An `async gen` block or function; implements `AsyncIterator`.
+    AsyncGen,
 }
 
 impl TypeDecl {
@@ -276,6 +306,18 @@ impl ClosureKind {
             ClosureKind::FnOnce => "call_once",
             ClosureKind::FnMut => "call_mut",
             ClosureKind::Fn => "call",
+        }
+    }
+}
+
+impl CoroutineKind {
+    /// The name of the trait method implemented by the resume function of the coroutine.
+    pub fn method_name(self) -> &'static str {
+        match self {
+            CoroutineKind::Coroutine => "resume",
+            CoroutineKind::Async => "poll",
+            CoroutineKind::Gen => "next",
+            CoroutineKind::AsyncGen => "poll_next",
         }
     }
 }

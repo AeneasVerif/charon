@@ -972,6 +972,43 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         // We get there when we access one of the fields of the state captured by a
                         // closure.
                         ty::Closure(..) => ProjectionElem::Field(None, field_id),
+                        // An upvar from the coroutine, or one of the locals of the state machine.
+                        ty::Coroutine(_, args) => {
+                            match place_ty.variant_index {
+                                // A shared upvar; we (arbitrarily) pick variant 0; we ensure all upvars overlap
+                                // across all variants.
+                                None => ProjectionElem::Field(Some(VariantId::ZERO), field_id),
+                                // A local in the state machine. We store it as `MaybeUninit`, so we need to
+                                // project to the field with the data.
+                                Some(variant) => {
+                                    let local_ty = projected_place_ty.ty;
+                                    let variant_id = self.translate_variant_id(variant);
+                                    // The fields go after all upvars, so we need to offset it!
+                                    let field_id = field_id + args.as_coroutine().upvar_tys().len();
+                                    let maybe_uninit_ty = ty::Ty::new_maybe_uninit(tcx, local_ty);
+                                    place = place.project(
+                                        ProjectionElem::Field(Some(variant_id), field_id),
+                                        self.translate_rustc_ty(span, &maybe_uninit_ty)?,
+                                    );
+                                    // `MaybeUninit<T>.value: ManuallyDrop<T>`
+                                    let manually_drop = tcx.adt_def(tcx.require_lang_item(
+                                        LangItem::ManuallyDrop,
+                                        rustc_span::DUMMY_SP,
+                                    ));
+                                    let manually_drop_ty = ty::Ty::new_adt(
+                                        tcx,
+                                        manually_drop,
+                                        tcx.mk_args(&[local_ty.into()]),
+                                    );
+                                    place = place.project(
+                                        ProjectionElem::Field(None, FieldId::new(1)),
+                                        self.translate_rustc_ty(span, &manually_drop_ty)?,
+                                    );
+                                    // `ManuallyDrop<T>.value: T`
+                                    ProjectionElem::Field(None, FieldId::new(0))
+                                }
+                            }
+                        }
                         _ => panic!(),
                     }
                 }
@@ -1482,9 +1519,15 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
 
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
-                    mir::AggregateKind::Coroutine(..)
-                    | mir::AggregateKind::CoroutineClosure(..) => {
-                        raise_error!(self, span, "Coroutines are not supported");
+                    mir::AggregateKind::Coroutine(def_id, generics) => {
+                        let item = hax::translate_item_ref(&self.hax_state, *def_id, generics);
+                        let tref = self.translate_type_decl_ref(span, &item)?;
+                        // A new coroutine is in its first state, whose only fields are the upvars.
+                        let akind = AggregateKind::Adt(tref, Some(VariantId::ZERO), None);
+                        Ok(Rvalue::Aggregate(akind, operands_t))
+                    }
+                    mir::AggregateKind::CoroutineClosure(..) => {
+                        raise_error!(self, span, "Coroutine closures are not supported");
                     }
                 }
             }
@@ -2168,11 +2211,9 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 let operand = self.translate_operand(span, operand)?;
                 Ok(BuiltinAssertKind::InvalidEnumConstruction(operand))
             }
-            mir::AssertKind::ResumedAfterDrop(..)
-            | mir::AssertKind::ResumedAfterPanic(..)
-            | mir::AssertKind::ResumedAfterReturn(..) => {
-                raise_error!(self, span, "Coroutines are not supported");
-            }
+            mir::AssertKind::ResumedAfterReturn(..) => Ok(BuiltinAssertKind::ResumedAfterReturn),
+            mir::AssertKind::ResumedAfterPanic(..) => Ok(BuiltinAssertKind::ResumedAfterPanic),
+            mir::AssertKind::ResumedAfterDrop(..) => Ok(BuiltinAssertKind::ResumedAfterDrop),
         }
     }
 

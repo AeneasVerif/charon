@@ -414,15 +414,18 @@ and builtin_path_elem_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          Ok (PeTuple _0)
      | 1 -> Ok PeStr
      | 2 -> Ok PeClosure
-     | 3 -> Ok PeUse
-     | 4 -> Ok PeAnonConst
-     | 5 -> Ok PePromotedConst
-     | 6 -> Ok PeClosureAsFn
-     | 7 -> Ok PeDropGlue
-     | 8 -> Ok PeVTable
-     | 9 -> Ok PeVTableMethod
-     | 10 -> Ok PeVTableDropShim
-     | 11 -> Ok PeIntrinsicFallback
+     | 3 ->
+         let* _0 = coroutine_kind_of_postcard ctx st in
+         Ok (PeCoroutine _0)
+     | 4 -> Ok PeUse
+     | 5 -> Ok PeAnonConst
+     | 6 -> Ok PePromotedConst
+     | 7 -> Ok PeClosureAsFn
+     | 8 -> Ok PeDropGlue
+     | 9 -> Ok PeVTable
+     | 10 -> Ok PeVTableMethod
+     | 11 -> Ok PeVTableDropShim
+     | 12 -> Ok PeIntrinsicFallback
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and byte_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -653,6 +656,17 @@ and constant_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
      | 27 ->
          let* _0 = string_of_postcard ctx st in
          Ok (COpaque _0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and coroutine_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (coroutine_kind, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok Coroutine
+     | 1 -> Ok Async
+     | 2 -> Ok Gen
+     | 3 -> Ok AsyncGen
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and de_bruijn_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -2351,6 +2365,14 @@ and const_handling_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 2 -> Ok Bytes
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and coroutine_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (coroutine_info, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* kind = coroutine_kind_of_postcard ctx st in
+     let* resume = fun_decl_ref_of_postcard ctx st in
+     let* trait_impl = trait_impl_ref_of_postcard ctx st in
+     Ok ({ kind; resume; trait_impl } : coroutine_info))
+
 and declaration_group_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
     : (declaration_group, string) result =
   combine_error_msgs st __FUNCTION__
@@ -3583,7 +3605,8 @@ and trait_impl_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
      | 2 ->
          let* kind = closure_kind_of_postcard ctx st in
          Ok (ClosureTraitImpl kind)
-     | 3 -> Ok DestructTraitImpl
+     | 3 -> Ok CoroutineTraitImpl
+     | 4 -> Ok DestructTraitImpl
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and trait_item_name_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -3757,6 +3780,9 @@ and type_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* info = closure_info_of_postcard ctx st in
          Ok (ClosureType info)
      | 2 ->
+         let* info = coroutine_info_of_postcard ctx st in
+         Ok (CoroutineType info)
+     | 3 ->
          let* dyn_predicate = dyn_predicate_of_postcard ctx st in
          let* field_map =
            index_vec_of_postcard field_id_of_postcard v_table_field_of_postcard
@@ -3768,7 +3794,7 @@ and type_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
              ctx st
          in
          Ok (VTableType (dyn_predicate, field_map, supertrait_map))
-     | 3 ->
+     | 4 ->
          let* _0 = builtin_adt_of_postcard ctx st in
          Ok (BuiltinType _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
