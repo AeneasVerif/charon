@@ -242,6 +242,9 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr<'tcx>>
                     _ => unreachable!("unexpected aggregate type {ty:?}"),
                 }
             }
+            ConstKind::Repeat { value, .. } => ConstantExprKind::Repeat {
+                value: value.sinto(s),
+            },
             ConstKind::FnDef { def, args } => {
                 ConstantExprKind::FnDef(translate_item_ref(s, *def, args))
             }

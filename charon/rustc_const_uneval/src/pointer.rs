@@ -200,10 +200,12 @@ impl<'tcx> ConstReader<'tcx> {
         };
         alloc.init_mask().is_range_initialized(range).is_ok()
             && alloc.provenance().range_empty(range, &self.tcx)
-            && alloc
-                .get_bytes_unchecked(range)
-                .chunks_exact(elem_ty.primitive_size(self.tcx).bytes_usize())
-                .all(is_valid_elem)
+            // Ints/floats are valid for any bit pattern.
+            && (matches!(elem_ty.kind(), Int(_) | Uint(_) | Float(_))
+                || alloc
+                    .get_bytes_unchecked(range)
+                    .chunks_exact(elem_ty.primitive_size(self.tcx).bytes_usize())
+                    .all(is_valid_elem))
     }
 
     /// Whether we view a value of the unsized type `ty` at the sized type it was unsized from: a

@@ -130,6 +130,8 @@ pub enum ConstKind<'tcx> {
         variant: Option<VariantIdx>,
         fields: Vec<Const<'tcx>>,
     },
+    /// An array of `count >= 2` copies of `value`.
+    Repeat { value: Box<Const<'tcx>>, count: u64 },
     /// A function item. This is a ZST, unlike `FnPtr`.
     FnDef {
         def: DefId,

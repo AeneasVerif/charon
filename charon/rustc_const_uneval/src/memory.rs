@@ -129,6 +129,41 @@ impl<'tcx> ConstReader<'tcx> {
         interp_ok(bytes)
     }
 
+    /// If the array `op` is made of two or more copies of one value, the number of copies. This
+    /// compares raw bytes, so that large arrays aren't read element by element; arrays with
+    /// uninitialized bytes or pointers are conservatively not repeats.
+    fn repeat_count(
+        &self,
+        ecx: &CompileTimeInterpCx<'tcx>,
+        op: &OpTy<'tcx>,
+    ) -> InterpResult<'tcx, Option<u64>> {
+        let Some(mplace) = op.as_mplace_or_imm().left() else {
+            return interp_ok(None);
+        };
+        let count = mplace.len(ecx)?;
+        if count < 2 {
+            return interp_ok(None);
+        }
+        let size = mplace.layout.size;
+        // Zero-sized values are all equal.
+        if size.bytes() == 0 {
+            return interp_ok(Some(count));
+        }
+        let (alloc_id, offset, _) = ecx.ptr_get_alloc_id(mplace.ptr(), size.bytes() as i64)?;
+        let alloc = ecx.get_alloc_raw(alloc_id)?;
+        let range = interpret::alloc_range(offset, size);
+        if alloc.init_mask().is_range_initialized(range).is_err()
+            || !alloc.provenance().range_empty(range, ecx)
+        {
+            return interp_ok(None);
+        }
+        // The elements are all equal iff the bytes are equal to themselves shifted by one element.
+        let elem_size = (size.bytes() / count) as usize;
+        let bytes = alloc.get_bytes_unchecked(range);
+        let is_repeat = bytes[elem_size..] == bytes[..bytes.len() - elem_size];
+        interp_ok(is_repeat.then_some(count))
+    }
+
     /// The sized type that `tail`, the unsized tail of `place`, was unsized from. This is found in
     /// the metadata of the place.
     pub(crate) fn sized_tail(
@@ -250,6 +285,13 @@ impl<'tcx> ConstReader<'tcx> {
                 variant: None,
                 fields: read_fields(op, args.len())?,
             },
+            ty::Array(..) if let Some(count) = self.repeat_count(ecx, &op)? => {
+                let value = self.read_op(ecx, ecx.project_index(&op, 0)?)?;
+                ConstKind::Repeat {
+                    value: Box::new(value),
+                    count,
+                }
+            }
             ty::Array(..) | ty::Slice(..) => {
                 let mut elems = ecx.project_array_fields(&op)?;
                 let mut fields = vec![];
