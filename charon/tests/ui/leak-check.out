@@ -1,0 +1,13 @@
+error: Error during trait resolution: Could not find a proof for `<for<'a> fn(&'a ()) as Factory>`
+  --> tests/ui/leak-check.rs:20:21
+   |
+20 |     let _function = <fn(&())>::make();
+   |                     ^^^^^^^^^^^^^^^^^
+
+error: Error during trait resolution: Could not find a proof for `<for<'a> fn(&'a ()) as Factory>`
+  --> tests/ui/leak-check.rs:20:21
+   |
+20 |     let _function = <fn(&())>::make();
+   |                     ^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (2 errors)

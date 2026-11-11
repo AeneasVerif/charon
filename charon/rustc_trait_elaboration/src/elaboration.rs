@@ -488,12 +488,25 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
                 impl_def_id,
                 args: generics,
                 ..
-            })) => TraitProofKind::Concrete(self.resolve_item_reference(
-                state,
-                Id::from_rust_def_id(state, impl_def_id),
-                generics,
-                AssocItemResolution::ImplItem,
-            )),
+            })) => {
+                // Selection can return an impl for `fn(&'_ ())` when we needed one for `for<'a>
+                // fn(&'a ())`. So we check that the returned impl does prove the predicate we
+                // want, modulo free regions.
+                let proved_predicate = erase_and_norm(
+                    tcx,
+                    self.typing_env,
+                    tcx.impl_trait_ref(impl_def_id).instantiate(tcx, generics),
+                );
+                if proved_predicate != erased_tref.skip_binder() {
+                    return error(format!("Could not find a proof for `{erased_tref}`"));
+                }
+                TraitProofKind::Concrete(self.resolve_item_reference(
+                    state,
+                    Id::from_rust_def_id(state, impl_def_id),
+                    generics,
+                    AssocItemResolution::ImplItem,
+                ))
+            }
             // Rustc can report ambiguity for a built-in trait's own `Self` clause. In that case
             // the clause can be found locally, so we try that.
             Err(CodegenObligationError::Ambiguity) | Ok(ImplSource::Param(_)) => match self
