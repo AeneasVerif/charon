@@ -303,6 +303,8 @@ pub struct Assert {
     /// The kind of check performed by this assert. This is only used for error reporting, as the check
     /// is actually performed by the instructions preceding the assert.
     pub check_kind: Option<BuiltinAssertKind>,
+    /// The function that rustc's codegen calls when the check fails. Only set with `--translate-assert-panic-fns`.
+    pub panic_fn: Option<FunDeclRef>,
 }
 
 /// The kind of a built-in assertion, which may panic and unwind. These are removed

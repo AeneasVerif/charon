@@ -45,6 +45,7 @@ impl UllbcPass for Transform {
                             cond: discr,
                             expected,
                             check_kind: None,
+                            panic_fn: None,
                         },
                         on_failure: abort.clone(),
                     },

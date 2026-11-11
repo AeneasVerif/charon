@@ -1,5 +1,5 @@
 //@ no-default-options
-//@ charon-args=--ullbc --print-ullbc --mir optimized
+//@ charon-args=--ullbc --print-ullbc --mir optimized --translate-assert-panic-fns
 #![allow(arithmetic_overflow, unconditional_panic)]
 
 fn bounds_check(a: [u8; 3], i: usize) -> u8 {

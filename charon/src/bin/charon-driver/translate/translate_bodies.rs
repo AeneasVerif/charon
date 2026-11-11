@@ -1731,10 +1731,30 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             } => {
                 let on_unwind = self.translate_unwind_action(span, unwind);
                 let kind = self.translate_assert_kind(span, msg)?;
+                let panic_fn = if self.options.translate_assert_panic_fns {
+                    // BoundsCheck/MisalignedPointerDereference are not hadled by `panic_function`,
+                    // because they take different arguments -- here we don't care though.
+                    let lang_item = match msg {
+                        mir::AssertKind::BoundsCheck { .. } => LangItem::PanicBoundsCheck,
+                        mir::AssertKind::MisalignedPointerDereference { .. } => {
+                            LangItem::PanicMisalignedPointerDereference
+                        }
+                        _ => msg.panic_function(),
+                    };
+                    let def_id = self
+                        .tcx
+                        .require_lang_item(lang_item, terminator.source_info.span);
+                    let item =
+                        hax::translate_item_ref(&self.hax_state, def_id, ty::GenericArgs::empty());
+                    Some(self.translate_item(span, &item, TransItemSourceKind::Fun)?)
+                } else {
+                    None
+                };
                 let assert = Assert {
                     cond: self.translate_operand(span, cond)?,
                     expected: *expected,
                     check_kind: Some(kind),
+                    panic_fn,
                 };
                 let target = self.translate_basic_block_id(*target);
                 ullbc_ast::TerminatorKind::Assert {

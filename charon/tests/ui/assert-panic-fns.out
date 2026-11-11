@@ -84,6 +84,78 @@ impl "impl_Copy_for_i32" Copy for i32 {
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_const::panic_const_add_overflow
+#[track_caller]
+#[lang_item(PanicAddOverflow)]
+pub fn panic_const_add_overflow() -> !
+= <opaque>
+
+// Full name: core::panicking::panic_const::panic_const_sub_overflow
+#[track_caller]
+#[lang_item(PanicSubOverflow)]
+pub fn panic_const_sub_overflow() -> !
+= <opaque>
+
+// Full name: core::panicking::panic_const::panic_const_mul_overflow
+#[track_caller]
+#[lang_item(PanicMulOverflow)]
+pub fn panic_const_mul_overflow() -> !
+= <opaque>
+
+// Full name: core::panicking::panic_const::panic_const_div_by_zero
+#[track_caller]
+#[lang_item(PanicDivZero)]
+pub fn panic_const_div_by_zero() -> !
+= <opaque>
+
+// Full name: core::panicking::panic_const::panic_const_div_overflow
+#[track_caller]
+#[lang_item(PanicDivOverflow)]
+pub fn panic_const_div_overflow() -> !
+= <opaque>
+
+// Full name: core::panicking::panic_const::panic_const_rem_by_zero
+#[track_caller]
+#[lang_item(PanicRemZero)]
+pub fn panic_const_rem_by_zero() -> !
+= <opaque>
+
+// Full name: core::panicking::panic_const::panic_const_rem_overflow
+#[track_caller]
+#[lang_item(PanicRemOverflow)]
+pub fn panic_const_rem_overflow() -> !
+= <opaque>
+
+// Full name: core::panicking::panic_const::panic_const_shl_overflow
+#[track_caller]
+#[lang_item(PanicShlOverflow)]
+pub fn panic_const_shl_overflow() -> !
+= <opaque>
+
+// Full name: core::panicking::panic_const::panic_const_shr_overflow
+#[track_caller]
+#[lang_item(PanicShrOverflow)]
+pub fn panic_const_shr_overflow() -> !
+= <opaque>
+
+// Full name: core::panicking::panic_const::panic_const_neg_overflow
+#[track_caller]
+#[lang_item(PanicNegOverflow)]
+pub fn panic_const_neg_overflow() -> !
+= <opaque>
+
+// Full name: core::panicking::panic_bounds_check
+#[track_caller]
+#[lang_item(PanicBoundsCheck)]
+fn panic_bounds_check(_1: usize, _2: usize) -> !
+= <opaque>
+
+// Full name: core::panicking::panic_invalid_enum_construction
+#[track_caller]
+#[lang_item(PanicInvalidEnumConstruction)]
+fn panic_invalid_enum_construction(_1: u128) -> !
+= <opaque>
+
 // Full name: test_crate::bounds_check
 fn bounds_check(a: [u8; 3usize], i: usize) -> u8
 {
@@ -99,7 +171,7 @@ fn bounds_check(a: [u8; 3usize], i: usize) -> u8
         storage_live(_3);
         _3 = copy i;
         _4 = copy _3 < const 3usize;
-        assert assert(move _4 == true) (bounds_check) -> bb1 (unwind: bb2);
+        assert assert(move _4 == true) (bounds_check) (panic_fn: panic_bounds_check) -> bb1 (unwind: bb2);
     }
 
     bb1: {
@@ -134,7 +206,7 @@ fn add(x: i32, y: i32) -> i32
     }
 
     bb1: {
-        assert assert(move _5._1 == false) (overflow) -> bb2 (unwind: bb3);
+        assert assert(move _5._1 == false) (overflow) (panic_fn: panic_const_add_overflow) -> bb2 (unwind: bb3);
     }
 
     bb2: {
@@ -174,7 +246,7 @@ fn sub(x: i32, y: i32) -> i32
     }
 
     bb1: {
-        assert assert(move _5._1 == false) (overflow) -> bb2 (unwind: bb3);
+        assert assert(move _5._1 == false) (overflow) (panic_fn: panic_const_sub_overflow) -> bb2 (unwind: bb3);
     }
 
     bb2: {
@@ -214,7 +286,7 @@ fn mul(x: i32, y: i32) -> i32
     }
 
     bb1: {
-        assert assert(move _5._1 == false) (overflow) -> bb2 (unwind: bb3);
+        assert assert(move _5._1 == false) (overflow) (panic_fn: panic_const_mul_overflow) -> bb2 (unwind: bb3);
     }
 
     bb2: {
@@ -257,14 +329,14 @@ fn div(x: i32, y: i32) -> i32
         storage_live(_4);
         _4 = copy y;
         _5 = copy _4 == const 0i32;
-        assert assert(move _5 == false) (division_by_zero) -> bb1 (unwind: bb4);
+        assert assert(move _5 == false) (division_by_zero) (panic_fn: panic_const_div_by_zero) -> bb1 (unwind: bb4);
     }
 
     bb1: {
         _6 = copy _4 == const -1i32;
         _7 = copy _3 == const -2147483648i32;
         _8 = move _6 & move _7;
-        assert assert(move _8 == false) (overflow) -> bb2 (unwind: bb3);
+        assert assert(move _8 == false) (overflow) (panic_fn: panic_const_div_overflow) -> bb2 (unwind: bb3);
     }
 
     bb2: {
@@ -307,14 +379,14 @@ fn rem(x: i32, y: i32) -> i32
         storage_live(_4);
         _4 = copy y;
         _5 = copy _4 == const 0i32;
-        assert assert(move _5 == false) (remainder_by_zero) -> bb1 (unwind: bb4);
+        assert assert(move _5 == false) (remainder_by_zero) (panic_fn: panic_const_rem_by_zero) -> bb1 (unwind: bb4);
     }
 
     bb1: {
         _6 = copy _4 == const -1i32;
         _7 = copy _3 == const -2147483648i32;
         _8 = move _6 & move _7;
-        assert assert(move _8 == false) (overflow) -> bb2 (unwind: bb3);
+        assert assert(move _8 == false) (overflow) (panic_fn: panic_const_rem_overflow) -> bb2 (unwind: bb3);
     }
 
     bb2: {
@@ -351,7 +423,7 @@ fn shl(x: i32, y: u32) -> i32
         storage_live(_4);
         _4 = copy y;
         _5 = copy _4 < const 32u32;
-        assert assert(move _5 == true) (overflow) -> bb1 (unwind: bb2);
+        assert assert(move _5 == true) (overflow) (panic_fn: panic_const_shl_overflow) -> bb1 (unwind: bb2);
     }
 
     bb1: {
@@ -384,7 +456,7 @@ fn shr(x: i32, y: u32) -> i32
         storage_live(_4);
         _4 = copy y;
         _5 = copy _4 < const 32u32;
-        assert assert(move _5 == true) (overflow) -> bb1 (unwind: bb2);
+        assert assert(move _5 == true) (overflow) (panic_fn: panic_const_shr_overflow) -> bb1 (unwind: bb2);
     }
 
     bb1: {
@@ -413,7 +485,7 @@ fn neg(x: i32) -> i32
         storage_live(_2);
         _2 = copy x;
         _3 = copy _2 == const -2147483648i32;
-        assert assert(move _3 == false) (overflow_neg) -> bb1 (unwind: bb2);
+        assert assert(move _3 == false) (overflow_neg) (panic_fn: panic_const_neg_overflow) -> bb1 (unwind: bb2);
     }
 
     bb1: {
@@ -459,7 +531,7 @@ fn transmute(x: u8) -> E
     }
 
     bb1: {
-        assert assert(const false == true) (invalid_enum_construction) -> bb2 (unwind: bb3);
+        assert assert(const false == true) (invalid_enum_construction) (panic_fn: panic_invalid_enum_construction) -> bb2 (unwind: bb3);
     }
 
     bb2: {

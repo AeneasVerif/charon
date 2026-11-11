@@ -190,6 +190,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for Assert {
         if let Some(check_kind) = &self.check_kind {
             write!(f, " ({})", check_kind.with_ctx(ctx))?;
         }
+        if let Some(panic_fn) = &self.panic_fn {
+            write!(f, " (panic_fn: {})", panic_fn.with_ctx(ctx))?;
+        }
         Ok(())
     }
 }

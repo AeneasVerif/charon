@@ -1774,7 +1774,10 @@ let pp_assertion (env : fmt_env) (fmt : Format.formatter) (a : assertion) : unit
   Format.fprintf fmt "assert(%s == %s)%s"
     (operand_to_string env a.cond)
     (Bool.to_string a.expected)
-    check_kind
+    check_kind;
+  Option.iter
+    (Format.fprintf fmt " (panic_fn: %a)" (pp_fun_decl_ref env))
+    a.panic_fn
 
 let pp_place_type_constraint (env : fmt_env) (fmt : Format.formatter)
     (constraint_ : place_type_constraint) : unit =

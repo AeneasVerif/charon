@@ -215,7 +215,8 @@ and assertion_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* check_kind =
        option_of_postcard builtin_assert_kind_of_postcard ctx st
      in
-     Ok ({ cond; expected; check_kind } : assertion))
+     let* panic_fn = option_of_postcard fun_decl_ref_of_postcard ctx st in
+     Ok ({ cond; expected; check_kind; panic_fn } : assertion))
 
 and assoc_const_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (assoc_const_id, string) result =
@@ -773,6 +774,13 @@ and fn_ptr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
 and fun_decl_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (fun_decl_id, string) result =
   combine_error_msgs st __FUNCTION__ (FunDeclId.id_of_postcard ctx st)
+
+and fun_decl_ref_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (fun_decl_ref, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* id = fun_decl_id_of_postcard ctx st in
+     let* generics = box_of_postcard generic_args_of_postcard ctx st in
+     Ok ({ id; generics } : fun_decl_ref))
 
 and fun_sig_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (fun_sig, string) result =
@@ -2191,6 +2199,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* extract_opaque_bodies = bool_of_postcard ctx st in
      let* translate_all_methods = bool_of_postcard ctx st in
      let* eager_vtables = bool_of_postcard ctx st in
+     let* translate_assert_panic_fns = bool_of_postcard ctx st in
      let* duplicate_defaulted_methods = bool_of_postcard ctx st in
      let* lift_associated_types = list_of_postcard string_of_postcard ctx st in
      let* hide_marker_traits = bool_of_postcard ctx st in
@@ -2260,6 +2269,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           extract_opaque_bodies;
           translate_all_methods;
           eager_vtables;
+          translate_assert_panic_fns;
           duplicate_defaulted_methods;
           lift_associated_types;
           hide_marker_traits;
@@ -2527,13 +2537,6 @@ and fun_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* src = fun_source_of_postcard ctx st in
      let* body = body_of_postcard ctx st in
      Ok ({ def_id; item_meta; generics; signature; src; body } : fun_decl))
-
-and fun_decl_ref_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (fun_decl_ref, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* id = fun_decl_id_of_postcard ctx st in
-     let* generics = box_of_postcard generic_args_of_postcard ctx st in
-     Ok ({ id; generics } : fun_decl_ref))
 
 and fun_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (fun_source, string) result =
