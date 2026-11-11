@@ -534,7 +534,7 @@ trait WithLifetimeItem<'a, Self>
     vtable: test_crate::WithLifetimeItem::{vtable}<'a, Self::Item>
 }
 
-struct test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>
+struct test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithLifetimeItem<'a>),
@@ -543,12 +543,12 @@ where
 }
 
 // Full name: test_crate::lifetime_assoc_closure
-fn lifetime_assoc_closure<'a, T>(x: TraitClause1::Item) -> test_crate::lifetime_assoc_closure::{closure}<'a, 'a, 'a, 'a, T>[TraitClause0, TraitClause1]
+fn lifetime_assoc_closure<'a, T>(x: TraitClause1::Item) -> test_crate::lifetime_assoc_closure::{closure}<'a, 'a, 'a, T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithLifetimeItem<'a>),
 {
-    let mut _0: test_crate::lifetime_assoc_closure::{closure}<'12, '13, '14, '15, T>[TraitClause0, TraitClause1]; // return
+    let mut _0: test_crate::lifetime_assoc_closure::{closure}<'12, '13, '14, T>[TraitClause0, TraitClause1]; // return
     let x: TraitClause1::Item; // arg #1
 
     storage_live(_0)
@@ -557,19 +557,18 @@ where
     return
 }
 
-// Full name: test_crate::lifetime_assoc_closure::{impl Fn<()> for test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>[TraitClause0, TraitClause1]}::call
-extern "rust-call" fn {impl Fn<()> for test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '_2, '_3, '_4, T>(_1: &'_4 test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>[TraitClause0, TraitClause1], tupled_args: ()) -> TraitClause1::Item
+// Full name: test_crate::lifetime_assoc_closure::{impl Fn<()> for test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '_2, '_3, T>(_1: &'_3 test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1], tupled_args: ()) -> TraitClause1::Item
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithLifetimeItem<'a>),
-    Outlives0: ('a: '_4),
-    Outlives1: ('_1: '_4),
-    Outlives2: ('_2: '_4),
-    Outlives3: ('_3: '_4),
-    Outlives4: (T: '_4),
+    Outlives0: ('a: '_3),
+    Outlives1: ('_1: '_3),
+    Outlives2: ('_2: '_3),
+    Outlives3: (T: '_3),
 {
     let mut _0: TraitClause1::Item; // return
-    let mut _1: &'15 test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>[TraitClause0, TraitClause1]; // arg #1
+    let mut _1: &'15 test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1
     let mut tupled_args: (); // arg #2
 
     storage_live(_0)
@@ -579,26 +578,26 @@ where
     return
 }
 
-struct test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, '_4, T>
+struct test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithLifetimeItem<'a>),
     TypeConstraint0: TraitClause1::Item = &'a (),
 {
-  _0: test_crate::lifetime_assoc_closure::{closure}<'_4, '_4, '_, '_, T>[TraitClause0, TraitClause1],
+  _0: test_crate::lifetime_assoc_closure::{closure}<'_3, '_, '_, T>[TraitClause0, TraitClause1],
 }
 
 // Full name: test_crate::captured_lifetime_assoc_closure
-pub fn captured_lifetime_assoc_closure<'a, T>(x: &'a ()) -> test_crate::captured_lifetime_assoc_closure::{closure}<'a, 'a, 'a, '_, 'a, T>[TraitClause0, TraitClause1]
+pub fn captured_lifetime_assoc_closure<'a, T>(x: &'a ()) -> test_crate::captured_lifetime_assoc_closure::{closure}<'a, 'a, '_, 'a, T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithLifetimeItem<'a>),
     TypeConstraint0: TraitClause1::Item = &'a (),
 {
-    let mut _0: test_crate::captured_lifetime_assoc_closure::{closure}<'38, '39, '40, '41, '42, T>[TraitClause0, TraitClause1]; // return
-    let x: &'45 (); // arg #1
-    let inner: test_crate::lifetime_assoc_closure::{closure}<'46, '47, '48, '49, T>[TraitClause0, TraitClause1]; // local
-    let mut _3: &'51 (); // anonymous local
+    let mut _0: test_crate::captured_lifetime_assoc_closure::{closure}<'36, '37, '38, '39, T>[TraitClause0, TraitClause1]; // return
+    let x: &'42 (); // arg #1
+    let inner: test_crate::lifetime_assoc_closure::{closure}<'43, '44, '45, T>[TraitClause0, TraitClause1]; // local
+    let mut _3: &'47 (); // anonymous local
 
     storage_live(_0)
     storage_live(inner)
@@ -615,23 +614,22 @@ where
     return
 }
 
-// Full name: test_crate::captured_lifetime_assoc_closure::{impl Fn<()> for test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, '_4, T>[TraitClause0, TraitClause1]}::call
-extern "rust-call" fn {impl Fn<()> for test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, '_4, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '_2, '_3, '_4, '_5, T>(_1: &'_5 test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, '_4, T>[TraitClause0, TraitClause1], tupled_args: ()) -> &'_2 ()
+// Full name: test_crate::captured_lifetime_assoc_closure::{impl Fn<()> for test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>[TraitClause0, TraitClause1]}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '_2, '_3, '_4, T>(_1: &'_4 test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>[TraitClause0, TraitClause1], tupled_args: ()) -> &'_1 ()
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithLifetimeItem<'a>),
-    Outlives0: ('a: '_5),
-    Outlives1: ('_1: '_5),
-    Outlives2: ('_2: '_5),
-    Outlives3: ('_3: '_5),
-    Outlives4: ('_4: '_5),
-    Outlives5: (T: '_5),
+    Outlives0: ('a: '_4),
+    Outlives1: ('_1: '_4),
+    Outlives2: ('_2: '_4),
+    Outlives3: ('_3: '_4),
+    Outlives4: (T: '_4),
     TypeConstraint0: TraitClause1::Item = &'a (),
 {
     let mut _0: &'1 (); // return
-    let mut _1: &'42 test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, '_4, T>[TraitClause0, TraitClause1]; // arg #1
+    let mut _1: &'40 test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>[TraitClause0, TraitClause1]; // arg #1
     let mut tupled_args: (); // arg #2
-    let mut _3: &'50 test_crate::lifetime_assoc_closure::{closure}<'51, '52, '53, '54, T>[TraitClause0, TraitClause1]; // anonymous local
+    let mut _3: &'47 test_crate::lifetime_assoc_closure::{closure}<'48, '49, '50, T>[TraitClause0, TraitClause1]; // anonymous local
     let mut _4: (); // anonymous local
 
     storage_live(_0)
@@ -639,7 +637,7 @@ where
     _3 = &(*_1)._0
     storage_live(_4)
     _4 = ()
-    _0 = {impl Fn<()> for test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>[TraitClause0, TraitClause1]}::call<'82, '82, '84, '85, '112, T>[TraitClause0, TraitClause1](move _3, move _4)
+    _0 = {impl Fn<()> for test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]}::call<'76, '77, '78, '103, T>[TraitClause0, TraitClause1](move _3, move _4)
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)
         unwind_continue

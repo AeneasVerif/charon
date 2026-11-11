@@ -90,65 +90,63 @@ struct (_,)<A> {
   _0: A,
 }
 
-struct test_crate::foo::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>
+struct test_crate::foo::{closure}<'a, '_1, '_2, '_3, '_4, '_5, T>
 where
     TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
-    Outlives1: (T: '_6),
+    Outlives1: (T: '_5),
 {
-  _0: &'_6 T,
+  _0: &'_5 T,
 }
 
 // Full name: test_crate::foo
-pub fn foo<'a, T>(x: &'a T) -> test_crate::foo::{closure}<'a, 'a, 'a, 'static, 'a, 'static, 'a, T>[TraitClause0]
+pub fn foo<'a, T>(x: &'a T) -> test_crate::foo::{closure}<'a, 'a, 'static, 'a, 'static, 'a, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
 {
-    let mut _0: test_crate::foo::{closure}<'108, '109, '110, '111, '112, '113, '114, T>[TraitClause0]; // return
-    let x: &'115 T; // arg #1
+    let mut _0: test_crate::foo::{closure}<'108, '109, '110, '111, '112, '113, T>[TraitClause0]; // return
+    let x: &'114 T; // arg #1
 
     storage_live(_0)
     _0 = test_crate::foo::{closure} { _0: copy x }
     return
 }
 
-// Full name: test_crate::foo::{closure}::{impl Fn<(&'_9 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]}::{vtable}
-vtable impl_Fn_tuple_for_closure::{vtable}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, '_9, T>: core::ops::function::Fn::{vtable}<(&'_9 u8,), (&'_ u8, Option<&'_ T>[{built_in impl Sized for &'_ T}])>
+// Full name: test_crate::foo::{closure}::{impl Fn<(&'_7 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]}::{vtable}
+vtable impl_Fn_tuple_for_closure::{vtable}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, T>: core::ops::function::Fn::{vtable}<(&'_7 u8,), (&'_ u8, Option<&'_ T>[{built_in impl Sized for &'_ T}])>
 where
     TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
  = Opaque(VTable was chosen to be opaque)
 
-struct test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>
+struct test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>
 where
     TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
 {}
 
-// Full name: test_crate::foo::{closure}::{impl Fn<(&'_9 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]}::call
-extern "rust-call" fn impl_Fn_tuple_for_closure::call<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, '_9, '_10, T>(_1: &'_10 test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0], tupled_args: (&'_9 u8,)) -> (&'_9 u8, Option<&'_8 T>[{built_in impl Sized for &'_8 T}])
+// Full name: test_crate::foo::{closure}::{impl Fn<(&'_7 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]}::call
+extern "rust-call" fn impl_Fn_tuple_for_closure::call<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>(_1: &'_8 test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0], tupled_args: (&'_7 u8,)) -> (&'_7 u8, Option<&'_6 T>[{built_in impl Sized for &'_6 T}])
 where
     TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
-    Outlives1: ('a: '_10),
-    Outlives2: ('_1: '_10),
-    Outlives3: ('_2: '_10),
-    Outlives4: ('_3: '_10),
-    Outlives5: ('_4: '_10),
-    Outlives6: ('_5: '_10),
-    Outlives7: ('_6: '_10),
-    Outlives8: ('_7: '_10),
-    Outlives9: ('_8: '_10),
-    Outlives10: (T: '_10),
-    Outlives11: (T: '_8),
+    Outlives1: ('a: '_8),
+    Outlives2: ('_1: '_8),
+    Outlives3: ('_2: '_8),
+    Outlives4: ('_3: '_8),
+    Outlives5: ('_4: '_8),
+    Outlives6: ('_5: '_8),
+    Outlives7: ('_6: '_8),
+    Outlives8: (T: '_8),
+    Outlives9: (T: '_6),
 {
     let mut _0: (&'20 u8, Option<&'21 T>[{built_in impl Sized for &'21 T}]); // return
-    let mut _1: &'59 test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]; // arg #1
-    let mut tupled_args: (&'_9 u8,); // arg #2
-    let y: &'60 u8; // local
-    let mut _4: &'61 u8; // anonymous local
-    let mut _5: Option<&'62 T>[{built_in impl Sized for &'62 T}]; // anonymous local
+    let mut _1: &'58 test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]; // arg #1
+    let mut tupled_args: (&'_7 u8,); // arg #2
+    let y: &'59 u8; // local
+    let mut _4: &'60 u8; // anonymous local
+    let mut _5: Option<&'61 T>[{built_in impl Sized for &'61 T}]; // anonymous local
 
     storage_live(_0)
     storage_live(y)
@@ -163,107 +161,105 @@ where
     return
 }
 
-// Full name: test_crate::foo::{closure}::{impl FnMut<(&'_9 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]}::call_mut
-extern "rust-call" fn impl_FnMut_tuple_for_closure::call_mut<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, '_9, '_10, T>(state: &'_10 mut test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0], args: (&'_9 u8,)) -> (&'_9 u8, Option<&'_8 T>[{built_in impl Sized for &'_8 T}])
+// Full name: test_crate::foo::{closure}::{impl FnMut<(&'_7 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]}::call_mut
+extern "rust-call" fn impl_FnMut_tuple_for_closure::call_mut<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>(state: &'_8 mut test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0], args: (&'_7 u8,)) -> (&'_7 u8, Option<&'_6 T>[{built_in impl Sized for &'_6 T}])
 where
     TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
-    Outlives1: ('a: '_10),
-    Outlives2: ('_1: '_10),
-    Outlives3: ('_2: '_10),
-    Outlives4: ('_3: '_10),
-    Outlives5: ('_4: '_10),
-    Outlives6: ('_5: '_10),
-    Outlives7: ('_6: '_10),
-    Outlives8: ('_7: '_10),
-    Outlives9: ('_8: '_10),
-    Outlives10: (T: '_10),
-    Outlives11: (T: '_8),
+    Outlives1: ('a: '_8),
+    Outlives2: ('_1: '_8),
+    Outlives3: ('_2: '_8),
+    Outlives4: ('_3: '_8),
+    Outlives5: ('_4: '_8),
+    Outlives6: ('_5: '_8),
+    Outlives7: ('_6: '_8),
+    Outlives8: (T: '_8),
+    Outlives9: (T: '_6),
 {
-    let mut _0: (&'_9 u8, Option<&'_8 T>[{built_in impl Sized for &'_8 T}]); // return
-    let mut state: &'_10 mut test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]; // arg #1
-    let mut args: (&'_9 u8,); // arg #2
-    let mut _3: &'0 test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]; // anonymous local
+    let mut _0: (&'_7 u8, Option<&'_6 T>[{built_in impl Sized for &'_6 T}]); // return
+    let mut state: &'_8 mut test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]; // arg #1
+    let mut args: (&'_7 u8,); // arg #2
+    let mut _3: &'0 test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &(*state)
-    _0 = impl_Fn_tuple_for_closure::call<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, '_9, '2, T>[TraitClause0](move _3, move args)
+    _0 = impl_Fn_tuple_for_closure::call<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '2, T>[TraitClause0](move _3, move args)
     ↳⚡ unwind_continue
     return
 }
 
-// Full name: test_crate::foo::{closure}::{impl FnOnce<(&'_9 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]}::call_once
-extern "rust-call" fn impl_FnOnce_tuple_for_closure::call_once<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, '_9, T>(_1: test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0], _2: (&'_9 u8,)) -> (&'_9 u8, Option<&'_8 T>[{built_in impl Sized for &'_8 T}])
+// Full name: test_crate::foo::{closure}::{impl FnOnce<(&'_7 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]}::call_once
+extern "rust-call" fn impl_FnOnce_tuple_for_closure::call_once<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, T>(_1: test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0], _2: (&'_7 u8,)) -> (&'_7 u8, Option<&'_6 T>[{built_in impl Sized for &'_6 T}])
 where
     TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
-    Outlives1: (T: '_8),
+    Outlives1: (T: '_6),
 {
     let mut _0: (&'20 u8, Option<&'21 T>[{built_in impl Sized for &'21 T}]); // return
-    let mut _1: test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]; // arg #1
-    let _2: (&'59 u8,); // arg #2
-    let _3: &'61 mut test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]; // anonymous local
+    let mut _1: test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]; // arg #1
+    let _2: (&'58 u8,); // arg #2
+    let _3: &'60 mut test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = impl_FnMut_tuple_for_closure::call_mut<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, '_9, '160, T>[TraitClause0](move _3, move _2)
+    _0 = impl_FnMut_tuple_for_closure::call_mut<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '155, T>[TraitClause0](move _3, move _2)
     ↳⚡ unwind_continue
     return
 }
 
-// Full name: test_crate::foo::{closure}::{impl FnOnce<(&'_9 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]}
-impl<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, '_9, T> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_9 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]
+// Full name: test_crate::foo::{closure}::{impl FnOnce<(&'_7 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]}
+impl<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, T> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_7 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
 {
-    proof ImpliedClause0: (test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]}
-    proof ImpliedClause1: ((&'_9 u8,): Sized) = {built_in impl Sized for (&'_9 u8,)}
-    proof ImpliedClause2: ((&'_9 u8,): Tuple) = {built_in impl Tuple for (&'_9 u8,)}
-    proof ImpliedClause3: ((&'_9 u8, Option<&'_8 T>[{built_in impl Sized for &'_8 T}]): Sized) = {built_in impl Sized for (&'_9 u8, Option<&'_8 T>[{built_in impl Sized for &'_8 T}])}
-    type Output = (&'_9 u8, Option<&'_8 T>[{built_in impl Sized for &'_8 T}])
-    fn call_once = impl_FnOnce_tuple_for_closure::call_once<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, '_9, T>[TraitClause0]
+    proof ImpliedClause0: (test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]}
+    proof ImpliedClause1: ((&'_7 u8,): Sized) = {built_in impl Sized for (&'_7 u8,)}
+    proof ImpliedClause2: ((&'_7 u8,): Tuple) = {built_in impl Tuple for (&'_7 u8,)}
+    proof ImpliedClause3: ((&'_7 u8, Option<&'_6 T>[{built_in impl Sized for &'_6 T}]): Sized) = {built_in impl Sized for (&'_7 u8, Option<&'_6 T>[{built_in impl Sized for &'_6 T}])}
+    type Output = (&'_7 u8, Option<&'_6 T>[{built_in impl Sized for &'_6 T}])
+    fn call_once = impl_FnOnce_tuple_for_closure::call_once<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, T>[TraitClause0]
     vtable: lazy
 }
 
-// Full name: test_crate::foo::{closure}::{impl FnMut<(&'_9 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]}
-impl<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, '_9, T> "impl_FnMut_tuple_for_closure" FnMut<(&'_9 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]
+// Full name: test_crate::foo::{closure}::{impl FnMut<(&'_7 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]}
+impl<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, T> "impl_FnMut_tuple_for_closure" FnMut<(&'_7 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
 {
-    proof ImpliedClause0: (test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]}
-    proof ImpliedClause1: (test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]: FnOnce<(&'_9 u8,)>) = impl_FnOnce_tuple_for_closure<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, '_9, T>[TraitClause0]
-    proof ImpliedClause2: ((&'_9 u8,): Sized) = {built_in impl Sized for (&'_9 u8,)}
-    proof ImpliedClause3: ((&'_9 u8,): Tuple) = {built_in impl Tuple for (&'_9 u8,)}
-    fn call_mut<'_0_1> = impl_FnMut_tuple_for_closure::call_mut<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, '_9, '_0_1, T>[TraitClause0]
+    proof ImpliedClause0: (test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]}
+    proof ImpliedClause1: (test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]: FnOnce<(&'_7 u8,)>) = impl_FnOnce_tuple_for_closure<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, T>[TraitClause0]
+    proof ImpliedClause2: ((&'_7 u8,): Sized) = {built_in impl Sized for (&'_7 u8,)}
+    proof ImpliedClause3: ((&'_7 u8,): Tuple) = {built_in impl Tuple for (&'_7 u8,)}
+    fn call_mut<'_0_1> = impl_FnMut_tuple_for_closure::call_mut<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_0_1, T>[TraitClause0]
     vtable: lazy
 }
 
-// Full name: test_crate::foo::{closure}::{impl Fn<(&'_9 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]}
-impl<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, '_9, T> "impl_Fn_tuple_for_closure" Fn<(&'_9 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]
+// Full name: test_crate::foo::{closure}::{impl Fn<(&'_7 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]}
+impl<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, T> "impl_Fn_tuple_for_closure" Fn<(&'_7 u8,)> for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
 {
-    proof ImpliedClause0: (test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]}
-    proof ImpliedClause1: (test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, T>[TraitClause0]: FnMut<(&'_9 u8,)>) = impl_FnMut_tuple_for_closure<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, '_9, T>[TraitClause0]
-    proof ImpliedClause2: ((&'_9 u8,): Sized) = {built_in impl Sized for (&'_9 u8,)}
-    proof ImpliedClause3: ((&'_9 u8,): Tuple) = {built_in impl Tuple for (&'_9 u8,)}
-    fn call<'_0_1> = impl_Fn_tuple_for_closure::call<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, '_9, '_0_1, T>[TraitClause0]
-    vtable: impl_Fn_tuple_for_closure::{vtable}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_8, '_9, T>[TraitClause0]
+    proof ImpliedClause0: (test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]}
+    proof ImpliedClause1: (test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]: FnMut<(&'_7 u8,)>) = impl_FnMut_tuple_for_closure<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, T>[TraitClause0]
+    proof ImpliedClause2: ((&'_7 u8,): Sized) = {built_in impl Sized for (&'_7 u8,)}
+    proof ImpliedClause3: ((&'_7 u8,): Tuple) = {built_in impl Tuple for (&'_7 u8,)}
+    fn call<'_0_1> = impl_Fn_tuple_for_closure::call<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '_0_1, T>[TraitClause0]
+    vtable: impl_Fn_tuple_for_closure::{vtable}<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, T>[TraitClause0]
 }
 
 // Full name: test_crate::foo::{closure}::{promoted_const}
-fn {promoted_const}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>() -> &'_ test_crate::foo::{closure}::{closure}<'_, '_, '_, '_, '_, '_, '_, '_, '_, T>[TraitClause0]
+fn {promoted_const}<'a, '_1, '_2, '_3, '_4, '_5, T>() -> &'_ test_crate::foo::{closure}::{closure}<'_, '_, '_, '_, '_, '_, '_, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
 {
-    let mut _0: &'0 test_crate::foo::{closure}::{closure}<'1, '2, '3, '4, '5, '6, '7, '8, '9, T>[TraitClause0]; // return
-    let mut _1: test_crate::foo::{closure}::{closure}<'10, '11, '12, '13, '14, '15, '16, '17, '18, T>[TraitClause0]; // anonymous local
+    let mut _0: &'0 test_crate::foo::{closure}::{closure}<'1, '2, '3, '4, '5, '6, '7, T>[TraitClause0]; // return
+    let mut _1: test_crate::foo::{closure}::{closure}<'8, '9, '10, '11, '12, '13, '14, T>[TraitClause0]; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -273,39 +269,38 @@ where
 }
 
 // Full name: test_crate::foo::{closure}::{promoted_const}
-const {promoted_const}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>: &'_ test_crate::foo::{closure}::{closure}<'_, '_, '_, '_, '_, '_, '_, '_, '_, T>[TraitClause0]
+const {promoted_const}<'a, '_1, '_2, '_3, '_4, '_5, T>: &'_ test_crate::foo::{closure}::{closure}<'_, '_, '_, '_, '_, '_, '_, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
- = {promoted_const}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]()
+ = {promoted_const}<'a, '_1, '_2, '_3, '_4, '_5, T>[TraitClause0]()
 
-// Full name: test_crate::foo::{impl Fn<()> for test_crate::foo::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]}::call
-extern "rust-call" fn impl_Fn_unit_for_closure::call<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, T>(_1: &'_7 test_crate::foo::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0], tupled_args: ()) -> (&'_2 T, &'_3 (dyn for<'b> Fn<(&'b u8,), ImpliedClause1::ImpliedClause1::Output = (&'b u8, Option<&'_4 T>[{built_in impl Sized for &'_4 T}])> + '_5))
+// Full name: test_crate::foo::{impl Fn<()> for test_crate::foo::{closure}<'a, '_1, '_2, '_3, '_4, '_5, T>[TraitClause0]}::call
+extern "rust-call" fn impl_Fn_unit_for_closure::call<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>(_1: &'_6 test_crate::foo::{closure}<'a, '_1, '_2, '_3, '_4, '_5, T>[TraitClause0], tupled_args: ()) -> (&'_1 T, &'_2 (dyn for<'b> Fn<(&'b u8,), ImpliedClause1::ImpliedClause1::Output = (&'b u8, Option<&'_3 T>[{built_in impl Sized for &'_3 T}])> + '_4))
 where
     TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
-    Outlives1: (T: '_6),
-    Outlives2: ('a: '_7),
-    Outlives3: ('_1: '_7),
-    Outlives4: ('_2: '_7),
-    Outlives5: ('_3: '_7),
-    Outlives6: ('_4: '_7),
-    Outlives7: ('_5: '_7),
-    Outlives8: ('_6: '_7),
-    Outlives9: (T: '_7),
-    Outlives10: (T: '_2),
-    Outlives11: ('_5: '_3),
-    Outlives12: ('_4: '_3),
-    Outlives13: (T: '_4),
+    Outlives1: (T: '_5),
+    Outlives2: ('a: '_6),
+    Outlives3: ('_1: '_6),
+    Outlives4: ('_2: '_6),
+    Outlives5: ('_3: '_6),
+    Outlives6: ('_4: '_6),
+    Outlives7: ('_5: '_6),
+    Outlives8: (T: '_6),
+    Outlives9: (T: '_1),
+    Outlives10: ('_4: '_2),
+    Outlives11: ('_3: '_2),
+    Outlives12: (T: '_3),
 {
     let mut _0: (&'49 T, &'50 (dyn for<'b> Fn<(&'b u8,), ImpliedClause1::ImpliedClause1::Output = (&'b u8, Option<&'56 T>[{built_in impl Sized for &'56 T}])> + '51)); // return
-    let mut _1: &'171 test_crate::foo::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]; // arg #1
+    let mut _1: &'171 test_crate::foo::{closure}<'a, '_1, '_2, '_3, '_4, '_5, T>[TraitClause0]; // arg #1
     let mut tupled_args: (); // arg #2
     let mut _3: &'172 T; // anonymous local
     let mut _4: &'173 (dyn for<'b> Fn<(&'b u8,), ImpliedClause1::ImpliedClause1::Output = (&'b u8, Option<&'179 T>[{built_in impl Sized for &'179 T}])> + '174); // anonymous local
-    let mut _5: &'223 test_crate::foo::{closure}::{closure}<'224, '225, '226, '227, '228, '229, '230, '231, '232, T>[TraitClause0]; // anonymous local
-    let _6: &'233 test_crate::foo::{closure}::{closure}<'234, '235, '236, '237, '238, '239, '240, '241, '242, T>[TraitClause0]; // anonymous local
-    let mut _7: &'252 test_crate::foo::{closure}::{closure}<'253, '254, '255, '256, '257, '258, '259, '260, '261, T>[TraitClause0]; // anonymous local
+    let mut _5: &'220 test_crate::foo::{closure}::{closure}<'221, '222, '223, '224, '225, '226, '227, T>[TraitClause0]; // anonymous local
+    let _6: &'228 test_crate::foo::{closure}::{closure}<'229, '230, '231, '232, '233, '234, '235, T>[TraitClause0]; // anonymous local
+    let mut _7: &'243 test_crate::foo::{closure}::{closure}<'244, '245, '246, '247, '248, '249, '250, T>[TraitClause0]; // anonymous local
 
     storage_live(_0)
     storage_live(_7)
@@ -314,10 +309,10 @@ where
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _7 = const {promoted_const}<'266, '292, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]
+    _7 = const {promoted_const}<'255, '_1, '_2, '_3, '_4, '_5, T>[TraitClause0]
     _6 = &(*_7)
     _5 = &(*_6)
-    _4 = unsize_cast<&'321 (dyn for<'b> Fn<(&'b u8,), ImpliedClause1::ImpliedClause1::Output = (&'b u8, Option<&'327 T>[{built_in impl Sized for &'330 T}])> + '322), &impl_Fn_tuple_for_closure::{vtable}<'453, '454, '455, '456, '457, '458, '459, '481, '482, '483, T>[TraitClause0]>(move _5)
+    _4 = unsize_cast<&'304 (dyn for<'b> Fn<(&'b u8,), ImpliedClause1::ImpliedClause1::Output = (&'b u8, Option<&'310 T>[{built_in impl Sized for &'313 T}])> + '305), &impl_Fn_tuple_for_closure::{vtable}<'429, '430, '431, '432, '433, '434, '457, '458, T>[TraitClause0]>(move _5)
     storage_dead(_5)
     _0 = (move _3, move _4)
     storage_dead(_6)

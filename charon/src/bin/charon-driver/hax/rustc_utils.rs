@@ -388,10 +388,13 @@ pub fn identity_args_with_inferred<'tcx>(
                 .type_of(def_id)
                 .instantiate_identity()
                 .skip_normalization();
-            match *type_of.kind() {
+            let args = match *type_of.kind() {
                 ty::Closure(_, args) | ty::Coroutine(_, args) => args,
                 _ => unreachable!(),
-            }
+            };
+            // `type_of` erases too much; use the parent args as a base.
+            let parent = tcx.generics_of(def_id).parent.unwrap();
+            args.rebase_onto(tcx, parent, ty::GenericArgs::identity_for_item(tcx, parent))
         }
         RDefKind::AnonConst
             if tcx.anon_const_kind(def_id) == ty::AnonConstKind::NonTypeSystemInline =>

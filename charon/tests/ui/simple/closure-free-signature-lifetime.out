@@ -29,38 +29,37 @@ trait Accept<'a, Self>
 }
 
 // Full name: test_crate::make::{closure}
-struct {closure}<'a, '_1, '_2, T>
+struct {closure}<'a, '_1, T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Accept<'a>),
 {}
 
 // Full name: test_crate::make
-fn make<'a, T>() -> {closure}<'a, 'a, 'a, T>[TraitClause0, TraitClause1]
+fn make<'a, T>() -> {closure}<'a, 'a, T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Accept<'a>),
 {
-    let mut _0: {closure}<'9, '10, '11, T>[TraitClause0, TraitClause1]; // return
+    let mut _0: {closure}<'9, '10, T>[TraitClause0, TraitClause1]; // return
 
     storage_live(_0)
     _0 = {closure} {  }
     return
 }
 
-// Full name: test_crate::make::{impl Fn<(&'_2 u8,)> for {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]}::call
-extern "rust-call" fn call<'a, '_1, '_2, '_3, T>(_1: &'_3 {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1], tupled_args: (&'_2 u8,))
+// Full name: test_crate::make::{impl Fn<(&'_1 u8,)> for {closure}<'a, '_1, T>[TraitClause0, TraitClause1]}::call
+extern "rust-call" fn call<'a, '_1, '_2, T>(_1: &'_2 {closure}<'a, '_1, T>[TraitClause0, TraitClause1], tupled_args: (&'_1 u8,))
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Accept<'a>),
-    Outlives0: ('a: '_3),
-    Outlives1: ('_1: '_3),
-    Outlives2: ('_2: '_3),
-    Outlives3: (T: '_3),
+    Outlives0: ('a: '_2),
+    Outlives1: ('_1: '_2),
+    Outlives2: (T: '_2),
 {
     let mut _0: (); // return
-    let mut _1: &'11 {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1
-    let mut tupled_args: (&'_2 u8,); // arg #2
+    let mut _1: &'11 {closure}<'a, '_1, T>[TraitClause0, TraitClause1]; // arg #1
+    let mut tupled_args: (&'_1 u8,); // arg #2
     let x: &'14 u8; // local
     let mut _4: &'15 u8; // anonymous local
 
