@@ -286,6 +286,7 @@ impl<'tcx> ItemRef<'tcx> {
     /// Also returns
     /// 1. the suffix of the arguments that was cut off, if any, and
     /// 2. the corresponding suffix of this item's unerased + instantiated identity args.
+    ///
     /// These two are almost always the same, except for typeck children: these have some erased
     /// regions in their indentity args, which we will want to unify with the actual provided args
     /// in order to recover their values. The unerased identity args contain placeholder regions at

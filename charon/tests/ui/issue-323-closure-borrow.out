@@ -28,8 +28,8 @@ fn new<'_0>(rng: &'_0 mut Rng)
 {
     let mut _0: (); // return
     let rng: &'1 mut Rng; // arg #1
-    let mut _2: {closure}<'5>; // anonymous local
-    let mut _3: &'6 mut Rng; // anonymous local
+    let mut _2: {closure}<'3>; // anonymous local
+    let mut _3: &'4 mut Rng; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -50,17 +50,17 @@ where
     Outlives0: ('_0: '_1),
 {
     let mut _0: (); // return
-    let mut _1: &'5 mut {closure}<'_0>; // arg #1
+    let mut _1: &'2 mut {closure}<'_0>; // arg #1
     let mut tupled_args: (); // arg #2
     let _3: (); // anonymous local
-    let mut _4: &'6 mut Rng; // anonymous local
+    let mut _4: &'4 mut Rng; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &two-phase-mut (*(*_1)._0)
-    _3 = next_u64<'11>(move _4)
+    _3 = next_u64<'9>(move _4)
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)
         unwind_continue

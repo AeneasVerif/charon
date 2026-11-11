@@ -13,7 +13,7 @@ where
     Outlives0: ('_0: '_1),
 {
     let mut _0: (); // return
-    let mut _1: &'5 mut {closure}<'_0>; // arg #1
+    let mut _1: &'2 mut {closure}<'_0>; // arg #1
     let mut tupled_args: (); // arg #2
     let mut _3: i32; // anonymous local
 
@@ -35,9 +35,9 @@ fn foo()
     let mut _0: (); // return
     let mut x: i32; // local
     let rx: &'1 mut i32; // local
-    let mut closure: {closure}<'5>; // local
+    let mut closure: {closure}<'3>; // local
     let _4: (); // anonymous local
-    let mut _5: &'8 mut {closure}<'9>; // anonymous local
+    let mut _5: &'6 mut {closure}<'7>; // anonymous local
     let mut _6: (); // anonymous local
 
     storage_live(_0)
@@ -56,7 +56,7 @@ fn foo()
     _5 = &mut closure
     storage_live(_6)
     _6 = ()
-    _4 = call_mut<'19, '29>(move _5, move _6)
+    _4 = call_mut<'12, '18>(move _5, move _6)
     ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_5)

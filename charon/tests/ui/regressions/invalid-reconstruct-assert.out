@@ -565,15 +565,15 @@ where
     Outlives0: ('_0: '_1),
 {
     let mut _0: Ordering; // return
-    let mut _1: &'6 mut {closure}<'_0>; // arg #1
+    let mut _1: &'2 mut {closure}<'_0>; // arg #1
     let mut tupled_args: (&'_0 u32,); // arg #2
-    let x: &'8 u32; // local
-    let mut _4: &'9 u32; // anonymous local
-    let mut _5: &'10 u32; // anonymous local
-    let _6: &'11 u32; // anonymous local
-    let mut _7: &'12 u32; // anonymous local
-    let mut _8: &'13 u32; // anonymous local
-    let mut _9: &'22 u32; // anonymous local
+    let x: &'4 u32; // local
+    let mut _4: &'5 u32; // anonymous local
+    let mut _5: &'6 u32; // anonymous local
+    let _6: &'7 u32; // anonymous local
+    let mut _7: &'8 u32; // anonymous local
+    let mut _8: &'9 u32; // anonymous local
+    let mut _9: &'18 u32; // anonymous local
     let mut _10: u32; // anonymous local
 
     bb0: {
@@ -594,7 +594,7 @@ where
         _7 = move _8;
         _6 = &(*_7);
         _5 = &(*_6);
-        _0 = cmp<'20, '21>(move _4, move _5) -> bb1 (unwind: bb2);
+        _0 = cmp<'16, '17>(move _4, move _5) -> bb1 (unwind: bb2);
     }
 
     bb1: {
@@ -628,14 +628,14 @@ extern "rust-call" fn call_once<'_0>(_1: {closure}<'_0>, _2: (&'_0 u32,)) -> Ord
 {
     let mut _0: Ordering; // return
     let mut _1: {closure}<'_0>; // arg #1
-    let _2: (&'7 u32,); // arg #2
-    let _3: &'9 mut {closure}<'_0>; // anonymous local
+    let _2: (&'3 u32,); // arg #2
+    let _3: &'5 mut {closure}<'_0>; // anonymous local
 
     bb0: {
         storage_live(_0);
         storage_live(_3);
         _3 = &mut _1;
-        _0 = call_mut<'_0, '32>(move _3, move _2) -> bb1 (unwind: bb2);
+        _0 = call_mut<'_0, '18>(move _3, move _2) -> bb1 (unwind: bb2);
     }
 
     bb1: {
@@ -689,7 +689,7 @@ fn main()
     let res: Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]; // local
     let mut _6: &'7 [u32]; // anonymous local
     let mut _7: &'8 [u32; 5usize]; // anonymous local
-    let mut _8: {closure}<'14>; // anonymous local
+    let mut _8: {closure}<'10>; // anonymous local
 
     bb0: {
         storage_live(_0);
@@ -702,7 +702,7 @@ fn main()
         storage_live(_4);
         _4 = &a;
         _3 = &(*_4);
-        b = unsize_cast<&'15 [u32], 5usize>(move _3);
+        b = unsize_cast<&'11 [u32], 5usize>(move _3);
         storage_dead(_3);
         fake_read(b);
         storage_dead(_4);
@@ -710,11 +710,11 @@ fn main()
         storage_live(_6);
         storage_live(_7);
         _7 = &a;
-        _6 = unsize_cast<&'16 [u32], 5usize>(move _7);
+        _6 = unsize_cast<&'12 [u32], 5usize>(move _7);
         storage_dead(_7);
         storage_live(_8);
         _8 = {closure} {  };
-        res = binary_search_by<'61, u32, {closure}<'61>>[{built_in impl Sized for u32}, {built_in impl Sized for {closure}<'61>}, impl_FnMut_tuple_for_closure<'61>, {built_in impl Destruct for {closure}<'61>}](move _6, move _8) -> bb1 (unwind: bb2);
+        res = binary_search_by<'31, u32, {closure}<'31>>[{built_in impl Sized for u32}, {built_in impl Sized for {closure}<'31>}, impl_FnMut_tuple_for_closure<'31>, {built_in impl Destruct for {closure}<'31>}](move _6, move _8) -> bb1 (unwind: bb2);
     }
 
     bb1: {
