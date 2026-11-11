@@ -700,24 +700,28 @@ impl DefId {
     /// Gets the attributes of the definition.
     pub fn attrs<'tcx>(&self, tcx: ty::TyCtxt<'tcx>) -> &'tcx [rustc_hir::Attribute] {
         use DefKind::*;
-        match self.kind {
-            // These kinds cause `get_attrs` to panic.
-            ConstParam | LifetimeParam | TyParam | ForeignMod => &[],
-            _ => {
-                if let Some(def_id) = self.as_real_def_id() {
-                    if let Some(ldid) = def_id.as_local() {
-                        tcx.hir_attrs(tcx.local_def_id_to_hir_id(ldid))
-                    } else if matches!(self.kind, AnonConst) {
-                        // Rustc doesn't store the attributes of anonymous constants in crate
-                        // metadata; asking for them panics.
-                        &[]
-                    } else {
-                        tcx.attrs_for_def(def_id)
-                    }
-                } else {
-                    &[]
-                }
-            }
+        let Some(def_id) = self.as_real_def_id() else {
+            return &[];
+        };
+        if let Some(ldid) = def_id.as_local() {
+            tcx.hir_attrs(tcx.local_def_id_to_hir_id(ldid))
+        } else if matches!(
+            self.kind,
+            TyParam
+                | LifetimeParam
+                | ForeignMod
+                | ExternCrate
+                | AnonConst
+                | OpaqueTy
+                | Static { nested: true, .. }
+                | GlobalAsm
+                | TestBinderConstraints
+        ) {
+            // Rustc doesn't store the attributes of these kinds of definitions in crate
+            // metadata; asking for them panics.
+            &[]
+        } else {
+            tcx.attrs_for_def(def_id)
         }
     }
 }
