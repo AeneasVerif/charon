@@ -1,6 +1,7 @@
-//@ revisions=poly,mono
 //@ known-failure
-//@ charon-args=--mir built
+//@ revisions=poly,mono
+//@ no-default-options
+//@ charon-args=--mir built --raw-consts
 //@[mono] charon-args=--monomorphize
 #![feature(closure_lifetime_binder)]
 
@@ -40,4 +41,31 @@ pub fn enclosing_closure() -> u32 {
         g()
     };
     f(&42)
+}
+
+// Mix an early-bound region with two different signature binders. Inheriting 'late must not
+// shift the index of 'inner, and the innermost closure must resolve all three regions.
+pub fn mixed_regions<'early, 'late, T: 'early>(x: &'early T, y: &'late T) {
+    let f = for<'inner> |z: &'inner T| -> &'inner T {
+        let g = || {
+            let early: &'early T = x;
+            let late: &'late T = y;
+            let inner: &'inner T = z;
+            (early, late, inner)
+        };
+        g();
+        z
+    };
+    f(x);
+}
+
+// Inline constants inherit the same enclosing signature regions as closures.
+pub fn inline_const<'a>(_x: &'a u32) -> Option<&'a u32> {
+    const { None::<&'a u32> }
+}
+
+// Instantiate the generic case in mono mode as well.
+pub fn exercise_mixed_regions() {
+    mixed_regions(&0u32, &1u32);
+    let _ = inline_const(&0);
 }
