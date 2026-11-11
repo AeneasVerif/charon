@@ -1,0 +1,477 @@
+# Final ULLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for i32}::clone
+pub fn impl_Clone_for_i32::clone<'_0>(_1: &'_0 i32) -> i32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for i32}
+impl "impl_Clone_for_i32" Clone for i32 {
+    proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
+    fn clone<'_0_1> = impl_Clone_for_i32::clone<'_0_1>
+    non-dyn-compatible
+}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::intrinsics::add_with_overflow
+#[rustc_intrinsic]
+pub fn add_with_overflow<T>(x_1: T, y_2: T) -> (T, bool)
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
+= <intrinsic:add_with_overflow>
+
+// Full name: core::intrinsics::sub_with_overflow
+#[rustc_intrinsic]
+pub fn sub_with_overflow<T>(x_1: T, y_2: T) -> (T, bool)
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
+= <intrinsic:sub_with_overflow>
+
+// Full name: core::intrinsics::mul_with_overflow
+#[rustc_intrinsic]
+pub fn mul_with_overflow<T>(x_1: T, y_2: T) -> (T, bool)
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
+= <intrinsic:mul_with_overflow>
+
+// Full name: core::marker::{impl Copy for i32}
+impl "impl_Copy_for_i32" Copy for i32 {
+    proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
+    proof ImpliedClause1: (i32: Clone) = impl_Clone_for_i32
+    non-dyn-compatible
+}
+
+// Full name: test_crate::bounds_check
+fn bounds_check(a: [u8; 3usize], i: usize) -> u8
+{
+    let mut _0: u8; // return
+    let a: [u8; 3usize]; // arg #1
+    let i: usize; // arg #2
+    let _3: usize; // anonymous local
+    let mut _4: bool; // anonymous local
+
+    bb0: {
+        storage_live(_0);
+        storage_live(_4);
+        storage_live(_3);
+        _3 = copy i;
+        _4 = copy _3 < const 3usize;
+        assert assert(move _4 == true) (bounds_check) -> bb1 (unwind: bb2);
+    }
+
+    bb1: {
+        _0 = copy a[copy _3];
+        storage_dead(_3);
+        return;
+    }
+
+    bb2 (cleanup): {
+        unwind_continue;
+    }
+}
+
+// Full name: test_crate::add
+fn add(x: i32, y: i32) -> i32
+{
+    let mut _0: i32; // return
+    let x: i32; // arg #1
+    let y: i32; // arg #2
+    let mut _3: i32; // anonymous local
+    let mut _4: i32; // anonymous local
+    let mut _5: (i32, bool); // anonymous local
+
+    bb0: {
+        storage_live(_0);
+        storage_live(_5);
+        storage_live(_3);
+        _3 = copy x;
+        storage_live(_4);
+        _4 = copy y;
+        _5 = add_with_overflow<i32>[{built_in impl Sized for i32}, impl_Copy_for_i32](copy _3, copy _4) -> bb1 (unwind: bb4);
+    }
+
+    bb1: {
+        assert assert(move _5._1 == false) (overflow) -> bb2 (unwind: bb3);
+    }
+
+    bb2: {
+        _0 = move _5._0;
+        storage_dead(_4);
+        storage_dead(_3);
+        return;
+    }
+
+    bb3 (cleanup): {
+        unwind_continue;
+    }
+
+    bb4 (cleanup): {
+        undefined_behavior;
+    }
+}
+
+// Full name: test_crate::sub
+fn sub(x: i32, y: i32) -> i32
+{
+    let mut _0: i32; // return
+    let x: i32; // arg #1
+    let y: i32; // arg #2
+    let mut _3: i32; // anonymous local
+    let mut _4: i32; // anonymous local
+    let mut _5: (i32, bool); // anonymous local
+
+    bb0: {
+        storage_live(_0);
+        storage_live(_5);
+        storage_live(_3);
+        _3 = copy x;
+        storage_live(_4);
+        _4 = copy y;
+        _5 = sub_with_overflow<i32>[{built_in impl Sized for i32}, impl_Copy_for_i32](copy _3, copy _4) -> bb1 (unwind: bb4);
+    }
+
+    bb1: {
+        assert assert(move _5._1 == false) (overflow) -> bb2 (unwind: bb3);
+    }
+
+    bb2: {
+        _0 = move _5._0;
+        storage_dead(_4);
+        storage_dead(_3);
+        return;
+    }
+
+    bb3 (cleanup): {
+        unwind_continue;
+    }
+
+    bb4 (cleanup): {
+        undefined_behavior;
+    }
+}
+
+// Full name: test_crate::mul
+fn mul(x: i32, y: i32) -> i32
+{
+    let mut _0: i32; // return
+    let x: i32; // arg #1
+    let y: i32; // arg #2
+    let mut _3: i32; // anonymous local
+    let mut _4: i32; // anonymous local
+    let mut _5: (i32, bool); // anonymous local
+
+    bb0: {
+        storage_live(_0);
+        storage_live(_5);
+        storage_live(_3);
+        _3 = copy x;
+        storage_live(_4);
+        _4 = copy y;
+        _5 = mul_with_overflow<i32>[{built_in impl Sized for i32}, impl_Copy_for_i32](copy _3, copy _4) -> bb1 (unwind: bb4);
+    }
+
+    bb1: {
+        assert assert(move _5._1 == false) (overflow) -> bb2 (unwind: bb3);
+    }
+
+    bb2: {
+        _0 = move _5._0;
+        storage_dead(_4);
+        storage_dead(_3);
+        return;
+    }
+
+    bb3 (cleanup): {
+        unwind_continue;
+    }
+
+    bb4 (cleanup): {
+        undefined_behavior;
+    }
+}
+
+// Full name: test_crate::div
+fn div(x: i32, y: i32) -> i32
+{
+    let mut _0: i32; // return
+    let x: i32; // arg #1
+    let y: i32; // arg #2
+    let mut _3: i32; // anonymous local
+    let mut _4: i32; // anonymous local
+    let mut _5: bool; // anonymous local
+    let mut _6: bool; // anonymous local
+    let mut _7: bool; // anonymous local
+    let mut _8: bool; // anonymous local
+
+    bb0: {
+        storage_live(_0);
+        storage_live(_5);
+        storage_live(_6);
+        storage_live(_7);
+        storage_live(_8);
+        storage_live(_3);
+        _3 = copy x;
+        storage_live(_4);
+        _4 = copy y;
+        _5 = copy _4 == const 0i32;
+        assert assert(move _5 == false) (division_by_zero) -> bb1 (unwind: bb4);
+    }
+
+    bb1: {
+        _6 = copy _4 == const -1i32;
+        _7 = copy _3 == const -2147483648i32;
+        _8 = move _6 & move _7;
+        assert assert(move _8 == false) (overflow) -> bb2 (unwind: bb3);
+    }
+
+    bb2: {
+        _0 = move _3 ub./ move _4;
+        storage_dead(_4);
+        storage_dead(_3);
+        return;
+    }
+
+    bb3 (cleanup): {
+        unwind_continue;
+    }
+
+    bb4 (cleanup): {
+        unwind_continue;
+    }
+}
+
+// Full name: test_crate::rem
+fn rem(x: i32, y: i32) -> i32
+{
+    let mut _0: i32; // return
+    let x: i32; // arg #1
+    let y: i32; // arg #2
+    let mut _3: i32; // anonymous local
+    let mut _4: i32; // anonymous local
+    let mut _5: bool; // anonymous local
+    let mut _6: bool; // anonymous local
+    let mut _7: bool; // anonymous local
+    let mut _8: bool; // anonymous local
+
+    bb0: {
+        storage_live(_0);
+        storage_live(_5);
+        storage_live(_6);
+        storage_live(_7);
+        storage_live(_8);
+        storage_live(_3);
+        _3 = copy x;
+        storage_live(_4);
+        _4 = copy y;
+        _5 = copy _4 == const 0i32;
+        assert assert(move _5 == false) (remainder_by_zero) -> bb1 (unwind: bb4);
+    }
+
+    bb1: {
+        _6 = copy _4 == const -1i32;
+        _7 = copy _3 == const -2147483648i32;
+        _8 = move _6 & move _7;
+        assert assert(move _8 == false) (overflow) -> bb2 (unwind: bb3);
+    }
+
+    bb2: {
+        _0 = move _3 ub.% move _4;
+        storage_dead(_4);
+        storage_dead(_3);
+        return;
+    }
+
+    bb3 (cleanup): {
+        unwind_continue;
+    }
+
+    bb4 (cleanup): {
+        unwind_continue;
+    }
+}
+
+// Full name: test_crate::shl
+fn shl(x: i32, y: u32) -> i32
+{
+    let mut _0: i32; // return
+    let x: i32; // arg #1
+    let y: u32; // arg #2
+    let mut _3: i32; // anonymous local
+    let mut _4: u32; // anonymous local
+    let mut _5: bool; // anonymous local
+
+    bb0: {
+        storage_live(_0);
+        storage_live(_5);
+        storage_live(_3);
+        _3 = copy x;
+        storage_live(_4);
+        _4 = copy y;
+        _5 = copy _4 < const 32u32;
+        assert assert(move _5 == true) (overflow) -> bb1 (unwind: bb2);
+    }
+
+    bb1: {
+        _0 = move _3 wrap.<< move _4;
+        storage_dead(_4);
+        storage_dead(_3);
+        return;
+    }
+
+    bb2 (cleanup): {
+        unwind_continue;
+    }
+}
+
+// Full name: test_crate::shr
+fn shr(x: i32, y: u32) -> i32
+{
+    let mut _0: i32; // return
+    let x: i32; // arg #1
+    let y: u32; // arg #2
+    let mut _3: i32; // anonymous local
+    let mut _4: u32; // anonymous local
+    let mut _5: bool; // anonymous local
+
+    bb0: {
+        storage_live(_0);
+        storage_live(_5);
+        storage_live(_3);
+        _3 = copy x;
+        storage_live(_4);
+        _4 = copy y;
+        _5 = copy _4 < const 32u32;
+        assert assert(move _5 == true) (overflow) -> bb1 (unwind: bb2);
+    }
+
+    bb1: {
+        _0 = move _3 wrap.>> move _4;
+        storage_dead(_4);
+        storage_dead(_3);
+        return;
+    }
+
+    bb2 (cleanup): {
+        unwind_continue;
+    }
+}
+
+// Full name: test_crate::neg
+fn neg(x: i32) -> i32
+{
+    let mut _0: i32; // return
+    let x: i32; // arg #1
+    let mut _2: i32; // anonymous local
+    let mut _3: bool; // anonymous local
+
+    bb0: {
+        storage_live(_0);
+        storage_live(_3);
+        storage_live(_2);
+        _2 = copy x;
+        _3 = copy _2 == const -2147483648i32;
+        assert assert(move _3 == false) (overflow_neg) -> bb1 (unwind: bb2);
+    }
+
+    bb1: {
+        _0 = wrap.-(move _2);
+        storage_dead(_2);
+        return;
+    }
+
+    bb2 (cleanup): {
+        unwind_continue;
+    }
+}
+
+// Full name: test_crate::E
+enum E {
+  A,
+}
+
+// Full name: test_crate::transmute
+fn transmute(x: u8) -> E
+{
+    let mut _0: E; // return
+    let x: u8; // arg #1
+    let mut _2: u8; // anonymous local
+    let mut _3: u8; // anonymous local
+    let mut _4: u8; // anonymous local
+    let mut _5: u128; // anonymous local
+    let mut _6: u128; // anonymous local
+
+    bb0: {
+        storage_live(_0);
+        storage_live(_3);
+        storage_live(_4);
+        storage_live(_5);
+        storage_live(_6);
+        storage_live(_2);
+        _2 = copy x;
+        _3 = transmute<u8>(copy _2);
+        _4 = cast<u8>(copy _3);
+        _5 = cast<u128>(copy _4);
+        _6 = copy _5 & const 255u128;
+        switch copy _6 -> 1u128: bb2, otherwise: bb1;
+    }
+
+    bb1: {
+        assert assert(const false == true) (invalid_enum_construction) -> bb2 (unwind: bb3);
+    }
+
+    bb2: {
+        _0 = transmute<E>(move _2);
+        storage_dead(_2);
+        return;
+    }
+
+    bb3 (cleanup): {
+        undefined_behavior;
+    }
+}
+
+
+
