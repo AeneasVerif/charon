@@ -17,6 +17,7 @@ pub mod add_missing_info {
     pub mod compute_layout_guarantees;
     pub mod compute_short_names;
     pub mod detect_drop_flags;
+    pub mod infer_higher_ranked_args;
     pub mod link_specs;
     pub mod recover_body_comments;
     pub mod reorder_decls;
@@ -116,6 +117,8 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         global(&finish_translation::filter_invisible_trait_impls::Transform),
         // Move clauses on associated types to be implied clauses of the trait.
         global(&simplify_output::lift_associated_item_clauses::Transform),
+        // Infer some erased higher-ranked clause arguments.
+        global(&add_missing_info::infer_higher_ranked_args::Transform),
         // Type aliases may use associated types without declaring the corresponding trait
         // such missing trait clauses.
         global(&add_missing_info::add_missing_alias_clauses::Transform),
