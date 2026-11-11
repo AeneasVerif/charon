@@ -1,0 +1,11 @@
+# Final LLBC before serialization:
+
+// Full name: core::mem::alignment::Alignment
+pub opaque type Alignment
+
+// Full name: alloc::alloc::__rust_alloc
+extern unsafe fn __rust_alloc(_1: usize, _2: Alignment) -> *mut u8
+= <extern:_RNvCs<hash>_7___rustc12___rust_alloc>
+
+
+

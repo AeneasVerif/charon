@@ -1,0 +1,118 @@
+# Final LLBC before serialization:
+
+// Full name: core::intrinsics::abort
+#[rustc_intrinsic]
+pub fn abort() -> !
+= <intrinsic:abort>
+
+// Full name: core::mem::alignment::Alignment
+pub opaque type Alignment
+
+// Full name: core::panic::location::Location
+#[lang_item(PanicLocation)]
+pub opaque type Location<'a>
+
+// Full name: core::panic::location::{Location<'a>}::caller
+#[track_caller]
+pub fn caller<'a>() -> &'static Location<'static>
+= <opaque>
+
+// Full name: core::panic::panic_info::PanicInfo
+#[lang_item(PanicInfo)]
+pub opaque type PanicInfo<'a>
+where
+    Outlives0: ('a: 'a),
+
+// Full name: core::panic::panic_info::{PanicInfo<'a>}::new
+fn new<'a>(_1: &'a Arguments<'a>, _2: &'static Location<'static>, _3: bool, _4: bool) -> PanicInfo<'a>
+= <opaque>
+
+struct () {}
+
+// Full name: core::panicking::panic_fmt::panic_impl
+#[lang_item(PanicImpl)]
+extern unsafe fn panic_impl<'_0, '_1>(_1: &'_0 PanicInfo<'_1>) -> !
+where
+    Outlives0: ('_1: '_0),
+= <extern:_RNvCs<hash>_7___rustc17rust_begin_unwind>
+
+// Full name: core::panicking::panic_fmt
+#[track_caller]
+#[lang_item(PanicFmt)]
+pub fn panic_fmt<'_0>(fmt: Arguments<'_0>) -> !
+{
+    let mut _0: !; // return
+    let fmt: Arguments<'1>; // arg #1
+    let mut _2: bool; // anonymous local
+    let mut _3: !; // anonymous local
+    let pi: PanicInfo<'3>; // local
+    let mut _5: &'6 Arguments<'7>; // anonymous local
+    let _6: &'8 Arguments<'9>; // anonymous local
+    let mut _7: &'13 Location<'14>; // anonymous local
+    let mut _8: &'17 PanicInfo<'18>; // anonymous local
+    let _9: &'19 PanicInfo<'20>; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = const false
+    if move _2 {
+    } else {
+        storage_dead(_2)
+        storage_live(pi)
+        storage_live(_5)
+        storage_live(_6)
+        _6 = &fmt
+        _5 = &(*_6) with_metadata(read _6.metadata)
+        storage_live(_7)
+        _7 = caller<'23>()
+        ↳⚡ storage_dead(_9)
+            storage_dead(_8)
+            storage_dead(pi)
+            storage_dead(_3)
+            storage_dead(fmt)
+            unwind_continue
+        pi = new<'26>(move _5, move _7, const true, const false)
+        ↳⚡ storage_dead(_9)
+            storage_dead(_8)
+            storage_dead(pi)
+            storage_dead(_3)
+            storage_dead(fmt)
+            unwind_continue
+        storage_dead(_7)
+        storage_dead(_5)
+        storage_dead(_6)
+        storage_live(_8)
+        storage_live(_9)
+        _9 = &pi
+        _8 = &(*_9)
+        _0 = panic_impl<'35, '36>(move _8)
+        ↳⚡ storage_dead(_9)
+            storage_dead(_8)
+            storage_dead(pi)
+            storage_dead(_3)
+            storage_dead(fmt)
+            unwind_continue
+    }
+    storage_live(_3)
+    _3 = abort()
+    ↳⚡ undefined_behavior
+}
+
+// Full name: alloc::alloc::__rust_alloc
+extern unsafe fn __rust_alloc(_1: usize, _2: Alignment) -> *mut u8
+= <extern:_RNvCs<hash>_7___rustc12___rust_alloc>
+
+// Full name: test_crate::sys::local_hook
+pub extern unsafe fn local_hook(_1: u32) -> u32
+= <extern:local_hook>
+
+// Full name: test_crate::sys::dep_hook
+pub extern unsafe fn dep_hook() -> u8
+= <extern:dep_hook>
+
+// Full name: test_crate::sys::weak_hook
+pub extern unsafe extern "C" fn weak_hook() -> u8
+= <extern:weak_hook>
+
+
+
