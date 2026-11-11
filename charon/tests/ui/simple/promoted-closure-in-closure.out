@@ -105,8 +105,8 @@ where
     TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
 {
-    let mut _0: test_crate::foo::{closure}<'108, '109, '110, '111, '112, '113, T>[TraitClause0]; // return
-    let x: &'114 T; // arg #1
+    let mut _0: test_crate::foo::{closure}<'106, '107, '108, '109, '110, '111, T>[TraitClause0]; // return
+    let x: &'112 T; // arg #1
 
     storage_live(_0)
     _0 = test_crate::foo::{closure} { _0: copy x }
@@ -142,11 +142,11 @@ where
     Outlives9: (T: '_6),
 {
     let mut _0: (&'20 u8, Option<&'21 T>[{built_in impl Sized for &'21 T}]); // return
-    let mut _1: &'58 test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]; // arg #1
+    let mut _1: &'56 test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]; // arg #1
     let mut tupled_args: (&'_7 u8,); // arg #2
-    let y: &'59 u8; // local
-    let mut _4: &'60 u8; // anonymous local
-    let mut _5: Option<&'61 T>[{built_in impl Sized for &'61 T}]; // anonymous local
+    let y: &'57 u8; // local
+    let mut _4: &'58 u8; // anonymous local
+    let mut _5: Option<&'59 T>[{built_in impl Sized for &'59 T}]; // anonymous local
 
     storage_live(_0)
     storage_live(y)
@@ -198,13 +198,13 @@ where
 {
     let mut _0: (&'20 u8, Option<&'21 T>[{built_in impl Sized for &'21 T}]); // return
     let mut _1: test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]; // arg #1
-    let _2: (&'58 u8,); // arg #2
-    let _3: &'60 mut test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]; // anonymous local
+    let _2: (&'56 u8,); // arg #2
+    let _3: &'58 mut test_crate::foo::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = impl_FnMut_tuple_for_closure::call_mut<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '155, T>[TraitClause0](move _3, move _2)
+    _0 = impl_FnMut_tuple_for_closure::call_mut<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, '145, T>[TraitClause0](move _3, move _2)
     ↳⚡ unwind_continue
     return
 }
@@ -294,13 +294,13 @@ where
     Outlives12: (T: '_3),
 {
     let mut _0: (&'49 T, &'50 (dyn for<'b> Fn<(&'b u8,), ImpliedClause1::ImpliedClause1::Output = (&'b u8, Option<&'56 T>[{built_in impl Sized for &'56 T}])> + '51)); // return
-    let mut _1: &'171 test_crate::foo::{closure}<'a, '_1, '_2, '_3, '_4, '_5, T>[TraitClause0]; // arg #1
+    let mut _1: &'169 test_crate::foo::{closure}<'a, '_1, '_2, '_3, '_4, '_5, T>[TraitClause0]; // arg #1
     let mut tupled_args: (); // arg #2
-    let mut _3: &'172 T; // anonymous local
-    let mut _4: &'173 (dyn for<'b> Fn<(&'b u8,), ImpliedClause1::ImpliedClause1::Output = (&'b u8, Option<&'179 T>[{built_in impl Sized for &'179 T}])> + '174); // anonymous local
-    let mut _5: &'220 test_crate::foo::{closure}::{closure}<'221, '222, '223, '224, '225, '226, '227, T>[TraitClause0]; // anonymous local
-    let _6: &'228 test_crate::foo::{closure}::{closure}<'229, '230, '231, '232, '233, '234, '235, T>[TraitClause0]; // anonymous local
-    let mut _7: &'243 test_crate::foo::{closure}::{closure}<'244, '245, '246, '247, '248, '249, '250, T>[TraitClause0]; // anonymous local
+    let mut _3: &'170 T; // anonymous local
+    let mut _4: &'171 (dyn for<'b> Fn<(&'b u8,), ImpliedClause1::ImpliedClause1::Output = (&'b u8, Option<&'177 T>[{built_in impl Sized for &'177 T}])> + '172); // anonymous local
+    let mut _5: &'216 test_crate::foo::{closure}::{closure}<'217, '218, '219, '220, '221, '222, '223, T>[TraitClause0]; // anonymous local
+    let _6: &'224 test_crate::foo::{closure}::{closure}<'225, '226, '227, '228, '229, '230, '231, T>[TraitClause0]; // anonymous local
+    let mut _7: &'239 test_crate::foo::{closure}::{closure}<'240, '241, '242, '243, '244, '245, '246, T>[TraitClause0]; // anonymous local
 
     storage_live(_0)
     storage_live(_7)
@@ -309,10 +309,10 @@ where
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _7 = const {promoted_const}<'255, '_1, '_2, '_3, '_4, '_5, T>[TraitClause0]
+    _7 = const {promoted_const}<'251, '_1, '_2, '_3, '_4, '_5, T>[TraitClause0]
     _6 = &(*_7)
     _5 = &(*_6)
-    _4 = unsize_cast<&'304 (dyn for<'b> Fn<(&'b u8,), ImpliedClause1::ImpliedClause1::Output = (&'b u8, Option<&'310 T>[{built_in impl Sized for &'313 T}])> + '305), &impl_Fn_tuple_for_closure::{vtable}<'429, '430, '431, '432, '433, '434, '457, '458, T>[TraitClause0]>(move _5)
+    _4 = unsize_cast<&'298 (dyn for<'b> Fn<(&'b u8,), ImpliedClause1::ImpliedClause1::Output = (&'b u8, Option<&'304 T>[{built_in impl Sized for &'307 T}])> + '299), &impl_Fn_tuple_for_closure::{vtable}<'417, '418, '419, '420, '421, '422, '443, '444, T>[TraitClause0]>(move _5)
     storage_dead(_5)
     _0 = (move _3, move _4)
     storage_dead(_6)

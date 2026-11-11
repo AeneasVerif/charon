@@ -521,19 +521,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             regions.extend((0..extra_regions_count).map(|_| self.translate_erased_region()));
             return Ok(regions);
         }
-        let actual = self.translate_raw_generic_args(span, &item.generic_args)?;
+        let (_, actual, template) = item.soft_typing_parent(self.hax_state_with_id());
+        let actual: Vec<hax::GenericArg<'tcx>> = self.catch_sinto(span, &actual)?;
+        let actual = self.translate_raw_generic_args(span, &actual)?;
 
-        // We start from the original full args (with placeholder lifetimes), and
-        // instantiate+normalize them. This is crucial because the def may contain an associated
-        // type which has gotten normalized in `item`. Thankfully (I sure damn hope) going from
-        // erased to unerased lifetims can't make more normalization available, so this should
-        // guarantee that the types match structurally.
-        let template = hax::substitute(
-            self.tcx,
-            self.hax_state.typing_env(),
-            Some(item.rustc_args(self.hax_state())),
-            def.this().rustc_args(self.hax_state()),
-        );
+        // See `soft_typing_parent` for details: `template` and `actual` should be the same
+        // arguments, except that `template` has placeholder regions corresponding to the items
+        // `extra_early_regions`, and actual has actual regions in the same locations. We zip the
+        // two to infer a mapping.
         let template: Vec<hax::GenericArg<'tcx>> = self.catch_sinto(span, &template)?;
 
         // Translate the template arguments, with free regions instead of the placeholder ones.

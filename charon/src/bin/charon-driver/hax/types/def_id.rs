@@ -602,6 +602,21 @@ impl DefId {
         }
     }
 
+    /// The identity arguments, with any erased lifetimes replaced with placeholders regions.
+    pub fn identity_args_with_extra_regions<'tcx>(
+        &self,
+        s: &impl UnderOwnerState<'tcx>,
+    ) -> (ty::GenericArgsRef<'tcx>, Vec<ty::PlaceholderRegion<'tcx>>) {
+        let args = self.identity_args(s);
+        // Only typeck children have erased regions in their identity args.
+        if self.is_typeck_child(s) {
+            let name = rustc_span::Symbol::intern(&format!("__unerased_region_{self:?}"));
+            unerase_lifetimes(s, args, name)
+        } else {
+            (args, Vec::new())
+        }
+    }
+
     pub fn param_env<'tcx>(&self, s: &impl BaseState<'tcx>) -> ty::ParamEnv<'tcx> {
         let tcx = s.base().tcx;
         match self.base {

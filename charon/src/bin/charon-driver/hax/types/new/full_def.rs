@@ -50,14 +50,9 @@ where
     let this = if def_id.can_have_generics(s) {
         // Construct the args for this item, unerasing lifetimes found erased (see
         // `ParamEnv.extra_early_regions`).
-        let args_or_default = {
-            let mut identity_args = def_id.identity_args(s);
-            if def_id.is_typeck_child(s) {
-                let name = rustc_span::Symbol::intern(&format!("__unerased_region_{def_id:?}"));
-                (identity_args, extra_early_regions) = unerase_lifetimes(s, identity_args, name);
-            }
-            substitute(tcx, s.typing_env(), args, identity_args)
-        };
+        let (identity_args, regions) = def_id.identity_args_with_extra_regions(s);
+        extra_early_regions = regions;
+        let args_or_default = substitute(tcx, s.typing_env(), args, identity_args);
         ItemRef::translate_from_hax_def_id(s, def_id.clone(), args_or_default)
     } else {
         ItemRef::dummy_without_generics(s, def_id.clone())
@@ -151,7 +146,8 @@ where
             } else {
                 ParamEnv::empty(s, None)
             };
-            param_env.soft_parent = this.soft_typing_parent(s);
+            let (soft_parent, _, _) = this.soft_typing_parent(s);
+            param_env.soft_parent = soft_parent;
             if def_id.is_typeck_child(s) {
                 // Record the value of the inference-only type vars.
                 let identity_args = this.rustc_args(s);
