@@ -11,7 +11,7 @@ use std::{
 use super::translate_crate::RustcItem;
 use super::translate_ctx::*;
 use crate::hax;
-use crate::hax::{DefPathItem, SInto};
+use crate::hax::{BaseState, DefPathItem, SInto};
 use charon_lib::{ast::*, name_matcher::NamePattern};
 
 // Spans
@@ -391,8 +391,12 @@ impl<'tcx> TranslateCtx<'tcx> {
 
         let is_builtin = def_id.as_synthetic(&self.hax_state).is_some();
         let parent_name = if !is_builtin && let Some(parent_id) = def_id.parent(&self.hax_state) {
+            // FIXME: We have lost the real context in which `item_ref` was defined; it may have
+            // trait proofs that refer to it, or conversely `def_id` may have clauses that shadow
+            // some impls. So it's incorrect to use `def_id` as owner here.
             if let RustcItem::Mono(item_ref) = item
-                && let Some(parent_item) = item_ref.typing_parent(&self.hax_state)
+                && let Some(parent_item) =
+                    item_ref.typing_parent(&self.hax_state.with_hax_owner(def_id))
             {
                 self.name_for_item(&RustcItem::Mono(parent_item))?
             } else {

@@ -257,7 +257,7 @@ impl<'tcx> ItemRef<'tcx> {
     }
 
     /// The parent of this item if the item inherits the typing context from its parent (e.g. closures and methods).
-    pub fn typing_parent<S: BaseState<'tcx>>(&self, s: &S) -> Option<ItemRef<'tcx>> {
+    pub fn typing_parent<S: UnderOwnerState<'tcx>>(&self, s: &S) -> Option<ItemRef<'tcx>> {
         match self.def_id.kind {
             DefKind::AssocTy
             | DefKind::AssocFn
@@ -268,7 +268,6 @@ impl<'tcx> ItemRef<'tcx> {
                 let tcx = s.base().tcx;
                 let parent = self.def_id.generics_of(s).parent?.sinto(s);
                 let parent_args = self.rustc_args(s).truncate_to(tcx, parent.generics_of(s));
-                let s = &s.with_hax_owner(&self.def_id);
                 Some(ItemRef::translate_from_hax_def_id(s, parent, parent_args))
             }
             DefKind::Ctor(..) | DefKind::Variant => {
