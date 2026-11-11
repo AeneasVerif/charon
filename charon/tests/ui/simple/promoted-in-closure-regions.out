@@ -32,8 +32,8 @@ struct {closure}<'_0, '_1, '_2> {
 // Full name: test_crate::foo
 pub fn foo<'a>(x: &'a u8) -> {closure}<'a, 'static, 'a>
 {
-    let mut _0: {closure}<'33, '34, '35>; // return
-    let x: &'36 u8; // arg #1
+    let mut _0: {closure}<'25, '26, '27>; // return
+    let x: &'28 u8; // arg #1
 
     storage_live(_0)
     _0 = {closure} { _0: copy x }
@@ -64,12 +64,12 @@ where
     Outlives2: ('_2: '_3),
 {
     let mut _0: (&'9 u8, &'10 u8); // return
-    let mut _1: &'47 {closure}<'_0, '_1, '_2>; // arg #1
+    let mut _1: &'39 {closure}<'_0, '_1, '_2>; // arg #1
     let mut tupled_args: (); // arg #2
-    let mut _3: &'48 u8; // anonymous local
-    let mut _4: &'49 u8; // anonymous local
-    let _5: &'50 u8; // anonymous local
-    let mut _6: &'51 u8; // anonymous local
+    let mut _3: &'40 u8; // anonymous local
+    let mut _4: &'41 u8; // anonymous local
+    let _5: &'42 u8; // anonymous local
+    let mut _6: &'43 u8; // anonymous local
 
     storage_live(_0)
     storage_live(_6)

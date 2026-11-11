@@ -44,7 +44,7 @@ pub fn foo<'a>() -> Option<&'a u8>[{built_in impl Sized for &'a u8}]
     let mut _0: Option<&'8 u8>[{built_in impl Sized for &'8 u8}]; // return
 
     storage_live(_0)
-    _0 = const {const}<'16, '29>
+    _0 = const {const}<'16, '23>
     return
 }
 

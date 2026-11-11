@@ -302,16 +302,16 @@ where
 fn call_fn()
 {
     let mut _0: (); // return
-    let mut _1: Option<&'44 bool>[{built_in impl Sized for &'44 bool}]; // anonymous local
-    let mut _2: Option<&'48 bool>[{built_in impl Sized for &'48 bool}]; // anonymous local
+    let mut _1: Option<&'30 bool>[{built_in impl Sized for &'30 bool}]; // anonymous local
+    let mut _2: Option<&'34 bool>[{built_in impl Sized for &'34 bool}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
-    set '35: '35
+    set '21: '21
     storage_live(_1)
     storage_live(_2)
     _2 = Option::None {  }
-    _1 = external_use_item<'35, &'35 bool, Option<&'35 bool>[{built_in impl Sized for &'35 bool}], &'35 bool>[{built_in impl Sized for &'35 bool}, {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}<'35, bool>[{built_in impl Sized for bool}], impl_Foo_for_Option<'35, &'35 bool>[{built_in impl Sized for &'35 bool}, {impl Copy for &'_0 T}<'35, bool>]](move _2)
+    _1 = external_use_item<'21, &'21 bool, Option<&'21 bool>[{built_in impl Sized for &'21 bool}], &'21 bool>[{built_in impl Sized for &'21 bool}, {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}<'21, bool>[{built_in impl Sized for bool}], impl_Foo_for_Option<'21, &'21 bool>[{built_in impl Sized for &'21 bool}, {impl Copy for &'_0 T}<'21, bool>]](move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)

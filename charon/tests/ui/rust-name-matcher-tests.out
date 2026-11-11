@@ -249,10 +249,10 @@ fn use_generic()
 {
     let mut _0: (); // return
     let _int_generic: Generic<i32>[{built_in impl Sized for i32}]; // local
-    let _str_generic: Generic<&'15 str>[{built_in impl Sized for &'15 str}]; // local
-    let mut _3: &'20 i32; // anonymous local
-    let mut _4: &'22 Generic<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let mut _5: &'43 str; // anonymous local
+    let _str_generic: Generic<&'9 str>[{built_in impl Sized for &'9 str}]; // local
+    let mut _3: &'14 i32; // anonymous local
+    let mut _4: &'16 Generic<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let mut _5: &'37 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -263,13 +263,13 @@ fn use_generic()
     storage_live(_str_generic)
     storage_live(_5)
     _5 = &test_crate::use_generic::{promoted_const} with_metadata(const 5usize)
-    _str_generic = new<&'6 str>[{built_in impl Sized for &'6 str}](move _5)
+    _str_generic = new<&'0 str>[{built_in impl Sized for &'0 str}](move _5)
     ↳⚡ unwind_continue
     fake_read(_str_generic)
     storage_live(_3)
     storage_live(_4)
     _4 = &_int_generic
-    _3 = test_crate::{Generic<T>[TraitClause0]}::get<'47, i32>[{built_in impl Sized for i32}](move _4)
+    _3 = test_crate::{Generic<T>[TraitClause0]}::get<'41, i32>[{built_in impl Sized for i32}](move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)

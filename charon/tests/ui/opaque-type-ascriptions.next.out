@@ -38,12 +38,12 @@ where
 // Full name: test_crate::destructure
 pub fn destructure<'a>(x_1: &'a u32) -> &'a u32
 {
-    let mut _0: &'7 u32; // return
-    let x_1: &'8 u32; // arg #1
+    let mut _0: &'1 u32; // return
+    let x_1: &'2 u32; // arg #1
     let x_2: &'a u32; // local
-    let mut _3: (&'16 u32, u32); // anonymous local
+    let mut _3: (&'10 u32, u32); // anonymous local
         where _3 :< (&'a u32, u32);
-    let mut _4: &'20 u32; // anonymous local
+    let mut _4: &'14 u32; // anonymous local
 
     storage_live(_0)
     storage_live(_3)

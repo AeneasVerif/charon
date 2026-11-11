@@ -524,13 +524,10 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             }
             Ok(ImplSource::Builtin(_, _)) => {
                 // Resolve the predicates implied by the trait.
-                // If we wanted to not skip this binder, we'd have to instantiate the bound
-                // regions, solve, then wrap the result in a binder. And track higher-kinded
-                // clauses better all over.
                 let trait_proofs = self.resolve_item_implied_predicates(
                     state,
                     Id::from_rust_def_id(state, trait_def_id),
-                    erased_tref.skip_binder().args,
+                    erase_binder(tcx, tref).args,
                 );
                 let types = tcx
                     .associated_items(trait_def_id)

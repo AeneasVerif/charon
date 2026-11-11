@@ -498,7 +498,7 @@ pub fn set_type_self<'_0>(self: Foo<'_0>)
 pub fn explicit_lifetimes<'a>(value: (&'static u32, &'a u32, &'a u32))
 {
     let mut _0: (); // return
-    let value: (&'40 u32, &'41 u32, &'42 u32); // arg #1
+    let value: (&'16 u32, &'17 u32, &'18 u32); // arg #1
     let x: (&'static u32, &'a u32, &'a u32); // local
         where x := (&'static u32, &'a u32, &'a u32);
 

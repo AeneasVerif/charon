@@ -61,7 +61,7 @@ fn fixed_lifetime<'a>()
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = require<fn(&'a ())>[{built_in impl Sized for fn(&'a ())}, {impl Trait for fn(T)}<&'16 ()>[{built_in impl Sized for &'16 ()}]]()
+    _1 = require<fn(&'a ())>[{built_in impl Sized for fn(&'a ())}, {impl Trait for fn(T)}<&'8 ()>[{built_in impl Sized for &'8 ()}]]()
     ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()

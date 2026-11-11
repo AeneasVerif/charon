@@ -68,6 +68,21 @@ where
         .unwrap_or(fallback)
 }
 
+/// Just like `tcx.instantiate_bound_regions_with_erased`, but works under binders.
+pub fn erase_binder<'tcx, T>(tcx: TyCtxt<'tcx>, value: Binder<'tcx, T>) -> T
+where
+    T: TypeFoldable<TyCtxt<'tcx>>,
+{
+    fold_regions(tcx, value.skip_binder(), |r, depth| match r.kind() {
+        ReBound(BoundVarIndexKind::Bound(db), _) if db == depth => tcx.lifetimes.re_erased,
+        ReBound(BoundVarIndexKind::Bound(db), br) => {
+            // `fold_regions` skips regions bound inside the value.
+            Region::new_bound(tcx, db.shifted_out(1), br)
+        }
+        _ => r,
+    })
+}
+
 /// Erase free regions from the given value. Largely copied from `tcx.erase_and_anonymize_regions`, but also
 /// erases bound regions that are bound outside `value`, so we can call this function inside a
 /// `Binder`.

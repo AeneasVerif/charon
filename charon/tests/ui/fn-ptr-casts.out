@@ -74,28 +74,28 @@ where
 // Full name: test_crate::from_fn_def
 fn from_fn_def<'a>(x: &'a u8) -> &'a u8
 {
-    let mut _0: &'8 u8; // return
-    let x: &'9 u8; // arg #1
+    let mut _0: &'2 u8; // return
+    let x: &'3 u8; // arg #1
     let f: fn<'b>(&'b u8) -> &'b u8; // local
         where f := fn<'b>(&'b u8) -> &'b u8;
     let g: unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8; // local
         where g := unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8;
-    let _4: &'10 u8; // anonymous local
-    let mut _5: unsafe fn<'b>(&'13 u8, &'b u8) -> &'b u8; // anonymous local
-    let mut _6: &'14 u8; // anonymous local
-    let mut _7: &'15 u8; // anonymous local
-    let _8: &'16 u8; // anonymous local
+    let _4: &'4 u8; // anonymous local
+    let mut _5: unsafe fn<'b>(&'7 u8, &'b u8) -> &'b u8; // anonymous local
+    let mut _6: &'8 u8; // anonymous local
+    let mut _7: &'9 u8; // anonymous local
+    let _8: &'10 u8; // anonymous local
     let mut _9: fn<'b>(&'b u8) -> &'b u8; // anonymous local
-    let mut _10: &'17 u8; // anonymous local
-    let mut _11: fn<'b>(&'46 u8, &'b u8) -> &'b u8; // anonymous local
+    let mut _10: &'11 u8; // anonymous local
+    let mut _11: fn<'b>(&'40 u8, &'b u8) -> &'b u8; // anonymous local
 
     storage_live(_0)
     storage_live(f)
-    f = fn_def_to_fn_ptr(const identity<'20>)
+    f = fn_def_to_fn_ptr(const identity<'14>)
     fake_read(f)
     storage_live(g)
     storage_live(_11)
-    _11 = fn_def_to_fn_ptr(const with_early_and_late<'a, '43>[{built_in impl Sized for &'a u8}])
+    _11 = fn_def_to_fn_ptr(const with_early_and_late<'a, '37>[{built_in impl Sized for &'a u8}])
     g = fn_ptr_to_unsafe(move _11)
     fake_read(g)
     storage_live(_4)
@@ -109,14 +109,14 @@ fn from_fn_def<'a>(x: &'a u8) -> &'a u8
     _9 = copy f
     storage_live(_10)
     _10 = &(*x)
-    _8 = (move _9)<'71>(move _10)
+    _8 = (move _9)<'65>(move _10)
     ↳⚡ storage_dead(_11)
         storage_dead(x)
         unwind_continue
     _7 = &(*_8)
     storage_dead(_10)
     storage_dead(_9)
-    _4 = (move _5)<'72>(move _6, move _7)
+    _4 = (move _5)<'66>(move _6, move _7)
     ↳⚡ storage_dead(_11)
         storage_dead(x)
         unwind_continue
@@ -174,10 +174,10 @@ where
     Outlives0: ('_0: '_2),
 {
     let mut _0: &'1 u8; // return
-    let mut _1: &'28 {closure}<'_0>; // arg #1
+    let mut _1: &'20 {closure}<'_0>; // arg #1
     let mut tupled_args: (&'_0 u8, &'_1 u8); // arg #2
-    let mut _3: &'29 u8; // anonymous local
-    let y: &'30 u8; // local
+    let mut _3: &'21 u8; // anonymous local
+    let y: &'22 u8; // local
 
     storage_live(_0)
     storage_live(_3)
@@ -200,12 +200,12 @@ where
     let mut _0: &'_1 u8; // return
     let mut state: &'_2 mut {closure}<'_0>; // arg #1
     let mut args: (&'_0 u8, &'_1 u8); // arg #2
-    let mut _3: &'2 {closure}<'_0>; // anonymous local
+    let mut _3: &'0 {closure}<'_0>; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &(*state)
-    _0 = call<'_0, '_1, '4>(move _3, move args)
+    _0 = call<'_0, '_1, '2>(move _3, move args)
     ↳⚡ storage_dead(_3)
         storage_dead(args)
         storage_dead(state)
@@ -221,13 +221,13 @@ extern "rust-call" fn call_once<'_0, '_1>(_1: {closure}<'_0>, _2: (&'_0 u8, &'_1
 {
     let mut _0: &'1 u8; // return
     let mut _1: {closure}<'_0>; // arg #1
-    let _2: (&'35 u8, &'36 u8); // arg #2
-    let _3: &'41 mut {closure}<'_0>; // anonymous local
+    let _2: (&'27 u8, &'28 u8); // arg #2
+    let _3: &'33 mut {closure}<'_0>; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = call_mut<'_0, '_1, '154>(move _3, move _2)
+    _0 = call_mut<'_0, '_1, '114>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -272,19 +272,19 @@ fn from_closure<'a>(x: &'a u8) -> &'a u8
     let x: &'2 u8; // arg #1
     let f: unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8; // local
         where f := unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8;
-    let mut _3: {closure}<'28>; // anonymous local
-    let _4: &'29 u8; // anonymous local
-    let mut _5: unsafe fn<'b>(&'32 u8, &'b u8) -> &'b u8; // anonymous local
-    let mut _6: &'33 u8; // anonymous local
-    let mut _7: &'34 u8; // anonymous local
-    let mut _8: fn<'_0_1>(&'66 u8, &'_0_1 u8) -> &'_0_1 u8; // anonymous local
+    let mut _3: {closure}<'20>; // anonymous local
+    let _4: &'21 u8; // anonymous local
+    let mut _5: unsafe fn<'b>(&'24 u8, &'b u8) -> &'b u8; // anonymous local
+    let mut _6: &'25 u8; // anonymous local
+    let mut _7: &'26 u8; // anonymous local
+    let mut _8: fn<'_0_1>(&'42 u8, &'_0_1 u8) -> &'_0_1 u8; // anonymous local
 
     storage_live(_0)
     storage_live(f)
     storage_live(_3)
     _3 = {closure} {  }
     storage_live(_8)
-    _8 = fn_def_to_fn_ptr(const {as_fn}<'61, '63>)
+    _8 = fn_def_to_fn_ptr(const {as_fn}<'37, '39>)
     f = fn_ptr_to_unsafe(move _8)
     storage_dead(_3)
     fake_read(f)
@@ -295,7 +295,7 @@ fn from_closure<'a>(x: &'a u8) -> &'a u8
     _6 = copy x
     storage_live(_7)
     _7 = &(*x)
-    _4 = (move _5)<'91>(move _6, move _7)
+    _4 = (move _5)<'67>(move _6, move _7)
     ↳⚡ storage_dead(_8)
         storage_dead(x)
         unwind_continue

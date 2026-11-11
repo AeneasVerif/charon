@@ -249,12 +249,12 @@ extern "rust-call" fn call_mut<'_0, '_1>(state: &'_1 mut {closure}, args: (Optio
     let mut _0: *const u32; // return
     let mut state: &'_1 mut {closure}; // arg #1
     let mut args: (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],); // arg #2
-    let mut _3: &'2 {closure}; // anonymous local
+    let mut _3: &'0 {closure}; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &(*state)
-    _0 = call<'_0, '4>(move _3, move args)
+    _0 = call<'_0, '2>(move _3, move args)
     ↳⚡ storage_dead(_3)
         storage_dead(args)
         storage_dead(state)
@@ -321,7 +321,7 @@ where
 
     storage_live(_0)
     storage_live(_1)
-    _1 = fn_def_to_fn_ptr(const {as_fn}<'11>)
+    _1 = fn_def_to_fn_ptr(const {as_fn}<'1>)
     _0 = std::thread::local::{LocalKey<T>[TraitClause0]}::new<u32>[{built_in impl Sized for u32}](move _1)
     ↳⚡ unwind_continue
     return

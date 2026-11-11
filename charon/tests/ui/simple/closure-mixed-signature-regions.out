@@ -106,7 +106,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Provide<'a>),
 {
-    let mut _0: {closure}<'25, '26, '27, T>[TraitClause0, TraitClause1]; // return
+    let mut _0: {closure}<'9, '10, '11, T>[TraitClause0, TraitClause1]; // return
 
     storage_live(_0)
     _0 = {closure} {  }
@@ -124,12 +124,12 @@ where
     Outlives3: (T: '_4),
 {
     let mut _0: (&'9 u8, &'10 u8); // return
-    let mut _1: &'41 {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1
+    let mut _1: &'25 {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1
     let mut tupled_args: (&'_3 u8,); // arg #2
-    let x: &'43 u8; // local
-    let mut _4: &'44 u8; // anonymous local
-    let mut _5: &'45 u8; // anonymous local
-    let _6: &'46 u8; // anonymous local
+    let x: &'27 u8; // local
+    let mut _4: &'28 u8; // anonymous local
+    let mut _5: &'29 u8; // anonymous local
+    let _6: &'30 u8; // anonymous local
 
     storage_live(_0)
     storage_live(x)
@@ -167,12 +167,12 @@ where
     let mut _0: (&'_3 u8, &'_2 u8); // return
     let mut state: &'_4 mut {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1
     let mut args: (&'_3 u8,); // arg #2
-    let mut _3: &'2 {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // anonymous local
+    let mut _3: &'0 {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &(*state)
-    _0 = impl_Fn_tuple_for_closure::call<'a, '_1, '_2, '_3, '4, T>[TraitClause0, TraitClause1](move _3, move args)
+    _0 = impl_Fn_tuple_for_closure::call<'a, '_1, '_2, '_3, '2, T>[TraitClause0, TraitClause1](move _3, move args)
     ↳⚡ storage_dead(_3)
         storage_dead(args)
         storage_dead(state)
@@ -191,13 +191,13 @@ where
 {
     let mut _0: (&'9 u8, &'10 u8); // return
     let mut _1: {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1
-    let _2: (&'41 u8,); // arg #2
-    let _3: &'44 mut {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // anonymous local
+    let _2: (&'25 u8,); // arg #2
+    let _3: &'28 mut {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = call_mut<'a, '_1, '_2, '_3, '142, T>[TraitClause0, TraitClause1](move _3, move _2)
+    _0 = call_mut<'a, '_1, '_2, '_3, '74, T>[TraitClause0, TraitClause1](move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -299,8 +299,8 @@ where
 {
     let mut _0: (&'9 u8, &'10 u8); // return
     let x: &'14 u8; // arg #1
-    let mut _2: {closure}<'40, '41, '42, T>[TraitClause0, TraitClause1]; // anonymous local
-    let mut _3: &'44 u8; // anonymous local
+    let mut _2: {closure}<'24, '25, '26, T>[TraitClause0, TraitClause1]; // anonymous local
+    let mut _3: &'28 u8; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -309,7 +309,7 @@ where
         unwind_continue
     storage_live(_3)
     _3 = &(*x)
-    _0 = apply<'215, '406, {closure}<'219, '219, '218, T>[TraitClause0, TraitClause1]>[{built_in impl Sized for {closure}<'219, '219, '218, T>[TraitClause0, TraitClause1]}, for<'c> impl_Fn_tuple_for_closure<'219, '219, '218, '235, T>[TraitClause0, TraitClause1]](move _2, move _3)
+    _0 = apply<'109, '210, {closure}<'113, '113, '112, T>[TraitClause0, TraitClause1]>[{built_in impl Sized for {closure}<'113, '113, '112, T>[TraitClause0, TraitClause1]}, for<'c> impl_Fn_tuple_for_closure<'113, '113, '112, '129, T>[TraitClause0, TraitClause1]](move _2, move _3)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_3)

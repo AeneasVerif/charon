@@ -2081,7 +2081,7 @@ where
     Outlives1: ('_1: '_2),
 {
     let mut _0: u32; // return
-    let mut _1: &'23 test_crate::test_closure_capture::{closure}<'_0, '_1>; // arg #1
+    let mut _1: &'17 test_crate::test_closure_capture::{closure}<'_0, '_1>; // arg #1
     let mut tupled_args: (u32,); // arg #2
     let z: u32; // local
     let mut _4: u32; // anonymous local
@@ -2125,11 +2125,11 @@ pub fn test_closure_capture(x: u32, y: u32) -> u32
     let mut _0: u32; // return
     let x: u32; // arg #1
     let y: u32; // arg #2
-    let f: &'25 test_crate::test_closure_capture::{closure}<'26, '27>; // local
-    let _4: test_crate::test_closure_capture::{closure}<'28, '29>; // anonymous local
-    let mut _5: &'30 u32; // anonymous local
-    let mut _6: &'31 u32; // anonymous local
-    let mut _7: &'32 test_crate::test_closure_capture::{closure}<'33, '34>; // anonymous local
+    let f: &'19 test_crate::test_closure_capture::{closure}<'20, '21>; // local
+    let _4: test_crate::test_closure_capture::{closure}<'22, '23>; // anonymous local
+    let mut _5: &'24 u32; // anonymous local
+    let mut _6: &'25 u32; // anonymous local
+    let mut _7: &'26 test_crate::test_closure_capture::{closure}<'27, '28>; // anonymous local
     let mut _8: (u32,); // anonymous local
 
     storage_live(_0)
@@ -2148,7 +2148,7 @@ pub fn test_closure_capture(x: u32, y: u32) -> u32
     _7 = &(*f)
     storage_live(_8)
     _8 = (const 0u32,)
-    _0 = {impl Fn<(u32,), u32> for test_crate::test_closure_capture::{closure}<'_0, '_1>}::call<'87, '88, '129>(move _7, move _8)
+    _0 = {impl Fn<(u32,), u32> for test_crate::test_closure_capture::{closure}<'_0, '_1>}::call<'63, '64, '93>(move _7, move _8)
     ↳⚡ storage_dead(y)
         storage_dead(x)
         unwind_continue

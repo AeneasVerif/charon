@@ -1123,22 +1123,22 @@ fn array_identity<'a>(x: [&'a u8; 3usize]) -> [&'a u8; 3usize]
 // Full name: test_crate::test_const_under_binder
 pub fn test_const_under_binder<'a>(x: [&'a u8; 3usize]) -> [&'a u8; 3usize]
 {
-    let mut _0: [&'32 u8; 3usize]; // return
-    let x: [&'36 u8; 3usize]; // arg #1
+    let mut _0: [&'8 u8; 3usize]; // return
+    let x: [&'12 u8; 3usize]; // arg #1
     let f: fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize]; // local
         where f := fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize];
     let mut _3: fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize]; // anonymous local
-    let mut _4: [&'52 u8; 3usize]; // anonymous local
+    let mut _4: [&'16 u8; 3usize]; // anonymous local
 
     storage_live(_0)
     storage_live(f)
-    f = fn_def_to_fn_ptr(const array_identity<'62>)
+    f = fn_def_to_fn_ptr(const array_identity<'22>)
     fake_read(f)
     storage_live(_3)
     _3 = copy f
     storage_live(_4)
     _4 = copy x
-    _0 = generic_call_once<fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize], [&'412 u8; 3usize], [&'416 u8; 3usize]>[{built_in impl Sized for fn<'_0_2>([&'_0_2 u8; 3usize]) -> [&'_0_2 u8; 3usize]}, {built_in impl Sized for [&'412 u8; 3usize]}, {built_in impl Sized for [&'416 u8; 3usize]}, {impl FnOnce<([&'_0 A; C2],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3]}<'412, u8, u8, 3usize, 3usize>[for<'_0_2> {built_in impl Sized for [&'_0_2 u8; 3usize]}, for<'_0_2> {built_in impl Sized for [&'_0_2 u8; 3usize]}]](move _3, move _4)
+    _0 = generic_call_once<fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize], [&'200 u8; 3usize], [&'204 u8; 3usize]>[{built_in impl Sized for fn<'_0_2>([&'_0_2 u8; 3usize]) -> [&'_0_2 u8; 3usize]}, {built_in impl Sized for [&'200 u8; 3usize]}, {built_in impl Sized for [&'204 u8; 3usize]}, {impl FnOnce<([&'_0 A; C2],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3]}<'200, u8, u8, 3usize, 3usize>[for<'_0_2> {built_in impl Sized for [&'_0_2 u8; 3usize]}, for<'_0_2> {built_in impl Sized for [&'_0_2 u8; 3usize]}]](move _3, move _4)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_4)
@@ -1226,18 +1226,18 @@ pub fn test_fn_def_regions<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'b u8, &'a u8)
 // Full name: test_crate::test_fn_ptr_regions
 pub fn test_fn_ptr_regions<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'b u8, &'a u8)
 {
-    let mut _0: (&'25 u8, &'26 u8); // return
-    let x: &'30 u8; // arg #1
-    let y: &'31 u8; // arg #2
+    let mut _0: (&'9 u8, &'10 u8); // return
+    let x: &'14 u8; // arg #1
+    let y: &'15 u8; // arg #2
     let f: fn<'c, 'd>(&'c u8, &'d u8) -> (&'d u8, &'c u8); // local
         where f := fn<'c, 'd>(&'c u8, &'d u8) -> (&'d u8, &'c u8);
     let mut _4: fn<'c, 'd>(&'c u8, &'d u8) -> (&'d u8, &'c u8); // anonymous local
-    let mut _5: &'40 u8; // anonymous local
-    let mut _6: &'41 u8; // anonymous local
+    let mut _5: &'16 u8; // anonymous local
+    let mut _6: &'17 u8; // anonymous local
 
     storage_live(_0)
     storage_live(f)
-    f = fn_def_to_fn_ptr(const swap<'48, '49>)
+    f = fn_def_to_fn_ptr(const swap<'22, '23>)
     fake_read(f)
     storage_live(_4)
     _4 = copy f
@@ -1245,7 +1245,7 @@ pub fn test_fn_ptr_regions<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'b u8, &'a u8)
     _5 = &(*x)
     storage_live(_6)
     _6 = &(*y)
-    _0 = generic_call_once2<fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_1_1 u8, &'_0_1 u8), &'290 u8, &'291 u8, (&'292 u8, &'293 u8)>[{built_in impl Sized for fn<'_0_2, '_1_2>(&'_0_2 u8, &'_1_2 u8) -> (&'_1_2 u8, &'_0_2 u8)}, {built_in impl Sized for &'290 u8}, {built_in impl Sized for &'291 u8}, {built_in impl Sized for (&'292 u8, &'293 u8)}, {impl FnOnce<(&'_0 A, &'_1 B)> for fn<'_0_1, '_1_1 where A: '_0_1, B: '_1_1, C: '_1_1, D: '_0_1>(&'_0_1 A, &'_1_1 B) -> (&'_1_1 C, &'_0_1 D)}<'290, '291, u8, u8, u8, u8>[for<'_0_2, '_1_2> {built_in impl Sized for &'_0_2 u8}, for<'_0_2, '_1_2> {built_in impl Sized for &'_1_2 u8}, for<'_0_2, '_1_2> {built_in impl Sized for (&'_1_2 u8, &'_0_2 u8)}]](move _4, move _5, move _6)
+    _0 = generic_call_once2<fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_1_1 u8, &'_0_1 u8), &'152 u8, &'153 u8, (&'154 u8, &'155 u8)>[{built_in impl Sized for fn<'_0_2, '_1_2>(&'_0_2 u8, &'_1_2 u8) -> (&'_1_2 u8, &'_0_2 u8)}, {built_in impl Sized for &'152 u8}, {built_in impl Sized for &'153 u8}, {built_in impl Sized for (&'154 u8, &'155 u8)}, {impl FnOnce<(&'_0 A, &'_1 B)> for fn<'_0_1, '_1_1 where A: '_0_1, B: '_1_1, C: '_1_1, D: '_0_1>(&'_0_1 A, &'_1_1 B) -> (&'_1_1 C, &'_0_1 D)}<'152, '153, u8, u8, u8, u8>[for<'_0_2, '_1_2> {built_in impl Sized for &'_0_2 u8}, for<'_0_2, '_1_2> {built_in impl Sized for &'_1_2 u8}, for<'_0_2, '_1_2> {built_in impl Sized for (&'_1_2 u8, &'_0_2 u8)}]](move _4, move _5, move _6)
     ↳⚡ storage_dead(y)
         storage_dead(x)
         unwind_continue
