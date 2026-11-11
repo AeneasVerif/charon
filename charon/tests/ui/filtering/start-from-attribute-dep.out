@@ -1,5 +1,31 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: start_from_attribute_dep_aux::private_model
+#[verify::start_from]
+fn private_model() -> u64
+= <opaque>
+
+// Full name: start_from_attribute_dep_aux::generic_model
+#[verify::start_from]
+pub fn generic_model<T>(_1: T) -> T
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
 // Full name: test_crate::local_model
 #[verify::start_from]
 fn local_model() -> u64
