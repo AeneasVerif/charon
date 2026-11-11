@@ -51,9 +51,9 @@ pub(crate) struct BindingLevel<'tcx> {
     pub closure_call_method_region: Option<RegionId>,
     /// Region added for the borrow accepted by a drop glue method or vtable drop shim.
     pub drop_glue_region: Option<RegionId>,
-    /// The map from rust type variable indices to the value they take in this scope. Ordinary
-    /// parameters map to type variables; inference-only parameters map to their known types.
-    pub type_vars_map: HashMap<u32, Ty>,
+    /// The map from rust type variable indices to translated type variable indices. `None` marks
+    /// inference-only parameters, which hax should normally never give us.
+    pub type_vars_map: HashMap<u32, Option<TypeVarId>>,
     /// The map from rust const generic variables to translated const generic variable indices.
     pub const_generic_vars_map: HashMap<u32, ConstGenericVarId>,
     /// The map from trait predicates to the translated trait clause indices, and the number of
@@ -192,10 +192,7 @@ impl<'tcx> BindingLevel<'tcx> {
             name,
             variance,
         });
-        self.type_vars_map.insert(
-            rid,
-            TyKind::TypeVar(DeBruijnVar::new_at_zero(var_id)).into_ty(),
-        );
+        self.type_vars_map.insert(rid, Some(var_id));
         var_id
     }
 
@@ -383,12 +380,25 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         param: &hax::ParamTy,
-    ) -> Result<Ty, Error> {
-        self.lookup_param(
+    ) -> Result<TypeDbVar, Error> {
+        let var = self.lookup_param(
             span,
-            |bl| bl.type_vars_map.get(&param.index).cloned(),
+            |bl| {
+                let var = *bl.type_vars_map.get(&param.index)?;
+                Some(var.map(DeBruijnVar::new_at_zero))
+            },
             || format!("the type variable {}", param.name),
-        )
+        )?;
+        if let Some(var) = var {
+            Ok(var)
+        } else {
+            raise_error!(
+                self,
+                span,
+                "Inference parameter {param:?} should have been replaced \
+                with its known type before translation"
+            );
+        }
     }
 
     pub(crate) fn lookup_const_generic_var(
@@ -460,16 +470,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 );
             }
             hax::GenericParamDefKind::Type {
-                inference_value: Some(ty),
+                inference_value: Some(_),
                 ..
             } => {
-                // Inference-only type parameter, as used in closures and inline consts. We record
-                // their known value in case a nested item references the parameter.
-                let span = self.def_span(&param.def_id);
-                let ty = self.translate_ty(span, ty)?;
+                // Inference-only type parameter, as used in closures and inline consts. We make
+                // sure to get rid of them in hax, and error if found in Charon.
                 self.innermost_binder_mut()
                     .type_vars_map
-                    .insert(param.index, ty);
+                    .insert(param.index, None);
             }
             hax::GenericParamDefKind::Type {
                 inference_value: None,

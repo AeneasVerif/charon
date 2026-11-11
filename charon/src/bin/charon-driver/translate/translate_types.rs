@@ -262,7 +262,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::TyKind::Param(param) => {
                 // A type parameter, for example `T` in `fn f<T>(x : T) {}`.
                 match self.lookup_type_var(span, param) {
-                    Ok(ty) => ty.kind().clone(),
+                    Ok(var) => TyKind::TypeVar(var),
                     Err(err) => TyKind::Error(err.msg),
                 }
             }
