@@ -1,0 +1,15 @@
+# Final LLBC before serialization:
+
+// Full name: test_crate::local_model
+#[verify::start_from]
+fn local_model() -> u64
+{
+    let mut _0: u64; // return
+
+    storage_live(_0)
+    _0 = const 7u64
+    return
+}
+
+
+
