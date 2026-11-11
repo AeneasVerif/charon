@@ -145,8 +145,38 @@ pub struct TranslateCtx<'tcx> {
     pub cached_names: HashMap<RustcItem<'tcx>, Name>,
     /// Cache the `ItemMeta`s to compute them only once each.
     pub cached_item_metas: HashMap<TransItemSource<'tcx>, ItemMeta>,
+    /// The functions that extern functions can link to, by symbol.
+    /// Computed lazily by `exported_fns`.
+    pub exported_fns: Option<HashMap<String, ExportedFns<'tcx>>>,
     /// Compute which lifetimes are used in a `&'a mut T`. This is a global fixpoint analysis.
     pub lt_mutability_computer: LifetimeMutabilityComputer,
+}
+
+/// The functions exported under a given symbol.
+#[derive(Debug, Default, Clone, Copy)]
+pub enum ExportedFns<'tcx> {
+    #[default]
+    None,
+    Strong(rustc_middle::ty::Instance<'tcx>),
+    Weak(rustc_middle::ty::Instance<'tcx>),
+    /// More than one function was strongly exported under this name; this would be a linker
+    /// error so we don't specify them.
+    Many,
+}
+
+impl<'tcx> ExportedFns<'tcx> {
+    pub(crate) fn merge(&mut self, other: ExportedFns<'tcx>) {
+        use ExportedFns::*;
+        *self = match (*self, other) {
+            // this would be a link error
+            (Many, _) | (_, Many) | (Strong(_), Strong(_)) => Many,
+            // strong takes precedence
+            (strong @ Strong(_), _) | (_, strong @ Strong(_)) => strong,
+            // this is arbitrary -- the linker technically could pick either
+            (weak @ Weak(_), _) | (_, weak @ Weak(_)) => weak,
+            (None, None) => None,
+        };
+    }
 }
 
 /// Tracks whether a method is used (i.e. called or (non-opaquely) implemented).

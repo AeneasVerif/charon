@@ -54,8 +54,13 @@ pub enum Body {
         #[serde(with = "SeqHashMapToArray::<TargetTriple, FunDeclRef>")]
         SeqHashMap<TargetTriple, FunDeclRef>,
     ),
-    /// Function declared in an `extern { ... }` block. The string is the foreign symbol name.
-    Extern(String),
+    /// Function declared in an `extern { ... }` block.
+    Extern {
+        /// The foreign symbol name.
+        symbol: String,
+        /// The function that the linker binds this symbol to. Only computed with `--link-extern-fns`.
+        definition: LinkedExtern,
+    },
     /// Rust intrinsic function. This describes a "built-in" operation that must be handled by the
     /// codegen backend.
     Intrinsic {
@@ -84,6 +89,20 @@ pub enum Body {
     /// We encountered an error while translating this body.
     #[serde_state(stateless)]
     Error(Error),
+}
+
+/// The function that the linker binds an extern function's symbol to.
+#[derive(Debug, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[serde_state(state_implements = DedupSerializerState)]
+pub enum LinkedExtern {
+    /// A strong definition, e.g. `#[no_mangle]` or `#[export_name]`.
+    StronglyLinked(FunDeclRef),
+    /// A weak definition (`#[linkage = "weak"]`), which the linker only binds the symbol to if
+    /// there's no strong definition.
+    WeaklyLinked(FunDeclRef),
+    /// No function of the crate or its dependencies is exported under this symbol.
+    Unlinked,
 }
 
 generate_index_type!(LocalId, "");
@@ -332,7 +351,7 @@ impl Body {
     pub fn has_contents(&self) -> bool {
         match self {
             Body::Unstructured(..) | Body::Structured(..) => true,
-            Body::Extern(..)
+            Body::Extern { .. }
             | Body::Intrinsic { .. }
             | Body::Opaque
             | Body::Missing

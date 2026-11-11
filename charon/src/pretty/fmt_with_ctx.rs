@@ -324,7 +324,18 @@ impl<C: AstFormatter> FmtWithCtx<C> for ast::Body {
                 let body = body.with_ctx(ctx);
                 write!(f, "{{\n{body}{tab}}}")
             }
-            Body::Extern(name) => write!(f, "= <extern:{name}>"),
+            Body::Extern { symbol, definition } => {
+                write!(f, "= <extern:{symbol}>")?;
+                match definition {
+                    LinkedExtern::StronglyLinked(fun) => {
+                        write!(f, " linked(strong) to {}", fun.with_ctx(ctx))
+                    }
+                    LinkedExtern::WeaklyLinked(fun) => {
+                        write!(f, " linked(weak) to {}", fun.with_ctx(ctx))
+                    }
+                    LinkedExtern::Unlinked => Ok(()),
+                }
+            }
             Body::Intrinsic {
                 name,
                 fallback,
@@ -791,7 +802,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
                 })
                 .collect(),
             Body::Error(..)
-            | Body::Extern(..)
+            | Body::Extern { .. }
             | Body::Missing
             | Body::Opaque
             | Body::TargetDispatch(..) => (0..n_args)

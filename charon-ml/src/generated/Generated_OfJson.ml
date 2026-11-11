@@ -2530,9 +2530,13 @@ and body_of_json (ctx : of_json_ctx) (js : json) : (body, string) result =
             _0
         in
         Ok (TargetDispatchBody _0)
-    | `Assoc [ ("Extern", _0) ] ->
-        let* _0 = string_of_json ctx _0 in
-        Ok (ExternBody _0)
+    | `Assoc
+        [
+          ("Extern", `Assoc [ ("symbol", symbol); ("definition", definition) ]);
+        ] ->
+        let* symbol = string_of_json ctx symbol in
+        let* definition = linked_extern_of_json ctx definition in
+        Ok (ExternBody (symbol, definition))
     | `Assoc
         [
           ( "Intrinsic",
@@ -2615,6 +2619,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("extract_opaque_bodies", extract_opaque_bodies);
           ("translate_all_methods", translate_all_methods);
           ("eager_vtables", eager_vtables);
+          ("link_extern_fns", link_extern_fns);
           ("duplicate_defaulted_methods", duplicate_defaulted_methods);
           ("lift_associated_types", lift_associated_types);
           ("hide_marker_traits", hide_marker_traits);
@@ -2689,6 +2694,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* extract_opaque_bodies = bool_of_json ctx extract_opaque_bodies in
         let* translate_all_methods = bool_of_json ctx translate_all_methods in
         let* eager_vtables = bool_of_json ctx eager_vtables in
+        let* link_extern_fns = bool_of_json ctx link_extern_fns in
         let* duplicate_defaulted_methods =
           bool_of_json ctx duplicate_defaulted_methods
         in
@@ -2774,6 +2780,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              extract_opaque_bodies;
              translate_all_methods;
              eager_vtables;
+             link_extern_fns;
              duplicate_defaulted_methods;
              lift_associated_types;
              hide_marker_traits;
@@ -3757,6 +3764,19 @@ and rustc_linkage_of_json (ctx : of_json_ctx) (js : json) :
     | `String "LinkOnceODR" -> Ok RustcLinkageLinkOnceODR
     | `String "WeakAny" -> Ok RustcLinkageWeakAny
     | `String "WeakODR" -> Ok RustcLinkageWeakODR
+    | _ -> Error "")
+
+and linked_extern_of_json (ctx : of_json_ctx) (js : json) :
+    (linked_extern, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("StronglyLinked", _0) ] ->
+        let* _0 = fun_decl_ref_of_json ctx _0 in
+        Ok (StronglyLinked _0)
+    | `Assoc [ ("WeaklyLinked", _0) ] ->
+        let* _0 = fun_decl_ref_of_json ctx _0 in
+        Ok (WeaklyLinked _0)
+    | `String "Unlinked" -> Ok Unlinked
     | _ -> Error "")
 
 and local_of_json (ctx : of_json_ctx) (js : json) : (local, string) result =

@@ -29,12 +29,19 @@ fn new<'a>(_1: &'a Arguments<'a>, _2: &'static Location<'static>, _3: bool, _4: 
 
 struct () {}
 
+// Full name: std::panicking::panic_handler
+#[lang_item(PanicImpl)]
+fn panic_handler<'_0, '_1>(_1: &'_0 PanicInfo<'_1>) -> !
+where
+    Outlives0: ('_1: '_0),
+= <opaque>
+
 // Full name: core::panicking::panic_fmt::panic_impl
 #[lang_item(PanicImpl)]
 extern unsafe fn panic_impl<'_0, '_1>(_1: &'_0 PanicInfo<'_1>) -> !
 where
     Outlives0: ('_1: '_0),
-= <extern:_RNvCs<hash>_7___rustc17rust_begin_unwind>
+= <extern:_RNvCs<hash>_7___rustc17rust_begin_unwind> linked(strong) to panic_handler<'_, '_>
 
 // Full name: core::panicking::panic_fmt
 #[track_caller]
@@ -102,17 +109,44 @@ pub fn panic_fmt<'_0>(fmt: Arguments<'_0>) -> !
 extern unsafe fn __rust_alloc(_1: usize, _2: Alignment) -> *mut u8
 = <extern:_RNvCs<hash>_7___rustc12___rust_alloc>
 
-// Full name: test_crate::sys::local_hook
-pub extern unsafe fn local_hook(_1: u32) -> u32
-= <extern:local_hook>
+// Full name: link_extern_fns_aux::renamed
+#[export_name = "dep_hook"]
+pub fn renamed() -> u8
+= <opaque>
+
+#[no_mangle]
+pub extern "C" fn link_extern_fns_aux::weak_hook() -> u8
+= <opaque>
+
+#[no_mangle]
+fn test_crate::local_hook(x: u32) -> u32
+{
+    let mut _0: u32; // return
+    let x: u32; // arg #1
+    let mut _2: u32; // anonymous local
+    let mut _3: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_2)
+    _2 = copy x
+    _3 = copy _2 panic.+ const 1u32
+    _0 = move _3
+    storage_dead(_2)
+    storage_dead(_3)
+    storage_dead(x)
+    return
+}
+
+pub extern unsafe fn test_crate::sys::local_hook(_1: u32) -> u32
+= <extern:local_hook> linked(strong) to test_crate::local_hook
 
 // Full name: test_crate::sys::dep_hook
 pub extern unsafe fn dep_hook() -> u8
-= <extern:dep_hook>
+= <extern:dep_hook> linked(strong) to renamed
 
-// Full name: test_crate::sys::weak_hook
-pub extern unsafe extern "C" fn weak_hook() -> u8
-= <extern:weak_hook>
+pub extern unsafe extern "C" fn test_crate::sys::weak_hook() -> u8
+= <extern:weak_hook> linked(weak) to link_extern_fns_aux::weak_hook
 
 
 

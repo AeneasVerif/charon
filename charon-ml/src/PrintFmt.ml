@@ -2637,7 +2637,16 @@ let pp_fun_decl (env : fmt_env) (indent : string) (indent_incr : string)
         locals
         (pp_ullbc_blocks env body_indent indent_incr)
         body indent
-  | ExternBody name -> Format.fprintf fmt "\n%s= <extern:%s>" indent name
+  | ExternBody (symbol, definition) -> (
+      Format.fprintf fmt "\n%s= <extern:%s>" indent symbol;
+      match definition with
+      | StronglyLinked definition ->
+          Format.fprintf fmt " linked(strong) to %a" (pp_fun_decl_ref env)
+            definition
+      | WeaklyLinked definition ->
+          Format.fprintf fmt " linked(weak) to %a" (pp_fun_decl_ref env)
+            definition
+      | Unlinked -> ())
   | IntrinsicBody (name, _, fallback, fallback_is_spec) -> (
       Format.fprintf fmt "\n%s= <intrinsic:%s>" indent name;
       match fallback with

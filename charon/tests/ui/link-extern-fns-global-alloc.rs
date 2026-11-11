@@ -1,4 +1,4 @@
-//@ charon-args=--start-from=alloc::alloc::__rust_alloc
+//@ charon-args=--link-extern-fns --start-from=alloc::alloc::__rust_alloc
 //@ rustc-args=--crate-type=bin
 use std::alloc::{GlobalAlloc, Layout};
 

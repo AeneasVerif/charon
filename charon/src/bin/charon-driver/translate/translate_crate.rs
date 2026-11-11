@@ -16,6 +16,7 @@
 //! signature) but not its contents.
 use itertools::Itertools;
 use petgraph::visit::{Dfs, Walker};
+use rustc_hash::FxHashMap;
 use rustc_middle::ty::{self, TyCtxt};
 use rustc_span::{def_id::DefId, sym};
 use std::cell::RefCell;
@@ -374,6 +375,47 @@ impl<'tcx> TranslateCtx<'tcx> {
                 return None;
             }
         })
+    }
+
+    /// The functions exported under `symbol`.
+    pub(crate) fn exported_fns(&mut self, symbol: &str) -> ExportedFns<'tcx> {
+        use rustc_hir::attrs::Linkage;
+        use rustc_hir::def::DefKind;
+        use rustc_middle::middle::exported_symbols::ExportedSymbol;
+        let tcx = self.tcx;
+        let exported_fns = self.exported_fns.get_or_insert_with(|| {
+            let local = tcx
+                .hir_crate_items(())
+                .definitions()
+                .map(|ldid| ldid.to_def_id());
+            let dependencies = tcx
+                .crates(())
+                .iter()
+                .filter(|&&cnum| !tcx.crate_dep_kind(cnum).macros_only())
+                .flat_map(|&cnum| tcx.exported_non_generic_symbols(cnum))
+                .filter_map(|(symbol, _)| match symbol {
+                    ExportedSymbol::NonGeneric(def_id) => Some(*def_id),
+                    _ => None,
+                });
+            let candidates = local
+                .chain(dependencies)
+                .filter(|&def_id| matches!(tcx.def_kind(def_id), DefKind::Fn | DefKind::AssocFn))
+                .filter(|&def_id| !tcx.generics_of(def_id).requires_monomorphization(tcx))
+                .filter(|&def_id| tcx.codegen_fn_attrs(def_id).contains_extern_indicator());
+            let mut exported_fns = FxHashMap::<String, ExportedFns>::default();
+            for def_id in candidates {
+                let instance = rustc_middle::ty::Instance::mono(tcx, def_id);
+                let new = match tcx.codegen_fn_attrs(def_id).linkage {
+                    None | Some(Linkage::External) => ExportedFns::Strong(instance),
+                    Some(Linkage::WeakAny | Linkage::WeakODR) => ExportedFns::Weak(instance),
+                    _ => continue,
+                };
+                let symbol = tcx.symbol_name(instance).name.to_string();
+                exported_fns.entry(symbol).or_default().merge(new);
+            }
+            exported_fns
+        });
+        exported_fns.get(symbol).copied().unwrap_or_default()
     }
 
     /// Add this item to the queue of items to translate. Each translated item will then
@@ -1213,6 +1255,7 @@ pub fn translate<'tcx>(
         cached_file_ids: Default::default(),
         cached_names: Default::default(),
         cached_item_metas: Default::default(),
+        exported_fns: Default::default(),
         lt_mutability_computer: Default::default(),
     };
     ctx.register_target_info();
