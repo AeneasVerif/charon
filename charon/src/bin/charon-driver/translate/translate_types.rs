@@ -493,35 +493,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let Some(param_env) = def.param_env() else {
             return Ok(vec![]);
         };
-        if !item.def_id.is_typeck_child(self.hax_state()) {
-            return if let Some(parent) = item.typing_parent(self.hax_state_with_id()) {
-                // Items nested inside typeck children, like promoted consts, inherit their args.
-                self.recover_extra_early_regions(span, &parent)
-            } else {
-                Ok(Vec::new())
-            };
-        }
-        let extra_regions_count = param_env.extra_early_regions.len();
-        // Walk the same parent chain as `push_generics_for_def` to gather the same arguments. Our
-        // own arguments don't mention those of our soft parents, so we can only pick erased/fresh
-        // regions for these.
-        let mut regions = Vec::new();
-        let mut parent: Option<hax::DefId> = param_env
-            .soft_parent
-            .as_ref()
-            .map(|item| item.def_id.clone());
-        while let Some(def_id) = parent {
-            let def = self.poly_hax_def(&def_id)?;
-            let Some(env) = def.param_env() else { break };
-            regions
-                .extend((0..env.extra_early_regions.len()).map(|_| self.translate_erased_region()));
-            parent = env.soft_parent.as_ref().map(|item| item.def_id.clone());
-        }
-        if extra_regions_count == 0 || self.options.monomorphize_with_hax {
-            regions.extend((0..extra_regions_count).map(|_| self.translate_erased_region()));
-            return Ok(regions);
-        }
-        let (_, actual, template) = item.soft_typing_parent(self.hax_state_with_id());
+        let (parent, actual, template) = item.soft_typing_parent(self.hax_state_with_id());
+        // Recover parent arguments, in the same order as `push_generics_for_def`.
+        let mut regions = if let Some(parent) = parent {
+            self.recover_extra_early_regions(span, &parent)?
+        } else {
+            Vec::new()
+        };
         // See `soft_typing_parent` for details: `template` and `actual` should be the same
         // arguments, except that `template` has placeholder regions corresponding to the items
         // `extra_early_regions`, and actual has actual regions in the same locations. We zip the

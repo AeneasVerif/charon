@@ -16,7 +16,7 @@ struct test_crate::captured_ref::{closure}<'_0, '_1> {
 }
 
 // Full name: test_crate::captured_ref
-pub fn captured_ref<'a>(x: &'a u8) -> test_crate::captured_ref::{closure}<'_, '_>
+pub fn captured_ref<'a>(x: &'a u8) -> test_crate::captured_ref::{closure}<'a, 'a>
 {
     let mut _0: test_crate::captured_ref::{closure}<'2, '3>; // return
     let x: &'5 u8; // arg #1
@@ -49,11 +49,11 @@ struct test_crate::captured_closure::{closure}<'_0, '_1> {
 }
 
 struct test_crate::captured_closure::{closure#1}<'_0, '_1, '_2> {
-  _0: test_crate::captured_closure::{closure}<'_, '_>,
+  _0: test_crate::captured_closure::{closure}<'_1, '_2>,
 }
 
 // Full name: test_crate::captured_closure
-pub fn captured_closure<'a>(x: &'a u8) -> test_crate::captured_closure::{closure#1}<'_, '_, '_>
+pub fn captured_closure<'a>(x: &'a u8) -> test_crate::captured_closure::{closure#1}<'a, 'a, 'a>
 {
     let mut _0: test_crate::captured_closure::{closure#1}<'3, '4, '5>; // return
     let x: &'7 u8; // arg #1
@@ -154,7 +154,7 @@ struct test_crate::captured_generic_closure::{closure}<'_0, '_1> {
 }
 
 // Full name: test_crate::captured_generic_closure
-pub fn captured_generic_closure<'a>(x: &'a u8) -> test_crate::captured_generic_closure::{closure}<'_, '_>
+pub fn captured_generic_closure<'a>(x: &'a u8) -> test_crate::captured_generic_closure::{closure}<'a, 'a>
 {
     let mut _0: test_crate::captured_generic_closure::{closure}<'2, '3>; // return
     let x: &'5 u8; // arg #1
@@ -267,7 +267,7 @@ struct test_crate::captured_fn_ptr_with_free_region::{closure}<'_0, '_1> {
 }
 
 // Full name: test_crate::captured_fn_ptr_with_free_region
-pub fn captured_fn_ptr_with_free_region<'a>(f: fn<'b>(&'b u8) -> &'a u8) -> test_crate::captured_fn_ptr_with_free_region::{closure}<'_, '_>
+pub fn captured_fn_ptr_with_free_region<'a>(f: fn<'b>(&'b u8) -> &'a u8) -> test_crate::captured_fn_ptr_with_free_region::{closure}<'a, 'a>
 {
     let mut _0: test_crate::captured_fn_ptr_with_free_region::{closure}<'2, '3>; // return
     let f: fn<'b>(&'b u8) -> &'6 u8; // arg #1
@@ -329,7 +329,7 @@ struct test_crate::generic_assoc_closure::{closure}::<()><'_0, '_1> {
 }
 
 // Full name: test_crate::generic_assoc_closure::<()>
-fn generic_assoc_closure::<()><'a>(x: &'a u8) -> test_crate::generic_assoc_closure::{closure}::<()><'_, '_>
+fn generic_assoc_closure::<()><'a>(x: &'a u8) -> test_crate::generic_assoc_closure::{closure}::<()><'a, 'a>
 {
     let mut _0: test_crate::generic_assoc_closure::{closure}::<()><'2, '3>; // return
     let x: &'5 u8; // arg #1
@@ -358,11 +358,11 @@ where
 }
 
 struct test_crate::captured_assoc_closure::{closure}<'_0, '_1> {
-  _0: test_crate::generic_assoc_closure::{closure}::<()><'_, '_>,
+  _0: test_crate::generic_assoc_closure::{closure}::<()><'_1, '_1>,
 }
 
 // Full name: test_crate::captured_assoc_closure
-pub fn captured_assoc_closure<'a>(x: &'a u8) -> test_crate::captured_assoc_closure::{closure}<'_, '_>
+pub fn captured_assoc_closure<'a>(x: &'a u8) -> test_crate::captured_assoc_closure::{closure}<'a, 'a>
 {
     let mut _0: test_crate::captured_assoc_closure::{closure}<'2, '3>; // return
     let x: &'5 u8; // arg #1
