@@ -57,7 +57,7 @@ impl Struct {
     }
 }
 
-// Foreign modules can't be named or have attributes, so we can't mark them opaque.
+// Foreign modules can't be named, but they can be marked opaque with an attribute.
 #[charon::opaque]
 extern "C" {
     fn extern_fn(x: i32);
