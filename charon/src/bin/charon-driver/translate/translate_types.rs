@@ -484,11 +484,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// and represent closure upvars and signature, or inline const return type. Instead of these
     /// types, we add lifetime parameters. This method extracts the value of the lifetime
     /// parameters in question.
-    // FIXME: iterate through parents, e.g. a promoted const in a closure needs these args provided,
-    // see `promoted-in-closure-regions.rs`. This is made harder by mono; we could streamline the
-    // whole thing by storing mono args inside the param defs, just like for inferred variables.
-    // Indeed the handling of inferred variables is pretty much a partial monomorphization. Maybe
-    // this would help with mono+traits.
     pub(crate) fn recover_extra_early_regions(
         &mut self,
         span: Span,
@@ -498,11 +493,37 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let Some(param_env) = def.param_env() else {
             return Ok(vec![]);
         };
-        let num_regions = param_env.extra_early_regions.len();
-        if num_regions == 0 || self.options.monomorphize_with_hax {
-            return Ok((0..num_regions)
+        if !item.def_id.is_typeck_child(self.hax_state()) {
+            return if let Some(parent) = item.typing_parent(self.hax_state_with_id()) {
+                // Items nested inside typeck children, like promoted consts, inherit their args.
+                self.recover_extra_early_regions(span, &parent)
+            } else {
+                Ok(Vec::new())
+            };
+        }
+        let extra_regions_count = param_env.extra_early_regions.len();
+        if self.options.monomorphize_with_hax {
+            return Ok((0..extra_regions_count)
                 .map(|_| self.translate_erased_region())
                 .collect());
+        }
+        // Walk the same parent chain as `push_generics_for_def` to gather the same arguments. Our
+        // own arguments don't mention those of our soft parents, so we can only pick erased/fresh
+        // regions for these.
+        let mut regions = Vec::new();
+        let mut parent: Option<hax::DefId> = param_env
+            .soft_parent
+            .as_ref()
+            .map(|item| item.def_id.clone());
+        while let Some(def_id) = parent {
+            let def = self.poly_hax_def(&def_id)?;
+            let Some(env) = def.param_env() else { break };
+            regions
+                .extend((0..env.extra_early_regions.len()).map(|_| self.translate_erased_region()));
+            parent = env.soft_parent.as_ref().map(|item| item.def_id.clone());
+        }
+        if extra_regions_count == 0 {
+            return Ok(regions);
         }
         let actual = self.translate_raw_generic_args(span, &item.generic_args)?;
 
@@ -592,7 +613,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
         }
         let mut mapping = RegionMapping {
-            args: (0..num_regions).map(|_| None).collect(),
+            args: (0..extra_regions_count).map(|_| None).collect(),
             depth: DeBruijnId::zero(),
         };
         error_assert!(
@@ -604,14 +625,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             actual
         );
         // Normalization may discard a parameter, for example through an associated type.
-        Ok(mapping
-            .args
-            .into_iter()
-            .map(|r| match r {
-                Some(r) => r,
-                None => self.translate_erased_region(),
-            })
-            .collect())
+        regions.extend(mapping.args.into_iter().map(|r| match r {
+            Some(r) => r,
+            None => self.translate_erased_region(),
+        }));
+        Ok(regions)
     }
 
     /// Whether Rust treats this type specially, i.e. whether it is a tuple, `str` or `Box`.

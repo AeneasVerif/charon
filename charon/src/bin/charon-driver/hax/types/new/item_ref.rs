@@ -278,6 +278,29 @@ impl<'tcx> ItemRef<'tcx> {
             _ => None,
         }
     }
+
+    /// Like [`Self::typing_parent`], but includes enclosing closures and inline consts that
+    /// rustc does not consider "parents" for the purposes of generic arguments. E.g. a closure has
+    /// three extra inference parameters, and a nested closure does not inherit them.
+    pub fn soft_typing_parent<S: UnderOwnerState<'tcx>>(&self, s: &S) -> Option<ItemRef<'tcx>> {
+        let typing_parent = self.typing_parent(s)?;
+        if self.def_id.is_typeck_child(s)
+            && let Some(parent) = self.def_id.parent(s)
+            && parent != typing_parent.def_id
+        {
+            // The extra arguments of a typeck child can always be recovered (modulo erased
+            // lifetimes) from the parent args. We do so here, using our `DefId::identity_args`.
+            let parent_args = substitute(
+                s.tcx(),
+                s.typing_env(),
+                Some(typing_parent.rustc_args(s)),
+                parent.identity_args(s),
+            );
+            Some(ItemRef::translate_from_hax_def_id(s, parent, parent_args))
+        } else {
+            Some(typing_parent)
+        }
+    }
 }
 
 impl<'tcx> std::ops::Deref for ItemRef<'tcx> {

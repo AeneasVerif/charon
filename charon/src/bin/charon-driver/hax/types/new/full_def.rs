@@ -151,6 +151,7 @@ where
             } else {
                 ParamEnv::empty(s, None)
             };
+            param_env.soft_parent = this.soft_typing_parent(s);
             if def_id.is_typeck_child(s) {
                 // Record the value of the inference-only type vars.
                 let identity_args = this.rustc_args(s);
@@ -319,6 +320,10 @@ pub struct ParamEnv<'tcx> {
     pub predicates: GenericPredicates<'tcx>,
     /// A reference to the parent of this item, with appropriate args.
     pub parent: Option<ItemRef<'tcx>>,
+    /// Like `parent`, but also includes enclosing closures and inline consts, which don't count
+    /// for rustc's argument lists but do count for e.g. late bound variables. See also
+    /// [`ItemRef::soft_typing_parent`].
+    pub soft_parent: Option<ItemRef<'tcx>>,
 }
 
 impl<'tcx> ParamEnv<'tcx> {
@@ -349,6 +354,7 @@ impl<'tcx> ParamEnv<'tcx> {
             late_bound: Binder::empty(),
             extra_early_regions: vec![],
             parent: parent.cloned(),
+            soft_parent: parent.cloned(),
         }
     }
 }
@@ -2008,6 +2014,7 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
             late_bound: Binder::empty(),
             extra_early_regions: vec![],
             predicates: owner.required_predicates(s).sinto(s),
+            soft_parent: parent.clone(),
             parent,
         },
         // An instantiated item is monomorphic.
@@ -2020,6 +2027,7 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
             late_bound: Binder::empty(),
             extra_early_regions: vec![],
             predicates: GenericPredicates::default(),
+            soft_parent: parent.clone(),
             parent,
         },
     }

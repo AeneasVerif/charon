@@ -513,7 +513,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let def_is_instantiated = self.monomorphize() && !self.item_src.kind.is_for_trait();
         if !def_is_instantiated
             && let Some(param_env) = def.param_env()
-            && let Some(parent_item) = &param_env.parent
+            && let Some(parent_item) = &param_env.soft_parent
         {
             let parent_def = self.hax_def(parent_item)?;
             self.push_generics_for_def(span, &parent_def)?;
