@@ -24,7 +24,7 @@ pub fn foo<'a>(x: &'a u8) -> {closure}<'_, '_, '_>
 }
 
 // Full name: test_crate::foo::{closure}::{promoted_const}
-fn {promoted_const}() -> &'_ u8
+fn {promoted_const}<'_0, '_1, '_2>() -> &'_ u8
 {
     let mut _0: &'0 u8; // return
     let mut _1: u8; // anonymous local
@@ -37,7 +37,7 @@ fn {promoted_const}() -> &'_ u8
 }
 
 // Full name: test_crate::foo::{closure}::{promoted_const}
-const {promoted_const}: &'_ u8 = {promoted_const}()
+const {promoted_const}<'_0, '_1, '_2>: &'_ u8 = {promoted_const}<'_0, '_1, '_2>()
 
 // Full name: test_crate::foo::{impl Fn<()> for {closure}<'_0, '_1, '_2>}::call
 extern "rust-call" fn call<'_0, '_1, '_2, '_3>(_1: &'_3 {closure}<'_0, '_1, '_2>, tupled_args: ()) -> (&'_ u8, &'_ u8)
