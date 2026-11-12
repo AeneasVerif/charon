@@ -1602,6 +1602,23 @@ and pp_unop (env : fmt_env) (fmt : Format.formatter) (unop : unop) : unit =
   | Not -> pp_string fmt "~"
   | Neg om -> Format.fprintf fmt "%a.-" pp_overflow_mode om
   | Cast cast_kind -> pp_cast_kind env fmt cast_kind
+  | VTableMethodLookup (vtable, field) ->
+      Format.fprintf fmt "vtable_lookup<%a>.%s" (pp_type_decl_ref env) vtable
+        (vtable_field_to_string env vtable field)
+
+(** The name of the field of the vtable struct that holds the entry. *)
+and vtable_field_to_string (env : fmt_env) (vtable : type_decl_ref)
+    (field : v_table_field) : string =
+  let field_id =
+    match TypeDeclId.Map.find_opt vtable.id env.crate.type_decls with
+    | Some { src = VTableType (_, field_map, _); _ } ->
+        List.find_index (( = ) field) field_map
+    | _ -> None
+  in
+  Option.fold field_id ~none:(show_v_table_field field) ~some:(fun field_id ->
+      Option.value
+        (adt_field_to_string env vtable.id None (FieldId.of_int field_id))
+        ~default:(string_of_int field_id))
 
 and pp_overflow_mode (fmt : Format.formatter) (mode : overflow_mode) : unit =
   match mode with

@@ -124,7 +124,8 @@ fn main()
     let mut _3: S; // anonymous local
     let _4: (); // anonymous local
     let mut _5: Box::<(dyn Trait), Global>; // anonymous local
-    let mut _6: fn(Box::<(dyn Trait), Global>); // anonymous local
+    let mut _6: *const (); // anonymous local
+    let mut _7: fn(Box::<(dyn Trait), Global>); // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -144,13 +145,17 @@ fn main()
     storage_live(_5)
     _5 = move b
     storage_live(_6)
-    _6 = cast<fn(Box::<(dyn Trait), Global>)>(read (*_5.metadata).method_method)
-    _4 = (read _6)(move _5)
+    _6 = vtable_lookup<test_crate::Trait::{vtable}>.method_method(read _5.metadata)
+    storage_live(_7)
+    _7 = cast<fn(Box::<(dyn Trait), Global>)>(move _6)
+    _4 = (read _7)(move _5)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Trait), Global>}::drop_glue::<(dyn Trait), Global><'8>] _5
-        ↳⚡ storage_dead(_6)
+        ↳⚡ storage_dead(_7)
+            storage_dead(_6)
             unwind_terminate
         conditional_drop[{impl Destruct for Box::<(dyn Trait), Global>}::drop_glue::<(dyn Trait), Global><'10>] b
-        ↳⚡ storage_dead(_6)
+        ↳⚡ storage_dead(_7)
+            storage_dead(_6)
             unwind_terminate
         unwind_continue
     storage_dead(_5)
@@ -159,6 +164,7 @@ fn main()
     conditional_drop[{impl Destruct for Box::<(dyn Trait), Global>}::drop_glue::<(dyn Trait), Global><'9>] b
     ↳⚡ unwind_continue
     storage_dead(b)
+    storage_dead(_7)
     storage_dead(_6)
     return
 }

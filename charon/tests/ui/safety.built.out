@@ -1003,17 +1003,21 @@ fn unsafe_call_unsafe_dyn_method<'_0>(s: &'_0 (dyn DynTrait + '_0))
     let mut _0: (); // return
     let s: &'3 (dyn DynTrait + '4); // arg #1
     let mut _2: &'5 (dyn DynTrait + '6); // anonymous local
+    let mut _3: unsafe fn<'_0_1>(&'_0_1 (dyn DynTrait)); // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = &(*s) with_metadata(read s.metadata)
+    storage_live(_3)
+    _3 = vtable_lookup<test_crate::DynTrait::{vtable}>.method_unsafe_method(read _2.metadata)
     // unsafe
-    _0 = (read (*_2.metadata).method_unsafe_method)<'14>(move _2)
+    _0 = (read _3)<'14>(move _2)
     ↳⚡ storage_dead(s)
         unwind_continue
     storage_dead(_2)
     storage_dead(s)
+    storage_dead(_3)
     return
 }
 
@@ -1342,16 +1346,20 @@ fn safe_call_dyn_method<'_0>(s: &'_0 (dyn DynTrait + '_0))
     let mut _0: (); // return
     let s: &'3 (dyn DynTrait + '4); // arg #1
     let mut _2: &'5 (dyn DynTrait + '6); // anonymous local
+    let mut _3: fn<'_0_1>(&'_0_1 (dyn DynTrait)); // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = &(*s) with_metadata(read s.metadata)
-    _0 = (read (*_2.metadata).method_safe_method)<'14>(move _2)
+    storage_live(_3)
+    _3 = vtable_lookup<test_crate::DynTrait::{vtable}>.method_safe_method(read _2.metadata)
+    _0 = (read _3)<'14>(move _2)
     ↳⚡ storage_dead(s)
         unwind_continue
     storage_dead(_2)
     storage_dead(s)
+    storage_dead(_3)
     return
 }
 

@@ -158,6 +158,10 @@ pub enum UnOp {
     Neg(OverflowMode),
     /// Casts are rvalues in MIR, but we treat them as unops.
     Cast(CastKind),
+    /// Reads the entry `VTableField` of a vtable, inspired by MiniRust's equivalent operator.
+    /// This lets Charon make the distinction between regular call and virtual calls instead of the consumer.
+    /// Introduced by `transform_dyn_trait_calls`.
+    VTableMethodLookup(TypeDeclRef, VTableField),
 }
 
 /// Cast the operand to a new type.

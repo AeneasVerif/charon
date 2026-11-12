@@ -1029,7 +1029,8 @@ pub fn test_dyn_fn(x: u32) -> u32
     let mut _6: &'10 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '11); // anonymous local
     let mut _7: (u32,); // anonymous local
     let mut _8: u32; // anonymous local
-    let mut _9: fn(&'10 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '11), (u32,)) -> u32; // anonymous local
+    let mut _9: *const (); // anonymous local
+    let mut _10: fn(&'10 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '11), (u32,)) -> u32; // anonymous local
 
     storage_live(_0)
     set '1: '0
@@ -1053,8 +1054,10 @@ pub fn test_dyn_fn(x: u32) -> u32
     _8 = copy x
     _7 = (move _8,)
     storage_live(_9)
-    _9 = cast<fn(&'10 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '11), (u32,)) -> u32>(read (*_6.metadata).method_call)
-    _0 = (read _9)(move _6, move _7)
+    _9 = vtable_lookup<core::ops::function::Fn::{vtable}>.method_call(read _6.metadata)
+    storage_live(_10)
+    _10 = cast<fn(&'10 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '11), (u32,)) -> u32>(move _9)
+    _0 = (read _10)(move _6, move _7)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_8)
@@ -1063,6 +1066,7 @@ pub fn test_dyn_fn(x: u32) -> u32
     storage_dead(dyn_fn)
     storage_dead(fn_ptr)
     storage_dead(x)
+    storage_dead(_10)
     storage_dead(_9)
     return
 }
@@ -1081,7 +1085,8 @@ pub fn test_dyn_fn_mut(x: u32) -> u32
     let mut _6: &'10 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '11); // anonymous local
     let mut _7: (u32,); // anonymous local
     let mut _8: u32; // anonymous local
-    let mut _9: fn(&'10 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '11), (u32,)) -> u32; // anonymous local
+    let mut _9: *const (); // anonymous local
+    let mut _10: fn(&'10 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '11), (u32,)) -> u32; // anonymous local
 
     storage_live(_0)
     set '1: '0
@@ -1105,8 +1110,10 @@ pub fn test_dyn_fn_mut(x: u32) -> u32
     _8 = copy x
     _7 = (move _8,)
     storage_live(_9)
-    _9 = cast<fn(&'10 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '11), (u32,)) -> u32>(read (*_6.metadata).method_call_mut)
-    _0 = (read _9)(move _6, move _7)
+    _9 = vtable_lookup<core::ops::function::FnMut::{vtable}>.method_call_mut(read _6.metadata)
+    storage_live(_10)
+    _10 = cast<fn(&'10 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '11), (u32,)) -> u32>(move _9)
+    _0 = (read _10)(move _6, move _7)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_8)
@@ -1115,6 +1122,7 @@ pub fn test_dyn_fn_mut(x: u32) -> u32
     storage_dead(dyn_fn)
     storage_dead(fn_ptr)
     storage_dead(x)
+    storage_dead(_10)
     storage_dead(_9)
     return
 }

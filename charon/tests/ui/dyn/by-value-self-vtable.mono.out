@@ -317,8 +317,10 @@ fn main()
     let mut _7: &'6 mut u32; // anonymous local
     let _v_8: u32; // local
     let mut _9: &'7 (dyn Consume + '8); // anonymous local
-    let mut _10: fn(&'3 (dyn Consume + '4)) -> u32; // anonymous local
-    let mut _11: fn(&'7 (dyn Consume + '8)) -> u32; // anonymous local
+    let mut _10: *const (); // anonymous local
+    let mut _11: fn(&'3 (dyn Consume + '4)) -> u32; // anonymous local
+    let mut _12: *const (); // anonymous local
+    let mut _13: fn(&'7 (dyn Consume + '8)) -> u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -330,10 +332,14 @@ fn main()
     storage_live(_3)
     _3 = &(*x) with_metadata(read x.metadata)
     storage_live(_10)
-    _10 = cast<fn(&'3 (dyn Consume + '4)) -> u32>(read (*_3.metadata).method_read)
-    _v_2 = (read _10)(move _3)
+    _10 = vtable_lookup<test_crate::Consume::{vtable}>.method_read(read _3.metadata)
+    storage_live(_11)
+    _11 = cast<fn(&'3 (dyn Consume + '4)) -> u32>(move _10)
+    _v_2 = (read _11)(move _3)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'17>] x
-        ↳⚡ storage_dead(_11)
+        ↳⚡ storage_dead(_13)
+            storage_dead(_12)
+            storage_dead(_11)
             storage_dead(_10)
             unwind_terminate
         unwind_continue
@@ -349,7 +355,9 @@ fn main()
     _6 = &raw mut (*_7)
     p = mk_ptr(move _6)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'17>] x
-        ↳⚡ storage_dead(_11)
+        ↳⚡ storage_dead(_13)
+            storage_dead(_12)
+            storage_dead(_11)
             storage_dead(_10)
             unwind_terminate
         unwind_continue
@@ -359,15 +367,21 @@ fn main()
     storage_live(_v_8)
     storage_live(_9)
     _9 = &(*p) with_metadata(read p.metadata)
-    storage_live(_11)
-    _11 = cast<fn(&'7 (dyn Consume + '8)) -> u32>(read (*_9.metadata).method_read)
-    _v_8 = (read _11)(move _9)
+    storage_live(_12)
+    _12 = vtable_lookup<test_crate::Consume::{vtable}>.method_read(read _9.metadata)
+    storage_live(_13)
+    _13 = cast<fn(&'7 (dyn Consume + '8)) -> u32>(move _12)
+    _v_8 = (read _13)(move _9)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'24>] p
-        ↳⚡ storage_dead(_11)
+        ↳⚡ storage_dead(_13)
+            storage_dead(_12)
+            storage_dead(_11)
             storage_dead(_10)
             unwind_terminate
         conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'17>] x
-        ↳⚡ storage_dead(_11)
+        ↳⚡ storage_dead(_13)
+            storage_dead(_12)
+            storage_dead(_11)
             storage_dead(_10)
             unwind_terminate
         unwind_continue
@@ -377,7 +391,9 @@ fn main()
     storage_dead(_v_8)
     conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'25>] p
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'17>] x
-        ↳⚡ storage_dead(_11)
+        ↳⚡ storage_dead(_13)
+            storage_dead(_12)
+            storage_dead(_11)
             storage_dead(_10)
             unwind_terminate
         unwind_continue
@@ -387,6 +403,8 @@ fn main()
     conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'26>] x
     ↳⚡ unwind_continue
     storage_dead(x)
+    storage_dead(_13)
+    storage_dead(_12)
     storage_dead(_11)
     storage_dead(_10)
     return

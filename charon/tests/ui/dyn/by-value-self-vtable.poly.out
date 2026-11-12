@@ -322,6 +322,8 @@ fn main()
     let mut _7: &'17 mut u32; // anonymous local
     let _v_8: u32; // local
     let mut _9: &'18 (dyn Consume + '19); // anonymous local
+    let mut _10: fn<'_0_1>(&'_0_1 (dyn Consume)) -> u32; // anonymous local
+    let mut _11: fn<'_0_1>(&'_0_1 (dyn Consume)) -> u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -332,9 +334,13 @@ fn main()
     storage_live(_v_2)
     storage_live(_3)
     _3 = &(*x) with_metadata(read x.metadata)
-    _v_2 = (read (*_3.metadata).method_read)<'27>(move _3)
+    storage_live(_10)
+    _10 = vtable_lookup<test_crate::Consume::{vtable}>.method_read(read _3.metadata)
+    _v_2 = (read _10)<'27>(move _3)
     ↳⚡ conditional_drop[drop_glue<'42, (dyn Consume + '37), Global>[{built_in impl MetaSized for (dyn Consume + '37)}, {built_in impl Sized for Global}]] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_11)
+            storage_dead(_10)
+            unwind_terminate
         unwind_continue
     storage_dead(_3)
     fake_read(_v_2)
@@ -348,7 +354,9 @@ fn main()
     _6 = &raw mut (*_7)
     p = mk_ptr(move _6)
     ↳⚡ conditional_drop[drop_glue<'42, (dyn Consume + '37), Global>[{built_in impl MetaSized for (dyn Consume + '37)}, {built_in impl Sized for Global}]] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_11)
+            storage_dead(_10)
+            unwind_terminate
         unwind_continue
     storage_dead(_6)
     fake_read(p)
@@ -356,11 +364,17 @@ fn main()
     storage_live(_v_8)
     storage_live(_9)
     _9 = &(*p) with_metadata(read p.metadata)
-    _v_8 = (read (*_9.metadata).method_read)<'48>(move _9)
+    storage_live(_11)
+    _11 = vtable_lookup<test_crate::Consume::{vtable}>.method_read(read _9.metadata)
+    _v_8 = (read _11)<'48>(move _9)
     ↳⚡ conditional_drop[drop_glue<'63, (dyn Consume + '58), Global>[{built_in impl MetaSized for (dyn Consume + '58)}, {built_in impl Sized for Global}]] p
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_11)
+            storage_dead(_10)
+            unwind_terminate
         conditional_drop[drop_glue<'42, (dyn Consume + '37), Global>[{built_in impl MetaSized for (dyn Consume + '37)}, {built_in impl Sized for Global}]] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_11)
+            storage_dead(_10)
+            unwind_terminate
         unwind_continue
     storage_dead(_9)
     fake_read(_v_8)
@@ -368,7 +382,9 @@ fn main()
     storage_dead(_v_8)
     conditional_drop[drop_glue<'78, (dyn Consume + '73), Global>[{built_in impl MetaSized for (dyn Consume + '73)}, {built_in impl Sized for Global}]] p
     ↳⚡ conditional_drop[drop_glue<'42, (dyn Consume + '37), Global>[{built_in impl MetaSized for (dyn Consume + '37)}, {built_in impl Sized for Global}]] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_11)
+            storage_dead(_10)
+            unwind_terminate
         unwind_continue
     storage_dead(p)
     storage_dead(n)
@@ -376,6 +392,8 @@ fn main()
     conditional_drop[drop_glue<'93, (dyn Consume + '88), Global>[{built_in impl MetaSized for (dyn Consume + '88)}, {built_in impl Sized for Global}]] x
     ↳⚡ unwind_continue
     storage_dead(x)
+    storage_dead(_11)
+    storage_dead(_10)
     return
 }
 

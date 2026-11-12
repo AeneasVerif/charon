@@ -1852,6 +1852,10 @@ and unop_of_json (ctx : of_json_ctx) (js : json) : (unop, string) result =
     | `Assoc [ ("Cast", _0) ] ->
         let* _0 = cast_kind_of_json ctx _0 in
         Ok (Cast _0)
+    | `Assoc [ ("VTableMethodLookup", `List [ _0; _1 ]) ] ->
+        let* _0 = type_decl_ref_of_json ctx _0 in
+        let* _1 = v_table_field_of_json ctx _1 in
+        Ok (VTableMethodLookup (_0, _1))
     | _ -> Error "")
 
 and unsizing_metadata_of_json (ctx : of_json_ctx) (js : json) :
@@ -1869,6 +1873,22 @@ and unsizing_metadata_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = list_of_json field_id_of_json ctx _0 in
         Ok (MetaVTableUpcast _0)
     | `String "Unknown" -> Ok MetaUnknown
+    | _ -> Error "")
+
+and v_table_field_of_json (ctx : of_json_ctx) (js : json) :
+    (v_table_field, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Size" -> Ok VTableSize
+    | `String "Align" -> Ok VTableAlign
+    | `String "Drop" -> Ok VTableDrop
+    | `Assoc [ ("Method", `List [ _0; _1 ]) ] ->
+        let* _0 = trait_method_id_of_json ctx _0 in
+        let* _1 = list_of_json field_id_of_json ctx _1 in
+        Ok (VTableMethod (_0, _1))
+    | `Assoc [ ("SuperTrait", _0) ] ->
+        let* _0 = trait_clause_id_of_json ctx _0 in
+        Ok (VTableSuperTrait _0)
     | _ -> Error "")
 
 and variance_of_json (ctx : of_json_ctx) (js : json) : (variance, string) result
@@ -4600,22 +4620,6 @@ and v_table_decl_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Unknown", _0) ] ->
         let* _0 = string_of_json ctx _0 in
         Ok (UnknownVTable _0)
-    | _ -> Error "")
-
-and v_table_field_of_json (ctx : of_json_ctx) (js : json) :
-    (v_table_field, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `String "Size" -> Ok VTableSize
-    | `String "Align" -> Ok VTableAlign
-    | `String "Drop" -> Ok VTableDrop
-    | `Assoc [ ("Method", `List [ _0; _1 ]) ] ->
-        let* _0 = trait_method_id_of_json ctx _0 in
-        let* _1 = list_of_json field_id_of_json ctx _1 in
-        Ok (VTableMethod (_0, _1))
-    | `Assoc [ ("SuperTrait", _0) ] ->
-        let* _0 = trait_clause_id_of_json ctx _0 in
-        Ok (VTableSuperTrait _0)
     | _ -> Error "")
 
 and variant_of_json (ctx : of_json_ctx) (js : json) : (variant, string) result =

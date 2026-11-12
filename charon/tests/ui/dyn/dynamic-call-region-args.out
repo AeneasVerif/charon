@@ -36,6 +36,7 @@ where
     let _3: &'11 u32; // anonymous local
     let mut _4: &'12 (dyn Processor<'13> + '14); // anonymous local
     let mut _5: &'15 u32; // anonymous local
+    let mut _6: fn<'a, '_1_1>(&'_1_1 (dyn Processor<'25>), &'a u32) -> &'a u32; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -43,7 +44,9 @@ where
     _4 = &(*processor) with_metadata(read processor.metadata)
     storage_live(_5)
     _5 = &(*input)
-    _3 = (read (*_4.metadata).method_process)<'37, '38>(move _4, move _5)
+    storage_live(_6)
+    _6 = vtable_lookup<test_crate::Processor::{vtable}<'26>>.method_process(read _4.metadata)
+    _3 = (read _6)<'37, '38>(move _4, move _5)
     ↳⚡ storage_dead(input)
         storage_dead(processor)
         unwind_continue
@@ -53,6 +56,7 @@ where
     storage_dead(_3)
     storage_dead(input)
     storage_dead(processor)
+    storage_dead(_6)
     return
 }
 
