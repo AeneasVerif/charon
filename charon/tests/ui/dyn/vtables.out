@@ -517,6 +517,7 @@ where
     let mut _5: i32; // anonymous local
     let mut _6: &'14 mut (dyn Modifiable<T> + '15); // anonymous local
     let mut _7: &'16 T; // anonymous local
+    let mut _8: fn<'_0_1, '_1_1>(&'_0_1 mut (dyn Modifiable<T>), &'_1_1 T) -> T; // anonymous local
 
     storage_live(_0)
     set T: '0
@@ -538,14 +539,18 @@ where
     _6 = &two-phase-mut (*x) with_metadata(read x.metadata)
     storage_live(_7)
     _7 = &(*arg)
-    _0 = (read (*_6.metadata).method_modify)<'27, '28>(move _6, move _7)
+    storage_live(_8)
+    _8 = vtable_lookup<test_crate::Modifiable::{vtable}<T>>.method_modify(read _6.metadata)
+    _0 = (read _8)<'27, '28>(move _6, move _7)
     ↳⚡ storage_dead(arg)
+        storage_dead(_8)
         unwind_continue
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(x)
     storage_dead(arg)
+    storage_dead(_8)
     return
 }
 
@@ -1033,6 +1038,7 @@ fn use_lifetime_trait<'a, '_1>(x: &'_1 (dyn LifetimeTrait<Ty = i32> + '_1), y: &
     let _3: &'8 i32; // anonymous local
     let mut _4: &'9 (dyn LifetimeTrait<Ty = i32> + '10); // anonymous local
     let mut _5: &'11 i32; // anonymous local
+    let mut _6: fn<'a, '_1_1>(&'_1_1 (dyn LifetimeTrait<Ty = i32>), &'a i32) -> &'a i32; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -1040,9 +1046,12 @@ fn use_lifetime_trait<'a, '_1>(x: &'_1 (dyn LifetimeTrait<Ty = i32> + '_1), y: &
     _4 = &(*x) with_metadata(read x.metadata)
     storage_live(_5)
     _5 = &(*y)
-    _3 = (read (*_4.metadata).method_lifetime_method)<'20, '21>(move _4, move _5)
+    storage_live(_6)
+    _6 = vtable_lookup<test_crate::LifetimeTrait::{vtable}<i32>>.method_lifetime_method(read _4.metadata)
+    _3 = (read _6)<'20, '21>(move _4, move _5)
     ↳⚡ storage_dead(y)
         storage_dead(x)
+        storage_dead(_6)
         unwind_continue
     _0 = &(*_3)
     storage_dead(_5)
@@ -1050,6 +1059,7 @@ fn use_lifetime_trait<'a, '_1>(x: &'_1 (dyn LifetimeTrait<Ty = i32> + '_1), y: &
     storage_dead(_3)
     storage_dead(y)
     storage_dead(x)
+    storage_dead(_6)
     return
 }
 
@@ -1066,25 +1076,26 @@ fn use_alias<'_0>(x: &'_0 (dyn Both32And64 + '_0))
     let _7: &'12 i64; // anonymous local
     let mut _8: &'13 i64; // anonymous local
     let mut _9: &'14 i32; // anonymous local
-    let mut _10: &'16 i32; // anonymous local
-    let mut _11: &'17 i64; // anonymous local
-    let mut _12: &'29 i32; // anonymous local
-    let mut _13: i32; // anonymous local
-    let mut _14: &'30 i64; // anonymous local
-    let mut _15: i64; // anonymous local
+    let mut _10: fn<'_0_1, '_1_1, '_2_1>(&'_0_1 (dyn Both32And64), &'_1_1 i32, &'_2_1 i64); // anonymous local
+    let mut _11: &'16 i32; // anonymous local
+    let mut _12: &'17 i64; // anonymous local
+    let mut _13: &'29 i32; // anonymous local
+    let mut _14: i32; // anonymous local
+    let mut _15: &'30 i64; // anonymous local
+    let mut _16: i64; // anonymous local
 
-    storage_live(_11)
-    storage_live(_14)
-    storage_live(_15)
-    _15 = const 200i64
-    _14 = &_15
-    _11 = move _14
-    storage_live(_10)
     storage_live(_12)
+    storage_live(_15)
+    storage_live(_16)
+    _16 = const 200i64
+    _15 = &_16
+    _12 = move _15
+    storage_live(_11)
     storage_live(_13)
-    _13 = const 100i32
-    _12 = &_13
-    _10 = move _12
+    storage_live(_14)
+    _14 = const 100i32
+    _13 = &_14
+    _11 = move _13
     storage_live(_0)
     storage_live(_8)
     storage_live(_9)
@@ -1093,18 +1104,21 @@ fn use_alias<'_0>(x: &'_0 (dyn Both32And64 + '_0))
     _3 = &(*x) with_metadata(read x.metadata)
     storage_live(_4)
     storage_live(_5)
-    _9 = move _10
+    _9 = move _11
     _5 = &(*_9)
     _4 = &(*_5)
     storage_live(_6)
     storage_live(_7)
-    _8 = move _11
+    _8 = move _12
     _7 = &(*_8)
     _6 = &(*_7)
-    _2 = (read (*_3.metadata).method_both_operate)<'26, '27, '28>(move _3, move _4, move _6)
+    storage_live(_10)
+    _10 = vtable_lookup<test_crate::Both32And64::{vtable}>.method_both_operate(read _3.metadata)
+    _2 = (read _10)<'26, '27, '28>(move _3, move _4, move _6)
     ↳⚡ storage_dead(_9)
         storage_dead(_8)
         storage_dead(x)
+        storage_dead(_16)
         storage_dead(_15)
         storage_dead(_14)
         storage_dead(_13)
@@ -1122,6 +1136,7 @@ fn use_alias<'_0>(x: &'_0 (dyn Both32And64 + '_0))
     storage_dead(_9)
     storage_dead(_8)
     storage_dead(x)
+    storage_dead(_16)
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_13)
@@ -1236,42 +1251,46 @@ fn main()
     let mut _83: &'146 i32; // anonymous local
     let mut _84: &'147 i32; // anonymous local
     let mut _85: &'148 i32; // anonymous local
-    let mut _86: &'149 i32; // anonymous local
-    let mut _87: &'193 i32; // anonymous local
-    let mut _88: &'207 i32; // anonymous local
-    let mut _89: &'242 i32; // anonymous local
-    let mut _90: &'246 i32; // anonymous local
-    let mut _91: &'247 i64; // anonymous local
-    let mut _92: &'259 i32; // anonymous local
-    let mut _93: &'265 i32; // anonymous local
-    let mut _94: &'274 i32; // anonymous local
-    let mut _95: &'304 i32; // anonymous local
-    let mut _96: i32; // anonymous local
-    let mut _97: &'305 i32; // anonymous local
-    let mut _98: i32; // anonymous local
-    let mut _99: &'306 i32; // anonymous local
+    let mut _86: fn<'_0_1>(&'_0_1 (dyn Checkable<i32>)) -> bool; // anonymous local
+    let mut _87: fn<'_0_1, '_1_1>(&'_0_1 mut (dyn Modifiable<i32>), &'_1_1 i32) -> i32; // anonymous local
+    let mut _88: fn<'_0_1>(&'_0_1 (dyn NoParam)); // anonymous local
+    let mut _89: fn<'_0_1, '_1_1, '_2_1>(&'_0_1 (dyn Both32And64), &'_1_1 i32, &'_2_1 i64); // anonymous local
+    let mut _90: &'149 i32; // anonymous local
+    let mut _91: &'193 i32; // anonymous local
+    let mut _92: &'207 i32; // anonymous local
+    let mut _93: &'242 i32; // anonymous local
+    let mut _94: &'246 i32; // anonymous local
+    let mut _95: &'247 i64; // anonymous local
+    let mut _96: &'259 i32; // anonymous local
+    let mut _97: &'265 i32; // anonymous local
+    let mut _98: &'274 i32; // anonymous local
+    let mut _99: &'304 i32; // anonymous local
     let mut _100: i32; // anonymous local
-    let mut _101: &'307 i32; // anonymous local
+    let mut _101: &'305 i32; // anonymous local
     let mut _102: i32; // anonymous local
-    let mut _103: &'308 i32; // anonymous local
+    let mut _103: &'306 i32; // anonymous local
     let mut _104: i32; // anonymous local
-    let mut _105: &'309 i64; // anonymous local
-    let mut _106: i64; // anonymous local
-    let mut _107: &'310 i32; // anonymous local
+    let mut _105: &'307 i32; // anonymous local
+    let mut _106: i32; // anonymous local
+    let mut _107: &'308 i32; // anonymous local
     let mut _108: i32; // anonymous local
-    let mut _109: &'311 i32; // anonymous local
-    let mut _110: i32; // anonymous local
-    let mut _111: &'312 i32; // anonymous local
+    let mut _109: &'309 i64; // anonymous local
+    let mut _110: i64; // anonymous local
+    let mut _111: &'310 i32; // anonymous local
     let mut _112: i32; // anonymous local
-    let mut _113: &'167 str; // anonymous local
-    let mut _114: &'182 str; // anonymous local
+    let mut _113: &'311 i32; // anonymous local
+    let mut _114: i32; // anonymous local
+    let mut _115: &'312 i32; // anonymous local
+    let mut _116: i32; // anonymous local
+    let mut _117: &'167 str; // anonymous local
+    let mut _118: &'182 str; // anonymous local
 
-    storage_live(_86)
-    storage_live(_95)
-    storage_live(_96)
-    _96 = const 42i32
-    _95 = &_96
-    _86 = move _95
+    storage_live(_90)
+    storage_live(_99)
+    storage_live(_100)
+    _100 = const 42i32
+    _99 = &_100
+    _90 = move _99
     storage_live(_0)
     storage_live(_77)
     storage_live(_78)
@@ -1295,7 +1314,7 @@ fn main()
     storage_live(x)
     storage_live(_2)
     storage_live(_3)
-    _85 = move _86
+    _85 = move _90
     _3 = &(*_85)
     _2 = &(*_3)
     x = unsize_cast<&'150 (dyn Checkable<i32> + '151), &impl_Checkable_i32_for_i32::{vtable}>(move _2)
@@ -1305,7 +1324,9 @@ fn main()
     storage_live(_4)
     storage_live(_5)
     _5 = &(*x) with_metadata(read x.metadata)
-    _4 = (read (*_5.metadata).method_check)<'159>(move _5)
+    storage_live(_86)
+    _86 = vtable_lookup<test_crate::Checkable::{vtable}<i32>>.method_check(read _5.metadata)
+    _4 = (read _86)<'159>(move _5)
     ↳⚡ storage_dead(_85)
         storage_dead(_84)
         storage_dead(_83)
@@ -1329,6 +1350,10 @@ fn main()
         storage_dead(_33)
         storage_dead(_32)
         storage_dead(kind_31)
+        storage_dead(_118)
+        storage_dead(_117)
+        storage_dead(_116)
+        storage_dead(_115)
         storage_dead(_114)
         storage_dead(_113)
         storage_dead(_112)
@@ -1359,10 +1384,14 @@ fn main()
         storage_dead(_87)
         storage_dead(_86)
         unwind_continue
-    storage_live(_113)
-    _113 = &test_crate::main::{promoted_const#18} with_metadata(const 27usize)
-    assert(move _4 == true) else panic(panic(move _113))
-    ↳⚡ storage_dead(_114)
+    storage_live(_117)
+    _117 = &test_crate::main::{promoted_const#18} with_metadata(const 27usize)
+    assert(move _4 == true) else panic(panic(move _117))
+    ↳⚡ storage_dead(_118)
+        storage_dead(_117)
+        storage_dead(_116)
+        storage_dead(_115)
+        storage_dead(_114)
         storage_dead(_113)
         storage_dead(_112)
         storage_dead(_111)
@@ -1439,6 +1468,10 @@ fn main()
         storage_dead(_33)
         storage_dead(_32)
         storage_dead(kind_31)
+        storage_dead(_118)
+        storage_dead(_117)
+        storage_dead(_116)
+        storage_dead(_115)
         storage_dead(_114)
         storage_dead(_113)
         storage_dead(_112)
@@ -1497,6 +1530,10 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             storage_dead(kind_31)
+            storage_dead(_118)
+            storage_dead(_117)
+            storage_dead(_116)
+            storage_dead(_115)
             storage_dead(_114)
             storage_dead(_113)
             storage_dead(_112)
@@ -1550,6 +1587,10 @@ fn main()
         storage_dead(_33)
         storage_dead(_32)
         storage_dead(kind_31)
+        storage_dead(_118)
+        storage_dead(_117)
+        storage_dead(_116)
+        storage_dead(_115)
         storage_dead(_114)
         storage_dead(_113)
         storage_dead(_112)
@@ -1607,6 +1648,10 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             storage_dead(kind_31)
+            storage_dead(_118)
+            storage_dead(_117)
+            storage_dead(_116)
+            storage_dead(_115)
             storage_dead(_114)
             storage_dead(_113)
             storage_dead(_112)
@@ -1661,6 +1706,10 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             storage_dead(kind_31)
+            storage_dead(_118)
+            storage_dead(_117)
+            storage_dead(_116)
+            storage_dead(_115)
             storage_dead(_114)
             storage_dead(_113)
             storage_dead(_112)
@@ -1714,6 +1763,10 @@ fn main()
         storage_dead(_33)
         storage_dead(_32)
         storage_dead(kind_31)
+        storage_dead(_118)
+        storage_dead(_117)
+        storage_dead(_116)
+        storage_dead(_115)
         storage_dead(_114)
         storage_dead(_113)
         storage_dead(_112)
@@ -1772,6 +1825,10 @@ fn main()
                 storage_dead(_33)
                 storage_dead(_32)
                 storage_dead(kind_31)
+                storage_dead(_118)
+                storage_dead(_117)
+                storage_dead(_116)
+                storage_dead(_115)
                 storage_dead(_114)
                 storage_dead(_113)
                 storage_dead(_112)
@@ -1825,6 +1882,10 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             storage_dead(kind_31)
+            storage_dead(_118)
+            storage_dead(_117)
+            storage_dead(_116)
+            storage_dead(_115)
             storage_dead(_114)
             storage_dead(_113)
             storage_dead(_112)
@@ -1879,6 +1940,10 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             storage_dead(kind_31)
+            storage_dead(_118)
+            storage_dead(_117)
+            storage_dead(_116)
+            storage_dead(_115)
             storage_dead(_114)
             storage_dead(_113)
             storage_dead(_112)
@@ -1925,7 +1990,9 @@ fn main()
         _24 = const 100i32
         _23 = &mut _24
         _22 = &(*_23)
-        _20 = (read (*_21.metadata).method_modify)<'191, '192>(move _21, move _22)
+        storage_live(_87)
+        _87 = vtable_lookup<test_crate::Modifiable::{vtable}<i32>>.method_modify(read _21.metadata)
+        _20 = (read _87)<'191, '192>(move _21, move _22)
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1949,6 +2016,10 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             storage_dead(kind_31)
+            storage_dead(_118)
+            storage_dead(_117)
+            storage_dead(_116)
+            storage_dead(_115)
             storage_dead(_114)
             storage_dead(_113)
             storage_dead(_112)
@@ -1979,17 +2050,17 @@ fn main()
             storage_dead(_87)
             storage_dead(_86)
             unwind_continue
-        storage_live(_87)
-        storage_live(_97)
-        storage_live(_98)
-        _98 = const 100i32
-        _97 = &_98
-        _87 = move _97
+        storage_live(_91)
+        storage_live(_101)
+        storage_live(_102)
+        _102 = const 100i32
+        _101 = &_102
+        _91 = move _101
         storage_dead(_22)
         storage_dead(_21)
         _19 = &_20
         storage_live(_25)
-        _84 = move _87
+        _84 = move _91
         _25 = &(*_84)
         _18 = (move _19, move _25)
         storage_dead(_25)
@@ -2047,6 +2118,10 @@ fn main()
                 storage_dead(_33)
                 storage_dead(_32)
                 storage_dead(kind_31)
+                storage_dead(_118)
+                storage_dead(_117)
+                storage_dead(_116)
+                storage_dead(_115)
                 storage_dead(_114)
                 storage_dead(_113)
                 storage_dead(_112)
@@ -2078,12 +2153,12 @@ fn main()
                 storage_dead(_86)
                 unwind_continue
         }
-        storage_live(_88)
-        storage_live(_99)
-        storage_live(_100)
-        _100 = const 42i32
-        _99 = &_100
-        _88 = move _99
+        storage_live(_92)
+        storage_live(_103)
+        storage_live(_104)
+        _104 = const 42i32
+        _103 = &_104
+        _92 = move _103
         storage_dead(_30)
         storage_dead(_29)
         storage_dead(_28)
@@ -2098,7 +2173,7 @@ fn main()
         storage_live(_40)
         storage_live(_41)
         storage_live(_42)
-        _83 = move _88
+        _83 = move _92
         _42 = &(*_83)
         _41 = &(*_42)
         _40 = to_dyn_obj<'211, i32>[{built_in impl Sized for i32}, impl_NoParam_for_i32](move _41)
@@ -2125,6 +2200,10 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             storage_dead(kind_31)
+            storage_dead(_118)
+            storage_dead(_117)
+            storage_dead(_116)
+            storage_dead(_115)
             storage_dead(_114)
             storage_dead(_113)
             storage_dead(_112)
@@ -2165,7 +2244,9 @@ fn main()
         storage_live(_43)
         storage_live(_44)
         _44 = &(*z) with_metadata(read z.metadata)
-        _43 = (read (*_44.metadata).method_dummy)<'241>(move _44)
+        storage_live(_88)
+        _88 = vtable_lookup<test_crate::NoParam::{vtable}>.method_dummy(read _44.metadata)
+        _43 = (read _88)<'241>(move _44)
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -2189,6 +2270,10 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             storage_dead(kind_31)
+            storage_dead(_118)
+            storage_dead(_117)
+            storage_dead(_116)
+            storage_dead(_115)
             storage_dead(_114)
             storage_dead(_113)
             storage_dead(_112)
@@ -2219,30 +2304,30 @@ fn main()
             storage_dead(_87)
             storage_dead(_86)
             unwind_continue
-        storage_live(_91)
+        storage_live(_95)
+        storage_live(_109)
+        storage_live(_110)
+        _110 = const 200i64
+        _109 = &_110
+        _95 = move _109
+        storage_live(_94)
+        storage_live(_107)
+        storage_live(_108)
+        _108 = const 100i32
+        _107 = &_108
+        _94 = move _107
+        storage_live(_93)
         storage_live(_105)
         storage_live(_106)
-        _106 = const 200i64
+        _106 = const 42i32
         _105 = &_106
-        _91 = move _105
-        storage_live(_90)
-        storage_live(_103)
-        storage_live(_104)
-        _104 = const 100i32
-        _103 = &_104
-        _90 = move _103
-        storage_live(_89)
-        storage_live(_101)
-        storage_live(_102)
-        _102 = const 42i32
-        _101 = &_102
-        _89 = move _101
+        _93 = move _105
         storage_dead(_44)
         storage_dead(_43)
         storage_live(a)
         storage_live(_46)
         storage_live(_47)
-        _82 = move _89
+        _82 = move _93
         _47 = &(*_82)
         _46 = &(*_47)
         a = unsize_cast<&'243 (dyn Both32And64 + '244), &impl_Both32And64_for_i32::{vtable}>(move _46)
@@ -2254,15 +2339,17 @@ fn main()
         _49 = &(*a) with_metadata(read a.metadata)
         storage_live(_50)
         storage_live(_51)
-        _81 = move _90
+        _81 = move _94
         _51 = &(*_81)
         _50 = &(*_51)
         storage_live(_52)
         storage_live(_53)
-        _80 = move _91
+        _80 = move _95
         _53 = &(*_80)
         _52 = &(*_53)
-        _48 = (read (*_49.metadata).method_both_operate)<'256, '257, '258>(move _49, move _50, move _52)
+        storage_live(_89)
+        _89 = vtable_lookup<test_crate::Both32And64::{vtable}>.method_both_operate(read _49.metadata)
+        _48 = (read _89)<'256, '257, '258>(move _49, move _50, move _52)
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -2286,6 +2373,10 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             storage_dead(kind_31)
+            storage_dead(_118)
+            storage_dead(_117)
+            storage_dead(_116)
+            storage_dead(_115)
             storage_dead(_114)
             storage_dead(_113)
             storage_dead(_112)
@@ -2316,18 +2407,18 @@ fn main()
             storage_dead(_87)
             storage_dead(_86)
             unwind_continue
-        storage_live(_93)
-        storage_live(_109)
-        storage_live(_110)
-        _110 = const 10i32
-        _109 = &_110
-        _93 = move _109
-        storage_live(_92)
-        storage_live(_107)
-        storage_live(_108)
-        _108 = const 42i32
-        _107 = &_108
-        _92 = move _107
+        storage_live(_97)
+        storage_live(_113)
+        storage_live(_114)
+        _114 = const 10i32
+        _113 = &_114
+        _97 = move _113
+        storage_live(_96)
+        storage_live(_111)
+        storage_live(_112)
+        _112 = const 42i32
+        _111 = &_112
+        _96 = move _111
         storage_dead(_52)
         storage_dead(_50)
         storage_dead(_49)
@@ -2337,7 +2428,7 @@ fn main()
         storage_live(b)
         storage_live(_55)
         storage_live(_56)
-        _79 = move _92
+        _79 = move _96
         _56 = &(*_79)
         _55 = &(*_56)
         b = unsize_cast<&'260 (dyn LifetimeTrait<Ty = i32> + '261), &impl_LifetimeTrait_for_i32::{vtable}>(move _55)
@@ -2354,7 +2445,7 @@ fn main()
         storage_dead(_61)
         storage_live(_62)
         storage_live(_63)
-        _78 = move _93
+        _78 = move _97
         _63 = &(*_78)
         _62 = &(*_63)
         _59 = use_lifetime_trait<'272, '273>(move _60, move _62)
@@ -2381,6 +2472,10 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             storage_dead(kind_31)
+            storage_dead(_118)
+            storage_dead(_117)
+            storage_dead(_116)
+            storage_dead(_115)
             storage_dead(_114)
             storage_dead(_113)
             storage_dead(_112)
@@ -2411,17 +2506,17 @@ fn main()
             storage_dead(_87)
             storage_dead(_86)
             unwind_continue
-        storage_live(_94)
-        storage_live(_111)
-        storage_live(_112)
-        _112 = const 10i32
-        _111 = &_112
-        _94 = move _111
+        storage_live(_98)
+        storage_live(_115)
+        storage_live(_116)
+        _116 = const 10i32
+        _115 = &_116
+        _98 = move _115
         storage_dead(_62)
         storage_dead(_60)
         _58 = &(*_59)
         storage_live(_64)
-        _77 = move _94
+        _77 = move _98
         _64 = &(*_77)
         _57 = (move _58, move _64)
         storage_dead(_64)
@@ -2479,6 +2574,10 @@ fn main()
                 storage_dead(_33)
                 storage_dead(_32)
                 storage_dead(kind_31)
+                storage_dead(_118)
+                storage_dead(_117)
+                storage_dead(_116)
+                storage_dead(_115)
                 storage_dead(_114)
                 storage_dead(_113)
                 storage_dead(_112)
@@ -2548,6 +2647,10 @@ fn main()
         storage_dead(_33)
         storage_dead(_32)
         storage_dead(kind_31)
+        storage_dead(_118)
+        storage_dead(_117)
+        storage_dead(_116)
+        storage_dead(_115)
         storage_dead(_114)
         storage_dead(_113)
         storage_dead(_112)
@@ -2605,6 +2708,10 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             storage_dead(kind_31)
+            storage_dead(_118)
+            storage_dead(_117)
+            storage_dead(_116)
+            storage_dead(_115)
             storage_dead(_114)
             storage_dead(_113)
             storage_dead(_112)
@@ -2658,6 +2765,10 @@ fn main()
         storage_dead(_33)
         storage_dead(_32)
         storage_dead(kind_31)
+        storage_dead(_118)
+        storage_dead(_117)
+        storage_dead(_116)
+        storage_dead(_115)
         storage_dead(_114)
         storage_dead(_113)
         storage_dead(_112)
@@ -2712,6 +2823,10 @@ fn main()
         storage_dead(_33)
         storage_dead(_32)
         storage_dead(kind_31)
+        storage_dead(_118)
+        storage_dead(_117)
+        storage_dead(_116)
+        storage_dead(_115)
         storage_dead(_114)
         storage_dead(_113)
         storage_dead(_112)
@@ -2746,9 +2861,9 @@ fn main()
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_12)
-    storage_live(_114)
-    _114 = &test_crate::main::{promoted_const#21} with_metadata(const 71usize)
-    panic(panic(move _114))
+    storage_live(_118)
+    _118 = &test_crate::main::{promoted_const#21} with_metadata(const 71usize)
+    panic(panic(move _118))
     ↳⚡ storage_dead(_85)
         storage_dead(_84)
         storage_dead(_83)
@@ -2772,6 +2887,10 @@ fn main()
         storage_dead(_33)
         storage_dead(_32)
         storage_dead(kind_31)
+        storage_dead(_118)
+        storage_dead(_117)
+        storage_dead(_116)
+        storage_dead(_115)
         storage_dead(_114)
         storage_dead(_113)
         storage_dead(_112)
