@@ -2475,7 +2475,15 @@ and rustc_attribute_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* align = int_of_json ctx align in
         let* span = span_of_json ctx span in
         Ok (RustcAttributeKindRustcAlign (align, span))
+    | `String "RustcAllocator" -> Ok RustcAttributeKindRustcAllocator
+    | `String "RustcAllocatorZeroed" ->
+        Ok RustcAttributeKindRustcAllocatorZeroed
+    | `Assoc [ ("RustcAllocatorZeroedVariant", `Assoc [ ("name", name) ]) ] ->
+        let* name = string_of_json ctx name in
+        Ok (RustcAttributeKindRustcAllocatorZeroedVariant name)
+    | `String "RustcDeallocator" -> Ok RustcAttributeKindRustcDeallocator
     | `String "RustcIntrinsic" -> Ok RustcAttributeKindRustcIntrinsic
+    | `String "RustcReallocator" -> Ok RustcAttributeKindRustcReallocator
     | `Assoc [ ("ShouldPanic", `Assoc [ ("reason", reason) ]) ] ->
         let* reason = option_of_json string_of_json ctx reason in
         Ok (RustcAttributeKindShouldPanic reason)

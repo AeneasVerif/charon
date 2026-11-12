@@ -128,7 +128,18 @@ impl<'tcx> TranslateCtx<'tcx> {
                     span: self.translate_span(span),
                 })
             }
+            AttributeKind::RustcAllocator => Ok(from_rustc::AttributeKind::RustcAllocator),
+            AttributeKind::RustcAllocatorZeroed => {
+                Ok(from_rustc::AttributeKind::RustcAllocatorZeroed)
+            }
+            AttributeKind::RustcAllocatorZeroedVariant { name } => {
+                Ok(from_rustc::AttributeKind::RustcAllocatorZeroedVariant {
+                    name: (name).to_string().into(),
+                })
+            }
+            AttributeKind::RustcDeallocator => Ok(from_rustc::AttributeKind::RustcDeallocator),
             AttributeKind::RustcIntrinsic => Ok(from_rustc::AttributeKind::RustcIntrinsic),
+            AttributeKind::RustcReallocator => Ok(from_rustc::AttributeKind::RustcReallocator),
             AttributeKind::ShouldPanic { reason } => Ok(from_rustc::AttributeKind::ShouldPanic {
                 reason: (reason)
                     .as_ref()

@@ -1346,7 +1346,14 @@ let pp_rustc_attribute_kind (fmt : Format.formatter)
       | RustcOptimizeAttrSize -> pp_string fmt "optimize(size)")
   | RustcAttributeKindRustcAlign (align, _) ->
       Format.fprintf fmt "rustc_align(%d)" align
+  | RustcAttributeKindRustcAllocator -> pp_string fmt "rustc_allocator"
+  | RustcAttributeKindRustcAllocatorZeroed ->
+      pp_string fmt "rustc_allocator_zeroed"
+  | RustcAttributeKindRustcAllocatorZeroedVariant name ->
+      Format.fprintf fmt "rustc_allocator_zeroed_variant = \"%s\"" name
+  | RustcAttributeKindRustcDeallocator -> pp_string fmt "rustc_deallocator"
   | RustcAttributeKindRustcIntrinsic -> pp_string fmt "rustc_intrinsic"
+  | RustcAttributeKindRustcReallocator -> pp_string fmt "rustc_reallocator"
   | RustcAttributeKindShouldPanic reason ->
       pp_string fmt "should_panic";
       Option.iter

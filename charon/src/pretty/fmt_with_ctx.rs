@@ -1925,7 +1925,14 @@ impl Display for from_rustc::AttributeKind {
                 from_rustc::OptimizeAttr::Size => write!(f, "optimize(size)"),
             },
             AttributeKind::RustcAlign { align, .. } => write!(f, "rustc_align({align})"),
+            AttributeKind::RustcAllocator => write!(f, "rustc_allocator"),
+            AttributeKind::RustcAllocatorZeroed => write!(f, "rustc_allocator_zeroed"),
+            AttributeKind::RustcAllocatorZeroedVariant { name } => {
+                write!(f, "rustc_allocator_zeroed_variant = \"{name}\"")
+            }
+            AttributeKind::RustcDeallocator => write!(f, "rustc_deallocator"),
             AttributeKind::RustcIntrinsic => write!(f, "rustc_intrinsic"),
+            AttributeKind::RustcReallocator => write!(f, "rustc_reallocator"),
             AttributeKind::ShouldPanic { reason } => {
                 write!(f, "should_panic")?;
                 if let Some(reason) = reason {

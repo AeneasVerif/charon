@@ -2064,11 +2064,18 @@ and rustc_attribute_kind_of_postcard (ctx : of_postcard_ctx)
          let* align = u64_of_postcard ctx st in
          let* span = span_of_postcard ctx st in
          Ok (RustcAttributeKindRustcAlign (align, span))
-     | 16 -> Ok RustcAttributeKindRustcIntrinsic
-     | 17 ->
+     | 16 -> Ok RustcAttributeKindRustcAllocator
+     | 17 -> Ok RustcAttributeKindRustcAllocatorZeroed
+     | 18 ->
+         let* name = string_of_postcard ctx st in
+         Ok (RustcAttributeKindRustcAllocatorZeroedVariant name)
+     | 19 -> Ok RustcAttributeKindRustcDeallocator
+     | 20 -> Ok RustcAttributeKindRustcIntrinsic
+     | 21 -> Ok RustcAttributeKindRustcReallocator
+     | 22 ->
          let* reason = option_of_postcard string_of_postcard ctx st in
          Ok (RustcAttributeKindShouldPanic reason)
-     | 18 ->
+     | 23 ->
          let* features =
            list_of_postcard
              (pair_of_postcard string_of_postcard span_of_postcard)
@@ -2077,7 +2084,7 @@ and rustc_attribute_kind_of_postcard (ctx : of_postcard_ctx)
          let* attr_span = span_of_postcard ctx st in
          let* was_forced = bool_of_postcard ctx st in
          Ok (RustcAttributeKindTargetFeature (features, attr_span, was_forced))
-     | 19 ->
+     | 24 ->
          let* _0 = span_of_postcard ctx st in
          Ok (RustcAttributeKindTrackCaller _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))

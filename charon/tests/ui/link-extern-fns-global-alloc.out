@@ -44,6 +44,7 @@ pub unsafe fn alloc<'_0>(self: &'_0 Null, _2: Layout) -> *mut u8
     return
 }
 
+#[rustc_allocator]
 unsafe fn test_crate::_::__rust_alloc(size: usize, align: Alignment) -> *mut u8
 {
     let mut _0: *mut u8; // return
@@ -83,6 +84,7 @@ unsafe fn test_crate::_::__rust_alloc(size: usize, align: Alignment) -> *mut u8
     return
 }
 
+#[rustc_allocator_zeroed_variant = "__rust_alloc_zeroed"]
 extern unsafe fn alloc::alloc::__rust_alloc(_1: usize, _2: Alignment) -> *mut u8
 = <extern:_RNvCs<hash>_7___rustc12___rust_alloc> linked(strong) to test_crate::_::__rust_alloc
 
