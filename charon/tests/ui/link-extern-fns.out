@@ -111,6 +111,7 @@ pub unsafe extern "C" fn __rdl_alloc(_1: usize, _2: usize) -> *mut u8
 
 // Full name: alloc::alloc::__rust_alloc
 #[rustc_allocator_zeroed_variant = "__rust_alloc_zeroed"]
+#[rustc_allocator]
 extern unsafe fn __rust_alloc(_1: usize, _2: Alignment) -> *mut u8
 = <extern:_RNvCs<hash>_7___rustc12___rust_alloc> linked(alloc) to __rdl_alloc
 
