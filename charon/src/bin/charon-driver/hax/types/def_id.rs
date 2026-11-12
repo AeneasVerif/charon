@@ -712,7 +712,33 @@ impl DefId {
                         // metadata; asking for them panics.
                         &[]
                     } else {
-                        tcx.attrs_for_def(def_id)
+                        let attrs = tcx.attrs_for_def(def_id);
+
+                        // Restore the allocator attributes that aren't encode in crate metadata.
+                        let restored = if matches!(self.kind, Fn | AssocFn) {
+                            use rustc_hir::attrs::AttributeKind::*;
+                            use rustc_middle::middle::codegen_fn_attrs::CodegenFnAttrFlags;
+                            let flags = tcx.codegen_fn_attrs(def_id).flags;
+                            [
+                                (CodegenFnAttrFlags::ALLOCATOR, RustcAllocator),
+                                (CodegenFnAttrFlags::DEALLOCATOR, RustcDeallocator),
+                                (CodegenFnAttrFlags::REALLOCATOR, RustcReallocator),
+                                (CodegenFnAttrFlags::ALLOCATOR_ZEROED, RustcAllocatorZeroed),
+                            ]
+                            .into_iter()
+                            .filter(|(flag, _)| flags.contains(*flag))
+                            .map(|(_, attr)| hir::Attribute::Parsed(attr))
+                            .collect_vec()
+                        } else {
+                            vec![]
+                        };
+
+                        if restored.is_empty() {
+                            attrs
+                        } else {
+                            tcx.arena
+                                .alloc_from_iter(attrs.iter().cloned().chain(restored))
+                        }
                     }
                 } else {
                     &[]
