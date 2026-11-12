@@ -332,6 +332,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for ast::Body {
                     LinkedExtern::WeaklyLinked(fun) => {
                         write!(f, " linked(weak) to {}", fun.with_ctx(ctx))
                     }
+                    LinkedExtern::AllocatorShim(fun) => {
+                        write!(f, " linked(alloc) to {}", fun.with_ctx(ctx))
+                    }
                     LinkedExtern::Unlinked => Ok(()),
                 }
             }
