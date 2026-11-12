@@ -237,8 +237,18 @@ and rustc_attribute_kind =
           Fields:
           - [align]
           - [span] *)
+  | RustcAttributeKindRustcAllocator  (** Represents [#[rustc_allocator]] *)
+  | RustcAttributeKindRustcAllocatorZeroed
+      (** Represents [#[rustc_allocator_zeroed]] *)
+  | RustcAttributeKindRustcAllocatorZeroedVariant of string
+      (** Represents [#[rustc_allocator_zeroed_variant]]
+
+          Fields:
+          - [name] *)
+  | RustcAttributeKindRustcDeallocator  (** Represents [#[rustc_deallocator]] *)
   | RustcAttributeKindRustcIntrinsic  (** Represents [#[rustc_intrinsic]] *)
   | RustcAttributeKindRustcNoWritable  (** Represents [#[rustc_no_writable]] *)
+  | RustcAttributeKindRustcReallocator  (** Represents [#[rustc_reallocator]] *)
   | RustcAttributeKindShouldPanic of string option
       (** Represents [#[should_panic]]
 
