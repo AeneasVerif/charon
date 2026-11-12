@@ -274,6 +274,11 @@ and unop =
   | Neg of overflow_mode  (** This can overflow, for [-i::MIN]. *)
   | Cast of cast_kind
       (** Casts are rvalues in MIR, but we treat them as unops. *)
+  | VTableMethodLookup of type_decl_ref * v_table_field
+      (** Reads the entry [VTableField] of a vtable, inspired by MiniRust's
+          equivalent operator. This lets Charon make the distinction between
+          regular call and virtual calls instead of the consumer. Introduced by
+          [transform_dyn_trait_calls]. *)
 
 (** Used for [[Rvalue::Use]] to indicate whether the operand should be retagged
     (this is used for Rust's aliasing model). *)

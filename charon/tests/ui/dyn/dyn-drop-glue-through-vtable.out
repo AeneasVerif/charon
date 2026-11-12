@@ -135,13 +135,16 @@ unsafe fn impl_Destruct_for_A::drop_glue<'_0>(_1: &'_0 mut A)
     let _1: &'1 mut A; // arg #1
     let mut drop_arg: &'_ mut (dyn T + '6); // local
     let mut drop_ret: (); // local
+    let mut _4: unsafe fn<'_0_1>(&'_0_1 mut (dyn T)); // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(drop_arg)
     drop_arg = &mut (*_1)._0 with_metadata(read _1.metadata)
     storage_live(drop_ret)
-    drop_ret = (read (*drop_arg.metadata).drop)<'4>(move drop_arg)
+    storage_live(_4)
+    _4 = vtable_lookup<test_crate::T::{vtable}>.drop(read drop_arg.metadata)
+    drop_ret = (read _4)<'4>(move drop_arg)
     ↳⚡ unwind_continue
     return
 }

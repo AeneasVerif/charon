@@ -681,28 +681,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
     fn operand(&self, span: Span, operand: &Operand) -> Result<mini::ValueExpr> {
         Ok(match operand {
             Operand::Copy(place, _) | Operand::Read(place) | Operand::Move(place) => {
-                // Charon translates dyn dispatch to a vtable-field read. MiniRust vtables are
-                // opaque, so read the method through its lookup operation.
-                if let PlaceKind::Projection(vtable, ProjectionElem::Field(None, field)) =
-                    &place.kind
-                    && let PlaceKind::Projection(metadata, ProjectionElem::Deref) = &vtable.kind
-                    && let PlaceKind::Projection(pointer, ProjectionElem::PtrMetadata) =
-                        &metadata.kind
-                    && let Some(tref) = vtable.ty.as_adt()
-                    && let TypeSource::VTable { field_map, .. } =
-                        &self.krate.type_decls[tref.id].src
-                    && matches!(
-                        field_map[*field],
-                        VTableField::Drop | VTableField::Method(..)
-                    )
-                {
-                    mb::vtable_method_lookup(
-                        mb::get_metadata(mb::load(self.place(span, pointer)?)),
-                        self.method_name(*field),
-                    )
-                } else if let PlaceKind::Projection(pointer, ProjectionElem::PtrMetadata) =
-                    &place.kind
-                {
+                if let PlaceKind::Projection(pointer, ProjectionElem::PtrMetadata) = &place.kind {
                     mb::get_metadata(mb::load(self.place(span, pointer)?))
                 } else {
                     mb::load(self.place(span, place)?)
@@ -858,6 +837,32 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             }
             UnOp::Not => mini::UnOp::Int(mini::IntUnOp::BitNot),
             UnOp::Neg(_) => mini::UnOp::Int(mini::IntUnOp::Neg),
+            // MiniRust vtables are opaque: a method or the drop function is read through its
+            // lookup operation, from the vtable pointer.
+            UnOp::VTableMethodLookup(
+                tref,
+                field @ (VTableField::Drop | VTableField::Method(..)),
+            ) if let TypeDecl {
+                kind: TypeDeclKind::Struct(fields),
+                src: TypeSource::VTable { field_map, .. },
+                ..
+            } = &self.krate.type_decls[tref.id]
+                && let Some((id, _)) = field_map.iter_enumerated().find(|(_, f)| *f == field) =>
+            {
+                let lookup = mb::vtable_method_lookup(operand_value, self.method_name(id));
+                // In mono mode the vtable holds the function erased, as a `*const ()`.
+                let field_ty = fields[id].ty.clone().substitute(&tref.generics);
+                return Ok(if field_ty.kind().is_fn_ptr() {
+                    lookup
+                } else {
+                    mb::transmute(lookup, self.ty(span, &field_ty)?)
+                });
+            }
+            UnOp::VTableMethodLookup(..) => raise!(
+                span,
+                "Unsupported vtable lookup in MiniRust: {}",
+                op.with_ctx(&self.fmt)
+            ),
             UnOp::Cast(CastKind::Scalar(target_ty)) => {
                 if operand.ty().is_bool() {
                     operand_value = mb::bool_to_int::<u8>(operand_value);

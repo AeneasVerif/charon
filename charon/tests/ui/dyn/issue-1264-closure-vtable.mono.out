@@ -1101,25 +1101,28 @@ fn main()
     let mut _29: &'57 u32; // anonymous local
     let mut _30: &'58 test_crate::main::{closure#3}; // anonymous local
     let mut _31: &'59 test_crate::main::{closure}; // anonymous local
-    let mut _32: fn(&'30 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '31), (u32,)) -> u32; // anonymous local
-    let mut _33: fn(&'42 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '43), (u32,)) -> u32; // anonymous local
-    let mut _34: fn(&'52 (dyn for<'_0_3> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '53), (&'_ u32,)) -> u32; // anonymous local
-    let mut _35: &'60 test_crate::main::{closure}; // anonymous local
-    let mut _36: &'89 test_crate::main::{closure#3}; // anonymous local
-    let mut _37: &'99 u32; // anonymous local
-    let mut _38: &'120 test_crate::main::{closure}; // anonymous local
-    let mut _39: test_crate::main::{closure}; // anonymous local
-    let mut _40: &'121 test_crate::main::{closure#3}; // anonymous local
-    let mut _41: test_crate::main::{closure#3}; // anonymous local
-    let mut _42: &'122 u32; // anonymous local
-    let mut _43: u32; // anonymous local
+    let mut _32: *const (); // anonymous local
+    let mut _33: fn(&'30 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '31), (u32,)) -> u32; // anonymous local
+    let mut _34: *const (); // anonymous local
+    let mut _35: fn(&'42 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '43), (u32,)) -> u32; // anonymous local
+    let mut _36: *const (); // anonymous local
+    let mut _37: fn(&'52 (dyn for<'_0_3> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '53), (&'_ u32,)) -> u32; // anonymous local
+    let mut _38: &'60 test_crate::main::{closure}; // anonymous local
+    let mut _39: &'89 test_crate::main::{closure#3}; // anonymous local
+    let mut _40: &'99 u32; // anonymous local
+    let mut _41: &'120 test_crate::main::{closure}; // anonymous local
+    let mut _42: test_crate::main::{closure}; // anonymous local
+    let mut _43: &'121 test_crate::main::{closure#3}; // anonymous local
+    let mut _44: test_crate::main::{closure#3}; // anonymous local
+    let mut _45: &'122 u32; // anonymous local
+    let mut _46: u32; // anonymous local
 
-    storage_live(_35)
     storage_live(_38)
-    storage_live(_39)
-    _39 = test_crate::main::{closure} {  }
-    _38 = &_39
-    _35 = move _38
+    storage_live(_41)
+    storage_live(_42)
+    _42 = test_crate::main::{closure} {  }
+    _41 = &_42
+    _38 = move _41
     storage_live(_0)
     storage_live(_29)
     storage_live(_30)
@@ -1136,7 +1139,7 @@ fn main()
     storage_live(f)
     storage_live(_2)
     storage_live(_3)
-    _31 = move _35
+    _31 = move _38
     _3 = &(*_31)
     _2 = &(*_3)
     f = unsize_cast<&'61 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '62), &{impl Fn<(u32,)> for test_crate::main::{closure}}::{vtable}>(move _2)
@@ -1149,8 +1152,10 @@ fn main()
     storage_live(_6)
     _6 = (const 1u32,)
     storage_live(_32)
-    _32 = cast<fn(&'30 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '31), (u32,)) -> u32>(read (*_5.metadata).method_call)
-    _y_4 = (read _32)(move _5, move _6)
+    _32 = vtable_lookup<core::ops::function::Fn::{vtable}>.method_call(read _5.metadata)
+    storage_live(_33)
+    _33 = cast<fn(&'30 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '31), (u32,)) -> u32>(move _32)
+    _y_4 = (read _33)(move _5, move _6)
     ↳⚡ storage_dead(_31)
         storage_dead(_30)
         storage_dead(_29)
@@ -1181,9 +1186,11 @@ fn main()
     _14 = &(*g) with_metadata(read g.metadata)
     storage_live(_15)
     _15 = (const 2u32,)
-    storage_live(_33)
-    _33 = cast<fn(&'42 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '43), (u32,)) -> u32>(read (*_14.metadata).method_call)
-    _y_13 = (read _33)(move _14, move _15)
+    storage_live(_34)
+    _34 = vtable_lookup<core::ops::function::Fn::{vtable}>.method_call(read _14.metadata)
+    storage_live(_35)
+    _35 = cast<fn(&'42 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '43), (u32,)) -> u32>(move _34)
+    _y_13 = (read _35)(move _14, move _15)
     ↳⚡ storage_dead(_31)
         storage_dead(_30)
         storage_dead(_29)
@@ -1204,6 +1211,9 @@ fn main()
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
+            storage_dead(_46)
+            storage_dead(_45)
+            storage_dead(_44)
             storage_dead(_43)
             storage_dead(_42)
             storage_dead(_41)
@@ -1222,6 +1232,9 @@ fn main()
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
+            storage_dead(_46)
+            storage_dead(_45)
+            storage_dead(_44)
             storage_dead(_43)
             storage_dead(_42)
             storage_dead(_41)
@@ -1245,6 +1258,9 @@ fn main()
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
+            storage_dead(_46)
+            storage_dead(_45)
+            storage_dead(_44)
             storage_dead(_43)
             storage_dead(_42)
             storage_dead(_41)
@@ -1262,6 +1278,9 @@ fn main()
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
+            storage_dead(_46)
+            storage_dead(_45)
+            storage_dead(_44)
             storage_dead(_43)
             storage_dead(_42)
             storage_dead(_41)
@@ -1288,6 +1307,9 @@ fn main()
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
+            storage_dead(_46)
+            storage_dead(_45)
+            storage_dead(_44)
             storage_dead(_43)
             storage_dead(_42)
             storage_dead(_41)
@@ -1305,6 +1327,9 @@ fn main()
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
+            storage_dead(_46)
+            storage_dead(_45)
+            storage_dead(_44)
             storage_dead(_43)
             storage_dead(_42)
             storage_dead(_41)
@@ -1322,23 +1347,23 @@ fn main()
         storage_dead(_30)
         storage_dead(_29)
         unwind_continue
-    storage_live(_37)
-    storage_live(_42)
-    storage_live(_43)
-    _43 = const 4u32
-    _42 = &_43
-    _37 = move _42
-    storage_live(_36)
     storage_live(_40)
-    storage_live(_41)
-    _41 = test_crate::main::{closure#3} {  }
-    _40 = &_41
-    _36 = move _40
+    storage_live(_45)
+    storage_live(_46)
+    _46 = const 4u32
+    _45 = &_46
+    _40 = move _45
+    storage_live(_39)
+    storage_live(_43)
+    storage_live(_44)
+    _44 = test_crate::main::{closure#3} {  }
+    _43 = &_44
+    _39 = move _43
     fake_read(_w)
     storage_live(k)
     storage_live(_22)
     storage_live(_23)
-    _30 = move _36
+    _30 = move _39
     _23 = &(*_30)
     _22 = &(*_23)
     k = unsize_cast<&'90 (dyn for<'_0_2> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '91), &{impl Fn<(&'_ u32,)> for test_crate::main::{closure#3}}::{vtable}<'95>>(move _22)
@@ -1351,17 +1376,22 @@ fn main()
     storage_live(_26)
     storage_live(_27)
     storage_live(_28)
-    _29 = move _37
+    _29 = move _40
     _28 = &(*_29)
     _27 = &(*_28)
     _26 = (move _27,)
-    storage_live(_34)
-    _34 = cast<fn(&'52 (dyn for<'_0_3> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '53), (&'_ u32,)) -> u32>(read (*_25.metadata).method_call)
-    _y_24 = (read _34)(move _25, move _26)
+    storage_live(_36)
+    _36 = vtable_lookup<core::ops::function::Fn::{vtable}>.method_call(read _25.metadata)
+    storage_live(_37)
+    _37 = cast<fn(&'52 (dyn for<'_0_3> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '53), (&'_ u32,)) -> u32>(move _36)
+    _y_24 = (read _37)(move _25, move _26)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn FnOnce<(), Output = u32>), Global>}::drop_glue::<(dyn FnOnce<(), Output = u32>), Global><'116>] _w
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
+            storage_dead(_46)
+            storage_dead(_45)
+            storage_dead(_44)
             storage_dead(_43)
             storage_dead(_42)
             storage_dead(_41)
@@ -1379,6 +1409,9 @@ fn main()
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
+            storage_dead(_46)
+            storage_dead(_45)
+            storage_dead(_44)
             storage_dead(_43)
             storage_dead(_42)
             storage_dead(_41)
@@ -1396,6 +1429,9 @@ fn main()
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
+            storage_dead(_46)
+            storage_dead(_45)
+            storage_dead(_44)
             storage_dead(_43)
             storage_dead(_42)
             storage_dead(_41)
@@ -1426,6 +1462,9 @@ fn main()
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
+            storage_dead(_46)
+            storage_dead(_45)
+            storage_dead(_44)
             storage_dead(_43)
             storage_dead(_42)
             storage_dead(_41)
@@ -1443,6 +1482,9 @@ fn main()
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
+            storage_dead(_46)
+            storage_dead(_45)
+            storage_dead(_44)
             storage_dead(_43)
             storage_dead(_42)
             storage_dead(_41)
@@ -1466,6 +1508,9 @@ fn main()
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
+            storage_dead(_46)
+            storage_dead(_45)
+            storage_dead(_44)
             storage_dead(_43)
             storage_dead(_42)
             storage_dead(_41)
@@ -1499,6 +1544,9 @@ fn main()
     storage_dead(_31)
     storage_dead(_30)
     storage_dead(_29)
+    storage_dead(_46)
+    storage_dead(_45)
+    storage_dead(_44)
     storage_dead(_43)
     storage_dead(_42)
     storage_dead(_41)

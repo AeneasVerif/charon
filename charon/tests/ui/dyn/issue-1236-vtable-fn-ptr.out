@@ -110,7 +110,8 @@ fn main()
     let _4: &'6 Bar; // anonymous local
     let _5: (); // anonymous local
     let mut _6: &'10 (dyn Foo + '11); // anonymous local
-    let mut _7: fn(&'10 (dyn Foo + '11)); // anonymous local
+    let mut _7: *const (); // anonymous local
+    let mut _8: fn(&'10 (dyn Foo + '11)); // anonymous local
 
     bb0: {
         storage_live(_0);
@@ -133,8 +134,10 @@ fn main()
         storage_live(_6);
         _6 = &(*some_foo) with_metadata(read some_foo.metadata);
         storage_live(_7);
-        _7 = cast<fn(&'10 (dyn Foo + '11))>(read (*_6.metadata).method_foo);
-        _5 = (read _7)(move _6) -> bb1 (unwind: bb2);
+        _7 = vtable_lookup<test_crate::Foo::{vtable}>.method_foo(read _6.metadata);
+        storage_live(_8);
+        _8 = cast<fn(&'10 (dyn Foo + '11))>(move _7);
+        _5 = (read _8)(move _6) -> bb1 (unwind: bb2);
     }
 
     bb1: {
@@ -143,11 +146,13 @@ fn main()
         _0 = ();
         storage_dead(some_foo);
         storage_dead(bar);
+        storage_dead(_8);
         storage_dead(_7);
         return;
     }
 
     bb2 (cleanup): {
+        storage_dead(_8);
         storage_dead(_7);
         unwind_continue;
     }

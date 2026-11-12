@@ -171,6 +171,7 @@ where
     let mut _5: i32; // anonymous local
     let mut _6: &'12 mut (dyn Modifiable<T> + '13); // anonymous local
     let mut _7: &'14 T; // anonymous local
+    let mut _8: fn<'_0_1, '_1_1>(&'_0_1 mut (dyn Modifiable<T>), &'_1_1 T) -> T; // anonymous local
 
     storage_live(_0)
     set T: '0
@@ -192,7 +193,9 @@ where
     _6 = &two-phase-mut (*x) with_metadata(read x.metadata)
     storage_live(_7)
     _7 = &(*arg)
-    _0 = (read (*_6.metadata).method_modify)<'25, '26>(move _6, move _7)
+    storage_live(_8)
+    _8 = vtable_lookup<test_crate::Modifiable::{vtable}<T>>.method_modify(read _6.metadata)
+    _0 = (read _8)<'25, '26>(move _6, move _7)
     ↳⚡ storage_dead(arg)
         unwind_continue
     storage_dead(_7)
@@ -200,6 +203,7 @@ where
     storage_dead(_5)
     storage_dead(x)
     storage_dead(arg)
+    storage_dead(_8)
     return
 }
 

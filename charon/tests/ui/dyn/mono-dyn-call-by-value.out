@@ -191,12 +191,16 @@ fn main()
     let mut _13: &'9 (dyn T + '10); // anonymous local
     let _14: (); // anonymous local
     let mut _15: (dyn T + '11); // anonymous local
-    let mut _16: fn(&'7 (dyn T + '8)); // anonymous local
-    let mut _17: *mut (dyn T + '27); // anonymous local
-    let mut _18: fn(*mut (dyn T + '27)); // anonymous local
-    let mut _19: fn(&'9 (dyn T + '10)); // anonymous local
-    let mut _20: *mut (dyn T + '38); // anonymous local
-    let mut _21: fn(*mut (dyn T + '38)); // anonymous local
+    let mut _16: *const (); // anonymous local
+    let mut _17: fn(&'7 (dyn T + '8)); // anonymous local
+    let mut _18: *mut (dyn T + '27); // anonymous local
+    let mut _19: *const (); // anonymous local
+    let mut _20: fn(*mut (dyn T + '27)); // anonymous local
+    let mut _21: *const (); // anonymous local
+    let mut _22: fn(&'9 (dyn T + '10)); // anonymous local
+    let mut _23: *mut (dyn T + '38); // anonymous local
+    let mut _24: *const (); // anonymous local
+    let mut _25: fn(*mut (dyn T + '38)); // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -216,8 +220,10 @@ fn main()
     storage_live(_5)
     _5 = &(*b) with_metadata(read b.metadata)
     storage_live(_16)
-    _16 = cast<fn(&'7 (dyn T + '8))>(read (*_5.metadata).method_by_ref)
-    _4 = (read _16)(move _5)
+    _16 = vtable_lookup<test_crate::T::{vtable}>.method_by_ref(read _5.metadata)
+    storage_live(_17)
+    _17 = cast<fn(&'7 (dyn T + '8))>(move _16)
+    _4 = (read _17)(move _5)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'21>] b
         ↳⚡ unwind_terminate
         unwind_continue
@@ -226,11 +232,13 @@ fn main()
     storage_live(_6)
     storage_live(_7)
     _7 = move b
-    storage_live(_17)
-    _17 = &raw mut (*_7) with_metadata(read _7.metadata)
     storage_live(_18)
-    _18 = cast<fn(*mut (dyn T + '27))>(read (*_17.metadata).method_by_val)
-    _6 = (read _18)(move _17)
+    _18 = &raw mut (*_7) with_metadata(read _7.metadata)
+    storage_live(_19)
+    _19 = vtable_lookup<test_crate::T::{vtable}>.method_by_val(read _18.metadata)
+    storage_live(_20)
+    _20 = cast<fn(*mut (dyn T + '27))>(move _19)
+    _6 = (read _20)(move _18)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'28>] _7
         ↳⚡ unwind_terminate
         conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'21>] b
@@ -264,9 +272,11 @@ fn main()
     storage_live(_12)
     storage_live(_13)
     _13 = &(*f)._0 with_metadata(read f.metadata)
-    storage_live(_19)
-    _19 = cast<fn(&'9 (dyn T + '10))>(read (*_13.metadata).method_by_ref)
-    _12 = (read _19)(move _13)
+    storage_live(_21)
+    _21 = vtable_lookup<test_crate::T::{vtable}>.method_by_ref(read _13.metadata)
+    storage_live(_22)
+    _22 = cast<fn(&'9 (dyn T + '10))>(move _21)
+    _12 = (read _22)(move _13)
     ↳⚡ conditional_drop[{impl Destruct for Box::<Foo::<(dyn T)>, Global>}::drop_glue::<Foo::<(dyn T)>, Global><'37>] f
         ↳⚡ unwind_terminate
         conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'21>] b
@@ -276,11 +286,13 @@ fn main()
     storage_dead(_12)
     storage_live(_14)
     storage_live(_15)
-    storage_live(_20)
-    _20 = &raw mut (*f)._0 with_metadata(read f.metadata)
-    storage_live(_21)
-    _21 = cast<fn(*mut (dyn T + '38))>(read (*_20.metadata).method_by_val)
-    _14 = (read _21)(move _20)
+    storage_live(_23)
+    _23 = &raw mut (*f)._0 with_metadata(read f.metadata)
+    storage_live(_24)
+    _24 = vtable_lookup<test_crate::T::{vtable}>.method_by_val(read _23.metadata)
+    storage_live(_25)
+    _25 = cast<fn(*mut (dyn T + '38))>(move _24)
+    _14 = (read _25)(move _23)
     ↳⚡ conditional_drop[{built_in impl Destruct for (dyn T + '43)}::drop_glue<'44>] _15
         ↳⚡ unwind_terminate
         conditional_drop[{impl Destruct for Box::<Foo::<(dyn T)>, Global>}::drop_glue::<Foo::<(dyn T)>, Global><'37>] f

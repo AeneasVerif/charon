@@ -324,12 +324,15 @@ pub fn call_box(x: Box<(dyn T + 'static), Global>[{built_in impl MetaSized for (
     let mut _0: (); // return
     let x: Box<(dyn T + '6), Global>[{built_in impl MetaSized for (dyn T + '8)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // arg #1
     let mut _2: Box<(dyn T + '9), Global>[{built_in impl MetaSized for (dyn T + '11)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // anonymous local
+    let mut _3: fn(Box<(dyn T), Global>[{built_in impl MetaSized for (dyn T)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]); // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = move x
-    _0 = (read (*_2._0.pointer.pointer.metadata).method_by_box)(move _2)
+    storage_live(_3)
+    _3 = vtable_lookup<test_crate::T::{vtable}>.method_by_box(read _2._0.pointer.pointer.metadata)
+    _0 = (read _3)(move _2)
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'31, (dyn T + '26), Global>[{built_in impl MetaSized for (dyn T + '26)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] _2
         ↳⚡ unwind_terminate
         conditional_drop[impl_Destruct_for_Box::drop_glue<'61, (dyn T + '56), Global>[{built_in impl MetaSized for (dyn T + '56)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] x
@@ -347,12 +350,15 @@ pub fn call_rc(x: Rc<(dyn T + 'static), Global>[{built_in impl MetaSized for (dy
     let mut _0: (); // return
     let x: Rc<(dyn T + '6), Global>[{built_in impl MetaSized for (dyn T + '8)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // arg #1
     let mut _2: Rc<(dyn T + '9), Global>[{built_in impl MetaSized for (dyn T + '11)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // anonymous local
+    let mut _3: fn(Rc<(dyn T), Global>[{built_in impl MetaSized for (dyn T)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]); // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = move x
-    _0 = (read (*_2.ptr.pointer.metadata).method_by_rc)(move _2)
+    storage_live(_3)
+    _3 = vtable_lookup<test_crate::T::{vtable}>.method_by_rc(read _2.ptr.pointer.metadata)
+    _0 = (read _3)(move _2)
     ↳⚡ conditional_drop[impl_Destruct_for_Rc::drop_glue<'31, (dyn T + '26), Global>[{built_in impl MetaSized for (dyn T + '26)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] _2
         ↳⚡ unwind_terminate
         conditional_drop[impl_Destruct_for_Rc::drop_glue<'61, (dyn T + '56), Global>[{built_in impl MetaSized for (dyn T + '56)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] x
@@ -370,12 +376,15 @@ pub fn call_arc(x: Arc<(dyn T + 'static), Global>[{built_in impl MetaSized for (
     let mut _0: (); // return
     let x: Arc<(dyn T + '6), Global>[{built_in impl MetaSized for (dyn T + '8)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // arg #1
     let mut _2: Arc<(dyn T + '9), Global>[{built_in impl MetaSized for (dyn T + '11)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // anonymous local
+    let mut _3: fn(Arc<(dyn T), Global>[{built_in impl MetaSized for (dyn T)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]); // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = move x
-    _0 = (read (*_2.ptr.pointer.metadata).method_by_arc)(move _2)
+    storage_live(_3)
+    _3 = vtable_lookup<test_crate::T::{vtable}>.method_by_arc(read _2.ptr.pointer.metadata)
+    _0 = (read _3)(move _2)
     ↳⚡ conditional_drop[impl_Destruct_for_Arc::drop_glue<'31, (dyn T + '26), Global>[{built_in impl MetaSized for (dyn T + '26)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] _2
         ↳⚡ unwind_terminate
         conditional_drop[impl_Destruct_for_Arc::drop_glue<'61, (dyn T + '56), Global>[{built_in impl MetaSized for (dyn T + '56)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] x
@@ -393,12 +402,15 @@ pub fn call_pin_mut<'_0>(x: Pin<&'_0 mut (dyn T + '_0)>[{built_in impl Sized for
     let mut _0: (); // return
     let x: Pin<&'20 mut (dyn T + '21)>[{built_in impl Sized for &'20 mut (dyn T + '27)}]; // arg #1
     let mut _2: Pin<&'28 mut (dyn T + '29)>[{built_in impl Sized for &'28 mut (dyn T + '35)}]; // anonymous local
+    let mut _3: fn<'_0_1>(Pin<&'_0_1 mut (dyn T)>[{built_in impl Sized for &'_0_1 mut (dyn T)}]); // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = move x
-    _0 = (read (*_2.pointer.metadata).method_by_pin_mut)<'42>(move _2)
+    storage_live(_3)
+    _3 = vtable_lookup<test_crate::T::{vtable}>.method_by_pin_mut(read _2.pointer.metadata)
+    _0 = (read _3)<'42>(move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     return
@@ -410,12 +422,15 @@ pub fn call_pin_box(x: Pin<Box<(dyn T + 'static), Global>[{built_in impl MetaSiz
     let mut _0: (); // return
     let x: Pin<Box<(dyn T + '36), Global>[{built_in impl MetaSized for (dyn T + '38)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn T + '45), Global>[{built_in impl MetaSized for (dyn T + '47)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}]; // arg #1
     let mut _2: Pin<Box<(dyn T + '48), Global>[{built_in impl MetaSized for (dyn T + '50)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn T + '57), Global>[{built_in impl MetaSized for (dyn T + '59)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}]; // anonymous local
+    let mut _3: fn(Pin<Box<(dyn T), Global>[{built_in impl MetaSized for (dyn T)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn T), Global>[{built_in impl MetaSized for (dyn T)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}]); // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = move x
-    _0 = (read (*_2.pointer._0.pointer.pointer.metadata).method_by_pin_box)(move _2)
+    storage_live(_3)
+    _3 = vtable_lookup<test_crate::T::{vtable}>.method_by_pin_box(read _2.pointer._0.pointer.pointer.metadata)
+    _0 = (read _3)(move _2)
     ↳⚡ conditional_drop[impl_Destruct_for_Pin::drop_glue<'143, Box<(dyn T + '113), Global>[{built_in impl MetaSized for (dyn T + '115)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn T + '113), Global>[{built_in impl MetaSized for (dyn T + '115)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}]] _2
         ↳⚡ unwind_terminate
         conditional_drop[impl_Destruct_for_Pin::drop_glue<'301, Box<(dyn T + '271), Global>[{built_in impl MetaSized for (dyn T + '273)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn T + '271), Global>[{built_in impl MetaSized for (dyn T + '273)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}]] x

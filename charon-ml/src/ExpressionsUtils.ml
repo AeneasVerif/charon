@@ -4,7 +4,7 @@ open Expressions
 
 let unop_can_fail : unop -> bool = function
   | Neg (OPanic | OUB) | Cast _ -> true
-  | Neg OWrap | Not -> false
+  | Neg OWrap | Not | VTableMethodLookup _ -> false
 
 let binop_can_fail : binop -> bool = function
   | BitXor | BitAnd | BitOr | Eq | Lt | Le | Ne | Ge | Gt

@@ -170,21 +170,23 @@ fn main()
     let mut _10: &'22 (dyn Trait<usize> + '23); // anonymous local
     let mut _11: &'24 u32; // anonymous local
     let mut _12: &'25 i32; // anonymous local
-    let mut _13: fn(&'14 (dyn Trait<bool> + '15)) -> bool; // anonymous local
-    let mut _14: fn(&'22 (dyn Trait<usize> + '23)) -> usize; // anonymous local
-    let mut _15: &'26 i32; // anonymous local
-    let mut _16: &'37 u32; // anonymous local
-    let mut _17: &'48 i32; // anonymous local
-    let mut _18: i32; // anonymous local
-    let mut _19: &'49 u32; // anonymous local
-    let mut _20: u32; // anonymous local
+    let mut _13: *const (); // anonymous local
+    let mut _14: fn(&'14 (dyn Trait<bool> + '15)) -> bool; // anonymous local
+    let mut _15: *const (); // anonymous local
+    let mut _16: fn(&'22 (dyn Trait<usize> + '23)) -> usize; // anonymous local
+    let mut _17: &'26 i32; // anonymous local
+    let mut _18: &'37 u32; // anonymous local
+    let mut _19: &'48 i32; // anonymous local
+    let mut _20: i32; // anonymous local
+    let mut _21: &'49 u32; // anonymous local
+    let mut _22: u32; // anonymous local
 
-    storage_live(_15)
     storage_live(_17)
-    storage_live(_18)
-    _18 = const 42i32
-    _17 = &_18
-    _15 = move _17
+    storage_live(_19)
+    storage_live(_20)
+    _20 = const 42i32
+    _19 = &_20
+    _17 = move _19
     storage_live(_0)
     storage_live(_11)
     storage_live(_12)
@@ -196,7 +198,7 @@ fn main()
     storage_live(a)
     storage_live(_2)
     storage_live(_3)
-    _12 = move _15
+    _12 = move _17
     _3 = &(*_12)
     _2 = &(*_3)
     a = unsize_cast<&'27 (dyn Trait<bool> + '28), &impl_Trait_bool_for_i32::{vtable}>(move _2)
@@ -207,23 +209,25 @@ fn main()
     storage_live(_5)
     _5 = &(*a) with_metadata(read a.metadata)
     storage_live(_13)
-    _13 = cast<fn(&'14 (dyn Trait<bool> + '15)) -> bool>(read (*_5.metadata).method_comsume)
-    _4 = (read _13)(move _5)
+    _13 = vtable_lookup<test_crate::Trait::{vtable}>.method_comsume(read _5.metadata)
+    storage_live(_14)
+    _14 = cast<fn(&'14 (dyn Trait<bool> + '15)) -> bool>(move _13)
+    _4 = (read _14)(move _5)
     ↳⚡ storage_dead(_12)
         storage_dead(_11)
         unwind_continue
-    storage_live(_16)
-    storage_live(_19)
-    storage_live(_20)
-    _20 = const 100u32
-    _19 = &_20
-    _16 = move _19
+    storage_live(_18)
+    storage_live(_21)
+    storage_live(_22)
+    _22 = const 100u32
+    _21 = &_22
+    _18 = move _21
     storage_dead(_5)
     storage_dead(_4)
     storage_live(b)
     storage_live(_7)
     storage_live(_8)
-    _11 = move _16
+    _11 = move _18
     _8 = &(*_11)
     _7 = &(*_8)
     b = unsize_cast<&'38 (dyn Trait<usize> + '39), &impl_Trait_usize_for_u32::{vtable}>(move _7)
@@ -233,9 +237,11 @@ fn main()
     storage_live(_9)
     storage_live(_10)
     _10 = &(*b) with_metadata(read b.metadata)
-    storage_live(_14)
-    _14 = cast<fn(&'22 (dyn Trait<usize> + '23)) -> usize>(read (*_10.metadata).method_comsume)
-    _9 = (read _14)(move _10)
+    storage_live(_15)
+    _15 = vtable_lookup<test_crate::Trait::{vtable}>.method_comsume(read _10.metadata)
+    storage_live(_16)
+    _16 = cast<fn(&'22 (dyn Trait<usize> + '23)) -> usize>(move _15)
+    _9 = (read _16)(move _10)
     ↳⚡ storage_dead(_12)
         storage_dead(_11)
         unwind_continue
@@ -246,6 +252,8 @@ fn main()
     storage_dead(a)
     storage_dead(_12)
     storage_dead(_11)
+    storage_dead(_22)
+    storage_dead(_21)
     storage_dead(_20)
     storage_dead(_19)
     storage_dead(_18)

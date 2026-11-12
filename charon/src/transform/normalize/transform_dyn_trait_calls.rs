@@ -122,6 +122,7 @@ fn transform_dyn_trait_call(
         VTableField::Method(_, path) => path.clone(),
         _ => vec![],
     };
+    let target_field = target_field.clone();
 
     let method_field = &fields[method_field_id];
     let method_ty = method_field
@@ -185,13 +186,14 @@ fn transform_dyn_trait_call(
     }) else {
         raise_error!(ctx.ctx, ctx.span, "Could not project into dyn receiver");
     };
-    let mut method_vtable_place = receiver_ptr
-        .project(ProjectionElem::PtrMetadata, ptr_to_vtable_ty)
-        .project(ProjectionElem::Deref, receiver_vtable_ty);
+    let mut vtable_ptr =
+        Operand::Read(receiver_ptr.project(ProjectionElem::PtrMetadata, ptr_to_vtable_ty));
+    let mut vtable_ty = receiver_vtable_ty;
 
+    // A supertrait's method is in the supertrait's vtable, not the receiver's: we look up the
+    // vtable of each supertrait along the path in turn.
     for clause_id in supertrait_path {
-        let current_vtable_ref = method_vtable_place
-            .ty()
+        let current_vtable_ref = vtable_ty
             .as_adt()
             .expect("vtable place should have an ADT type");
         let current_vtable = ctx
@@ -217,12 +219,31 @@ fn transform_dyn_trait_call(
             .ty
             .clone()
             .substitute(&current_vtable_ref.generics);
-        method_vtable_place = method_vtable_place
-            .project(ProjectionElem::Field(None, supertrait_field_id), field_ty)
-            .deref();
+        let lookup = UnOp::VTableMethodLookup(
+            current_vtable_ref.clone(),
+            VTableField::SuperTrait(clause_id),
+        );
+        vtable_ty = field_ty
+            .builtin_deref(&ctx.ctx.translated)
+            .expect("a supertrait field of a vtable should point to a vtable")
+            .clone();
+        let supertrait_vtable_ptr = ctx.fresh_var(None, field_ty);
+        ctx.insert_assn_stmt(
+            supertrait_vtable_ptr.clone(),
+            Rvalue::UnaryOp(lookup, vtable_ptr),
+        );
+        vtable_ptr = Operand::Move(supertrait_vtable_ptr);
     }
-    let method_field_place =
-        method_vtable_place.project(ProjectionElem::Field(None, method_field_id), method_ty);
+    let method_lookup = Rvalue::UnaryOp(
+        UnOp::VTableMethodLookup(
+            vtable_ty
+                .as_adt()
+                .expect("vtable place should have an ADT type")
+                .clone(),
+            target_field,
+        ),
+        vtable_ptr,
+    );
 
     let fn_ptr_place = if ctx.ctx.options.monomorphize_with_hax {
         // In mono mode, the vtable contains erased function pointers, cast to `*const ()`.
@@ -241,15 +262,19 @@ fn transform_dyn_trait_call(
             output: dest.ty.clone(),
         }))
         .into_ty();
+        let erased_fn_ptr = ctx.fresh_var(None, method_ty);
+        ctx.insert_assn_stmt(erased_fn_ptr.clone(), method_lookup);
         let fn_ptr_place = ctx.fresh_var(None, real_sig_ty);
         let rval_cast = Rvalue::UnaryOp(
             UnOp::Cast(CastKind::RawPtr(fn_ptr_place.ty().clone())),
-            Operand::Read(method_field_place),
+            Operand::Move(erased_fn_ptr),
         );
         ctx.insert_assn_stmt(fn_ptr_place.clone(), rval_cast);
         fn_ptr_place
     } else {
-        method_field_place
+        let fn_ptr_place = ctx.fresh_var(None, method_ty);
+        ctx.insert_assn_stmt(fn_ptr_place.clone(), method_lookup);
+        fn_ptr_place
     };
 
     // The function pointer in the vtable binds the method late-bound regions.

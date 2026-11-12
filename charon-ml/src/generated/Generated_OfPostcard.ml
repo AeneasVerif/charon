@@ -1587,6 +1587,10 @@ and unop_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 2 ->
          let* _0 = cast_kind_of_postcard ctx st in
          Ok (Cast _0)
+     | 3 ->
+         let* _0 = type_decl_ref_of_postcard ctx st in
+         let* _1 = v_table_field_of_postcard ctx st in
+         Ok (VTableMethodLookup (_0, _1))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and unsizing_metadata_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
@@ -1605,6 +1609,23 @@ and unsizing_metadata_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* _0 = list_of_postcard field_id_of_postcard ctx st in
          Ok (MetaVTableUpcast _0)
      | 3 -> Ok MetaUnknown
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and v_table_field_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (v_table_field, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok VTableSize
+     | 1 -> Ok VTableAlign
+     | 2 -> Ok VTableDrop
+     | 3 ->
+         let* _0 = trait_method_id_of_postcard ctx st in
+         let* _1 = list_of_postcard field_id_of_postcard ctx st in
+         Ok (VTableMethod (_0, _1))
+     | 4 ->
+         let* _0 = trait_clause_id_of_postcard ctx st in
+         Ok (VTableSuperTrait _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and variance_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -3786,23 +3807,6 @@ and v_table_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 3 ->
          let* _0 = string_of_postcard ctx st in
          Ok (UnknownVTable _0)
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
-and v_table_field_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (v_table_field, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 -> Ok VTableSize
-     | 1 -> Ok VTableAlign
-     | 2 -> Ok VTableDrop
-     | 3 ->
-         let* _0 = trait_method_id_of_postcard ctx st in
-         let* _1 = list_of_postcard field_id_of_postcard ctx st in
-         Ok (VTableMethod (_0, _1))
-     | 4 ->
-         let* _0 = trait_clause_id_of_postcard ctx st in
-         Ok (VTableSuperTrait _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and variant_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
