@@ -379,9 +379,11 @@ impl<'tcx> TranslateCtx<'tcx> {
 
     /// The functions exported under `symbol`.
     pub(crate) fn exported_fns(&mut self, symbol: &str) -> ExportedFns<'tcx> {
+        use rustc_ast::expand::allocator::*;
         use rustc_hir::attrs::Linkage;
         use rustc_hir::def::DefKind;
         use rustc_middle::middle::exported_symbols::ExportedSymbol;
+        use rustc_symbol_mangling::mangle_internal_symbol;
         let tcx = self.tcx;
         let exported_fns = self.exported_fns.get_or_insert_with(|| {
             let local = tcx
@@ -413,6 +415,20 @@ impl<'tcx> TranslateCtx<'tcx> {
                 let symbol = tcx.symbol_name(instance).name.to_string();
                 exported_fns.entry(symbol).or_default().merge(new);
             }
+
+            // Manually link the std allocator functions, which rustc willl generate.
+            for method in ALLOCATOR_METHODS {
+                let global_fn = mangle_internal_symbol(tcx, &global_fn_name(method.name));
+                let default_fn = mangle_internal_symbol(tcx, &default_fn_name(method.name));
+                // We only link them if no `#[global_allocator]` has already defined them! In which
+                // case rust gives them a custom shim that needs special-casing.
+                if !exported_fns.contains_key(&global_fn)
+                    && let Some(&ExportedFns::Strong(instance)) = exported_fns.get(&default_fn)
+                {
+                    exported_fns.insert(global_fn, ExportedFns::AllocatorShim(instance));
+                }
+            }
+
             exported_fns
         });
         exported_fns.get(symbol).copied().unwrap_or_default()

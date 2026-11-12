@@ -635,7 +635,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             {
                 match self.t_ctx.exported_fns(&symbol) {
                     ExportedFns::None => {}
-                    exported @ (ExportedFns::Strong(instance) | ExportedFns::Weak(instance)) => {
+                    exported @ (ExportedFns::Strong(instance)
+                    | ExportedFns::Weak(instance)
+                    | ExportedFns::AllocatorShim(instance)) => {
                         let item = hax::ItemRef::translate(
                             self.hax_state_with_id(),
                             instance.def_id(),
@@ -645,6 +647,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         definition = match exported {
                             ExportedFns::Strong(_) => LinkedExtern::StronglyLinked(fun),
                             ExportedFns::Weak(_) => LinkedExtern::WeaklyLinked(fun),
+                            ExportedFns::AllocatorShim(_) => LinkedExtern::AllocatorShim(fun),
                             ExportedFns::Many | ExportedFns::None => unreachable!(),
                         };
                     }

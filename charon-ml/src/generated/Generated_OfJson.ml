@@ -3776,6 +3776,9 @@ and linked_extern_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("WeaklyLinked", _0) ] ->
         let* _0 = fun_decl_ref_of_json ctx _0 in
         Ok (WeaklyLinked _0)
+    | `Assoc [ ("AllocatorShim", _0) ] ->
+        let* _0 = fun_decl_ref_of_json ctx _0 in
+        Ok (AllocatorShim _0)
     | `String "Unlinked" -> Ok Unlinked
     | _ -> Error "")
 

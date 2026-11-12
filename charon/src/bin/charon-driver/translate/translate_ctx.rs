@@ -159,6 +159,7 @@ pub enum ExportedFns<'tcx> {
     None,
     Strong(rustc_middle::ty::Instance<'tcx>),
     Weak(rustc_middle::ty::Instance<'tcx>),
+    AllocatorShim(rustc_middle::ty::Instance<'tcx>),
     /// More than one function was strongly exported under this name; this would be a linker
     /// error so we don't specify them.
     Many,
@@ -175,6 +176,10 @@ impl<'tcx> ExportedFns<'tcx> {
             // this is arbitrary -- the linker technically could pick either
             (weak @ Weak(_), _) | (_, weak @ Weak(_)) => weak,
             (None, None) => None,
+            // impossible
+            (AllocatorShim(_), _) | (_, AllocatorShim(_)) => {
+                panic!("allocator shims are added after merging exported functions")
+            }
         };
     }
 }

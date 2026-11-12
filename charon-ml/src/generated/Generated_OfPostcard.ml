@@ -3106,7 +3106,10 @@ and linked_extern_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 1 ->
          let* _0 = fun_decl_ref_of_postcard ctx st in
          Ok (WeaklyLinked _0)
-     | 2 -> Ok Unlinked
+     | 2 ->
+         let* _0 = fun_decl_ref_of_postcard ctx st in
+         Ok (AllocatorShim _0)
+     | 3 -> Ok Unlinked
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and local_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

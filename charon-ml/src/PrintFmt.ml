@@ -2646,6 +2646,9 @@ let pp_fun_decl (env : fmt_env) (indent : string) (indent_incr : string)
       | WeaklyLinked definition ->
           Format.fprintf fmt " linked(weak) to %a" (pp_fun_decl_ref env)
             definition
+      | AllocatorShim definition ->
+          Format.fprintf fmt " linked(alloc) to %a" (pp_fun_decl_ref env)
+            definition
       | Unlinked -> ())
   | IntrinsicBody (name, _, fallback, fallback_is_spec) -> (
       Format.fprintf fmt "\n%s= <intrinsic:%s>" indent name;

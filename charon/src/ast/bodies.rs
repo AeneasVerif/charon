@@ -101,6 +101,10 @@ pub enum LinkedExtern {
     /// A weak definition (`#[linkage = "weak"]`), which the linker only binds the symbol to if
     /// there's no strong definition.
     WeaklyLinked(FunDeclRef),
+    /// Linked to the default allocator through rustc's allocator shim. This needs to be handled
+    /// separately, as the signatures aren't ABI-compatible: the arguments need to be
+    /// transmuted (e.g. `Alignment` -> `usize`).
+    AllocatorShim(FunDeclRef),
     /// No function of the crate or its dependencies is exported under this symbol.
     Unlinked,
 }
