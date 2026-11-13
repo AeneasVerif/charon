@@ -99,6 +99,9 @@ Options:
       --eager-vtables
           Usually we only translate the vtables that are used in an unsizing coercion, and leave the `vtable` field of the other trait impls as `Lazy`. When this flag is on, we translate the vtable of every trait impl of a dyn-compatible trait
 
+      --link-extern-fns
+          For functions declared in `extern { .. }` blocks, also translate the function exported under the same symbol, i.e. what the linker will resolve them to, and record it in `Body::Extern`
+
       --duplicate-defaulted-methods
           Whenever an impl doesn't implement a method (because it has a default body), this creates a duplicate method as if it had been implemented. This can simplify the call-graphs as otherwise calls within the default body would be indirected through trait proofs
 

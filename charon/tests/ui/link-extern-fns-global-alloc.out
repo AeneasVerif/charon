@@ -1,0 +1,93 @@
+# Final LLBC before serialization:
+
+// Full name: core::alloc::layout::Layout
+#[lang_item(AllocLayout)]
+pub opaque type Layout
+
+// Full name: core::mem::alignment::Alignment
+pub opaque type Alignment
+
+// Full name: core::alloc::layout::{Layout}::from_size_alignment_unchecked
+#[track_caller]
+pub unsafe fn from_size_alignment_unchecked(_1: usize, _2: Alignment) -> Layout
+= <opaque>
+
+// Full name: test_crate::Null
+struct Null {}
+
+// Full name: test_crate::A
+fn A() -> Null
+{
+    let mut _0: Null; // return
+
+    storage_live(_0)
+    _0 = Null {  }
+    return
+}
+
+struct () {}
+
+// Full name: test_crate::A
+static A: Null = A()
+
+// Full name: test_crate::{impl GlobalAlloc for Null}::alloc
+pub unsafe fn alloc<'_0>(self: &'_0 Null, _2: Layout) -> *mut u8
+{
+    let mut _0: *mut u8; // return
+    let self: &'1 Null; // arg #1
+    let mut _2: Layout; // arg #2
+
+    storage_live(_0)
+    _0 = cast_with_exposed<*mut u8>(const 0usize)
+    storage_dead(_2)
+    storage_dead(self)
+    return
+}
+
+#[rustc_allocator]
+unsafe fn test_crate::_::__rust_alloc(size: usize, align: Alignment) -> *mut u8
+{
+    let mut _0: *mut u8; // return
+    let size: usize; // arg #1
+    let align: Alignment; // arg #2
+    let mut _3: &'1 Null; // anonymous local
+    let _4: &'2 Null; // anonymous local
+    let mut _5: Layout; // anonymous local
+    let mut _6: usize; // anonymous local
+    let mut _7: Alignment; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &A
+    _3 = &(*_4)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = copy size
+    storage_live(_7)
+    _7 = copy align
+    _5 = from_size_alignment_unchecked(move _6, move _7)
+    ↳⚡ storage_dead(align)
+        storage_dead(size)
+        unwind_continue
+    storage_dead(_7)
+    storage_dead(_6)
+    _0 = alloc<'8>(move _3, move _5)
+    ↳⚡ storage_dead(align)
+        storage_dead(size)
+        unwind_continue
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(align)
+    storage_dead(size)
+    return
+}
+
+#[rustc_allocator_zeroed_variant = "__rust_alloc_zeroed"]
+#[rustc_allocator]
+extern unsafe fn alloc::alloc::__rust_alloc(_1: usize, _2: Alignment) -> *mut u8
+= <extern:_RNvCs<hash>_7___rustc12___rust_alloc> linked(strong) to test_crate::_::__rust_alloc
+
+
+

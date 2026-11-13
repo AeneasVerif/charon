@@ -125,7 +125,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             }
         } else {
             match &fdecl.body {
-                Body::Extern(name) => match name.as_str() {
+                Body::Extern { symbol, .. } => match symbol.as_str() {
                     "minirust_print" => {
                         self.make_intrinsic_function(span, fdecl, mini::IntrinsicOp::PrintStdout)?
                     }

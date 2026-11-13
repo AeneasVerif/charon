@@ -2064,11 +2064,18 @@ and rustc_attribute_kind_of_postcard (ctx : of_postcard_ctx)
          let* align = u64_of_postcard ctx st in
          let* span = span_of_postcard ctx st in
          Ok (RustcAttributeKindRustcAlign (align, span))
-     | 16 -> Ok RustcAttributeKindRustcIntrinsic
-     | 17 ->
+     | 16 -> Ok RustcAttributeKindRustcAllocator
+     | 17 -> Ok RustcAttributeKindRustcAllocatorZeroed
+     | 18 ->
+         let* name = string_of_postcard ctx st in
+         Ok (RustcAttributeKindRustcAllocatorZeroedVariant name)
+     | 19 -> Ok RustcAttributeKindRustcDeallocator
+     | 20 -> Ok RustcAttributeKindRustcIntrinsic
+     | 21 -> Ok RustcAttributeKindRustcReallocator
+     | 22 ->
          let* reason = option_of_postcard string_of_postcard ctx st in
          Ok (RustcAttributeKindShouldPanic reason)
-     | 18 ->
+     | 23 ->
          let* features =
            list_of_postcard
              (pair_of_postcard string_of_postcard span_of_postcard)
@@ -2077,7 +2084,7 @@ and rustc_attribute_kind_of_postcard (ctx : of_postcard_ctx)
          let* attr_span = span_of_postcard ctx st in
          let* was_forced = bool_of_postcard ctx st in
          Ok (RustcAttributeKindTargetFeature (features, attr_span, was_forced))
-     | 19 ->
+     | 24 ->
          let* _0 = span_of_postcard ctx st in
          Ok (RustcAttributeKindTrackCaller _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
@@ -2117,8 +2124,9 @@ and body_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          in
          Ok (TargetDispatchBody _0)
      | 3 ->
-         let* _0 = string_of_postcard ctx st in
-         Ok (ExternBody _0)
+         let* symbol = string_of_postcard ctx st in
+         let* definition = linked_extern_of_postcard ctx st in
+         Ok (ExternBody (symbol, definition))
      | 4 ->
          let* name = string_of_postcard ctx st in
          let* arg_names =
@@ -2191,6 +2199,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* extract_opaque_bodies = bool_of_postcard ctx st in
      let* translate_all_methods = bool_of_postcard ctx st in
      let* eager_vtables = bool_of_postcard ctx st in
+     let* link_extern_fns = bool_of_postcard ctx st in
      let* duplicate_defaulted_methods = bool_of_postcard ctx st in
      let* lift_associated_types = list_of_postcard string_of_postcard ctx st in
      let* hide_marker_traits = bool_of_postcard ctx st in
@@ -2260,6 +2269,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           extract_opaque_bodies;
           translate_all_methods;
           eager_vtables;
+          link_extern_fns;
           duplicate_defaulted_methods;
           lift_associated_types;
           hide_marker_traits;
@@ -3090,6 +3100,23 @@ and rustc_linkage_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 6 -> Ok RustcLinkageLinkOnceODR
      | 7 -> Ok RustcLinkageWeakAny
      | 8 -> Ok RustcLinkageWeakODR
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and linked_extern_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (linked_extern, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* _0 = fun_decl_ref_of_postcard ctx st in
+         Ok (StronglyLinked _0)
+     | 1 ->
+         let* _0 = fun_decl_ref_of_postcard ctx st in
+         Ok (WeaklyLinked _0)
+     | 2 ->
+         let* _0 = fun_decl_ref_of_postcard ctx st in
+         Ok (AllocatorShim _0)
+     | 3 -> Ok Unlinked
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and local_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

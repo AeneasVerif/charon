@@ -29,6 +29,7 @@ extern crate rustc_mir_transform;
 extern crate rustc_session;
 extern crate rustc_span;
 extern crate rustc_structures;
+extern crate rustc_symbol_mangling;
 extern crate rustc_target;
 extern crate rustc_trait_selection;
 

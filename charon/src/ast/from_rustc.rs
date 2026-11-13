@@ -116,8 +116,18 @@ pub enum AttributeKind {
     Optimize(OptimizeAttr, Span),
     /// Represents `#[align(N)]`.
     RustcAlign { align: u64, span: Span },
+    /// Represents `#[rustc_allocator]`
+    RustcAllocator,
+    /// Represents `#[rustc_allocator_zeroed]`
+    RustcAllocatorZeroed,
+    /// Represents `#[rustc_allocator_zeroed_variant]`
+    RustcAllocatorZeroedVariant { name: Ustr },
+    /// Represents `#[rustc_deallocator]`
+    RustcDeallocator,
     /// Represents `#[rustc_intrinsic]`
     RustcIntrinsic,
+    /// Represents `#[rustc_reallocator]`
+    RustcReallocator,
     /// Represents `#[should_panic]`
     ShouldPanic { reason: Option<Ustr> },
     /// Represents `#[target_feature(enable = "...")]` and

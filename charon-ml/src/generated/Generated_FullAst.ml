@@ -98,9 +98,13 @@ and body =
           bodies. This is created during multi-target merging (using [--target])
           to represent functions that have a different implementation across
           targets. *)
-  | ExternBody of string
-      (** Function declared in an [extern { ... }] block. The string is the
-          foreign symbol name. *)
+  | ExternBody of string * linked_extern
+      (** Function declared in an [extern { ... }] block.
+
+          Fields:
+          - [symbol]: The foreign symbol name.
+          - [definition]: The function that the linker binds this symbol to.
+            Only computed with [--link-extern-fns]. *)
   | IntrinsicBody of string * string option list * fun_decl_ref option * bool
       (** Rust intrinsic function. This describes a "built-in" operation that
           must be handled by the codegen backend.
@@ -247,6 +251,10 @@ and cli_options = {
           coercion, and leave the [vtable] field of the other trait impls as
           [Lazy]. When this flag is on, we translate the vtable of every trait
           impl of a dyn-compatible trait. *)
+  link_extern_fns : bool;
+      (** For functions declared in [extern { .. }] blocks, also translate the
+          function exported under the same symbol, i.e. what the linker will
+          resolve them to, and record it in [Body::Extern]. *)
   duplicate_defaulted_methods : bool;
       (** Whenever an impl doesn't implement a method (because it has a default
           body), this creates a duplicate method as if it had been implemented.
@@ -464,6 +472,22 @@ and fun_decl = {
 and 'a0 g_declaration_group =
   | NonRecGroup of 'a0  (** A non-recursive declaration *)
   | RecGroup of 'a0 list  (** A (group of mutually) recursive declaration(s) *)
+
+(** The function that the linker binds an extern function's symbol to. *)
+and linked_extern =
+  | StronglyLinked of fun_decl_ref
+      (** A strong definition, e.g. [#[no_mangle]] or [#[export_name]]. *)
+  | WeaklyLinked of fun_decl_ref
+      (** A weak definition ([#[linkage = "weak"]]), which the linker only binds
+          the symbol to if there's no strong definition. *)
+  | AllocatorShim of fun_decl_ref
+      (** Linked to the default allocator through rustc's allocator shim. This
+          needs to be handled separately, as the signatures aren't
+          ABI-compatible: the arguments need to be transmuted (e.g. [Alignment]
+          -> [usize]). *)
+  | Unlinked
+      (** No function of the crate or its dependencies is exported under this
+          symbol. *)
 
 (** The MIR stage to use. This is only relevant for the current crate: for
     dependencies, only mir optimized is available (or mir elaborated for
