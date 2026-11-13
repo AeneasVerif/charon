@@ -247,6 +247,9 @@ and cli_options = {
           coercion, and leave the [vtable] field of the other trait impls as
           [Lazy]. When this flag is on, we translate the vtable of every trait
           impl of a dyn-compatible trait. *)
+  translate_assert_panic_fns : bool;
+      (** Record the functions that rustc's codegen calls when a builtin check
+          fails in [Assert::panic_fn]. *)
   duplicate_defaulted_methods : bool;
       (** Whenever an impl doesn't implement a method (because it has a default
           body), this creates a duplicate method as if it had been implemented.

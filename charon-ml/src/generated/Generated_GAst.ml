@@ -151,6 +151,9 @@ and assertion = {
       (** The kind of check performed by this assert. This is only used for
           error reporting, as the check is actually performed by the
           instructions preceding the assert. *)
+  panic_fn : fun_decl_ref option;
+      (** The function that rustc's codegen calls when the check fails. Only set
+          with [--translate-assert-panic-fns]. *)
 }
 
 (** Statements that only affect borrow-checking. They are no-ops at runtime. *)

@@ -248,14 +248,19 @@ and assertion_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
-        [ ("cond", cond); ("expected", expected); ("check_kind", check_kind) ]
-      ->
+        [
+          ("cond", cond);
+          ("expected", expected);
+          ("check_kind", check_kind);
+          ("panic_fn", panic_fn);
+        ] ->
         let* cond = operand_of_json ctx cond in
         let* expected = bool_of_json ctx expected in
         let* check_kind =
           option_of_json builtin_assert_kind_of_json ctx check_kind
         in
-        Ok ({ cond; expected; check_kind } : assertion)
+        let* panic_fn = option_of_json fun_decl_ref_of_json ctx panic_fn in
+        Ok ({ cond; expected; check_kind; panic_fn } : assertion)
     | _ -> Error "")
 
 and assoc_const_id_of_json (ctx : of_json_ctx) (js : json) :
@@ -850,6 +855,16 @@ and fun_decl_id_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | x -> FunDeclId.id_of_json ctx x
+    | _ -> Error "")
+
+and fun_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
+    (fun_decl_ref, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("id", id); ("generics", generics) ] ->
+        let* id = fun_decl_id_of_json ctx id in
+        let* generics = box_of_json generic_args_of_json ctx generics in
+        Ok ({ id; generics } : fun_decl_ref)
     | _ -> Error "")
 
 and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =
@@ -2615,6 +2630,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("extract_opaque_bodies", extract_opaque_bodies);
           ("translate_all_methods", translate_all_methods);
           ("eager_vtables", eager_vtables);
+          ("translate_assert_panic_fns", translate_assert_panic_fns);
           ("duplicate_defaulted_methods", duplicate_defaulted_methods);
           ("lift_associated_types", lift_associated_types);
           ("hide_marker_traits", hide_marker_traits);
@@ -2689,6 +2705,9 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* extract_opaque_bodies = bool_of_json ctx extract_opaque_bodies in
         let* translate_all_methods = bool_of_json ctx translate_all_methods in
         let* eager_vtables = bool_of_json ctx eager_vtables in
+        let* translate_assert_panic_fns =
+          bool_of_json ctx translate_assert_panic_fns
+        in
         let* duplicate_defaulted_methods =
           bool_of_json ctx duplicate_defaulted_methods
         in
@@ -2774,6 +2793,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              extract_opaque_bodies;
              translate_all_methods;
              eager_vtables;
+             translate_assert_panic_fns;
              duplicate_defaulted_methods;
              lift_associated_types;
              hide_marker_traits;
@@ -3080,16 +3100,6 @@ and fun_decl_of_json (ctx : of_json_ctx) (js : json) : (fun_decl, string) result
         let* src = fun_source_of_json ctx src in
         let* body = body_of_json ctx body in
         Ok ({ def_id; item_meta; generics; signature; src; body } : fun_decl)
-    | _ -> Error "")
-
-and fun_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
-    (fun_decl_ref, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("id", id); ("generics", generics) ] ->
-        let* id = fun_decl_id_of_json ctx id in
-        let* generics = box_of_json generic_args_of_json ctx generics in
-        Ok ({ id; generics } : fun_decl_ref)
     | _ -> Error "")
 
 and fun_source_of_json (ctx : of_json_ctx) (js : json) :

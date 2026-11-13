@@ -184,6 +184,10 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub eager_vtables: bool,
+    /// Record the functions that rustc's codegen calls when a builtin check fails in `Assert::panic_fn`.
+    #[clap(long)]
+    #[serde(default)]
+    pub translate_assert_panic_fns: bool,
     /// Whenever an impl doesn't implement a method (because it has a default body), this creates a
     /// duplicate method as if it had been implemented. This can simplify the call-graphs as
     /// otherwise calls within the default body would be indirected through trait proofs.
@@ -777,6 +781,8 @@ pub struct TranslateOptions {
     pub translate_all_methods: bool,
     /// Translate the vtable of every trait impl, not just those used in an unsizing coercion.
     pub eager_vtables: bool,
+    /// Translate the functions called when builtin checks fail, for `Assert::panic_fn`.
+    pub translate_assert_panic_fns: bool,
     /// Duplicate trait default methods into impls that use them.
     pub duplicate_defaulted_methods: bool,
     /// If `Some(_)`, run the partial mutability monomorphization pass. The contained enum
@@ -1024,6 +1030,7 @@ impl TranslateOptions {
             unbind_item_vars: options.unbind_item_vars,
             translate_all_methods: options.translate_all_methods,
             eager_vtables: options.eager_vtables,
+            translate_assert_panic_fns: options.translate_assert_panic_fns,
             duplicate_defaulted_methods: options.duplicate_defaulted_methods,
             erase_body_lifetimes: options.erase_body_lifetimes,
             no_typecheck: options.no_typecheck,
