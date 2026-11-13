@@ -376,6 +376,28 @@ impl<'tcx> TranslateCtx<'tcx> {
         })
     }
 
+    /// The items of the crate and of its dependencies, to look for attributes on. We look at the
+    /// dependencies too e.g. so that the models a library defines for a verification tool apply to
+    /// its integration tests, which are crates of their own.
+    fn all_items(&self) -> impl Iterator<Item = DefId> + use<'tcx> {
+        let tcx = self.tcx;
+        let dep_items = tcx
+            .crates(())
+            .iter()
+            .copied()
+            .filter(move |&cnum| !tcx.crate_dep_kind(cnum).macros_only())
+            .flat_map(move |krate| {
+                (0..tcx.num_extern_def_ids(krate)).map(move |index| DefId {
+                    krate,
+                    index: rustc_span::def_id::DefIndex::from_usize(index),
+                })
+            });
+        tcx.hir_crate_items(())
+            .definitions()
+            .map(|ldid| ldid.to_def_id())
+            .chain(dep_items)
+    }
+
     /// Add this item to the queue of items to translate. Each translated item will then
     /// recursively register the items it refers to. We call this on the crate root and end up
     /// exploring the whole crate.
@@ -1235,16 +1257,17 @@ pub fn translate<'tcx>(
                     .split("::")
                     .map(rustc_span::Symbol::intern)
                     .collect_vec();
-                let mut add_if_attr_matches = |ldid: rustc_hir::def_id::LocalDefId| {
-                    let def_id: hax::DefId = ldid.to_def_id().sinto(&ctx.hax_state);
+                let items = ctx.all_items();
+                let mut add_if_attr_matches = |def_id: DefId| {
+                    let def_id: hax::DefId = def_id.sinto(&ctx.hax_state);
                     if !matches!(def_id.kind, hax::DefKind::Mod)
                         && def_id.attrs(tcx).iter().any(|a| a.path_matches(&attr_path))
                     {
                         ctx.enqueue_module_item(&def_id, ContainmentNode::Start);
                     }
                 };
-                for ldid in tcx.hir_crate_items(()).definitions() {
-                    add_if_attr_matches(ldid)
+                for def_id in items {
+                    add_if_attr_matches(def_id)
                 }
             }
             StartFrom::Pub => {
