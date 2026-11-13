@@ -283,6 +283,7 @@ fn foo()
 {
     let mut _0: (); // return
     let array: [i32; 2usize]; // local
+        where array :< [i32; 2usize];
         where array := [i32; 2usize];
     let mut _2: &'10 [i32]; // anonymous local
         where _2 :< &'0 [i32];

@@ -267,18 +267,21 @@ fn main()
 {
     let mut _0: (); // return
     let cat: HouseCat; // local
-    let dyn_cat: &'0 (dyn Cat + '1); // local
+    let dyn_cat: &'15 (dyn Cat + '16); // local
+        where dyn_cat :< &'0 (dyn Cat + '1);
         where dyn_cat := &'2 (dyn Cat + '3);
-    let mut _3: &'13 HouseCat; // anonymous local
-    let _4: &'14 HouseCat; // anonymous local
-    let dyn_feline: &'4 (dyn Feline + '5); // local
+    let mut _3: &'18 HouseCat; // anonymous local
+    let _4: &'19 HouseCat; // anonymous local
+    let dyn_feline: &'23 (dyn Feline + '24); // local
+        where dyn_feline :< &'4 (dyn Feline + '5);
         where dyn_feline := &'6 (dyn Feline + '7);
-    let mut _6: &'18 (dyn Cat + '19); // anonymous local
-    let dyn_pettable: &'8 (dyn Pettable + '9); // local
+    let mut _6: &'25 (dyn Cat + '26); // anonymous local
+    let dyn_pettable: &'30 (dyn Pettable + '31); // local
+        where dyn_pettable :< &'8 (dyn Pettable + '9);
         where dyn_pettable := &'10 (dyn Pettable + '11);
-    let mut _8: &'20 (dyn Cat + '21); // anonymous local
+    let mut _8: &'32 (dyn Cat + '33); // anonymous local
     let _9: (); // anonymous local
-    let mut _10: &'22 (dyn Cat + '23); // anonymous local
+    let mut _10: &'34 (dyn Cat + '35); // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -296,26 +299,26 @@ fn main()
     storage_live(_4)
     _4 = &cat
     _3 = &(*_4)
-    dyn_cat = unsize_cast<&'24 (dyn Cat + '25), &impl_Cat_for_HouseCat::{vtable}>(move _3)
+    dyn_cat = unsize_cast<&'36 (dyn Cat + '37), &impl_Cat_for_HouseCat::{vtable}>(move _3)
     storage_dead(_3)
     fake_read(dyn_cat)
     storage_dead(_4)
     storage_live(dyn_feline)
     storage_live(_6)
     _6 = &(*dyn_cat) with_metadata(read dyn_cat.metadata)
-    dyn_feline = unsize_cast<&'30 (dyn Feline + '31),  at [5]>(move _6)
+    dyn_feline = unsize_cast<&'39 (dyn Feline + '40),  at [5]>(move _6)
     storage_dead(_6)
     fake_read(dyn_feline)
     storage_live(dyn_pettable)
     storage_live(_8)
     _8 = &(*dyn_cat) with_metadata(read dyn_cat.metadata)
-    dyn_pettable = unsize_cast<&'36 (dyn Pettable + '37),  at [6]>(move _8)
+    dyn_pettable = unsize_cast<&'42 (dyn Pettable + '43),  at [6]>(move _8)
     storage_dead(_8)
     fake_read(dyn_pettable)
     storage_live(_9)
     storage_live(_10)
     _10 = &(*dyn_cat) with_metadata(read dyn_cat.metadata)
-    _9 = takes_pettable<'63, (dyn Cat + '48)>[{built_in impl MetaSized for (dyn Cat + '50)}, Cat<(dyn Cat + '51)>::ImpliedClause2](move _10)
+    _9 = takes_pettable<'69, (dyn Cat + '54)>[{built_in impl MetaSized for (dyn Cat + '56)}, Cat<(dyn Cat + '57)>::ImpliedClause2](move _10)
     ↳⚡ unwind_continue
     storage_dead(_10)
     storage_dead(_9)

@@ -265,6 +265,7 @@ pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u
     let mut _0: &'2 u32; // return
     let input: &'4 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // arg #1
     let x: &'5 u32; // local
+        where x :< &'5 u32;
     let mut _3: &'6 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // anonymous local
         where _3 :< &'0 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}];
 
@@ -333,6 +334,7 @@ where
     let mut _0: Self; // return
     let value_1: Self; // arg #1
     let value_2: Self; // local
+        where value_2 :< Self;
         where value_2 := Self;
 
     storage_live(_0)
@@ -360,6 +362,7 @@ pub fn impl_trait_binding(value_1: u32) -> u32
     let mut _0: u32; // return
     let value_1: u32; // arg #1
     let value_2: u32; // local
+        where value_2 :< u32;
         where value_2 := u32;
 
     storage_live(_0)
@@ -378,6 +381,7 @@ pub fn nested_impl_trait(value_1: Box<u32>[{built_in impl MetaSized for u32}, {b
     let mut _0: (); // return
     let value_1: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}]; // arg #1
     let value_2: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}]; // local
+        where value_2 :< Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}];
         where value_2 := Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}];
 
     storage_live(_0)
@@ -406,6 +410,7 @@ pub fn multiple_impl_traits(value_1: (u32, String))
     let mut _0: (); // return
     let value_1: (u32, String); // arg #1
     let value_2: (u32, String); // local
+        where value_2 :< (u32, String);
         where value_2 := (u32, String);
 
     storage_live(_0)
@@ -434,6 +439,7 @@ pub fn higher_ranked_impl_trait(value_1: fn<'a>(&'a u32))
     let mut _0: (); // return
     let value_1: fn<'a>(&'a u32); // arg #1
     let value_2: fn<'a>(&'a u32); // local
+        where value_2 :< fn<'a>(&'a u32);
         where value_2 := fn<'a>(&'a u32);
 
     storage_live(_0)
@@ -454,7 +460,8 @@ where
 {
     let mut _0: (); // return
     let value_1: &'3 u32; // arg #1
-    let value_2: &'0 u32; // local
+    let value_2: &'4 u32; // local
+        where value_2 :< &'0 u32;
         where value_2 := &'1 u32;
 
     storage_live(_0)
@@ -480,7 +487,8 @@ pub fn set_type_self<'_0>(self: Foo<'_0>)
 {
     let mut _0: (); // return
     let self: Foo<'1>; // arg #1
-    let x: Foo<'_0>; // local
+    let x: Foo<'2>; // local
+        where x :< Foo<'_0>;
         where x := Foo<'_0>;
 
     storage_live(_0)
@@ -498,8 +506,9 @@ pub fn set_type_self<'_0>(self: Foo<'_0>)
 pub fn explicit_lifetimes<'a>(value: (&'static u32, &'a u32, &'a u32))
 {
     let mut _0: (); // return
-    let value: (&'40 u32, &'41 u32, &'42 u32); // arg #1
-    let x: (&'static u32, &'a u32, &'a u32); // local
+    let value: (&'16 u32, &'17 u32, &'18 u32); // arg #1
+    let x: (&'25 u32, &'26 u32, &'27 u32); // local
+        where x :< (&'static u32, &'a u32, &'a u32);
         where x := (&'static u32, &'a u32, &'a u32);
 
     storage_live(_0)
@@ -551,7 +560,8 @@ where
 {
     let mut _0: (); // return
     let value: StaticCopy<'3>; // arg #1
-    let x: StaticCopy<'0>; // local
+    let x: StaticCopy<'4>; // local
+        where x :< StaticCopy<'0>;
         where x := StaticCopy<'1>;
 
     storage_live(_0)
@@ -574,7 +584,8 @@ where
 {
     let mut _0: (); // return
     let value: Box<StaticCopy<'8>>[{built_in impl MetaSized for StaticCopy<'8>}, {built_in impl Sized for Global}]; // arg #1
-    let x: Box<StaticCopy<'0>>[{built_in impl MetaSized for StaticCopy<'0>}, {built_in impl Sized for Global}]; // local
+    let x: Box<StaticCopy<'11>>[{built_in impl MetaSized for StaticCopy<'11>}, {built_in impl Sized for Global}]; // local
+        where x :< Box<StaticCopy<'0>>[{built_in impl MetaSized for StaticCopy<'0>}, {built_in impl Sized for Global}];
         where x := Box<StaticCopy<'1>>[{built_in impl MetaSized for StaticCopy<'1>}, {built_in impl Sized for Global}];
 
     storage_live(_0)
@@ -585,14 +596,14 @@ where
     x = move value
     fake_read(x)
     _0 = ()
-    conditional_drop[impl_Destruct_for_Box::drop_glue<'25, StaticCopy<'20>, Global>[{built_in impl MetaSized for StaticCopy<'20>}, {built_in impl Sized for Global}]] x
-    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'55, StaticCopy<'50>, Global>[{built_in impl MetaSized for StaticCopy<'50>}, {built_in impl Sized for Global}]] value
+    conditional_drop[impl_Destruct_for_Box::drop_glue<'28, StaticCopy<'23>, Global>[{built_in impl MetaSized for StaticCopy<'23>}, {built_in impl Sized for Global}]] x
+    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'58, StaticCopy<'53>, Global>[{built_in impl MetaSized for StaticCopy<'53>}, {built_in impl Sized for Global}]] value
         ↳⚡ storage_dead(value)
             unwind_terminate
         storage_dead(value)
         unwind_continue
     storage_dead(x)
-    conditional_drop[impl_Destruct_for_Box::drop_glue<'40, StaticCopy<'35>, Global>[{built_in impl MetaSized for StaticCopy<'35>}, {built_in impl Sized for Global}]] value
+    conditional_drop[impl_Destruct_for_Box::drop_glue<'43, StaticCopy<'38>, Global>[{built_in impl MetaSized for StaticCopy<'38>}, {built_in impl Sized for Global}]] value
     ↳⚡ storage_dead(value)
         unwind_continue
     storage_dead(value)
@@ -627,6 +638,7 @@ where
     let mut _0: (); // return
     let value: u32; // arg #1
     let x: u32; // local
+        where x :< u32;
         where x := u32;
 
     storage_live(_0)
@@ -667,7 +679,8 @@ where
 {
     let mut _0: (); // return
     let value: &'1 u32; // arg #1
-    let x: &'b u32; // local
+    let x: &'2 u32; // local
+        where x :< &'b u32;
         where x := &'b u32;
 
     storage_live(_0)
@@ -690,7 +703,8 @@ where
 {
     let mut _0: (); // return
     let value: &'1 u32; // arg #1
-    let x: &'a u32; // local
+    let x: &'2 u32; // local
+        where x :< &'a u32;
         where x := &'a u32;
 
     storage_live(_0)
@@ -710,8 +724,9 @@ pub fn deferred_annotation(value: &'static u32)
 {
     let mut _0: (); // return
     let value: &'1 u32; // arg #1
-    let x: &'static u32; // local
-    let mut _3: &'2 u32; // anonymous local
+    let x: &'2 u32; // local
+        where x :< &'static u32;
+    let mut _3: &'3 u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -733,8 +748,10 @@ pub fn ref_annotations(value: &'static u32)
     let mut value: &'1 u32; // arg #1
         where value :< &'static u32;
         where value :< &'static u32;
-    let x: &'4 &'static u32; // local
-    let y: &'8 mut &'static u32; // local
+    let x: &'4 &'5 u32; // local
+        where x :< &'4 &'static u32;
+    let y: &'8 mut &'9 u32; // local
+        where y :< &'8 mut &'static u32;
 
     storage_live(_0)
     _0 = ()
@@ -760,10 +777,12 @@ pub fn shared_projected_annotation(value: &'static u32)
 {
     let mut _0: (); // return
     let value: &'2 u32; // arg #1
-    let x: &'0 u32; // local
-    let y: &'0 u32; // local
-    let mut _4: &'3 u32; // anonymous local
-    let mut _5: &'4 u32; // anonymous local
+    let x: &'3 u32; // local
+        where x :< &'0 u32;
+    let y: &'4 u32; // local
+        where y :< &'0 u32;
+    let mut _4: &'5 u32; // anonymous local
+    let mut _5: &'6 u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -790,8 +809,9 @@ pub fn multiple_projected_annotations(value: &'static u32)
 {
     let mut _0: (); // return
     let value: &'3 u32; // arg #1
-    let x: &'6 &'static u32; // local
-        where x := &'6 &'0 u32;
+    let x: &'6 &'7 u32; // local
+        where x :< &'6 &'static u32;
+        where x :< &'6 &'0 u32;
     let mut _3: Foo<'9>; // anonymous local
         where _3 :< Foo<'static>;
         where _3 :< Foo<'1>;
@@ -834,13 +854,15 @@ pub fn branch_annotation(value_1: &'static u32, condition: bool) -> &'static u32
     let mut _0: &'3 u32; // return
     let value_1: &'4 u32; // arg #1
     let condition: bool; // arg #2
-    let x: &'static u32; // local
+    let x: &'5 u32; // local
+        where x :< &'static u32;
     let mut _4: bool; // anonymous local
-    let value_5: &'0 u32; // local
+    let value_5: &'6 u32; // local
+        where value_5 :< &'0 u32;
         where value_5 := &'1 u32;
-    let mut _6: &'5 u32; // anonymous local
-    let mut _7: &'6 u32; // anonymous local
-    let _8: &'7 u32; // anonymous local
+    let mut _6: &'7 u32; // anonymous local
+    let mut _7: &'8 u32; // anonymous local
+    let _8: &'9 u32; // anonymous local
     let _9: u32; // anonymous local
 
     storage_live(_0)

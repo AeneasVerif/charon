@@ -93,16 +93,17 @@ fn foo()
     let mut _0: (); // return
     let mut _1: bool; // anonymous local
     let mut _2: &'3 Option::<i32>; // anonymous local
-    let slice: &'0 [bool]; // local
+    let slice: &'5 [bool]; // local
+        where slice :< &'0 [bool];
         where slice := &'1 [bool];
-    let mut _4: &'5 [bool; 1usize]; // anonymous local
-    let _5: &'6 [bool; 1usize]; // anonymous local
-    let mut _6: &'8 [bool]; // anonymous local
-    let _7: &'9 [bool]; // anonymous local
-    let mut _8: &'10 [bool]; // anonymous local
+    let mut _4: &'7 [bool; 1usize]; // anonymous local
+    let _5: &'8 [bool; 1usize]; // anonymous local
+    let mut _6: &'9 [bool]; // anonymous local
+    let _7: &'10 [bool]; // anonymous local
+    let mut _8: &'11 [bool]; // anonymous local
     let mut _9: RangeFrom::<usize>; // anonymous local
-    let mut _10: &'11 [bool; 1usize]; // anonymous local
-    let mut _11: &'12 Option::<i32>; // anonymous local
+    let mut _10: &'12 [bool; 1usize]; // anonymous local
+    let mut _11: &'13 Option::<i32>; // anonymous local
 
     storage_live(_0)
     storage_live(_10)
@@ -112,7 +113,7 @@ fn foo()
     storage_live(_2)
     _11 = read test_crate::foo::{promoted_const#1}
     _2 = &(*_11)
-    _1 = is_some::<i32><'17>(move _2)
+    _1 = is_some::<i32><'18>(move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)
@@ -122,7 +123,7 @@ fn foo()
     _10 = read test_crate::foo::{promoted_const}
     _5 = &(*_10)
     _4 = &(*_5)
-    slice = unsize_cast<&'19 [bool], 1usize>(move _4)
+    slice = unsize_cast<&'20 [bool], 1usize>(move _4)
     storage_dead(_4)
     fake_read(slice)
     storage_dead(_5)
@@ -132,7 +133,7 @@ fn foo()
     _8 = &(*slice) with_metadata(read slice.metadata)
     storage_live(_9)
     _9 = RangeFrom::<usize> { start: const 1usize }
-    _7 = index::<bool, RangeFrom::<usize>><'23>(move _8, move _9)
+    _7 = index::<bool, RangeFrom::<usize>><'24>(move _8, move _9)
     ↳⚡ unwind_continue
     storage_dead(_9)
     storage_dead(_8)

@@ -55,9 +55,11 @@ pub unsafe extern "C" fn sum(...) -> i32
     let mut _0: i32; // return
     let mut ap: VaList<'1>; // arg #1
     let a: i32; // local
+        where a :< i32;
         where a := i32;
     let mut _3: &'4 mut VaList<'5>; // anonymous local
     let b: i32; // local
+        where b :< i32;
         where b := i32;
     let mut _5: &'6 mut VaList<'7>; // anonymous local
     let mut _6: i32; // anonymous local
@@ -122,6 +124,7 @@ pub fn call()
     let mut _1: i32; // anonymous local
     let mut _2: (); // anonymous local
     let fn_ptr: unsafe extern "C" fn(u32, u64, ...); // local
+        where fn_ptr :< unsafe extern "C" fn(u32, u64, ...);
         where fn_ptr := unsafe extern "C" fn(u32, u64, ...);
     let mut _4: (); // anonymous local
     let mut _5: unsafe extern "C" fn(u32, u64, ...); // anonymous local

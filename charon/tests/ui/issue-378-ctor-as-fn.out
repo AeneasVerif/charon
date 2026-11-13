@@ -126,6 +126,7 @@ fn main()
     let mut _2: Option<u8>[{built_in impl Sized for u8}]; // anonymous local
     let mut _3: Some<u8>[{built_in impl Sized for u8}]; // anonymous local
     let f_4: fn(u8) -> Option<u8>[{built_in impl Sized for u8}]; // local
+        where f_4 :< fn(u8) -> Option<u8>[{built_in impl Sized for u8}];
         where f_4 := fn(u8) -> Option<u8>[{built_in impl Sized for u8}];
     let mut _5: Some<u8>[{built_in impl Sized for u8}]; // anonymous local
     let mut _6: Option<u8>[{built_in impl Sized for u8}]; // anonymous local

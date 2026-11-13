@@ -52,14 +52,17 @@ fn main()
 {
     let mut _0: (); // return
     let x: usize; // local
+        where x :< usize;
         where x := usize;
     let y: usize; // local
+        where y :< usize;
         where y := usize;
     let z: usize; // local
     let mut _4: usize; // anonymous local
     let mut _5: usize; // anonymous local
     let mut _6: usize; // anonymous local
     let a: u128; // local
+        where a :< u128;
         where a := u128;
     let b: HasBEDiscr; // local
 

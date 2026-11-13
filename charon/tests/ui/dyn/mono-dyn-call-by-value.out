@@ -175,6 +175,7 @@ fn main()
 {
     let mut _0: (); // return
     let b: Box::<(dyn T), Global>; // local
+        where b :< Box::<(dyn T), Global>;
         where b := Box::<(dyn T), Global>;
     let mut _2: Box::<(), Global>; // anonymous local
     let mut _3: (); // anonymous local
@@ -183,6 +184,7 @@ fn main()
     let _6: (); // anonymous local
     let mut _7: Box::<(dyn T), Global>; // anonymous local
     let f: Box::<Foo::<(dyn T)>, Global>; // local
+        where f :< Box::<Foo::<(dyn T)>, Global>;
         where f := Box::<Foo::<(dyn T)>, Global>;
     let mut _9: Box::<Foo::<()>, Global>; // anonymous local
     let mut _10: Foo::<()>; // anonymous local

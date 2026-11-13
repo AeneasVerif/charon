@@ -29,3 +29,7 @@ struct Struct {
 fn field(b: Box<Struct>) -> String {
     b.b
 }
+
+fn reborrow_slice(b: &mut Box<[u32]>) -> &mut [u32] {
+    &mut **b
+}

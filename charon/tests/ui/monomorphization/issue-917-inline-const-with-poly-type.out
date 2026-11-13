@@ -105,6 +105,7 @@ fn foo::<()>(x: ())
     let mut _0: (); // return
     let x: (); // arg #1
     let f: fn(()); // local
+        where f :< fn(());
         where f := fn(());
     let mut _3: fn(()); // anonymous local
     let mut _4: (); // anonymous local

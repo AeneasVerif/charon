@@ -242,16 +242,16 @@ struct test_crate::captured_generic_closure::{closure}<'_0, '_1> {
 // Full name: test_crate::captured_generic_closure
 pub fn captured_generic_closure<'a>(x: &'a u8) -> test_crate::captured_generic_closure::{closure}<'a, 'a>
 {
-    let mut _0: test_crate::captured_generic_closure::{closure}<'39, '40>; // return
-    let x: &'41 u8; // arg #1
-    let inner: test_crate::generic_closure::{closure}<&'42 u8>[{built_in impl Sized for &'42 u8}, {impl Copy for &'_0 T}<'42, u8>]; // local
-    let mut _3: &'48 u8; // anonymous local
+    let mut _0: test_crate::captured_generic_closure::{closure}<'31, '32>; // return
+    let x: &'33 u8; // arg #1
+    let inner: test_crate::generic_closure::{closure}<&'34 u8>[{built_in impl Sized for &'34 u8}, {impl Copy for &'_0 T}<'34, u8>]; // local
+    let mut _3: &'40 u8; // anonymous local
 
     storage_live(_0)
     storage_live(inner)
     storage_live(_3)
     _3 = copy x
-    inner = generic_closure<&'63 u8>[{built_in impl Sized for &'63 u8}, {impl Copy for &'_0 T}<'63, u8>](move _3)
+    inner = generic_closure<&'55 u8>[{built_in impl Sized for &'55 u8}, {impl Copy for &'_0 T}<'55, u8>](move _3)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_3)
@@ -269,10 +269,10 @@ where
     Outlives1: ('_1: '_2),
 {
     let mut _0: &'1 u8; // return
-    let mut _1: &'41 test_crate::captured_generic_closure::{closure}<'_0, '_1>; // arg #1
+    let mut _1: &'33 test_crate::captured_generic_closure::{closure}<'_0, '_1>; // arg #1
     let mut tupled_args: (); // arg #2
-    let _3: &'42 u8; // anonymous local
-    let mut _4: &'50 test_crate::generic_closure::{closure}<&'51 u8>[{built_in impl Sized for &'51 u8}, {impl Copy for &'_0 T}<'51, u8>]; // anonymous local
+    let _3: &'34 u8; // anonymous local
+    let mut _4: &'42 test_crate::generic_closure::{closure}<&'43 u8>[{built_in impl Sized for &'43 u8}, {impl Copy for &'_0 T}<'43, u8>]; // anonymous local
     let mut _5: (); // anonymous local
 
     storage_live(_0)
@@ -281,7 +281,7 @@ where
     _4 = &(*_1)._0
     storage_live(_5)
     _5 = ()
-    _3 = {impl Fn<()> for test_crate::generic_closure::{closure}<T>[TraitClause0, TraitClause1]}::call<'130, &'90 u8>[{built_in impl Sized for &'90 u8}, {impl Copy for &'_0 T}<'90, u8>](move _4, move _5)
+    _3 = {impl Fn<()> for test_crate::generic_closure::{closure}<T>[TraitClause0, TraitClause1]}::call<'122, &'82 u8>[{built_in impl Sized for &'82 u8}, {impl Copy for &'_0 T}<'82, u8>](move _4, move _5)
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)
         unwind_continue

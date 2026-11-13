@@ -169,5 +169,25 @@ fn field(b: Box<Struct>[{built_in impl MetaSized for Struct}, {built_in impl Siz
     return
 }
 
+// Full name: test_crate::reborrow_slice
+fn reborrow_slice<'_0>(b: &'_0 mut Box<[u32]>[{built_in impl MetaSized for [u32]}, {built_in impl Sized for Global}]) -> &'_0 mut [u32]
+{
+    let mut _0: &'1 mut [u32]; // return
+    let b: &'3 mut Box<[u32]>[{built_in impl MetaSized for [u32]}, {built_in impl Sized for Global}]; // arg #1
+    let mut _2: &'4 mut [u32]; // anonymous local
+    let mut _3: &'5 mut [u32]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = &mut (*(*b)) with_metadata(read (*b).metadata)
+    _2 = &mut (*_3) with_metadata(read _3.metadata)
+    _0 = &mut (*_2) with_metadata(read _2.metadata)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(b)
+    return
+}
+
 
 

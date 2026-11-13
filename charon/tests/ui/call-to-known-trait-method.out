@@ -183,8 +183,10 @@ fn main()
 {
     let mut _0: (); // return
     let _x: (u8, bool); // local
+        where _x :< (u8, bool);
         where _x := (u8, bool);
     let _y: Struct<bool>[{built_in impl Sized for bool}]; // local
+        where _y :< Struct<bool>[{built_in impl Sized for bool}];
         where _y := Struct<bool>[{built_in impl Sized for bool}];
     let _3: (); // anonymous local
 

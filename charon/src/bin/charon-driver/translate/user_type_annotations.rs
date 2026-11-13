@@ -103,8 +103,7 @@ impl UserTypeAnnotations {
         Ok(recovered)
     }
 
-    /// Get the annotated type of this local, if there was such an annotation, and any additional
-    /// constraints from other annotations on the same local.
+    /// Get the type of this local and the constraints from its type annotations.
     pub(crate) fn translate_local_ty<'tcx>(
         &self,
         ctx: &mut ItemTransCtx<'tcx, '_>,
@@ -112,6 +111,8 @@ impl UserTypeAnnotations {
         local_id: LocalId,
         decl: &mir::LocalDecl<'tcx>,
     ) -> Result<(Ty, Vec<PlaceTypeConstraint>), Error> {
+        let ty = ctx.translate_rustc_ty(span, &decl.ty)?;
+        let mut constraints = Vec::new();
         if let Some(user_tys) = &decl.user_ty
             && user_tys.projections().len() != 0
         {
@@ -120,14 +121,13 @@ impl UserTypeAnnotations {
             } else {
                 // In `let ref x: T`, the annotation describes the pointer target. We grab the
                 // appropriate region by using the normal type of the local.
-                let inferred_ty = ctx.translate_rustc_ty(span, &decl.ty)?;
-                let TyKind::Ref(region, _, kind) = inferred_ty.kind() else {
+                let TyKind::Ref(region, _, kind) = ty.kind() else {
                     raise_error!(ctx, span, "ref binding has non-reference type");
                 };
                 Some((region.clone(), *kind))
             };
 
-            let mut annotated_tys = user_tys
+            let annotated_tys = user_tys
                 .projections()
                 .map(|pj| self.translate_projected_annotation(pj))
                 .map(|ty| {
@@ -137,19 +137,15 @@ impl UserTypeAnnotations {
                         ty
                     }
                 });
-            let ty = annotated_tys.next().unwrap();
-            let mut constraints = Vec::new();
             for annotated_ty in annotated_tys {
                 constraints.push(PlaceTypeConstraint {
                     place: Place::new(local_id, ty.clone()),
                     ty: annotated_ty,
-                    variance: Variance::Invariant,
+                    variance: Variance::Covariant,
                 });
             }
-            Ok((ty, constraints))
-        } else {
-            Ok((ctx.translate_rustc_ty(span, &decl.ty)?, Vec::new()))
         }
+        Ok((ty, constraints))
     }
 
     /// Look up the (unprojected) type of an annotation.

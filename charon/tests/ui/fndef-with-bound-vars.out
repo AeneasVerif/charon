@@ -35,7 +35,7 @@ struct test_crate::main::{closure}<'_0, '_1> {}
 fn main()
 {
     let mut _0: (); // return
-    let mut _1: test_crate::main::{closure}<'88, '89>; // anonymous local
+    let mut _1: test_crate::main::{closure}<'40, '41>; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -56,14 +56,14 @@ where
     Outlives0: ('_0: '_2),
     Outlives1: ('_1: '_2),
 {
-    let mut _0: test_crate::main::{closure}::{closure}<'57, '58>; // return
-    let mut _1: &'148 test_crate::main::{closure}<'_0, '_1>; // arg #1
+    let mut _0: test_crate::main::{closure}::{closure}<'35, '36>; // return
+    let mut _1: &'78 test_crate::main::{closure}<'_0, '_1>; // arg #1
     let mut tupled_args: (); // arg #2
-    let i: bar<&'149 ()>[{built_in impl Sized for &'149 ()}]; // local
+    let i: bar<&'79 ()>[{built_in impl Sized for &'79 ()}]; // local
 
     storage_live(_0)
     storage_live(i)
-    i = const bar<&'6 ()>[{built_in impl Sized for &'6 ()}]
+    i = const bar<&'0 ()>[{built_in impl Sized for &'0 ()}]
     fake_read(i)
     _0 = test_crate::main::{closure}::{closure} { _0: copy i }
     storage_dead(i)
@@ -79,7 +79,7 @@ where
     Outlives1: ('_1: '_2),
 {
     let mut _0: bar<&'8 ()>[{built_in impl Sized for &'8 ()}]; // return
-    let mut _1: &'55 test_crate::main::{closure}::{closure}<'_0, '_1>; // arg #1
+    let mut _1: &'39 test_crate::main::{closure}::{closure}<'_0, '_1>; // arg #1
     let mut tupled_args: (); // arg #2
 
     storage_live(_0)

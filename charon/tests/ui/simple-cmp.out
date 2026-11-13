@@ -19,8 +19,10 @@ fn main()
 {
     let mut _0: (); // return
     let x: i32; // local
+        where x :< i32;
         where x := i32;
     let y: i32; // local
+        where y :< i32;
         where y := i32;
     let mut _3: Ordering; // anonymous local
     let mut _4: &'1 i32; // anonymous local

@@ -1,0 +1,104 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: test_crate::Trait
+trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: test_crate::Trait::{vtable}
+}
+
+// Full name: test_crate::{impl Trait for fn(T)}
+impl<T> Trait for fn(T)
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: (fn(T): MetaSized) = {built_in impl MetaSized for fn(T)}
+    vtable: lazy
+}
+
+// Full name: test_crate::{impl Trait for fn<'a>(&'a (), &'a ())}
+impl Trait for fn<'a>(&'a (), &'a ()) {
+    proof ImpliedClause0: (fn<'a>(&'a (), &'a ()): MetaSized) = {built_in impl MetaSized for fn<'a>(&'a (), &'a ())}
+    vtable: lazy
+}
+
+// Full name: test_crate::require
+fn require<T>()
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Trait),
+{
+    let mut _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::fixed_lifetime
+fn fixed_lifetime<'a>()
+{
+    let mut _0: (); // return
+    let _1: (); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    _1 = require<fn(&'a ())>[{built_in impl Sized for fn(&'a ())}, {impl Trait for fn(T)}<&'8 ()>[{built_in impl Sized for &'8 ()}]]()
+    ↳⚡ unwind_continue
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::nested_binder
+fn nested_binder()
+{
+    let mut _0: (); // return
+    let _1: (); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    _1 = require<fn(fn<'_0_2>(&'_0_2 ()))>[{built_in impl Sized for fn(fn<'_0_3>(&'_0_3 ()))}, {impl Trait for fn(T)}<fn<'_0_2>(&'_0_2 ())>[{built_in impl Sized for fn<'_0_3>(&'_0_3 ())}]]()
+    ↳⚡ unwind_continue
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::higher_ranked_impl
+fn higher_ranked_impl()
+{
+    let mut _0: (); // return
+    let _1: (); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    _1 = require<fn<'_0_1>(&'_0_1 (), &'_0_1 ())>[{built_in impl Sized for fn<'_0_2>(&'_0_2 (), &'_0_2 ())}, {impl Trait for fn<'a>(&'a (), &'a ())}]()
+    ↳⚡ unwind_continue
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
+
+

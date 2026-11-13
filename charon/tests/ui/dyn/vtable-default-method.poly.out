@@ -170,15 +170,16 @@ vtable impl_Trait_for_Struct::{vtable}: test_crate::Trait::{vtable} = test_crate
 pub fn main()
 {
     let mut _0: (); // return
-    let b: &'0 (dyn Trait + '1); // local
+    let b: &'7 (dyn Trait + '8); // local
+        where b :< &'0 (dyn Trait + '1);
         where b := &'2 (dyn Trait + '3);
-    let mut _2: &'5 Struct; // anonymous local
-    let _3: &'6 Struct; // anonymous local
+    let mut _2: &'10 Struct; // anonymous local
+    let _3: &'11 Struct; // anonymous local
     let mut _4: i32; // anonymous local
-    let mut _5: &'10 (dyn Trait + '11); // anonymous local
-    let mut _6: &'12 Struct; // anonymous local
-    let mut _7: &'13 Struct; // anonymous local
-    let mut _8: &'24 Struct; // anonymous local
+    let mut _5: &'12 (dyn Trait + '13); // anonymous local
+    let mut _6: &'14 Struct; // anonymous local
+    let mut _7: &'15 Struct; // anonymous local
+    let mut _8: &'26 Struct; // anonymous local
     let mut _9: Struct; // anonymous local
 
     storage_live(_7)
@@ -198,14 +199,14 @@ pub fn main()
     _6 = move _7
     _3 = &(*_6)
     _2 = &(*_3)
-    b = unsize_cast<&'14 (dyn Trait + '15), &impl_Trait_for_Struct::{vtable}>(move _2)
+    b = unsize_cast<&'16 (dyn Trait + '17), &impl_Trait_for_Struct::{vtable}>(move _2)
     storage_dead(_2)
     fake_read(b)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*b) with_metadata(read b.metadata)
-    _4 = (read (*_5.metadata).method_dflt)<'23>(move _5)
+    _4 = (read (*_5.metadata).method_dflt)<'25>(move _5)
     ↳⚡ storage_dead(_6)
         unwind_continue
     storage_dead(_5)

@@ -38,6 +38,7 @@ fn main()
 {
     let mut _0: (); // return
     let list: LinkedList::<u8>; // local
+        where list :< LinkedList::<u8>;
         where list := LinkedList::<u8>;
 
     storage_live(_0)
