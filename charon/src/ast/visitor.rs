@@ -226,6 +226,7 @@ use derive_generic_visitor::*;
         GlobalPlace,
         GlobalSource,
         ImplElem,
+        ImplRestriction,
         InhabitedPredicate,
         InhabitedPredicateKind,
         ItemMeta,

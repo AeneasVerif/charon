@@ -526,6 +526,8 @@ pub struct Trait<'tcx> {
     param_env: ParamEnv<'tcx>,
     implied_predicates: GenericPredicates<'tcx>,
     is_unsafe: bool,
+    /// The module to which impls of this trait are restricted, if any (`impl(crate) trait`).
+    impl_restriction: Option<DefId>,
     /// The special `Self: Trait` clause.
     self_predicate: TraitPredicate<'tcx>,
     /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for this trait. This is `Some` iff this
@@ -570,6 +572,10 @@ impl<'tcx> Trait<'tcx> {
     /// Whether this is an `unsafe trait`, i.e. implementing it requires `unsafe impl`.
     pub fn is_unsafe(&self) -> bool {
         self.is_unsafe
+    }
+    /// The module to which impls of this trait are restricted, if any (`impl(crate) trait`).
+    pub fn impl_restriction(&self) -> Option<&DefId> {
+        self.impl_restriction.as_ref()
     }
 }
 
@@ -1366,6 +1372,10 @@ where
             def_id: hax_def_id.clone(),
             args,
             is_unsafe: tcx.trait_is_unsafe(def_id),
+            impl_restriction: match tcx.trait_def(def_id).impl_restriction {
+                ty::RestrictionKind::Unrestricted => None,
+                ty::RestrictionKind::Restricted(mod_id, _) => Some(mod_id.sinto(s)),
+            },
             param_env: get_param_env(s, args),
             implied_predicates: get_implied_predicates(s, args),
             self_predicate: get_self_predicate(s, args),

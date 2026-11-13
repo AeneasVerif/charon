@@ -130,6 +130,12 @@ impl CrateMerger {
                     // Don't modify the name found there
                     ControlFlow::Continue(())
                 }
+                fn visit_impl_restriction(
+                    &mut self,
+                    _x: &mut ImplRestriction,
+                ) -> ControlFlow<Self::Break> {
+                    ControlFlow::Continue(())
+                }
                 fn enter_name(&mut self, name: &mut Name) {
                     name.name.push(PathElem::Target(self.target.clone()));
                 }
@@ -335,12 +341,14 @@ impl ZipAst for ItemComparer<'_> {
             inline: left_inline,
             rename: left_rename,
             public: left_public,
+            exported: left_exported,
         } = left;
         let AttrInfo {
             attributes: right_attributes,
             inline: right_inline,
             rename: right_rename,
             public: right_public,
+            exported: right_exported,
         } = right;
 
         let is_stable = |attr: &&Attribute| !matches!(attr, Attribute::Unknown(attr) if attr.path.starts_with("rustc_"));
@@ -350,7 +358,8 @@ impl ZipAst for ItemComparer<'_> {
         )?;
         self.visit(left_inline, right_inline)?;
         self.visit(left_rename, right_rename)?;
-        self.visit(left_public, right_public)
+        self.visit(left_public, right_public)?;
+        self.visit(left_exported, right_exported)
     }
 
     fn visit_item_meta(&mut self, left: &ItemMeta, right: &ItemMeta) -> ControlFlow<Self::Break> {

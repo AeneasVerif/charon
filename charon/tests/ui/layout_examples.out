@@ -282,7 +282,7 @@ impl "impl_Copy_for_NonZeroI32Inner" Copy for NonZeroI32Inner {
 }
 
 // Full name: core::num::nonzero::ZeroablePrimitive
-pub unsafe trait ZeroablePrimitive<Self>
+pub impl(in core::num::nonzero) unsafe trait ZeroablePrimitive<Self>
 {
     proof ImpliedClause0: (Self: Sized)
     proof ImpliedClause1: (Self: Copy)

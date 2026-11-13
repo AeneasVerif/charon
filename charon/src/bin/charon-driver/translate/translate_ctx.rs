@@ -145,6 +145,9 @@ pub struct TranslateCtx<'tcx> {
     pub cached_names: HashMap<RustcItem<'tcx>, Name>,
     /// Cache the `ItemMeta`s to compute them only once each.
     pub cached_item_metas: HashMap<TransItemSource<'tcx>, ItemMeta>,
+    /// For each foreign crate we've looked at, the set of its items that are nameable from outside
+    /// it. Computed lazily by `is_exported`.
+    pub exported_foreign_items: HashMap<rustc_span::def_id::CrateNum, HashSet<RDefId>>,
     /// Compute which lifetimes are used in a `&'a mut T`. This is a global fixpoint analysis.
     pub lt_mutability_computer: LifetimeMutabilityComputer,
 }

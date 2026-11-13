@@ -611,13 +611,87 @@ fn visibility() -> anyhow::Result<()> {
         "test_crate::Priv"
     );
     assert!(!type_decls[1].item_meta.attr_info.public);
-    // Note how we think `PubInPriv` is public. It kind of is but there is no path to it. This is
-    // probably fine.
+    // Note how we think `PubInPriv` is public. It kind of is but there is no path to it; see the
+    // `effective_visibility` test for `exported`, which captures that.
     assert_eq!(
         type_decls[2].item_meta.name.debug_repr(&crate_data),
         "test_crate::private::PubInPriv"
     );
     assert!(type_decls[2].item_meta.attr_info.public);
+    Ok(())
+}
+
+#[test]
+fn effective_visibility() -> anyhow::Result<()> {
+    let crate_data = translate(
+        r#"
+        pub struct Pub {
+            pub field: u8,
+            priv_field: u8,
+        }
+        impl Pub {
+            pub fn pub_method(&self) {}
+            fn priv_method(&self) {}
+        }
+        struct Priv;
+
+        mod private {
+            pub struct PubInPriv;
+            pub struct Reexported;
+            pub trait Sealed {}
+        }
+        pub use private::Reexported;
+
+        pub trait SealedTrait: private::Sealed {
+            fn method(&self);
+        }
+        impl private::Sealed for Pub {}
+        impl SealedTrait for Pub {
+            fn method(&self) {}
+        }
+        impl SealedTrait for private::PubInPriv {
+            fn method(&self) {}
+        }
+        impl private::Sealed for private::PubInPriv {}
+        "#,
+    )?;
+    let fmt = crate_data.into_fmt();
+    let mut exported: HashMap<String, bool> = HashMap::new();
+    for item in crate_data.all_items() {
+        let meta = item.item_meta();
+        let name = meta.name.with_ctx(&fmt).to_string();
+        if let ItemRef::Type(decl) = item
+            && let TypeDeclKind::Struct(fields) = &decl.kind
+        {
+            for field in fields {
+                exported.insert(format!("{name}::{}", field.name), field.attr_info.exported);
+            }
+        }
+        exported.insert(name, meta.attr_info.exported);
+    }
+    let expected: HashMap<&str, bool> = HashMap::from([
+        ("()", true),
+        ("core::marker::MetaSized", true),
+        ("test_crate::Priv", false),
+        ("test_crate::Pub", true),
+        ("test_crate::Pub::field", true),
+        ("test_crate::Pub::priv_field", false),
+        ("test_crate::SealedTrait", true),
+        ("test_crate::impl_SealedTrait_for_Pub", true),
+        ("test_crate::impl_SealedTrait_for_Pub::method", true),
+        ("test_crate::impl_SealedTrait_for_PubInPriv", false),
+        ("test_crate::impl_SealedTrait_for_PubInPriv::method", false),
+        ("test_crate::impl_Sealed_for_Pub", false),
+        ("test_crate::impl_Sealed_for_PubInPriv", false),
+        ("test_crate::private::PubInPriv", false),
+        ("test_crate::private::Reexported", true),
+        ("test_crate::private::Sealed", false),
+        ("test_crate::{Pub}::priv_method", false),
+        ("test_crate::{Pub}::pub_method", true),
+    ]);
+    for (name, expected) in &expected {
+        assert_eq!(Some(expected), exported.get(*name));
+    }
     Ok(())
 }
 

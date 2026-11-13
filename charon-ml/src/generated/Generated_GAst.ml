@@ -506,8 +506,17 @@ class ['self] map_trait_decl_base =
       TraitMethodId.Map.visit_map
   end
 
+(** Where a trait may be implemented. *)
+type impl_restriction =
+  | Unrestricted  (** The trait can be implemented anywhere it is visible. *)
+  | Restricted of name
+      (** The trait can only be implemented within the given module, e.g.
+          [pub impl(crate) trait Foo {}], or
+          [pub impl(in crate::foo) trait Foo {}]. Related to
+          [feature(impl_restriction)]. *)
+
 (** An associated constant in a trait. *)
-type trait_assoc_const = {
+and trait_assoc_const = {
   name : trait_item_name;
   attr_info : attr_info;
   ty : ty;
@@ -563,6 +572,8 @@ and trait_decl = {
   is_unsafe : bool;
       (** Whether this is an [unsafe trait], i.e. implementing it requires
           [unsafe impl]. *)
+  impl_restriction : impl_restriction;
+      (** Where this trait may be implemented. *)
   generics : generic_params;
   implied_clauses : trait_param list;
       (** The "parent" clauses: the supertraits.
