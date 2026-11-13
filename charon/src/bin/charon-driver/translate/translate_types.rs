@@ -694,8 +694,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
                 _ => unreachable!("Unexpected hax type {hax_ty:?} for dynamic type: {ty:?}"),
             },
-            // If we're hiding `Sized`, let's consider every param to be sized.
-            ty::Param(..) if self.t_ctx.options.hide_marker_traits => PtrMetadata::None,
+            // Don't try guessing anything -- leave it to the client.
             ty::Param(..) => PtrMetadata::InheritFrom(self.translate_ty(span, &hax_ty)?),
             ty::Placeholder(..) | ty::Infer(..) | ty::Bound(..) => {
                 panic!(
