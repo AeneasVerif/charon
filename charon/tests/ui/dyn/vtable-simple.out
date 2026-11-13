@@ -164,13 +164,14 @@ where
 {
     let mut _0: T; // return
     let arg: &'5 T; // arg #1
-    let x: &'0 mut (dyn Modifiable<T> + '1); // local
+    let x: &'9 mut (dyn Modifiable<T> + '10); // local
+        where x :< &'0 mut (dyn Modifiable<T> + '1);
         where x := &'2 mut (dyn Modifiable<T> + '3);
-    let mut _3: &'7 mut i32; // anonymous local
-    let mut _4: &'8 mut i32; // anonymous local
+    let mut _3: &'12 mut i32; // anonymous local
+    let mut _4: &'13 mut i32; // anonymous local
     let mut _5: i32; // anonymous local
-    let mut _6: &'12 mut (dyn Modifiable<T> + '13); // anonymous local
-    let mut _7: &'14 T; // anonymous local
+    let mut _6: &'14 mut (dyn Modifiable<T> + '15); // anonymous local
+    let mut _7: &'16 T; // anonymous local
 
     storage_live(_0)
     set T: '0
@@ -184,7 +185,7 @@ where
     _5 = const 199i32
     _4 = &mut _5
     _3 = &mut (*_4)
-    x = unsize_cast<&'15 mut (dyn Modifiable<T> + '16), &impl_Modifiable_for_i32::{vtable}<T>[TraitClause0, TraitClause1]>(move _3)
+    x = unsize_cast<&'17 mut (dyn Modifiable<T> + '18), &impl_Modifiable_for_i32::{vtable}<T>[TraitClause0, TraitClause1]>(move _3)
     storage_dead(_3)
     fake_read(x)
     storage_dead(_4)
@@ -192,7 +193,7 @@ where
     _6 = &two-phase-mut (*x) with_metadata(read x.metadata)
     storage_live(_7)
     _7 = &(*arg)
-    _0 = (read (*_6.metadata).method_modify)<'25, '26>(move _6, move _7)
+    _0 = (read (*_6.metadata).method_modify)<'27, '28>(move _6, move _7)
     ↳⚡ storage_dead(arg)
         unwind_continue
     storage_dead(_7)

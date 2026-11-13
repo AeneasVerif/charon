@@ -69,6 +69,7 @@ fn main()
 {
     let mut _0: (); // return
     let str: String; // local
+        where str :< String;
         where str := String;
     let mut _2: &'1 str; // anonymous local
     let _3: &'2 str; // anonymous local

@@ -223,6 +223,7 @@ fn call_unsafe_fn()
 {
     let mut _0: (); // return
     let x: *const u32; // local
+        where x :< *const u32;
         where x := *const u32;
     let mut _2: u32; // anonymous local
     let mut _3: *const u32; // anonymous local
@@ -250,6 +251,7 @@ fn deref_raw_ptr()
 {
     let mut _0: (); // return
     let x: *const u32; // local
+        where x :< *const u32;
         where x := *const u32;
     let mut _2: u32; // anonymous local
 

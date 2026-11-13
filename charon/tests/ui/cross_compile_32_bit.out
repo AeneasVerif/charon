@@ -29,8 +29,10 @@ fn main()
 {
     let mut _0: (); // return
     let mut x: usize; // local
+        where x :< usize;
         where x := usize;
     let y: usize; // local
+        where y :< usize;
         where y := usize;
     let z: usize; // local
     let mut _4: usize; // anonymous local

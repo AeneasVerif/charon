@@ -18,6 +18,7 @@ fn main()
 {
     let mut _0: (); // return
     let f: fn(); // local
+        where f :< fn();
         where f := fn();
     let _2: (); // anonymous local
     let mut _3: fn(); // anonymous local

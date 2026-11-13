@@ -651,6 +651,7 @@ pub fn test_closure_u32(x: u32) -> u32
     let mut _0: u32; // return
     let x: u32; // arg #1
     let f: fn(u32) -> u32; // local
+        where f :< fn(u32) -> u32;
         where f := fn(u32) -> u32;
     let mut _3: test_crate::test_closure_u32::{closure}; // anonymous local
     let mut _4: fn(u32) -> u32; // anonymous local
@@ -789,6 +790,7 @@ pub fn test_closure_u32s(x: u32) -> u32
     let mut _0: u32; // return
     let x: u32; // arg #1
     let f: fn(u32, u32) -> u32; // local
+        where f :< fn(u32, u32) -> u32;
         where f := fn(u32, u32) -> u32;
     let mut _3: test_crate::test_closure_u32s::{closure}; // anonymous local
     let mut _4: fn(u32, u32) -> u32; // anonymous local
@@ -913,6 +915,7 @@ pub fn test_closure_ref_u32<'a>(x: &'a u32) -> &'a u32
     let mut _0: &'1 u32; // return
     let x: &'2 u32; // arg #1
     let f: fn<'_0_1>(&'_0_1 u32) -> &'_0_1 u32; // local
+        where f :< fn<'_0_1>(&'_0_1 u32) -> &'_0_1 u32;
         where f := fn<'_0_1>(&'_0_1 u32) -> &'_0_1 u32;
     let mut _3: test_crate::test_closure_ref_u32::{closure}; // anonymous local
     let _4: &'3 u32; // anonymous local
@@ -1056,6 +1059,7 @@ where
     let mut _0: &'1 T; // return
     let x: &'2 T; // arg #1
     let f: fn<'_0_1 where T: '_0_1>(&'_0_1 T) -> &'_0_1 T; // local
+        where f :< fn<'_0_1 where T: '_0_1>(&'_0_1 T) -> &'_0_1 T;
         where f := fn<'_0_1 where T: '_0_1>(&'_0_1 T) -> &'_0_1 T;
     let mut _3: test_crate::test_closure_ref_param::{closure}<T>[TraitClause0]; // anonymous local
     let _4: &'3 T; // anonymous local
@@ -1216,6 +1220,7 @@ where
     let mut _0: &'1 T; // return
     let x: &'2 T; // arg #1
     let f: fn<'_0_1 where T: '_0_1>(&'_0_1 T) -> &'_0_1 T; // local
+        where f :< fn<'_0_1 where T: '_0_1>(&'_0_1 T) -> &'_0_1 T;
         where f := fn<'_0_1 where T: '_0_1>(&'_0_1 T) -> &'_0_1 T;
     let mut _3: test_crate::test_closure_ref_early_bound::{closure}<'7, '8, T>[TraitClause0, TraitClause1]; // anonymous local
     let _4: &'10 T; // anonymous local
@@ -1347,6 +1352,7 @@ pub fn test_map_option2(x: Option<u32>[{built_in impl Sized for u32}]) -> Option
     let mut _0: Option<u32>[{built_in impl Sized for u32}]; // return
     let x: Option<u32>[{built_in impl Sized for u32}]; // arg #1
     let f: fn(u32) -> u32; // local
+        where f :< fn(u32) -> u32;
         where f := fn(u32) -> u32;
     let mut _3: test_crate::test_map_option2::{closure}; // anonymous local
     let mut _4: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
@@ -1674,6 +1680,7 @@ pub fn test_id_clone(x: u32) -> u32
     let mut _0: u32; // return
     let x: u32; // arg #1
     let f: fn(u32) -> u32; // local
+        where f :< fn(u32) -> u32;
         where f := fn(u32) -> u32;
     let mut _3: fn(u32) -> u32; // anonymous local
     let mut _4: u32; // anonymous local
@@ -1705,6 +1712,7 @@ where
     let mut _0: T; // return
     let x: T; // arg #1
     let f: fn(T) -> T; // local
+        where f :< fn(T) -> T;
         where f := fn(T) -> T;
     let mut _3: fn(T) -> T; // anonymous local
     let mut _4: T; // anonymous local
@@ -2038,18 +2046,19 @@ pub fn test_regions_casted<'a>(x: &'a u32) -> u32
 {
     let mut _0: u32; // return
     let x: &'1 u32; // arg #1
-    let f: fn<'_0_1 where 'a: '_0_1>(&'_0_1 &'a u32) -> u32; // local
+    let f: fn<'_0_1>(&'_0_1 &'5 u32) -> u32; // local
+        where f :< fn<'_0_1 where 'a: '_0_1>(&'_0_1 &'a u32) -> u32;
         where f := fn<'_0_1 where 'a: '_0_1>(&'_0_1 &'a u32) -> u32;
-    let mut _3: test_crate::test_regions_casted::{closure}<'8>; // anonymous local
-    let mut _4: fn<'_0_1>(&'_0_1 &'12 u32) -> u32; // anonymous local
-    let mut _5: &'15 &'16 u32; // anonymous local
-    let _6: &'17 &'18 u32; // anonymous local
+    let mut _3: test_crate::test_regions_casted::{closure}<'12>; // anonymous local
+    let mut _4: fn<'_0_1>(&'_0_1 &'13 u32) -> u32; // anonymous local
+    let mut _5: &'16 &'17 u32; // anonymous local
+    let _6: &'18 &'19 u32; // anonymous local
 
     storage_live(_0)
     storage_live(f)
     storage_live(_3)
     _3 = test_crate::test_regions_casted::{closure} {  }
-    f = fn_def_to_fn_ptr(const test_crate::test_regions_casted::{closure}::{as_fn}<'23, '25>)
+    f = fn_def_to_fn_ptr(const test_crate::test_regions_casted::{closure}::{as_fn}<'24, '26>)
     storage_dead(_3)
     fake_read(f)
     storage_live(_4)
@@ -2058,7 +2067,7 @@ pub fn test_regions_casted<'a>(x: &'a u32) -> u32
     storage_live(_6)
     _6 = &x
     _5 = &(*_6)
-    _0 = (move _4)<'59>(move _5)
+    _0 = (move _4)<'60>(move _5)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_5)

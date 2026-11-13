@@ -88,16 +88,17 @@ impl "impl_Trait_for_i32" Trait for i32 {
 fn main()
 {
     let mut _0: (); // return
-    let b: &'0 (dyn Trait + '1); // local
+    let b: &'7 (dyn Trait + '8); // local
+        where b :< &'0 (dyn Trait + '1);
         where b := &'2 (dyn Trait + '3);
-    let mut _2: &'5 i32; // anonymous local
-    let _3: &'6 i32; // anonymous local
+    let mut _2: &'10 i32; // anonymous local
+    let _3: &'11 i32; // anonymous local
     let _4: (); // anonymous local
-    let mut _5: &'10 (dyn Trait + '11); // anonymous local
-    let mut _6: &'12 i32; // anonymous local
-    let mut _7: fn(&'10 (dyn Trait + '11)); // anonymous local
-    let mut _8: &'13 i32; // anonymous local
-    let mut _9: &'24 i32; // anonymous local
+    let mut _5: &'12 (dyn Trait + '13); // anonymous local
+    let mut _6: &'14 i32; // anonymous local
+    let mut _7: fn(&'12 (dyn Trait + '13)); // anonymous local
+    let mut _8: &'15 i32; // anonymous local
+    let mut _9: &'26 i32; // anonymous local
     let mut _10: i32; // anonymous local
 
     storage_live(_8)
@@ -117,7 +118,7 @@ fn main()
     _6 = move _8
     _3 = &(*_6)
     _2 = &(*_3)
-    b = unsize_cast<&'14 (dyn Trait + '15), &impl_Trait_for_i32::{vtable}>(move _2)
+    b = unsize_cast<&'16 (dyn Trait + '17), &impl_Trait_for_i32::{vtable}>(move _2)
     storage_dead(_2)
     fake_read(b)
     storage_dead(_3)
@@ -125,7 +126,7 @@ fn main()
     storage_live(_5)
     _5 = &(*b) with_metadata(read b.metadata)
     storage_live(_7)
-    _7 = cast<fn(&'10 (dyn Trait + '11))>(read (*_5.metadata).method_comsume)
+    _7 = cast<fn(&'12 (dyn Trait + '13))>(read (*_5.metadata).method_comsume)
     _4 = (read _7)(move _5)
     ↳⚡ storage_dead(_6)
         unwind_continue

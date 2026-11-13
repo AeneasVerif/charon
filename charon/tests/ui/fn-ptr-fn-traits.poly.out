@@ -928,6 +928,7 @@ pub fn test<'a>(x: &'a u32) -> &'a u32
     let mut _0: &'1 u32; // return
     let x: &'2 u32; // arg #1
     let f: fn<'b where u32: 'b>(Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // local
+        where f :< fn<'b where u32: 'b>(Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32];
         where f := fn<'b where u32: 'b>(Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32];
     let _3: Adt<'4, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // anonymous local
     let mut _4: fn<'b where u32: 'b>(Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'b, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]; // anonymous local
@@ -981,6 +982,7 @@ pub fn test_const(x: ConstAdt<3usize>) -> ConstAdt<3usize>
     let mut _0: ConstAdt<3usize>; // return
     let x: ConstAdt<3usize>; // arg #1
     let f: fn(ConstAdt<3usize>) -> ConstAdt<3usize>; // local
+        where f :< fn(ConstAdt<3usize>) -> ConstAdt<3usize>;
         where f := fn(ConstAdt<3usize>) -> ConstAdt<3usize>;
     let mut _3: fn(ConstAdt<3usize>) -> ConstAdt<3usize>; // anonymous local
     let mut _4: ConstAdt<3usize>; // anonymous local
@@ -1020,22 +1022,23 @@ pub fn test_free_region<'a>(x: &'a u32) -> &'a u32
 {
     let mut _0: &'1 u32; // return
     let x: &'2 u32; // arg #1
-    let f: fn(&'a u32) -> &'a u32; // local
+    let f: fn(&'6 u32) -> &'7 u32; // local
+        where f :< fn(&'a u32) -> &'a u32;
         where f := fn(&'a u32) -> &'a u32;
-    let _3: &'3 u32; // anonymous local
-    let mut _4: fn(&'7 u32) -> &'8 u32; // anonymous local
-    let mut _5: &'9 u32; // anonymous local
+    let _3: &'8 u32; // anonymous local
+    let mut _4: fn(&'9 u32) -> &'10 u32; // anonymous local
+    let mut _5: &'11 u32; // anonymous local
 
     storage_live(_0)
     storage_live(f)
-    f = fn_def_to_fn_ptr(const ref_identity<'14>)
+    f = fn_def_to_fn_ptr(const ref_identity<'16>)
     fake_read(f)
     storage_live(_3)
     storage_live(_4)
     _4 = copy f
     storage_live(_5)
     _5 = &(*x)
-    _3 = generic_call_once<fn(&'107 u32) -> &'108 u32, &'109 u32, &'110 u32>[{built_in impl Sized for fn(&'115 u32) -> &'116 u32}, {built_in impl Sized for &'109 u32}, {built_in impl Sized for &'110 u32}, {impl FnOnce<(A,)> for fn(A) -> B}<&'109 u32, &'124 u32>[{built_in impl Sized for &'109 u32}, {built_in impl Sized for &'124 u32}]](move _4, move _5)
+    _3 = generic_call_once<fn(&'109 u32) -> &'110 u32, &'111 u32, &'112 u32>[{built_in impl Sized for fn(&'117 u32) -> &'118 u32}, {built_in impl Sized for &'111 u32}, {built_in impl Sized for &'112 u32}, {impl FnOnce<(A,)> for fn(A) -> B}<&'111 u32, &'126 u32>[{built_in impl Sized for &'111 u32}, {built_in impl Sized for &'126 u32}]](move _4, move _5)
     ↳⚡ storage_dead(x)
         unwind_continue
     _0 = &(*_3)
@@ -1076,6 +1079,7 @@ pub fn test_freshen_whole_adt<'a>(x: Plain<u32>[{built_in impl Sized for u32}], 
     let x: Plain<u32>[{built_in impl Sized for u32}]; // arg #1
     let y: &'2 u32; // arg #2
     let f: fn<'b>(Plain<u32>[{built_in impl Sized for u32}], &'b u32) -> &'b u32; // local
+        where f :< fn<'b>(Plain<u32>[{built_in impl Sized for u32}], &'b u32) -> &'b u32;
         where f := fn<'b>(Plain<u32>[{built_in impl Sized for u32}], &'b u32) -> &'b u32;
     let _4: &'3 u32; // anonymous local
     let mut _5: fn<'b>(Plain<u32>[{built_in impl Sized for u32}], &'b u32) -> &'b u32; // anonymous local
@@ -1126,6 +1130,7 @@ pub fn test_const_under_binder<'a>(x: [&'a u8; 3usize]) -> [&'a u8; 3usize]
     let mut _0: [&'8 u8; 3usize]; // return
     let x: [&'12 u8; 3usize]; // arg #1
     let f: fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize]; // local
+        where f :< fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize];
         where f := fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize];
     let mut _3: fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize]; // anonymous local
     let mut _4: [&'16 u8; 3usize]; // anonymous local
@@ -1230,6 +1235,7 @@ pub fn test_fn_ptr_regions<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'b u8, &'a u8)
     let x: &'14 u8; // arg #1
     let y: &'15 u8; // arg #2
     let f: fn<'c, 'd>(&'c u8, &'d u8) -> (&'d u8, &'c u8); // local
+        where f :< fn<'c, 'd>(&'c u8, &'d u8) -> (&'d u8, &'c u8);
         where f := fn<'c, 'd>(&'c u8, &'d u8) -> (&'d u8, &'c u8);
     let mut _4: fn<'c, 'd>(&'c u8, &'d u8) -> (&'d u8, &'c u8); // anonymous local
     let mut _5: &'16 u8; // anonymous local
@@ -1284,12 +1290,14 @@ pub fn test_dyn_fn(x: u32) -> u32
     let mut _0: u32; // return
     let x: u32; // arg #1
     let fn_ptr: fn(u32) -> u32; // local
+        where fn_ptr :< fn(u32) -> u32;
         where fn_ptr := fn(u32) -> u32;
-    let dyn_fn: &'0 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '1); // local
+    let dyn_fn: &'7 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '8); // local
+        where dyn_fn :< &'0 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '1);
         where dyn_fn := &'2 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '3);
-    let mut _4: &'5 fn(u32) -> u32; // anonymous local
-    let _5: &'6 fn(u32) -> u32; // anonymous local
-    let mut _6: &'10 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '11); // anonymous local
+    let mut _4: &'10 fn(u32) -> u32; // anonymous local
+    let _5: &'11 fn(u32) -> u32; // anonymous local
+    let mut _6: &'12 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '13); // anonymous local
     let mut _7: (u32,); // anonymous local
     let mut _8: u32; // anonymous local
 
@@ -1304,7 +1312,7 @@ pub fn test_dyn_fn(x: u32) -> u32
     storage_live(_5)
     _5 = &fn_ptr
     _4 = &(*_5)
-    dyn_fn = unsize_cast<&'12 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '13), &{impl Fn<(A,)> for fn(A) -> B}::{vtable}<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]>(move _4)
+    dyn_fn = unsize_cast<&'14 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '15), &{impl Fn<(A,)> for fn(A) -> B}::{vtable}<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]>(move _4)
     storage_dead(_4)
     fake_read(dyn_fn)
     storage_dead(_5)
@@ -1314,7 +1322,7 @@ pub fn test_dyn_fn(x: u32) -> u32
     storage_live(_8)
     _8 = copy x
     _7 = (move _8,)
-    _0 = (read (*_6.metadata).method_call)<'21>(move _6, move _7)
+    _0 = (read (*_6.metadata).method_call)<'23>(move _6, move _7)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_8)
@@ -1332,12 +1340,14 @@ pub fn test_dyn_fn_mut(x: u32) -> u32
     let mut _0: u32; // return
     let x: u32; // arg #1
     let mut fn_ptr: fn(u32) -> u32; // local
+        where fn_ptr :< fn(u32) -> u32;
         where fn_ptr := fn(u32) -> u32;
-    let dyn_fn: &'0 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '1); // local
+    let dyn_fn: &'7 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '8); // local
+        where dyn_fn :< &'0 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '1);
         where dyn_fn := &'2 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '3);
-    let mut _4: &'5 mut fn(u32) -> u32; // anonymous local
-    let mut _5: &'6 mut fn(u32) -> u32; // anonymous local
-    let mut _6: &'10 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '11); // anonymous local
+    let mut _4: &'10 mut fn(u32) -> u32; // anonymous local
+    let mut _5: &'11 mut fn(u32) -> u32; // anonymous local
+    let mut _6: &'12 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '13); // anonymous local
     let mut _7: (u32,); // anonymous local
     let mut _8: u32; // anonymous local
 
@@ -1352,7 +1362,7 @@ pub fn test_dyn_fn_mut(x: u32) -> u32
     storage_live(_5)
     _5 = &mut fn_ptr
     _4 = &mut (*_5)
-    dyn_fn = unsize_cast<&'12 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '13), &{impl FnMut<(A,)> for fn(A) -> B}::{vtable}<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]>(move _4)
+    dyn_fn = unsize_cast<&'14 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '15), &{impl FnMut<(A,)> for fn(A) -> B}::{vtable}<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]>(move _4)
     storage_dead(_4)
     fake_read(dyn_fn)
     storage_dead(_5)
@@ -1362,7 +1372,7 @@ pub fn test_dyn_fn_mut(x: u32) -> u32
     storage_live(_8)
     _8 = copy x
     _7 = (move _8,)
-    _0 = (read (*_6.metadata).method_call_mut)<'21>(move _6, move _7)
+    _0 = (read (*_6.metadata).method_call_mut)<'23>(move _6, move _7)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_8)

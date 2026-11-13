@@ -14,6 +14,7 @@ fn main()
 {
     let mut _0: (); // return
     let res: Result::<u32, u32>; // local
+        where res :< Result::<u32, u32>;
         where res := Result::<u32, u32>;
     let n: u32; // local
 

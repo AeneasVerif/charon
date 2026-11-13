@@ -257,6 +257,7 @@ fn main()
 {
     let mut _0: (); // return
     let ptr: *const (); // local
+        where ptr :< *const ();
         where ptr := *const ();
 
     storage_live(_0)

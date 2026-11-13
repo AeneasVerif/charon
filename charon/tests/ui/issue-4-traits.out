@@ -131,6 +131,7 @@ fn trait_error<'_0>(s: &'_0 [u8])
     let mut _0: (); // return
     let s: &'1 [u8]; // arg #1
     let _array: [u8; 4usize]; // local
+        where _array :< [u8; 4usize];
         where _array := [u8; 4usize];
     let mut _3: Result<[u8; 4usize], TryFromSliceError>[{built_in impl Sized for [u8; 4usize]}, {built_in impl Sized for TryFromSliceError}]; // anonymous local
     let mut _4: &'2 [u8]; // anonymous local

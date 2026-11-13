@@ -71,6 +71,7 @@ fn operands_and_options(x: u64) -> u64
     let mut _0: u64; // return
     let mut x: u64; // arg #1
     let output: u64; // local
+        where output :< u64;
     let mut _3: u64; // anonymous local
     let mut _4: u64; // anonymous local
     let mut _5: u64; // anonymous local
