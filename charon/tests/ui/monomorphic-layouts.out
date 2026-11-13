@@ -1,0 +1,343 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::option::Option
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
+pub enum Option<T>
+where
+    TraitClause0: (T: Sized),
+{
+  None,
+  Some { _0: T },
+}
+// layout:
+//     size: ? (guaranteed: at_least(align_to((offset_of(Option<T>[TraitClause0].Some._0) + size_of::<T>()), align_of::<T>()))),
+//     align: ? (guaranteed: at_least(align_of::<T>())),
+//     discriminator: none,
+//     inhabited: true,
+//     variants: [
+//         None: {
+//             inhabited: true,
+//             tagger: [],
+//         },
+//         Some: {
+//             offset of _0: ? (guaranteed: aligned(align_of::<T>())),
+//             inhabited: if_inhabited(T),
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+// layout of `Option<&'_ u16>[{built_in impl Sized for &'_ u16}]`:
+//     size: 8usize,
+//     align: 8usize,
+//     discriminator: read at offset 0 { 0isize => None, _ => Some },
+//     inhabited: true,
+//     variants: [
+//         None: {
+//             inhabited: true,
+//             tagger: [0 := 0isize],
+//         },
+//         Some: {
+//             offset of _0: 0,
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+// layout of `Option<bool>[{built_in impl Sized for bool}]`:
+//     size: 1usize,
+//     align: 1usize,
+//     discriminator: read at offset 0 { 2u8 => None, 3u8..=255u8 => invalid, _ => Some },
+//     inhabited: true,
+//     variants: [
+//         None: {
+//             inhabited: true,
+//             tagger: [0 := 2u8],
+//         },
+//         Some: {
+//             offset of _0: 0,
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+// layout of `Option<u8>[{built_in impl Sized for u8}]`:
+//     size: 2usize,
+//     align: 1usize,
+//     discriminator: read at offset 0 { 0u8 => None, 1u8 => Some, _ => invalid },
+//     inhabited: true,
+//     variants: [
+//         None: {
+//             inhabited: true,
+//             tagger: [0 := 0u8],
+//         },
+//         Some: {
+//             offset of _0: 1,
+//             inhabited: true,
+//             tagger: [0 := 1u8],
+//         },
+//     ],
+//     repr(Rust),
+
+struct () {}
+// layout:
+//     size: 0usize (guaranteed: at_least(0usize)),
+//     align: 1usize (guaranteed: at_least(1usize)),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+// Full name: core::option::Option::{impl Destruct for Option<T>[TraitClause0]}::drop_glue
+unsafe fn drop_glue<'_0, T>(_1: &'_0 mut Option<T>[TraitClause0])
+where
+    TraitClause0: (T: Sized),
+    Outlives0: (T: '_0),
+= <opaque>
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+// layout:
+//     size: ? (guaranteed: at_least(align_to(max((offset_of((_, _)<A, B>[TraitClause0]._0) + size_of::<A>()), (offset_of((_, _)<A, B>[TraitClause0]._1) + size_of::<B>())), max(align_of::<A>(), align_of::<B>())))),
+//     align: ? (guaranteed: at_least(max(align_of::<A>(), align_of::<B>()))),
+//     discriminator: none,
+//     inhabited: (if_inhabited(A) && if_inhabited(B)),
+//     variants: [
+//         _: {
+//             offset of _0: ? (guaranteed: aligned(align_of::<A>())),
+//             offset of _1: ? (guaranteed: aligned(align_of::<B>())),
+//             inhabited: (if_inhabited(A) && if_inhabited(B)),
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+// layout of `(u8, &'_ u32)`:
+//     size: 16usize,
+//     align: 8usize,
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             offset of _0: 0,
+//             offset of _1: 8,
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+// Full name: test_crate::Wrap
+struct Wrap<T>
+where
+    TraitClause0: (T: Sized),
+{
+  _0: Option<T>[TraitClause0],
+}
+// layout:
+//     size: ? (guaranteed: at_least(align_to((offset_of(Wrap<T>[TraitClause0]._0) + size_of::<Option<T>[TraitClause0]>()), align_of::<Option<T>[TraitClause0]>()))),
+//     align: ? (guaranteed: at_least(align_of::<Option<T>[TraitClause0]>())),
+//     discriminator: none,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             offset of _0: ? (guaranteed: aligned(align_of::<Option<T>[TraitClause0]>())),
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+// layout of `Wrap<&'_ u16>[{built_in impl Sized for &'_ u16}]`:
+//     size: 8usize,
+//     align: 8usize,
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             offset of _0: 0,
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+// layout of `Wrap<bool>[{built_in impl Sized for bool}]`:
+//     size: 1usize,
+//     align: 1usize,
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             offset of _0: 0,
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+// Full name: test_crate::Grow
+struct Grow<T>
+where
+    TraitClause0: (T: Sized),
+{
+  _0: T,
+  _1: *const Grow<(T, T)>[{built_in impl Sized for (T, T)}],
+}
+// layout:
+//     size: ? (guaranteed: at_least(align_to(max((offset_of(Grow<T>[TraitClause0]._0) + size_of::<T>()), (offset_of(Grow<T>[TraitClause0]._1) + size_of::<*const Grow<(T, T)>[{built_in impl Sized for (T, T)}]>())), max(align_of::<T>(), align_of::<*const Grow<(T, T)>[{built_in impl Sized for (T, T)}]>())))),
+//     align: ? (guaranteed: at_least(max(align_of::<T>(), align_of::<*const Grow<(T, T)>[{built_in impl Sized for (T, T)}]>()))),
+//     discriminator: none,
+//     inhabited: if_inhabited(T),
+//     variants: [
+//         _: {
+//             offset of _0: ? (guaranteed: aligned(align_of::<T>())),
+//             offset of _1: ? (guaranteed: aligned(align_of::<*const Grow<(T, T)>[{built_in impl Sized for (T, T)}]>())),
+//             inhabited: if_inhabited(T),
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+// layout of `Grow<u8>[{built_in impl Sized for u8}]`:
+//     size: 16usize,
+//     align: 8usize,
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             offset of _0: 8,
+//             offset of _1: 0,
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+// Full name: test_crate::Ref
+struct Ref<'a> {
+  _0: &'a u8,
+}
+// layout:
+//     size: 8usize (guaranteed: at_least(align_to((offset_of(Ref<'a>._0) + size_of::<&'a u8>()), align_of::<&'a u8>()))),
+//     align: 8usize (guaranteed: at_least(align_of::<&'a u8>())),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             offset of _0: 0 (guaranteed: aligned(align_of::<&'a u8>())),
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+// Full name: test_crate::Holder
+struct Holder<'a> {
+  _0: Wrap<&'a u16>[{built_in impl Sized for &'a u16}],
+}
+// layout:
+//     size: 8usize (guaranteed: at_least(align_to((offset_of(Holder<'a>._0) + size_of::<Wrap<&'a u16>[{built_in impl Sized for &'a u16}]>()), align_of::<Wrap<&'a u16>[{built_in impl Sized for &'a u16}]>()))),
+//     align: 8usize (guaranteed: at_least(align_of::<Wrap<&'a u16>[{built_in impl Sized for &'a u16}]>())),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             offset of _0: 0 (guaranteed: aligned(align_of::<Wrap<&'a u16>[{built_in impl Sized for &'a u16}]>())),
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+// Full name: test_crate::instances
+fn instances<'_0, '_1, '_2>(_1: Wrap<bool>[{built_in impl Sized for bool}], _2: (u8, &'_0 u32), _3: Grow<u8>[{built_in impl Sized for u8}], _4: Ref<'_1>, _5: Holder<'_2>)
+{
+    let mut _0: (); // return
+    let mut _1: Wrap<bool>[{built_in impl Sized for bool}]; // arg #1
+    let mut _2: (u8, &'2 u32); // arg #2
+    let mut _3: Grow<u8>[{built_in impl Sized for u8}]; // arg #3
+    let mut _4: Ref<'5>; // arg #4
+    let mut _5: Holder<'8>; // arg #5
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::generic
+fn generic<T>(_1: Option<T>[TraitClause0])
+where
+    TraitClause0: (T: Sized),
+{
+    let mut _0: (); // return
+    let mut _1: Option<T>[TraitClause0]; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    conditional_drop[drop_glue<'0, T>[TraitClause0]] _1
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::opaque
+fn opaque() -> u8
+{
+    let mut _0: u8; // return
+
+    storage_live(_0)
+    _0 = const 0u8
+    return
+}
+
+// Full name: test_crate::uses_opaque
+fn uses_opaque()
+{
+    let mut _0: (); // return
+    let mut _1: Option<u8>[{built_in impl Sized for u8}]; // anonymous local
+    let mut _2: u8; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    storage_live(_2)
+    _2 = opaque()
+    ↳⚡ unwind_continue
+    _1 = Option::Some { _0: move _2 }
+    storage_dead(_2)
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
+
+

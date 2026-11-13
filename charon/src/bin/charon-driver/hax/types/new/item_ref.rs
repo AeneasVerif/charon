@@ -210,15 +210,44 @@ impl<'tcx> ItemRef<'tcx> {
             .collect()
     }
 
-    /// Erase lifetimes from the generic arguments of this item.
+    /// Erase lifetimes from the generic arguments of this item and reveal their opaque types.
     pub fn erase<S: UnderOwnerState<'tcx>>(&self, s: &S) -> Self {
         let args = self.rustc_args(s);
+        let args = self.unrigid_opaques(s, args);
         let args = erase_and_norm(
             s.base().tcx,
             s.typing_env(),
             ty::Unnormalized::new_wip(args),
         );
         Self::translate_from_hax_def_id(s, self.def_id.clone(), args)
+    }
+
+    /// Make the opaque types in `value` non-rigid so that normalizing reveals them.
+    fn unrigid_opaques<S: UnderOwnerState<'tcx>, T: ty::TypeFoldable<ty::TyCtxt<'tcx>>>(
+        &self,
+        s: &S,
+        value: T,
+    ) -> T {
+        use rustc_middle::ty::{TypeFoldable, TypeSuperFoldable, TypeVisitableExt};
+        if !value.has_opaque_types() {
+            return value;
+        };
+
+        struct UnrigidOpaques<'tcx>(ty::TyCtxt<'tcx>);
+        impl<'tcx> ty::TypeFolder<ty::TyCtxt<'tcx>> for UnrigidOpaques<'tcx> {
+            fn cx(&self) -> ty::TyCtxt<'tcx> {
+                self.0
+            }
+            fn fold_ty(&mut self, ty: ty::Ty<'tcx>) -> ty::Ty<'tcx> {
+                match ty.kind() {
+                    ty::Alias(_, alias) if matches!(alias.kind, ty::AliasTyKind::Opaque { .. }) => {
+                        ty::Ty::new_alias(self.0, ty::IsRigid::No, alias.fold_with(self))
+                    }
+                    _ => ty.super_fold_with(self),
+                }
+            }
+        }
+        value.fold_with(&mut UnrigidOpaques(s.base().tcx))
     }
 
     /// Reconstruct this item reference with the requested associated item resolution.

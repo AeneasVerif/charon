@@ -496,7 +496,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 .map(|_| None)
                 .collect();
         let (mut kind, layout) = if item_meta.opacity.with_private_contents().is_opaque() {
-            (TypeDeclKind::Opaque, SeqHashMap::default())
+            (TypeDeclKind::Opaque, TargetLayouts::default())
         } else {
             // First construct fields that use the real method signatures (which may use the `Self`
             // type). We fixup the types and generics below.
@@ -514,7 +514,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 TrVTableField::Method(id, _, path) => VTableField::Method(*id, path.clone()),
                 TrVTableField::SuperTrait(clause_id, ..) => VTableField::SuperTrait(*clause_id),
             });
-            let layout = [(self.get_target_triple(), l)].into();
+            let layout = TargetLayouts([(self.get_target_triple(), l)].into());
             (kind, layout)
         };
 
@@ -594,6 +594,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             },
             kind,
             layout,
+            monomorphic_layouts: Default::default(),
             // A vtable struct is always sized
             ptr_metadata: PtrMetadata::None,
             marker_traits: Some(Box::new(ImplementsMarkerTraits {

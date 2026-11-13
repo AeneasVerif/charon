@@ -455,11 +455,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             Ok(kind) => kind,
             Err(err) => TypeDeclKind::Error(err.msg),
         };
-        let layout = self
-            .translate_layout(span, def, &kind)
-            .into_iter()
-            .map(|l| (self.get_target_triple(), l))
-            .collect();
+        let layout = TargetLayouts(
+            self.translate_layout(span, def.this(), Some(&kind))
+                .into_iter()
+                .map(|l| (self.get_target_triple(), l))
+                .collect(),
+        );
         let ptr_metadata = self.translate_ptr_metadata(span, def.this())?;
         let marker_traits = self.outermost_generics().is_empty().then(|| {
             let ty = def.type_of(&self.hax_state).unwrap();
@@ -484,6 +485,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             kind,
             src,
             layout,
+            monomorphic_layouts: Default::default(),
             ptr_metadata,
             marker_traits,
         })
