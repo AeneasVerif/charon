@@ -3,6 +3,7 @@ use crate::hax::prelude::*;
 use rustc_data_structures::intern::Interned;
 use rustc_middle::ty;
 use rustc_span::def_id::DefId as RDefId;
+use std::cell::OnceCell;
 
 /// Reference to an item, with generics. Basically any mention of an item (function, type, etc)
 /// uses this.
@@ -64,8 +65,12 @@ pub struct ItemRefContents<'tcx> {
     /// Witnesses of the trait clauses required by the item, e.g. `T: Sized` for `Option<T>` or `B:
     /// ToOwned` for `Cow<'a, B>`. Same as above, for associated items this only includes clauses
     /// for the item itself.
-    #[value(self.assoc_trait_proofs().sinto(s))]
-    pub trait_proofs: Vec<TraitProof<'tcx>>,
+    #[value(LazyTraitProofs::default())]
+    trait_proofs: LazyTraitProofs<'tcx>,
+    /// The item under which this reference was made, if the generics mention its parameters:
+    /// the trait proofs may then refer to its local clauses.
+    #[value(self.has_owner_param.then(|| s.owner()))]
+    owner: Option<DefId>,
     /// If we're referring to a trait associated item, this gives the trait clause/impl we're
     /// referring to.
     #[value(self.in_trait.as_ref().map(|(x, _)| x).sinto(s))]
@@ -78,13 +83,58 @@ pub struct ItemRefContents<'tcx> {
     pub has_non_lt_param: bool,
 }
 
+/// Trait proofs of an `ItemRef`, computed lazily
+#[derive(Clone, Debug, Default)]
+struct LazyTraitProofs<'tcx>(OnceCell<Vec<TraitProof<'tcx>>>);
+impl std::hash::Hash for LazyTraitProofs<'_> {
+    fn hash<H: std::hash::Hasher>(&self, _state: &mut H) {}
+}
+impl PartialEq for LazyTraitProofs<'_> {
+    fn eq(&self, _other: &Self) -> bool {
+        true
+    }
+}
+impl Eq for LazyTraitProofs<'_> {}
+
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef<'tcx>>
     for rustc_trait_elaboration::ItemRef<'tcx, DefId>
 {
     fn sinto(&self, s: &S) -> ItemRef<'tcx> {
-        let content: ItemRefContents = self.sinto(s);
+        let mut content: ItemRefContents = self.sinto(s);
+        if content.owner.is_none() && s.owner_has_concrete_clauses() {
+            // The trait proofs of this parameter-free reference may use the where-clauses of the
+            // owner on parameter-free types. We compare with the same reference made in the global
+            // context to see if they are used; if they aren't we use the global context, to avoid
+            // duplication of items.
+            let assoc_item_resolution = if self.in_trait.is_some() {
+                AssocItemResolution::TraitProof
+            } else {
+                AssocItemResolution::None
+            };
+            let global = ItemRef::translate_from_hax_def_id_maybe_resolve(
+                &s.with_hax_owner(&global_owner(s)),
+                self.def_id.clone(),
+                self.generics(),
+                assoc_item_resolution,
+            );
+            let trait_proofs = content.resolve_trait_proofs(s, &s.owner());
+            // The item in the global context matches, so we can use it to avoid having
+            // it duplicated per owner.
+            if *global.contents() == content && global.trait_proofs(s) == trait_proofs {
+                return global;
+            }
+            content.owner = Some(s.owner());
+            content.trait_proofs = LazyTraitProofs(OnceCell::from(trait_proofs));
+        }
         content.intern(s)
     }
+}
+
+/// The item in which we resolve the trait proofs of item references that don't depend on their
+/// owner: only concrete clauses can influence the resolution of parameter-free predicates, so all
+/// items without such clauses give the same proofs.
+fn global_owner<'tcx>(s: &impl BaseState<'tcx>) -> DefId {
+    DefId::make_synthetic(s, SyntheticItem::Tuple(0))
 }
 
 impl<'tcx> ItemRefContents<'tcx> {
@@ -92,6 +142,24 @@ impl<'tcx> ItemRefContents<'tcx> {
         ItemRef {
             contents: s.base().item_ref_interner.intern(self),
         }
+    }
+
+    /// Resolve the trait proofs of this reference in the context of `owner`.
+    fn resolve_trait_proofs(
+        &self,
+        s: &impl BaseState<'tcx>,
+        owner: &DefId,
+    ) -> Vec<TraitProof<'tcx>> {
+        let s = &s.with_hax_owner(owner);
+        let trait_proofs = s.with_predicate_searcher(|pred_searcher, state| {
+            pred_searcher.resolve_item_assoc_trait_proofs(
+                state,
+                self.def_id.clone(),
+                self.rustc_args,
+                self.in_trait.is_some(),
+            )
+        });
+        trait_proofs.sinto(s)
     }
 }
 
@@ -169,12 +237,19 @@ impl<'tcx> ItemRef<'tcx> {
             )
         });
 
-        let content: ItemRefContents<'tcx> = item_ref.sinto(s);
-        let item = content.intern(s);
+        let item: ItemRef<'tcx> = item_ref.sinto(s);
         s.with_cache(|cache| {
             cache.item_refs.insert(key, item.clone());
         });
         item
+    }
+
+    /// Witnesses of the trait clauses required by the item, e.g. `T: Sized` for `Option<T>`.
+    pub fn trait_proofs(&self, s: &impl BaseState<'tcx>) -> &[TraitProof<'tcx>] {
+        self.trait_proofs.0.get_or_init(|| {
+            let owner = self.owner.clone().unwrap_or_else(|| global_owner(s));
+            self.resolve_trait_proofs(s, &owner)
+        })
     }
 
     /// Construct an `ItemRef` for items that can't have generics (e.g. modules).
@@ -183,7 +258,8 @@ impl<'tcx> ItemRef<'tcx> {
             def_id,
             rustc_args: Default::default(),
             generic_args: Default::default(),
-            trait_proofs: Default::default(),
+            trait_proofs: LazyTraitProofs(OnceCell::from(vec![])),
+            owner: None,
             in_trait: Default::default(),
             has_param: false,
             has_non_lt_param: false,
@@ -248,6 +324,7 @@ impl<'tcx> ItemRef<'tcx> {
     pub fn mutate_def_id<S: BaseState<'tcx>>(&self, s: &S, f: impl FnOnce(&mut DefId)) -> Self {
         let mut contents = self.contents().clone();
         f(&mut contents.def_id);
+        contents.trait_proofs = Default::default();
         contents.intern(s)
     }
 

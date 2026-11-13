@@ -203,11 +203,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             hax::TyKind::Array(array) => {
                 let item_ref = &array.item;
-                let item_ty_is_sized = if let Some(proof) = array.element_sized_proof() {
-                    Some(self.translate_trait_proof(span, proof)?.no_bound_vars())
-                } else {
-                    None
-                };
+                let item_ty_is_sized =
+                    if let Some(proof) = array.element_sized_proof(self.hax_state_with_id()) {
+                        Some(self.translate_trait_proof(span, proof)?.no_bound_vars())
+                    } else {
+                        None
+                    };
                 let mut args = self.translate_generic_args_without_trait_refs(span, item_ref)?;
                 assert!(args.types.len() == 1 && args.const_generics.len() == 1);
                 TyKind::Array(
@@ -223,11 +224,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             hax::TyKind::Slice(slice) => {
                 let item_ref = &slice.item;
-                let item_ty_is_sized = if let Some(proof) = slice.element_sized_proof() {
-                    Some(self.translate_trait_proof(span, proof)?.no_bound_vars())
-                } else {
-                    None
-                };
+                let item_ty_is_sized =
+                    if let Some(proof) = slice.element_sized_proof(self.hax_state_with_id()) {
+                        Some(self.translate_trait_proof(span, proof)?.no_bound_vars())
+                    } else {
+                        None
+                    };
                 let mut args = self.translate_generic_args_without_trait_refs(span, item_ref)?;
                 assert!(args.types.len() == 1);
                 TyKind::Slice(args.types.pop().unwrap(), item_ty_is_sized)
@@ -450,7 +452,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         };
         let mut args = self.translate_raw_generic_args(span, substs)?;
         if include_trait_refs {
-            args.trait_refs = self.translate_trait_proofs(span, &item.trait_proofs)?;
+            args.trait_refs =
+                self.translate_trait_proofs(span, item.trait_proofs(self.hax_state_with_id()))?;
         }
         Ok(args)
     }
