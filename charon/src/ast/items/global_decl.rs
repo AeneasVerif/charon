@@ -99,6 +99,8 @@ pub enum GlobalSource {
     VTableInstance {
         /// The concrete type this vtable is for.
         self_ty: Ty,
+        /// The trait this vtable implements.
+        trait_ref: TraitDeclRef,
         /// The originating impl. This is `None` in monomorphized mode: the vtable global itself
         /// identifies the concrete instantiation, so we don't translate an impl reference solely
         /// to record its provenance.

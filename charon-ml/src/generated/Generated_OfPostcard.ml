@@ -2663,8 +2663,9 @@ and global_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (TraitImplGlobal (impl_ref, trait_ref, item_id, reuses_default))
      | 3 ->
          let* self_ty = ty_of_postcard ctx st in
+         let* trait_ref = trait_decl_ref_of_postcard ctx st in
          let* impl_ref = option_of_postcard trait_impl_ref_of_postcard ctx st in
-         Ok (VTableInstanceGlobal (self_ty, impl_ref))
+         Ok (VTableInstanceGlobal (self_ty, trait_ref, impl_ref))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and rustc_ident_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
