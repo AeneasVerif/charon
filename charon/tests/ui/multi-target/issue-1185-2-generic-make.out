@@ -1,41 +1,46 @@
 struct () {}
 
+// Full name: core::marker::Destruct
 #[lang_item(Destruct)]
-pub trait core::marker::Destruct<Self>
+pub trait Destruct<Self>
 {
     fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_in_cleanup
 #[lang_item(PanicInCleanup)]
-fn core::panicking::panic_in_cleanup() -> !
+fn panic_in_cleanup() -> !
 = <opaque>
 
-pub struct test_crate::State<H> {
+// Full name: test_crate::State
+pub struct State<H> {
   _h: H,
 }
 
-unsafe fn test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}::drop_glue<'_0, H>(_1: &'_0 mut test_crate::State<H>)
+// Full name: test_crate::State::{impl Destruct for State<H>}::drop_glue
+unsafe fn drop_glue<'_0, H>(_1: &'_0 mut State<H>)
 where
     Outlives0: (H: '_0),
 {
     let mut _0: (); // return
-    let _1: &'1 mut test_crate::State<H>; // arg #1
+    let _1: &'1 mut State<H>; // arg #1
 
     storage_live(_0)
     _0 = ()
-    drop[{built_in impl core::marker::Destruct for H}::drop_glue<'2>] (*_1)._h
+    drop[{built_in impl Destruct for H}::drop_glue<'2>] (*_1)._h
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)
     return
 }
 
-pub fn test_crate::caller<H>(h: H)
+// Full name: test_crate::caller
+pub fn caller<H>(h: H)
 {
     let mut _0: (); // return
     let h: H; // arg #1
-    let mut _2: test_crate::State<H>; // anonymous local
+    let mut _2: State<H>; // anonymous local
     let mut _3: H; // anonymous local
 
     storage_live(_0)
@@ -43,26 +48,26 @@ pub fn test_crate::caller<H>(h: H)
     storage_live(_2)
     storage_live(_3)
     _3 = move h
-    _2 = test_crate::State { _h: move _3 }
-    conditional_drop[{built_in impl core::marker::Destruct for H}::drop_glue<'0>] _3
-    ↳⚡ conditional_drop[test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}::drop_glue<'2, H>] _2
+    _2 = State { _h: move _3 }
+    conditional_drop[{built_in impl Destruct for H}::drop_glue<'0>] _3
+    ↳⚡ conditional_drop[drop_glue<'2, H>] _2
         ↳⚡ storage_dead(h)
             unwind_terminate(in_cleanup)
-        conditional_drop[{built_in impl core::marker::Destruct for H}::drop_glue<'4>] h
+        conditional_drop[{built_in impl Destruct for H}::drop_glue<'4>] h
         ↳⚡ storage_dead(h)
             unwind_terminate(in_cleanup)
         storage_dead(h)
         unwind_continue
     storage_dead(_3)
-    conditional_drop[test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}::drop_glue<'1, H>] _2
-    ↳⚡ conditional_drop[{built_in impl core::marker::Destruct for H}::drop_glue<'4>] h
+    conditional_drop[drop_glue<'1, H>] _2
+    ↳⚡ conditional_drop[{built_in impl Destruct for H}::drop_glue<'4>] h
         ↳⚡ storage_dead(h)
             unwind_terminate(in_cleanup)
         storage_dead(h)
         unwind_continue
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{built_in impl core::marker::Destruct for H}::drop_glue<'3>] h
+    conditional_drop[{built_in impl Destruct for H}::drop_glue<'3>] h
     ↳⚡ storage_dead(h)
         unwind_continue
     storage_dead(h)

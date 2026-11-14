@@ -1,4 +1,5 @@
-pub struct test_crate::Inner {
+// Full name: test_crate::Inner
+pub struct Inner {
   x: u32,
 }
 

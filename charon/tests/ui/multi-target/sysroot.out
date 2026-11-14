@@ -1,18 +1,21 @@
-pub opaque type core::ascii::EscapeDefault
+// Full name: core::ascii::EscapeDefault
+pub opaque type EscapeDefault
 
-fn core::ascii::{core::ascii::EscapeDefault}::new(_1: u8) -> core::ascii::EscapeDefault
+// Full name: core::ascii::{EscapeDefault}::new
+fn new(_1: u8) -> EscapeDefault
 = <opaque>
 
-pub fn core::ascii::escape_default(c: u8) -> core::ascii::EscapeDefault
+// Full name: core::ascii::escape_default
+pub fn escape_default(c: u8) -> EscapeDefault
 {
-    let mut _0: core::ascii::EscapeDefault; // return
+    let mut _0: EscapeDefault; // return
     let c: u8; // arg #1
     let mut _2: u8; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
     _2 = copy c
-    _0 = core::ascii::{core::ascii::EscapeDefault}::new(move _2)
+    _0 = new(move _2)
     ↳⚡ storage_dead(c)
         unwind_continue
     storage_dead(_2)

@@ -233,7 +233,7 @@ impl CrateMerger {
             runtime_checks,
             item_names,
             assoc_item_names,
-            short_names: _, // TODO
+            short_names: _, // Recomputed on the merged crate
             files: _,       // Done above
             type_decls,
             fun_decls,
@@ -379,6 +379,7 @@ fn cleanup_post_merge(ctx: &mut TransformCtx) {
     if !ctx.options.translate_all_methods {
         remove_unmentioned_methods(&mut ctx.translated);
     }
+    crate::transform::add_missing_info::compute_short_names::Transform.transform_ctx(ctx);
     crate::transform::add_missing_info::reorder_decls::Transform.transform_ctx(ctx);
     if ctx.options.unbind_item_vars {
         crate::transform::simplify_output::unbind_item_vars::Check.transform_ctx(ctx);

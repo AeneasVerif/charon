@@ -1,6 +1,7 @@
 struct () {}
 
-extern "C" fn test_crate::coff_ctor()
+// Full name: test_crate::coff_ctor
+extern "C" fn coff_ctor()
 {
     let mut _0: (); // return
 
@@ -10,7 +11,8 @@ extern "C" fn test_crate::coff_ctor()
     return
 }
 
+// Full name: test_crate::COFF_CTOR
 #[link_section = ".CRT$XCU"]
-static test_crate::COFF_CTOR: extern "C" fn() = fn_def_to_fn_ptr(test_crate::coff_ctor)
+static COFF_CTOR: extern "C" fn() = fn_def_to_fn_ptr(coff_ctor)
 
 

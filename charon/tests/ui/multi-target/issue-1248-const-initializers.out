@@ -16,12 +16,14 @@ fn test_crate::ARCH_TAG::i686-unknown-linux-gnu() -> u32
     return
 }
 
-fn test_crate::ARCH_TAG() -> u32
+// Full name: test_crate::ARCH_TAG
+fn ARCH_TAG() -> u32
 = target_dispatch {
     x86_64-unknown-linux-gnu => test_crate::ARCH_TAG::x86_64-unknown-linux-gnu,
     i686-unknown-linux-gnu => test_crate::ARCH_TAG::i686-unknown-linux-gnu,
 }
 
-const test_crate::ARCH_TAG: u32 = test_crate::ARCH_TAG()
+// Full name: test_crate::ARCH_TAG
+const ARCH_TAG: u32 = ARCH_TAG()
 
 

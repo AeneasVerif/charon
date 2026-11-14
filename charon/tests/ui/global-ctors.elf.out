@@ -1,18 +1,21 @@
+// Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
-pub trait core::marker::MetaSized<Self>
+pub trait MetaSized<Self>
 
+// Full name: core::marker::Sized
 #[fundamental]
 #[lang_item(Sized)]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 {
-    proof ImpliedClause0: (Self: core::marker::MetaSized)
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 struct () {}
 
-extern "C" fn test_crate::elf_ctor()
+// Full name: test_crate::elf_ctor
+extern "C" fn elf_ctor()
 {
     let mut _0: (); // return
 
@@ -22,7 +25,8 @@ extern "C" fn test_crate::elf_ctor()
     return
 }
 
-extern "C" fn test_crate::elf_ctor_a()
+// Full name: test_crate::elf_ctor_a
+extern "C" fn elf_ctor_a()
 {
     let mut _0: (); // return
 
@@ -32,7 +36,8 @@ extern "C" fn test_crate::elf_ctor_a()
     return
 }
 
-extern "C" fn test_crate::elf_ctor_b()
+// Full name: test_crate::elf_ctor_b
+extern "C" fn elf_ctor_b()
 {
     let mut _0: (); // return
 
@@ -42,10 +47,12 @@ extern "C" fn test_crate::elf_ctor_b()
     return
 }
 
+// Full name: test_crate::ELF_CTOR
 #[link_section = ".init_array"]
-static test_crate::ELF_CTOR: extern "C" fn() = fn_def_to_fn_ptr(test_crate::elf_ctor)
+static ELF_CTOR: extern "C" fn() = fn_def_to_fn_ptr(elf_ctor)
 
+// Full name: test_crate::ELF_CTORS
 #[link_section = ".init_array"]
-static test_crate::ELF_CTORS: [extern "C" fn(); 2usize] = [fn_def_to_fn_ptr(test_crate::elf_ctor_a), fn_def_to_fn_ptr(test_crate::elf_ctor_b)]
+static ELF_CTORS: [extern "C" fn(); 2usize] = [fn_def_to_fn_ptr(elf_ctor_a), fn_def_to_fn_ptr(elf_ctor_b)]
 
 
