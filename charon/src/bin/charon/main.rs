@@ -157,25 +157,12 @@ fn translate_multi_target(
             .enumerate()
             .map(|(i, target)| {
                 scope.spawn(move || -> anyhow::Result<_> {
-                    let mut opts = options.clone();
-                    let format = SerializationFormat::Postcard;
+                    let (mut opts, format) = options_for_merging(options);
                     let extension = format.output_extension(options.ullbc);
                     let temp_file = temp_dir.join(format!("target_{i}.{extension}"));
                     opts.dest_file = Some(temp_file.clone());
                     // Don't recurse into multi-target.
                     opts.targets.clear();
-                    // Suppress per-target printing; we'll print the merged result.
-                    opts.print_ullbc = false;
-                    opts.print_llbc = false;
-                    // Ensure serialization so we can load the result.
-                    opts.no_serialize = false;
-                    opts.format = Some(format.into());
-                    // Keep variables bound so that we can manipulate them when merging. We'll
-                    // apply the pass at the end if needed.
-                    opts.unbind_item_vars = false;
-                    // Make sure that traits have the same methods translated in each target. We
-                    // filter unused methods after merge.
-                    opts.translate_all_methods = true;
 
                     let status = translate_one(opts, target)?;
                     if !status.success() {
@@ -198,7 +185,31 @@ fn translate_multi_target(
 
     // Merge all crates.
     let merged = multi_target::merge(options.clone(), krates);
+    output_merged_crate(&options, merged)
+}
 
+/// The options to use for a translation whose output will be merged with others, and the format
+/// of that output.
+fn options_for_merging(options: &CliOpts) -> (CliOpts, SerializationFormat) {
+    let mut opts = options.clone();
+    let format = SerializationFormat::Postcard;
+    // Suppress per-translation printing; we'll print the merged result.
+    opts.print_ullbc = false;
+    opts.print_llbc = false;
+    // Ensure serialization so we can load the result.
+    opts.no_serialize = false;
+    opts.format = Some(format.into());
+    // Keep variables bound so that we can manipulate them when merging. We'll apply the pass at
+    // the end if needed.
+    opts.unbind_item_vars = false;
+    // Make sure that traits have the same methods translated in each translation. We filter
+    // unused methods after merge.
+    opts.translate_all_methods = true;
+    (opts, format)
+}
+
+/// Print and serialize the result of merging, as requested by `options`.
+fn output_merged_crate(options: &CliOpts, merged: CrateData) -> anyhow::Result<ExitStatus> {
     if options.print_llbc || options.print_ullbc {
         let mut fmt = merged.translated.into_fmt();
         fmt.include_layouts = options.print_layouts;
