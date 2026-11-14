@@ -1,33 +1,142 @@
-//! Utilities shared by the different ways of merging several [`CrateData`]s into one.
+//! Generic logic for merging several [`CrateData`]s into one.
+use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
+use std::hash::Hash;
 use std::mem;
 
 use petgraph::prelude::DiGraphMap;
 use petgraph::visit::{Dfs, Walker};
 
+use crate::errors::ErrorCtx;
 use crate::ids::IndexVec;
+use crate::options::TranslateOptions;
 use crate::transform::TransformCtx;
 use crate::transform::ctx::TransformPass;
-use crate::ast::*;
+use crate::{ast::*, options::CliOpts};
 
 use super::{CharonVersion, CrateData};
+
+/// How to merge several crates into one.
+pub(super) trait MergeStrategy {
+    /// Uniquely identifies an input crate.
+    type Key: Clone + Eq + Hash;
+
+    /// The key of an input crate. Must be distinct for each input crate.
+    fn key(&self, krate: &TranslatedCrate) -> Self::Key;
+
+    /// Path element to append to the names of the items of the crate with that key.
+    fn name_suffix(&self, _key: &Self::Key) -> Option<PathElem> {
+        None
+    }
+
+    /// Decide what to do with each group of items that have the same name in several crates.
+    /// This can edit/remove/add items, and returns a remapping of item ids that we then apply to
+    /// the whole crate.
+    fn link(
+        &mut self,
+        krate: &mut TranslatedCrate,
+        groups: Vec<SeqHashMap<Self::Key, ItemId>>,
+    ) -> Remapping;
+}
+
+/// A remapping of item ids, used to redirect the references to some items to other items.
+#[derive(Default)]
+pub(super) struct Remapping(HashMap<ItemId, ItemId>);
+
+impl Remapping {
+    /// Redirect the references to `from` to `to`.
+    pub(super) fn add_remapping(&mut self, from: ItemId, to: ItemId) {
+        if from != to {
+            self.0.insert(from, to);
+        }
+    }
+}
+
+impl<'a> IntoIterator for &'a Remapping {
+    type Item = (&'a ItemId, &'a ItemId);
+    type IntoIter = std::collections::hash_map::Iter<'a, ItemId, ItemId>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter()
+    }
+}
+
+/// Merge several crates into one.
+/// In order:
+/// 1. concatenate the crates together into one crate
+/// 2. group items that have the same name across several crates
+/// 3. call `MergeStrategy::link` with the groups from step 2
+/// 4. apply the remapping given by step 3
+/// 5. clean up the result
+pub(super) fn merge<S: MergeStrategy>(
+    options: CliOpts,
+    krates: Vec<CrateData>,
+    mut strategy: S,
+) -> CrateData {
+    let mut error_ctx = ErrorCtx::new();
+    let tr_options = TranslateOptions::new(&mut error_ctx, &options);
+
+    // step 1: concatenate all crates into one
+    // this will also append the optional name suffix to all items
+    let keys: Vec<_> = krates
+        .iter()
+        .map(|krate| strategy.key(&krate.translated))
+        .collect();
+    let name_suffixes = keys.iter().map(|key| strategy.name_suffix(key));
+    let (mut merged, item_sources) = CrateMerger::process(krates.into_iter().zip(name_suffixes));
+
+    // step 2: group items that have the same name across several crates
+    // we pop the suffix here so that grouping finds anything at all
+    let krate = &merged.translated;
+    let groups = discover_groups(krate, |id, name| {
+        let source = item_sources[&id];
+        let mut name = name.clone();
+        if strategy.name_suffix(&keys[source]).is_some() {
+            name.name.pop();
+        }
+        Some((normalize_impl_elems(name, krate), keys[source].clone()))
+    });
+
+    // step 3: call `MergeStrategy::link` with the groups from step 2
+    let remap = strategy.link(&mut merged.translated, groups);
+
+    // step 4: apply the remapping given by step 3
+    if !remap.0.is_empty() {
+        merged
+            .translated
+            .drive_mut(&mut IdRefMapperVisitor::new(&remap));
+    }
+
+    // step 5: cleanup!
+    let mut ctx = TransformCtx {
+        options: tr_options,
+        translated: merged.translated,
+        errors: RefCell::new(error_ctx),
+    };
+    cleanup_post_merge(&mut ctx);
+    merged.translated = ctx.translated;
+    merged.translated.preset = options.preset;
+
+    merged
+}
 
 // =============================================================================================
 // Concatenate a set of crates into one.
 // =============================================================================================
 
-pub(super) struct CrateMerger {
+struct CrateMerger {
     merged: CrateData,
     file_name_to_id: HashMap<FileName, FileId>,
+    /// For each item of the merged crate, the index of the input crate it comes from.
+    item_sources: HashMap<ItemId, usize>,
 }
 
 impl CrateMerger {
     /// Concatenate the crates, appending the provided path element (if any) to every name in the
-    /// corresponding crate.
-    pub(super) fn process(
+    /// corresponding crate. Also returns, for each item, the index of the crate it comes from.
+    fn process(
         krates: impl IntoIterator<Item = (CrateData, Option<PathElem>)>,
-    ) -> CrateData {
+    ) -> (CrateData, HashMap<ItemId, usize>) {
         let translated = TranslatedCrate::default();
         let mut merger = CrateMerger {
             merged: CrateData {
@@ -36,15 +145,16 @@ impl CrateMerger {
                 has_errors: false,
             },
             file_name_to_id: HashMap::new(),
+            item_sources: HashMap::new(),
         };
-        for (krate, name_suffix) in krates {
-            merger.add_one(krate, name_suffix);
+        for (i, (krate, name_suffix)) in krates.into_iter().enumerate() {
+            merger.add_one(i, krate, name_suffix);
         }
 
-        merger.merged
+        (merger.merged, merger.item_sources)
     }
 
-    fn add_one(&mut self, krate: CrateData, name_suffix: Option<PathElem>) {
+    fn add_one(&mut self, index: usize, krate: CrateData, name_suffix: Option<PathElem>) {
         let CrateData {
             charon_version: _, // Checked by deserialization already
             translated: mut krate,
@@ -145,6 +255,8 @@ impl CrateMerger {
             .translated
             .target_information
             .extend(target_information);
+        self.item_sources
+            .extend(item_names.keys().map(|&id| (id, index)));
         self.merged.translated.item_names.extend(item_names);
         self.merged
             .translated
@@ -180,14 +292,14 @@ impl CrateMerger {
 /// Group items by `(key_name, item_kind)`, where `item_key` computes for each item its name for
 /// grouping purposes and its key within the group. Returns, for each group, the items in that
 /// group indexed by key. If two items in a group have the same key, the group is dropped.
-pub(super) fn discover_groups<K: Clone + Eq + std::hash::Hash>(
+fn discover_groups<K: Clone + Eq + Hash>(
     krate: &TranslatedCrate,
-    item_key: impl Fn(&Name) -> Option<(Name, K)>,
+    item_key: impl Fn(ItemId, &Name) -> Option<(Name, K)>,
 ) -> Vec<SeqHashMap<K, ItemId>> {
     let mut groups_map: SeqHashMap<(Name, std::mem::Discriminant<ItemId>), SeqHashMap<K, ItemId>> =
         SeqHashMap::new();
     for (&item_id, name) in &krate.item_names {
-        if let Some((base_name, key)) = item_key(name) {
+        if let Some((base_name, key)) = item_key(item_id, name) {
             let group_key = (base_name, std::mem::discriminant(&item_id));
             let group = groups_map.entry(group_key).or_default();
             if group.contains_key(&key) {
@@ -202,15 +314,13 @@ pub(super) fn discover_groups<K: Clone + Eq + std::hash::Hash>(
     // same (because the names refer to impls/types).
     loop {
         let prev_len = groups_map.len();
-        let remap: HashMap<ItemId, ItemId> = groups_map
-            .values()
-            .filter(|ids| !ids.is_empty())
-            .flat_map(|ids| {
-                let canonical_id = *ids.values().next().unwrap();
-                ids.values().map(move |&id| (id, canonical_id))
-            })
-            .filter(|(x, y)| x != y)
-            .collect();
+        let mut remap = Remapping::default();
+        for ids in groups_map.values().filter(|ids| !ids.is_empty()) {
+            let canonical_id = *ids.values().next().unwrap();
+            for &id in ids.values() {
+                remap.add_remapping(id, canonical_id);
+            }
+        }
         for ((mut name, kind), ids) in mem::take(&mut groups_map) {
             name.drive_mut(&mut IdRefMapperVisitor::new(&remap));
             let group_key = (name, kind);
@@ -235,7 +345,7 @@ pub(super) fn discover_groups<K: Clone + Eq + std::hash::Hash>(
 }
 
 /// Normalize a name for grouping across crates.
-pub(super) fn normalize_impl_elems(mut name: Name, krate: &TranslatedCrate) -> Name {
+fn normalize_impl_elems(mut name: Name, krate: &TranslatedCrate) -> Name {
     for elem in &mut name.name {
         if let PathElem::Impl(ImplElem::Trait(id)) = elem {
             // Replace impl block references with something that contains the implemented trait
@@ -265,7 +375,7 @@ pub(super) fn normalize_impl_elems(mut name: Name, krate: &TranslatedCrate) -> N
 // =============================================================================================
 
 /// Recompute declaration order and run final whole-crate cleanup on the merged crate.
-pub(super) fn cleanup_post_merge(ctx: &mut TransformCtx) {
+fn cleanup_post_merge(ctx: &mut TransformCtx) {
     if !ctx.options.translate_all_methods {
         remove_unmentioned_methods(&mut ctx.translated);
     }
@@ -405,12 +515,12 @@ fn remove_unmentioned_methods(krate: &mut TranslatedCrate) {
 
 /// Visitor that remaps references to the given items.
 #[derive(Visitor)]
-pub(super) struct IdRefMapperVisitor<'a> {
-    map: &'a HashMap<ItemId, ItemId>,
+struct IdRefMapperVisitor<'a> {
+    map: &'a Remapping,
 }
 
 impl<'a> IdRefMapperVisitor<'a> {
-    pub(super) fn new(remap: &'a HashMap<ItemId, ItemId>) -> Self {
+    fn new(remap: &'a Remapping) -> Self {
         Self { map: remap }
     }
 
@@ -420,13 +530,22 @@ impl<'a> IdRefMapperVisitor<'a> {
         Id: Into<ItemId>,
         ItemId: TryInto<Id, Error: Debug>,
     {
-        if let Some(&new) = self.map.get(&(*id).into()) {
+        if let Some(&new) = self.map.0.get(&(*id).into()) {
             *id = new.try_into().unwrap();
         }
     }
 }
 
 impl VisitAstMut for IdRefMapperVisitor<'_> {
+    fn visit_body(&mut self, x: &mut Body) -> ControlFlow<Self::Break> {
+        match x {
+            // We skip `TargetDispatch` -- only `multi_target` generates them, and it will
+            // have IDs we purposefully don't want to remap (since duplication is intended here)
+            Body::TargetDispatch(_) => ControlFlow::Continue(()),
+            _ => self.visit_inner(x),
+        }
+    }
+
     fn enter_type_decl_ref(&mut self, x: &mut TypeDeclRef) {
         self.map(&mut x.id);
     }

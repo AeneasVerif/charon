@@ -1,52 +1,52 @@
 //! Merging multiple [`CrateData`]s from different compilation targets into one.
-use std::cell::RefCell;
 use std::collections::HashMap;
 use std::mem;
 
 use itertools::Itertools;
 
-use crate::errors::ErrorCtx;
 use crate::ids::IndexVec;
-use crate::options::TranslateOptions;
-use crate::transform::TransformCtx;
 use crate::{ast::*, options::CliOpts};
 
 use super::CrateData;
-use super::merge::{
-    CrateMerger, IdRefMapperVisitor, cleanup_post_merge, discover_groups, normalize_impl_elems,
-};
+use super::merge;
 
 /// Merge per-target [`CrateData`]s into a single [`CrateData`].
 pub fn merge(options: CliOpts, krates: Vec<CrateData>) -> CrateData {
-    let mut error_ctx = ErrorCtx::new();
-    let tr_options = TranslateOptions::new(&mut error_ctx, &options);
+    merge::merge(options, krates, MultiTarget)
+}
 
-    // Remember the source target in the names.
-    let krates = krates.into_iter().map(|krate| {
-        let target = krate
-            .translated
+struct MultiTarget;
+
+impl merge::MergeStrategy for MultiTarget {
+    type Key = TargetTriple;
+
+    fn key(&self, krate: &TranslatedCrate) -> TargetTriple {
+        krate
             .target_information
             .keys()
             .exactly_one()
             .ok()
             .unwrap()
-            .clone();
-        (krate, Some(PathElem::Target(target)))
-    });
-    let mut merged = CrateMerger::process(krates);
+            .clone()
+    }
 
-    ItemDeduplicator::dedup(&mut merged.translated, &mut error_ctx);
+    /// Remember the source target in the names.
+    fn name_suffix(&self, target: &TargetTriple) -> Option<PathElem> {
+        Some(PathElem::Target(target.clone()))
+    }
 
-    let mut ctx = TransformCtx {
-        options: tr_options,
-        translated: merged.translated,
-        errors: RefCell::new(error_ctx),
-    };
-    cleanup_post_merge(&mut ctx);
-    merged.translated = ctx.translated;
-    merged.translated.preset = options.preset;
-
-    merged
+    /// Entrypoint: deduplicate items that are the same across targets. Each group contains the
+    /// versions of an item across all targets where it exists. Returns how to remap item ids.
+    fn link(
+        &mut self,
+        krate: &mut TranslatedCrate,
+        groups: Vec<SeqHashMap<TargetTriple, ItemId>>,
+    ) -> merge::Remapping {
+        let groups = groups.into_iter().map(|ids| TargetGroup { ids }).collect();
+        let mut dedup = ItemDeduplicator { krate, groups };
+        let decisions = dedup.decide_group_mergings();
+        dedup.apply_merge_decisions(decisions)
+    }
 }
 
 // =============================================================================================
@@ -374,32 +374,6 @@ struct ItemDeduplicator<'a> {
 }
 
 impl<'a> ItemDeduplicator<'a> {
-    /// Entrypoint: deduplicate items that are the same across targets.
-    pub fn dedup(krate: &'a mut TranslatedCrate, errors: &mut ErrorCtx) {
-        let groups = Self::discover_groups(krate, errors);
-        if groups.is_empty() {
-            return;
-        }
-        let mut this = Self { krate, groups };
-        let decisions = this.decide_group_mergings();
-        this.apply_merge_decisions(decisions);
-    }
-
-    /// Group items by (base_name, item_kind). Each group contains the versions of that item
-    /// across all targets where it exists.
-    fn discover_groups(
-        krate: &TranslatedCrate,
-        _errors: &mut ErrorCtx,
-    ) -> IndexVec<TargetGroupId, TargetGroup> {
-        discover_groups(krate, |name| {
-            let (name, target) = name.strip_target_suffix()?;
-            Some((normalize_impl_elems(name, krate), target))
-        })
-        .into_iter()
-        .map(|ids| TargetGroup { ids })
-        .collect()
-    }
-
     /// Decide how to merge each group. Skipped groups are not included in the output.
     fn decide_group_mergings(&self) -> Vec<(TargetGroupId, MergeDecision)> {
         // Start with all groups as candidates.
@@ -438,13 +412,11 @@ impl<'a> ItemDeduplicator<'a> {
             .collect()
     }
 
-    fn apply_merge_decisions(&mut self, decisions: Vec<(TargetGroupId, MergeDecision)>) {
-        if decisions.is_empty() {
-            return;
-        }
-
-        let mut remap = HashMap::new();
-        let mut facade_decls: Vec<FunDecl> = Vec::new();
+    fn apply_merge_decisions(
+        &mut self,
+        decisions: Vec<(TargetGroupId, MergeDecision)>,
+    ) -> merge::Remapping {
+        let mut remap = merge::Remapping::default();
         for &(idx, decision) in &decisions {
             let group = &self.groups[idx];
             let target_id = match decision {
@@ -456,9 +428,9 @@ impl<'a> ItemDeduplicator<'a> {
                 }
                 MergeDecision::Facade => {
                     let facade_id = self.krate.fun_decls.reserve_slot();
-                    // Insert facade decls later because the id remapping would mess up the
-                    // dispatch maps.
-                    facade_decls.push(group.build_facade_decl(facade_id, self.krate));
+                    let facade_decl = group.build_facade_decl(facade_id, self.krate);
+                    self.krate
+                        .set_new_item_slot(ItemId::Fun(facade_id), ItemByVal::Fun(facade_decl));
                     // Mark per-target functions as target-dependent.
                     for &id in group.ids.values() {
                         let fun_id = *id.as_fun().unwrap();
@@ -476,19 +448,11 @@ impl<'a> ItemDeduplicator<'a> {
             };
             let group = &self.groups[idx];
             for &id in group.ids.values() {
-                if id != target_id {
-                    remap.insert(id, target_id);
-                }
+                remap.add_remapping(id, target_id);
             }
         }
 
-        // Remap all ids.
-        self.krate.drive_mut(&mut IdRefMapperVisitor::new(&remap));
-
-        for decl in facade_decls {
-            self.krate
-                .set_new_item_slot(ItemId::Fun(decl.def_id), ItemByVal::Fun(decl));
-        }
+        remap
     }
 
     fn dedup_group(&mut self, idx: TargetGroupId) {
