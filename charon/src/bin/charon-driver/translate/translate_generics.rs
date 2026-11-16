@@ -5,7 +5,6 @@ use std::mem;
 use crate::hax;
 use crate::hax::{BaseState, Symbol};
 use rustc_middle::ty;
-use rustc_span::def_id::DefId as RDefId;
 
 use super::translate_ctx::{ItemTransCtx, TransItemSourceKind};
 use charon_lib::ast::*;
@@ -24,10 +23,6 @@ use charon_lib::utils::CycleDetector;
 /// this level, and various maps from the rustc-internal indices to our indices.
 #[derive(Debug, Default)]
 pub(crate) struct BindingLevel<'tcx> {
-    /// The definition whose generics this binding level contains, if this is an item binder.
-    pub def_id: Option<hax::DefId>,
-    /// Dummy rustc `DefId` that we use to `liberate_bound_regions` for our synthetic fn pointer items.
-    pub late_bound_scope_alias: Option<RDefId>,
     /// The parameters and predicates bound at this level.
     pub params: GenericParams,
     /// Whether this binding level exists in Hax's De Bruijn indices. `dyn Trait` introduces an
@@ -42,6 +37,9 @@ pub(crate) struct BindingLevel<'tcx> {
     pub early_region_vars: HashMap<hax::EarlyParamRegion, RegionId>,
     /// The map from rust named region parameter ids to translated region indices.
     pub region_vars_by_def_id: HashMap<hax::DefId, RegionId>,
+    /// `DefId` used by `ReLateParam` to refer to this binder's `bound_region_vars`,
+    /// if that may happen.
+    pub late_param_def_id: Option<hax::DefId>,
     /// The map from rust late/bound regions to translated region indices.
     pub bound_region_vars: Vec<RegionId>,
     /// Extra lifetimes unerased from the closure arguments. Hax represents them with placeholder
@@ -84,9 +82,9 @@ fn translate_variance(variance: Option<&hax::Variance>) -> Variance {
 }
 
 impl<'tcx> BindingLevel<'tcx> {
-    pub(crate) fn new(def_id: Option<hax::DefId>) -> Self {
+    pub(crate) fn new(late_param_def_id: Option<hax::DefId>) -> Self {
         Self {
-            def_id,
+            late_param_def_id,
             counts_for_de_bruijn: true,
             ..Default::default()
         }
@@ -207,7 +205,7 @@ impl<'tcx> BindingLevel<'tcx> {
         self.const_generic_vars_map.insert(rid, var_id);
     }
 
-    /// Translate a binder of regions by appending the stored reguions to the given vector.
+    /// Add the binder's regions to this binding level.
     pub(crate) fn push_params_from_binder(
         &mut self,
         binder: &hax::Binder<()>,
@@ -338,11 +336,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         use hax::LateParamRegionKind::*;
         match &region.kind {
             Anon(index) | NamedAnon(index, _) => {
-                let Some((dbid, binder)) =
-                    self.binding_levels.iter_enumerated().find(|(_, binder)| {
-                        binder.def_id.as_ref() == Some(&region.scope)
-                            || binder.late_bound_scope_alias == region.scope.as_real_def_id()
-                    })
+                let Some((dbid, binder)) = self
+                    .binding_levels
+                    .iter_enumerated()
+                    .find(|(_, binder)| binder.late_param_def_id.as_ref() == Some(&region.scope))
                 else {
                     raise_error!(
                         self,
@@ -527,9 +524,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             self.innermost_binder_mut()
                 .push_params_from_binder(&param_env.late_bound)?;
         }
-        if let hax::FullDefKind::FnPtr(f) = def.kind() {
-            self.innermost_binder_mut().late_bound_scope_alias = Some(f.late_bound_scope());
-        }
         Ok(())
     }
 
@@ -616,8 +610,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: &TransItemSourceKind,
     ) -> Result<(), Error> {
         assert!(self.binding_levels.is_empty());
+        let late_param_def_id = def.param_env().and_then(|env| env.late_bound_scope.clone());
         self.binding_levels
-            .push(BindingLevel::new(Some(def.def_id().clone())));
+            .push(BindingLevel::new(late_param_def_id));
         self.push_generics_for_def(span, def)?;
         // Add the lifetime generics coming from the higher-kindedness of the signature. For
         // closures, late-bound variables are only bound on the impl, not the state struct.
@@ -637,13 +632,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn inside_binder<F, U>(
         &mut self,
         kind: BinderKind,
-        def_id: Option<hax::DefId>,
+        late_param_def_id: Option<hax::DefId>,
         f: F,
     ) -> Result<Binder<U>, Error>
     where
         F: FnOnce(&mut Self) -> Result<U, Error>,
     {
-        self.binding_levels.push(BindingLevel::new(def_id));
+        self.binding_levels
+            .push(BindingLevel::new(late_param_def_id));
 
         // Call the continuation. Important: do not short-circuit on error here.
         let res = f(self);
@@ -673,7 +669,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     {
         let inner_hax_state = self.t_ctx.hax_state.clone().with_hax_owner(def.def_id());
         let outer_hax_state = mem::replace(&mut self.hax_state, inner_hax_state);
-        let ret = self.inside_binder(kind, Some(def.def_id().clone()), |this| {
+        let late_param_def_id = def.param_env().and_then(|env| env.late_bound_scope.clone());
+        let ret = self.inside_binder(kind, late_param_def_id, |this| {
             this.push_generics_for_def_without_parents(span, def)?;
             this.push_late_bound_generics_for_def(def)?;
             this.innermost_binder().params.check_consistency();
@@ -685,7 +682,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
     /// Push a new binding level corresponding to the provided item binder for the duration of the
     /// inner function call.
-    pub(crate) fn translate_item_binder<F, T, U>(
+    pub(crate) fn translate_trait_item_binder<F, T, U>(
         &mut self,
         _span: Span,
         kind: BinderKind,
@@ -698,7 +695,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     {
         let inner_hax_state = self.t_ctx.hax_state.clone().with_hax_owner(&binder.def_id);
         let outer_hax_state = mem::replace(&mut self.hax_state, inner_hax_state);
-        let ret = self.inside_binder(kind, Some(binder.def_id.clone()), |this| {
+        let late_param_def_id = binder.param_env.late_bound_scope.clone();
+        let ret = self.inside_binder(kind, late_param_def_id, |this| {
             this.push_param_env_without_parents(&binder.param_env, predicate_origin)?;
             this.innermost_binder_mut()
                 .push_params_from_binder(&binder.param_env.late_bound)?;

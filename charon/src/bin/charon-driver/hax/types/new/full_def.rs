@@ -125,10 +125,10 @@ where
                         rustc_sig: sig,
                         param_env: ParamEnv {
                             late_bound: hax_sig.rebind(()),
+                            late_bound_scope: Some(late_bound_scope.sinto(s)),
                             ..param_env
                         },
                         sig: hax_sig,
-                        late_bound_scope,
                     });
                 }
             }
@@ -317,7 +317,14 @@ impl<'tcx> FullDef<'tcx> {
                     | FullDefKind::Ctor(Ctor { rustc_sig, .. }) => {
                         tupled_inputs(*rustc_sig, self.this.def_id.real_rust_def_id())
                     }
-                    FullDefKind::FnPtr(f) => tupled_inputs(f.rustc_sig, f.late_bound_scope),
+                    FullDefKind::FnPtr(f) => tupled_inputs(
+                        f.rustc_sig,
+                        f.param_env
+                            .late_bound_scope
+                            .as_ref()
+                            .unwrap()
+                            .real_rust_def_id(),
+                    ),
                     _ => panic!("{:?} is not callable", self.this.def_id),
                 });
             }
@@ -356,6 +363,10 @@ pub struct ParamEnv<'tcx> {
     ///
     /// Note that only lifetimes can be late bound at the moment.
     pub late_bound: Binder<()>,
+    /// Late bound variables can be "liberated", which turns them into `ReLateParam`. This requires
+    /// a `DefId`; this is the `DefId` used to liberate the bound regions, if we did so.
+    /// This is the item's `DefId` if it had a real one, otherwise a dummy one.
+    pub late_bound_scope: Option<DefId>,
     /// Extra early regions that we add to replace regions that rustc normally erases. We represent
     /// them with placeholders so the types that mention them can still flow through rustc APIs.
     pub extra_early_regions: Vec<PlaceholderRegion>,
@@ -395,6 +406,7 @@ impl<'tcx> ParamEnv<'tcx> {
             },
             predicates: GenericPredicates { predicates: vec![] },
             late_bound: Binder::empty(),
+            late_bound_scope: None,
             extra_early_regions: vec![],
             parent: parent.cloned(),
             soft_parent: parent.cloned(),
@@ -763,6 +775,9 @@ impl<'tcx> TraitImpl<'tcx> {
                         param_env.generics.parent = Some(this.def_id.clone());
                         param_env.late_bound =
                             late_bound_for_def(s, impl_assoc_rdef_id, Some(item_impl_args));
+                        if matches!(decl_assoc.kind, ty::AssocKind::Fn { .. }) {
+                            param_env.late_bound_scope = Some(impl_assoc_def_id.clone());
+                        }
                         param_env
                     };
                     let item = ItemRef::translate(s, impl_assoc_rdef_id, item_impl_args);
@@ -912,7 +927,6 @@ pub struct FnPointer<'tcx> {
     rustc_sig: ty::PolyFnSig<'tcx>,
     param_env: ParamEnv<'tcx>,
     sig: PolyFnSig<'tcx>,
-    late_bound_scope: RDefId,
 }
 
 impl<'tcx> FnPointer<'tcx> {
@@ -922,13 +936,6 @@ impl<'tcx> FnPointer<'tcx> {
 
     pub fn sig(&self) -> &PolyFnSig<'tcx> {
         &self.sig
-    }
-
-    /// DefId we use for `liberate_bound_regions`. We stole some `DefId` from somewhere to serve as
-    /// placeholder here, as this needs to be a real rustc `DefId`. It only matters for matching up
-    /// generics during translation.
-    pub fn late_bound_scope(&self) -> RDefId {
-        self.late_bound_scope
     }
 }
 
@@ -1339,6 +1346,7 @@ where
                 rustc_sig: sig,
                 param_env: ParamEnv {
                     late_bound: hax_sig.rebind(()),
+                    late_bound_scope: Some(hax_def_id.clone()),
                     ..param_env
                 },
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
@@ -1355,6 +1363,7 @@ where
                 rustc_sig: sig,
                 param_env: ParamEnv {
                     late_bound: hax_sig.rebind(()),
+                    late_bound_scope: Some(hax_def_id.clone()),
                     ..param_env
                 },
                 associated_item: AssocItem::sfrom_instantiated(s, &item, args),
@@ -1374,6 +1383,7 @@ where
                 kind: closure.kind().sinto(s),
                 param_env: ParamEnv {
                     late_bound: hax_sig.rebind(()),
+                    late_bound_scope: Some(hax_def_id.clone()),
                     ..param_env
                 },
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
@@ -1446,6 +1456,7 @@ where
                 rustc_sig: sig,
                 param_env: ParamEnv {
                     late_bound: hax_sig.rebind(()),
+                    late_bound_scope: Some(hax_def_id.clone()),
                     ..param_env
                 },
                 adt_def_id: adt_def_id.sinto(s),
@@ -1908,6 +1919,7 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
         None => ParamEnv {
             generics,
             late_bound: Binder::empty(),
+            late_bound_scope: None,
             extra_early_regions: vec![],
             predicates: owner.required_predicates(s).sinto(s),
             soft_parent: parent.clone(),
@@ -1921,6 +1933,7 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
                 ..generics
             },
             late_bound: Binder::empty(),
+            late_bound_scope: None,
             extra_early_regions: vec![],
             predicates: GenericPredicates::default(),
             soft_parent: parent.clone(),
