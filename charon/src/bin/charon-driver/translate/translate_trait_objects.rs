@@ -777,6 +777,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             .implemented_trait_ref;
         let self_ty =
             self.translate_ty(span, implemented_trait.generic_args[0].as_type().unwrap())?;
+        let trait_ref = self.translate_trait_decl_ref(span, implemented_trait)?;
         let vtable_struct_ref = self.translate_vtable_struct_ref(span, implemented_trait)?;
         let impl_ref = if impl_kind == TransImplSource::Marker || self.monomorphize() {
             None
@@ -788,7 +789,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             )?)
         };
         Ok((
-            GlobalSource::VTableInstance { impl_ref, self_ty },
+            GlobalSource::VTableInstance {
+                self_ty,
+                trait_ref,
+                impl_ref,
+            },
             vtable_struct_ref,
         ))
     }

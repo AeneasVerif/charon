@@ -3273,11 +3273,17 @@ and global_source_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc
         [
           ( "VTableInstance",
-            `Assoc [ ("self_ty", self_ty); ("impl_ref", impl_ref) ] );
+            `Assoc
+              [
+                ("self_ty", self_ty);
+                ("trait_ref", trait_ref);
+                ("impl_ref", impl_ref);
+              ] );
         ] ->
         let* self_ty = ty_of_json ctx self_ty in
+        let* trait_ref = trait_decl_ref_of_json ctx trait_ref in
         let* impl_ref = option_of_json trait_impl_ref_of_json ctx impl_ref in
-        Ok (VTableInstanceGlobal (self_ty, impl_ref))
+        Ok (VTableInstanceGlobal (self_ty, trait_ref, impl_ref))
     | _ -> Error "")
 
 and rustc_ident_of_json (ctx : of_json_ctx) (js : json) :
