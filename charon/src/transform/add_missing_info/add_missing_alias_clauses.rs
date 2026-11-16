@@ -145,6 +145,7 @@ impl TransformPass for Transform {
                 let mut extractor = ClauseExtractor::new(&mut tdecl.generics, tdecl.item_meta.span);
                 extractor.visit(&mut tdecl.kind);
                 extractor.visit(&mut tdecl.layout);
+                extractor.visit(&mut tdecl.ptr_metadata);
             }
         }
     }
