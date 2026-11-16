@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794826466308,
+  "lastUpdate": 1794837092241,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -20818,6 +20818,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 276.1,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.8,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1975fe7b749e9a8b04647dd950fdfdad1ece5aa4",
+          "message": "Merge pull request #1616 from Nadrieril/prepare-recursive-late-bounds\n\nImprove lifetime translation completeness",
+          "timestamp": "2026-11-16T13:39:00Z",
+          "tree_id": "1f2885080ccdbad4d60175023881f5318b80a91a",
+          "url": "https://github.com/AeneasVerif/charon/commit/1975fe7b749e9a8b04647dd950fdfdad1ece5aa4"
+        },
+        "date": 1794837090477,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 54290278601,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 9.93,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 380.6,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 21.4,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 25822194801,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 6,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 278.1,
             "unit": "max-rss(MB)"
           },
           {
