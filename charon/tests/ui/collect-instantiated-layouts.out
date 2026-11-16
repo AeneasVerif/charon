@@ -453,5 +453,60 @@ fn do_check()
     return
 }
 
+// Full name: test_crate::Tr
+trait Tr<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::A: Sized)
+    type A
+    vtable: test_crate::Tr::{vtable}<Self::A>
+}
+
+// Full name: test_crate::{impl Tr for u8}
+impl "impl_Tr_for_u8" Tr for u8 {
+    proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
+    proof ImpliedClause1: (u8: Sized) = {built_in impl Sized for u8}
+    type A = u8
+    vtable: lazy
+}
+
+// Full name: test_crate::S
+struct S<T>
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Tr),
+{
+  _0: TraitClause1::A,
+}
+// layout:
+//     size: ? (guaranteed: at_least(align_to((offset_of(S<T>[TraitClause0, TraitClause1]._0) + size_of::<TraitClause1::A>()), align_of::<TraitClause1::A>()))),
+//     align: ? (guaranteed: at_least(align_of::<TraitClause1::A>())),
+//     discriminator: none,
+//     inhabited: if_inhabited(TraitClause1::A),
+//     variants: [
+//         _: {
+//             offset of _0: ? (guaranteed: aligned(align_of::<TraitClause1::A>())),
+//             inhabited: if_inhabited(TraitClause1::A),
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+// Full name: test_crate::trivial_clause
+fn trivial_clause(_1: S<u8>[{built_in impl Sized for u8}, TraitClause0])
+where
+    TraitClause0: (u8: Tr),
+    TypeConstraint0: TraitClause0::A = u64,
+{
+    let mut _0: (); // return
+    let mut _1: S<u8>[{built_in impl Sized for u8}, TraitClause0]; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
 
 

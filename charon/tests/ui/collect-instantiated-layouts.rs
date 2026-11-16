@@ -1,4 +1,5 @@
 //@ charon-args=--print-layouts --collect-instantiated-layouts
+#![feature(trivial_bounds)]
 
 struct Wrap<T>(Option<T>);
 struct Grow<T>(T, *const Grow<(T, T)>);
@@ -32,4 +33,18 @@ fn check_equal<T>(size: usize) {
 }
 fn do_check() {
     check_equal::<Option<&u64>>(const { size_of::<Option<&u64>>() })
+}
+
+// `S<u8>` depends on the clauses of `trivial_clause` (here its field is `u64`), so we don't record it.
+trait Tr {
+    type A;
+}
+impl Tr for u8 {
+    type A = u8;
+}
+struct S<T: Tr>(T::A);
+fn trivial_clause(_: S<u8>)
+where
+    u8: Tr<A = u64>,
+{
 }

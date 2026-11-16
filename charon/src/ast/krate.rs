@@ -292,7 +292,6 @@ impl TranslatedCrate {
         self.target_information
             .values()
             .exactly_one()
-            .ok()
             .expect("called `the_target_information` on a multi-target crate")
     }
 }

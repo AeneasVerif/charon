@@ -1,7 +1,6 @@
 use itertools::Itertools;
 use rustc_hash::FxHashMap as HashMap;
 use rustc_middle::ty;
-use rustc_middle::ty::TypeVisitableExt;
 use rustc_span::sym;
 use rustc_trait_elaboration::ItemId;
 
@@ -372,8 +371,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             // ...but is otherwise polymorphic
             && let Ok(generics) = self.translate_generic_args_without_trait_refs(span, &item)
             && generics.has_non_lt_explicits()
-            // ...and hasn't been seen yet
             && let Ok(tref) = self.translate_type_decl_ref(span, &item)
+            // ...and doesn't depend on the current scope
+            && tref.type_info().is_closed()
+            // ...and hasn't been seen yet
             && !self.monomorphic_layouts.contains_key(&tref)
             && let Some(layout) = self.translate_layout(span, &item, None)
         {
@@ -804,8 +805,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         let tcx = self.t_ctx.tcx;
         let hax_state = self.hax_state_with_id();
-        let args = item.rustc_args(hax_state);
-        assert!(hax_state.owner() == item.def_id || !args.has_non_region_param());
         let ty_env = hax_state.typing_env();
         let ty = item
             .def_id
