@@ -360,60 +360,45 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
     /// If `ty` is monomorphic, record its computed layout for `TypeDecl::monomorphic_layouts`.
     fn record_monomorphic_layout(&mut self, span: Span, ty: &hax::Ty<'tcx>) {
-        // We only care about types that have a `TypeDecl`.
-        let (hax::TyKind::Adt(hax::AdtTy { item })
+        if
+        // We only care about types that have a `TypeDecl`...
+        let hax::TyKind::Adt(hax::AdtTy { item })
         | hax::TyKind::Tuple(hax::TupleTy { item })
-        | hax::TyKind::Closure(hax::ClosureTy { item })) = ty.kind()
-        else {
-            return;
+        | hax::TyKind::Closure(hax::ClosureTy { item }) = ty.kind()
+            // ...which is instantiated
+            && !item.has_non_lt_param
+            && let item = item.erase(self.hax_state_with_id())
+            // ...but is otherwise polymorphic
+            && let Ok(generics) = self.translate_generic_args_without_trait_refs(span, &item)
+            && generics.has_non_lt_explicits()
+            // ...and hasn't been seen yet
+            && let Ok(tref) = self.translate_type_decl_ref(span, &item)
+            && !self.monomorphic_layouts.contains_key(&tref)
+            && let Some(layout) = self.translate_layout(span, &item, None)
+        {
+            self.monomorphic_layouts.insert(tref, layout);
+
+            let Ok(def) = self.t_ctx.mono_hax_def(&item) else {
+                return;
+            };
+            let fields: Vec<hax::Ty<'tcx>> = match def.kind() {
+                hax::FullDefKind::Adt(adt) if matches!(adt.adt_kind(), hax::AdtKind::Tuple) => item
+                    .generic_args
+                    .iter()
+                    .filter_map(|arg| arg.as_type().cloned())
+                    .collect(),
+                hax::FullDefKind::Adt(adt) => (adt.variants().iter())
+                    .flat_map(|variant| &variant.fields)
+                    .map(|field| field.ty.clone())
+                    .collect(),
+                hax::FullDefKind::Closure(closure) => closure.upvar_tys().to_vec(),
+                _ => vec![],
+            };
+
+            for field_ty in fields {
+                self.record_monomorphic_layout(span, &field_ty);
+            }
         };
-
-        if item.has_non_lt_param {
-            return;
-        }
-        let item = item.erase(self.hax_state_with_id());
-
-        // Skip types that don't take non-lifetime generics -- their layout is already known.
-        let Ok(generics) = self.translate_generic_args_without_trait_refs(span, &item) else {
-            return;
-        };
-        if !generics.has_non_lt_explicits() {
-            return;
-        }
-
-        let Ok(tref) = self.translate_type_decl_ref(span, &item) else {
-            return;
-        };
-        if self.monomorphic_layouts.contains_key(&tref) {
-            return;
-        }
-
-        let Some(layout) = self.translate_layout(span, &item, None) else {
-            return;
-        };
-
-        self.monomorphic_layouts.insert(tref, layout);
-
-        let Ok(def) = self.t_ctx.mono_hax_def(&item) else {
-            return;
-        };
-        let fields: Vec<hax::Ty<'tcx>> = match def.kind() {
-            hax::FullDefKind::Adt(adt) if matches!(adt.adt_kind(), hax::AdtKind::Tuple) => item
-                .generic_args
-                .iter()
-                .filter_map(|arg| arg.as_type().cloned())
-                .collect(),
-            hax::FullDefKind::Adt(adt) => (adt.variants().iter())
-                .flat_map(|variant| &variant.fields)
-                .map(|field| field.ty.clone())
-                .collect(),
-            hax::FullDefKind::Closure(closure) => closure.upvar_tys().to_vec(),
-            _ => vec![],
-        };
-
-        for field_ty in fields {
-            self.record_monomorphic_layout(span, &field_ty);
-        }
     }
 
     pub fn translate_pattern(
