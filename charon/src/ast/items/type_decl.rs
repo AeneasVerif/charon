@@ -36,6 +36,7 @@ pub struct TypeDecl {
     /// dynamically-sized types. If we cannot compute a layout, the target has no entry.
     pub layout: TargetLayouts,
     /// The layouts of the monomorphic instances of this type that were reached while translating.
+    /// This is empty in monomorphic mode, or when the type is already monomorphic; just use `layout` instead.
     #[serde(with = "SeqHashMapToArray::<GenericArgs, TargetLayouts>")]
     pub monomorphic_layouts: SeqHashMap<GenericArgs, TargetLayouts>,
     /// The metadata associated with a pointer to the type.

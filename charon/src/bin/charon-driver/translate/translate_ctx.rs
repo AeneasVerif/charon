@@ -192,9 +192,11 @@ pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     pub binding_levels: BindingStack<BindingLevel<'tcx>>,
     /// When `Some`, translate any erased lifetime to a fresh `Region::Body` lifetime.
     pub lifetime_freshener: Option<IndexMap<RegionId, ()>>,
-    /// Whether we're translating the field types of a type instance for `--monomorphic-layouts`,
-    /// which records their layouts itself.
-    pub translating_instance_fields: bool,
+    /// With `--monomorphic-layouts`, we instantiate all fields of reachable monomorphic types. However
+    /// we don't want to also translate these types' layouts, as it could cause cycles (like in
+    /// `struct S<T>(Box<S<(T, T)>>)`). So when this flag is set, we stop recursing into monomorphic
+    /// layouts, to avoid that.
+    pub recording_mono_layouts: bool,
 }
 
 /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
@@ -321,7 +323,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             error_on_trait_proof_error: true,
             binding_levels: Default::default(),
             lifetime_freshener: None,
-            translating_instance_fields: false,
+            recording_mono_layouts: false,
         }
     }
 

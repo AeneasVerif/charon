@@ -149,10 +149,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             // We might be reusing a value from cache: we must refresh the erased & body regions.
             ty = ty.replace_erased_regions(|| Region::Body(v.push(())));
         }
-        if self.options.monomorphic_layouts && !self.translating_instance_fields {
-            self.translating_instance_fields = true;
+        if self.options.monomorphic_layouts && !self.recording_mono_layouts {
+            // Avoid cycles from recursing into all mentioned types
+            self.recording_mono_layouts = true;
+            // Drop the lifetime freshener, so regions are erased and can be used as keys.
+            let lifetime_freshener = self.lifetime_freshener.take();
             self.record_monomorphic_layout(span, hax_ty);
-            self.translating_instance_fields = false;
+            self.lifetime_freshener = lifetime_freshener;
+            self.recording_mono_layouts = false;
         }
         Ok(ty)
     }
@@ -354,8 +358,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Ok(kind.into_ty())
     }
 
-    /// Record the layout of `ty` for `TypeDecl::monomorphic_layouts` if it is monomorphic
-    /// (or only has lifetime variables, which don't affect layout).
+    /// If `ty` is monomorphic, record its computed layout for `TypeDecl::monomorphic_layouts`.
     fn record_monomorphic_layout(&mut self, span: Span, ty: &hax::Ty<'tcx>) {
         // We only care about types that have a `TypeDecl`.
         let (hax::TyKind::Adt(hax::AdtTy { item })
@@ -366,24 +369,23 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         };
 
         let item = item.erase(self.hax_state_with_id());
+        // need to do this after erasing because early bound regions count for this flag.
         if item.has_non_lt_param {
             return;
         }
 
-        // Translate without recording the layouts of the types in the arguments, as we instead
-        // follow the fields stored inline (see below).
-        // This avoids infinite loops on stuff like `struct S<T>(Box<S<(T, T)>>)`.
-        let translated = self.translate_ty(span, ty);
-        let Ok(translated) = translated else { return };
-        let TyKind::Adt(tref) = translated.kind() else {
+        // Skip types that don't take non-lifetime generics -- their layout is already known.
+        let Ok(generics) = self.translate_generic_args_without_trait_refs(span, &item) else {
             return;
         };
+        if !generics.has_non_lt_explicits() {
+            return;
+        }
 
-        // Erase all regions as they don't affect layout.
-        let mut tref = tref.clone();
-        tref.dyn_visit_mut(|r: &mut Region| *r = Region::Erased);
-        // Don't translate layouts of already monomorphic types.
-        if !tref.generics.has_non_lt_explicits() || self.monomorphic_layouts.contains_key(&tref) {
+        let Ok(tref) = self.translate_type_decl_ref(span, &item) else {
+            return;
+        };
+        if self.monomorphic_layouts.contains_key(&tref) {
             return;
         }
 

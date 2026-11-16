@@ -793,7 +793,7 @@ pub struct TranslateOptions {
     /// If `Some(_)`, run the partial mutability monomorphization pass. The contained enum
     /// indicates whether to partially monomorphize types.
     pub monomorphize_mut: Option<MonomorphizeMut>,
-    /// Record the layouts of the closed type instances in `TypeDecl::monomorphic_layouts`.
+    /// Record the layouts of the instantiated poly ADTs in `TypeDecl::monomorphic_layouts`.
     pub monomorphic_layouts: bool,
     /// Whether to hide various marker traits such as `*Sized` and `Destruct` anywhere they show
     /// up.

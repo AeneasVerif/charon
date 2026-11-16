@@ -275,10 +275,10 @@ fn instances<'_0, '_1, '_2>(_1: Wrap<bool>[{built_in impl Sized for bool}], _2: 
 {
     let mut _0: (); // return
     let mut _1: Wrap<bool>[{built_in impl Sized for bool}]; // arg #1
-    let mut _2: (u8, &'2 u32); // arg #2
+    let mut _2: (u8, &'1 u32); // arg #2
     let mut _3: Grow<u8>[{built_in impl Sized for u8}]; // arg #3
-    let mut _4: Ref<'5>; // arg #4
-    let mut _5: Holder<'8>; // arg #5
+    let mut _4: Ref<'3>; // arg #4
+    let mut _5: Holder<'5>; // arg #5
 
     storage_live(_0)
     _0 = ()
