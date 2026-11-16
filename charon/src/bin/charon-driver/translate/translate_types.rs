@@ -368,11 +368,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             return;
         };
 
-        let item = item.erase(self.hax_state_with_id());
-        // need to do this after erasing because early bound regions count for this flag.
         if item.has_non_lt_param {
             return;
         }
+        let item = item.erase(self.hax_state_with_id());
 
         // Skip types that don't take non-lifetime generics -- their layout is already known.
         let Ok(generics) = self.translate_generic_args_without_trait_refs(span, &item) else {

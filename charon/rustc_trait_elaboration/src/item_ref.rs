@@ -261,7 +261,7 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             has_param: generics.has_param()
                 || generics.has_escaping_bound_vars()
                 || generics.has_free_regions(),
-            has_non_lt_param: generics.has_param(),
+            has_non_lt_param: generics.has_non_region_param(),
         };
         content.intern()
     }
