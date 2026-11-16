@@ -548,7 +548,7 @@ where
         storage_dead(base);
         storage_dead(f);
         storage_dead(self);
-        unwind_terminate;
+        unwind_terminate(in_cleanup);
     }
 
     bb39 (cleanup): {

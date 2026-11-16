@@ -123,7 +123,7 @@ where
     ↳⚡ drop[TraitClause3::drop_glue<'2>] _x
         ↳⚡ storage_dead(_y)
             storage_dead(_x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_y)
         storage_dead(_x)
         unwind_continue

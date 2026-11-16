@@ -69,7 +69,7 @@ unsafe fn impl_Destruct_for_slice::drop_glue::<String><'_0>(_1: &'_0 mut [String
                             storage_dead(_3)
                             storage_dead(_2)
                             storage_dead(_1)
-                            unwind_terminate
+                            unwind_terminate(in_cleanup)
                         continue 0
                     }
                 }
@@ -155,7 +155,7 @@ unsafe fn {impl Destruct for (String, String)}::drop_glue::<String, String><'_0>
     drop[impl_Destruct_for_String::drop_glue<'2>] (*_1)._0
     ↳⚡ drop[impl_Destruct_for_String::drop_glue<'4>] (*_1)._1
         ↳⚡ storage_dead(_1)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_1)
         unwind_continue
     drop[impl_Destruct_for_String::drop_glue<'3>] (*_1)._1

@@ -1807,7 +1807,9 @@ let pp_abort_kind (env : fmt_env) (fmt : Format.formatter) (a : abort_kind) :
   | AbortPanic (Some name) ->
       Format.fprintf fmt "panic(%s)" (name_to_string env name)
   | AbortUndefinedBehavior -> pp_string fmt "undefined_behavior"
-  | AbortUnwindTerminate -> pp_string fmt "unwind_terminate"
+  | AbortUnwindTerminate Abi -> pp_string fmt "unwind_terminate(abi)"
+  | AbortUnwindTerminate InCleanup ->
+      pp_string fmt "unwind_terminate(in_cleanup)"
 
 (** Small helper *)
 let pp_fun_sig_with_name (env : fmt_env) (indent : string)
@@ -2317,9 +2319,9 @@ module Llbc = struct
     | UndefinedBehavior ->
         Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env)
           AbortUndefinedBehavior
-    | UnwindTerminate ->
+    | UnwindTerminate reason ->
         Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env)
-          AbortUnwindTerminate
+          (AbortUnwindTerminate reason)
     | Return -> Format.fprintf fmt "%sreturn" indent
     | UnwindResume -> Format.fprintf fmt "%sunwind_continue" indent
     | Break i -> Format.fprintf fmt "%sbreak %d" indent i
@@ -2521,9 +2523,9 @@ module Ullbc = struct
     | UndefinedBehavior ->
         Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env)
           AbortUndefinedBehavior
-    | UnwindTerminate ->
+    | UnwindTerminate reason ->
         Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env)
-          AbortUnwindTerminate
+          (AbortUnwindTerminate reason)
     | Return -> Format.fprintf fmt "%sreturn" indent
     | UnwindResume -> Format.fprintf fmt "%sunwind_continue" indent
 

@@ -1703,7 +1703,9 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 ullbc_ast::TerminatorKind::Switch { data, branches }
             }
             TerminatorKind::UnwindResume => ullbc_ast::TerminatorKind::UnwindResume,
-            TerminatorKind::UnwindTerminate { .. } => ullbc_ast::TerminatorKind::UnwindTerminate,
+            TerminatorKind::UnwindTerminate(reason) => ullbc_ast::TerminatorKind::UnwindTerminate(
+                self.translate_unwind_terminate_reason(*reason),
+            ),
             TerminatorKind::Return => ullbc_ast::TerminatorKind::Return,
             // A MIR `Unreachable` terminator indicates undefined behavior of the rust abstract
             // machine.
@@ -2116,8 +2118,9 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 let abort = Terminator::new(span, TerminatorKind::UndefinedBehavior);
                 self.blocks.push(abort.into_block(unwind_kind))
             }
-            mir::UnwindAction::Terminate(..) => {
-                let abort = Terminator::new(span, TerminatorKind::UnwindTerminate);
+            mir::UnwindAction::Terminate(reason) => {
+                let reason = self.translate_unwind_terminate_reason(*reason);
+                let abort = Terminator::new(span, TerminatorKind::UnwindTerminate(reason));
                 self.blocks.push(abort.into_block(unwind_kind))
             }
             mir::UnwindAction::Cleanup(bb) => self.translate_basic_block_id(*bb),
@@ -2173,6 +2176,16 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             | mir::AssertKind::ResumedAfterReturn(..) => {
                 raise_error!(self, span, "Coroutines are not supported");
             }
+        }
+    }
+
+    fn translate_unwind_terminate_reason(
+        &self,
+        reason: mir::UnwindTerminateReason,
+    ) -> UnwindTerminateReason {
+        match reason {
+            mir::UnwindTerminateReason::Abi => UnwindTerminateReason::Abi,
+            mir::UnwindTerminateReason::InCleanup => UnwindTerminateReason::InCleanup,
         }
     }
 

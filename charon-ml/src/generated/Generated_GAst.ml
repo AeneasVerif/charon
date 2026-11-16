@@ -35,7 +35,7 @@ type abort_kind =
           check (e.g. for out-of-bounds accesses). *)
   | AbortUndefinedBehavior
       (** Undefined behavior in the rust abstract machine. *)
-  | AbortUnwindTerminate
+  | AbortUnwindTerminate of unwind_terminate_reason
       (** Unwind had to stop for ABI reasons or because cleanup code panicked
           again. *)
 
@@ -383,6 +383,13 @@ and switch_scrutinee =
   | SwitchValue of operand  (** Inspect the value produced by an operand. *)
   | SwitchDiscriminant of place
       (** Inspect the discriminant of an enum place. *)
+
+(** Why unwinding had to stop. *)
+and unwind_terminate_reason =
+  | Abi
+      (** Unwinding out of a function that cannot unwind (e.g. an [extern "C"]
+          function). *)
+  | InCleanup  (** Cleanup code panicked again. *)
 [@@deriving
   show,
   eq,

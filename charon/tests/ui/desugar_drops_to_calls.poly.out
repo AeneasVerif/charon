@@ -270,7 +270,7 @@ unsafe fn impl_Destruct_for_Point::drop_glue<'_0>(_1: &'_0 mut Point)
             storage_dead(drop_arg_6)
             storage_dead(drop_ret_5)
             storage_dead(drop_arg_4)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_live(drop_arg_8)
         drop_arg_8 = &mut (*_1).y
         storage_live(drop_ret_9)
@@ -286,7 +286,7 @@ unsafe fn impl_Destruct_for_Point::drop_glue<'_0>(_1: &'_0 mut Point)
             storage_dead(drop_arg_6)
             storage_dead(drop_ret_5)
             storage_dead(drop_arg_4)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -310,7 +310,7 @@ unsafe fn impl_Destruct_for_Point::drop_glue<'_0>(_1: &'_0 mut Point)
             storage_dead(drop_arg_6)
             storage_dead(drop_ret_5)
             storage_dead(drop_arg_4)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -379,7 +379,7 @@ fn main()
             storage_dead(drop_arg_6)
             storage_dead(drop_ret_5)
             storage_dead(drop_arg_4)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     p = Point { x: move _2, y: move _3 }
     storage_dead(_3)

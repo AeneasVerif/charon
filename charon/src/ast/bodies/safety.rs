@@ -324,7 +324,7 @@ impl HasSafety for AbortKind {
     fn safety(&self, _krate: &TranslatedCrate) -> Safety {
         match self {
             AbortKind::UndefinedBehavior => Safety::Unsafe,
-            AbortKind::Panic(..) | AbortKind::UnwindTerminate => Safety::Safe,
+            AbortKind::Panic(..) | AbortKind::UnwindTerminate(..) => Safety::Safe,
         }
     }
 }
@@ -363,7 +363,7 @@ impl HasSafety for llbc_ast::Statement {
             | StatementKind::Return
             | StatementKind::Panic { .. }
             | StatementKind::UnwindResume
-            | StatementKind::UnwindTerminate => Safety::Safe,
+            | StatementKind::UnwindTerminate(..) => Safety::Safe,
         }
     }
 }
@@ -408,7 +408,7 @@ impl HasSafety for ullbc_ast::Terminator {
             | TerminatorKind::Return
             | TerminatorKind::Panic { .. }
             | TerminatorKind::UnwindResume
-            | TerminatorKind::UnwindTerminate => Safety::Safe,
+            | TerminatorKind::UnwindTerminate(..) => Safety::Safe,
         }
     }
 }

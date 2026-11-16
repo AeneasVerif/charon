@@ -534,7 +534,7 @@ pub fn panic_nounwind_fmt<'_0>(fmt: Arguments<'_0>, force_no_backtrace: bool) ->
     ↳⚡ storage_dead(_3)
         storage_dead(force_no_backtrace)
         storage_dead(fmt)
-        unwind_terminate
+        unwind_terminate(abi)
 }
 
 #[track_caller]
@@ -559,7 +559,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
         storage_dead(_5)
         storage_dead(msg)
         storage_dead(align)
-        unwind_terminate
+        unwind_terminate(abi)
     if move _2 {
     } else {
         storage_dead(_3)
@@ -574,7 +574,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
             storage_dead(_5)
             storage_dead(msg)
             storage_dead(align)
-            unwind_terminate
+            unwind_terminate(abi)
         storage_dead(_7)
         _5 = panic_nounwind_fmt<'12>(move _6, const false)
         ↳⚡ undefined_behavior

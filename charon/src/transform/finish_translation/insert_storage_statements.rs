@@ -115,7 +115,7 @@ impl Transform {
                 if matches!(
                     block.terminator.kind,
                     TerminatorKind::Panic { .. }
-                        | TerminatorKind::UnwindTerminate
+                        | TerminatorKind::UnwindTerminate(..)
                         | TerminatorKind::Return
                         | TerminatorKind::UnwindResume
                 ) {
@@ -158,7 +158,7 @@ impl Transform {
                 if !matches!(
                     &statements[0].kind,
                     llbc_ast::StatementKind::Panic { .. }
-                        | llbc_ast::StatementKind::UnwindTerminate
+                        | llbc_ast::StatementKind::UnwindTerminate(..)
                         | llbc_ast::StatementKind::Return
                 ) {
                     return Vec::new();

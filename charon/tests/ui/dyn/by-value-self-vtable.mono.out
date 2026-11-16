@@ -335,7 +335,7 @@ fn main()
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'17>] x
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_3)
     fake_read(_v_2)
@@ -351,7 +351,7 @@ fn main()
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'17>] x
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_6)
     fake_read(p)
@@ -365,11 +365,11 @@ fn main()
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'24>] p
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'17>] x
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_9)
     fake_read(_v_8)
@@ -379,7 +379,7 @@ fn main()
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'17>] x
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(p)
     storage_dead(n)

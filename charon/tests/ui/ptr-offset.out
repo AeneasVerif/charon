@@ -239,7 +239,7 @@ fn precondition_check(this: *const (), count: isize, size: usize)
         storage_dead(size)
         storage_dead(count)
         storage_dead(this)
-        unwind_terminate
+        unwind_terminate(abi)
     if move _4 {
     } else {
         storage_dead(_7)
@@ -258,7 +258,7 @@ fn precondition_check(this: *const (), count: isize, size: usize)
             storage_dead(size)
             storage_dead(count)
             storage_dead(this)
-            unwind_terminate
+            unwind_terminate(abi)
         storage_dead(_11)
         _9 = panic_nounwind_fmt<'12>(move _10, const false)
         ↳⚡ undefined_behavior

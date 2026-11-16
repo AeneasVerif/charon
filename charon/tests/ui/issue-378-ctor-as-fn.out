@@ -189,7 +189,7 @@ fn main()
             storage_dead(_20)
             storage_dead(_19)
             storage_dead(_18)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_17)
         unwind_continue
     storage_dead(_11)

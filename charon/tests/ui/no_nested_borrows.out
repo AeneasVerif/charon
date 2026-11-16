@@ -120,7 +120,7 @@ where
     drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1) as variant List::Cons)._0
     ↳⚡ drop[impl_Destruct_for_Box::drop_glue<'4, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] ((*_1) as variant List::Cons)._1
         ↳⚡ storage_dead(_1)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_1)
         unwind_continue
     drop[impl_Destruct_for_Box::drop_glue<'3, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] ((*_1) as variant List::Cons)._1
@@ -289,7 +289,7 @@ where
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _2
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'2>] x
         ↳⚡ storage_dead(x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(x)
         unwind_continue
     storage_dead(_2)
@@ -486,7 +486,7 @@ pub fn test_list1()
     _3 = List::Nil {  }
     _2 = new<List<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for List<i32>[{built_in impl Sized for i32}]}](move _3)
     ↳⚡ conditional_drop[impl_Destruct_for_List::drop_glue<'0, i32>[{built_in impl Sized for i32}]] _3
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_3)
     l = List::Cons { _0: const 0i32, _1: move _2 }
@@ -526,7 +526,7 @@ pub fn test_box1()
     _3 = &two-phase-mut b
     x_2 = deref_mut<'11, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _3)
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'12, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_3)
     fake_read(x_2)
@@ -536,7 +536,7 @@ pub fn test_box1()
     _5 = &b
     x_4 = deref<'16, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _5)
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'12, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_5)
     fake_read(x_4)
@@ -632,7 +632,7 @@ where
             panic(core::panicking::panic)
             ↳⚡ conditional_drop[impl_Destruct_for_List::drop_glue<'3, T>[TraitClause0]] l
                 ↳⚡ storage_dead(l)
-                    unwind_terminate
+                    unwind_terminate(in_cleanup)
                 storage_dead(l)
                 unwind_continue
         },
@@ -649,46 +649,46 @@ where
     conditional_drop[impl_Destruct_for_List::drop_glue<'2, T>[TraitClause0]] _5
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] _4
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_Box::drop_glue<'7, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] tl
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[{built_in impl Destruct for T}::drop_glue<'9>] hd
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_List::drop_glue<'3, T>[TraitClause0]] l
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(l)
         unwind_continue
     storage_dead(_5)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] _4
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'7, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] tl
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[{built_in impl Destruct for T}::drop_glue<'9>] hd
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_List::drop_glue<'3, T>[TraitClause0]] l
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(l)
         unwind_continue
     storage_dead(_4)
     conditional_drop[impl_Destruct_for_Box::drop_glue<'6, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] tl
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'9>] hd
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_List::drop_glue<'3, T>[TraitClause0]] l
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(l)
         unwind_continue
     storage_dead(tl)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'8>] hd
     ↳⚡ conditional_drop[impl_Destruct_for_List::drop_glue<'3, T>[TraitClause0]] l
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(l)
         unwind_continue
     storage_dead(hd)

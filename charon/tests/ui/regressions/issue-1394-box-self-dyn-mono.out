@@ -149,10 +149,10 @@ fn main()
     _4 = (read _6)(move _5)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Trait), Global>}::drop_glue::<(dyn Trait), Global><'8>] _5
         ↳⚡ storage_dead(_6)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[{impl Destruct for Box::<(dyn Trait), Global>}::drop_glue::<(dyn Trait), Global><'10>] b
         ↳⚡ storage_dead(_6)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_5)
     storage_dead(_4)

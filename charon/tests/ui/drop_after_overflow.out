@@ -224,7 +224,7 @@ fn main()
     }
 
     bb6 (terminate): {
-        unwind_terminate;
+        unwind_terminate(in_cleanup);
     }
 
     bb7 (cleanup): {

@@ -61,7 +61,7 @@ where
     _0 = ()
     drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
     ↳⚡ drop[{built_in impl Destruct for B}::drop_glue<'4>] (*_1)._1
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     drop[{built_in impl Destruct for B}::drop_glue<'3>] (*_1)._1
     ↳⚡ unwind_continue
@@ -175,7 +175,7 @@ fn pair1(pair: (NeedsDrop, NeedsDrop))
         _0 = ()
         drop[impl_Destruct_for_tuple::drop_glue<'0, NeedsDrop, NeedsDrop>[{built_in impl Sized for NeedsDrop}]] _x_3
         ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] pair._1
-            ↳⚡ unwind_terminate
+            ↳⚡ unwind_terminate(in_cleanup)
             unwind_continue
         storage_dead(_x_3)
     } else {
@@ -184,7 +184,7 @@ fn pair1(pair: (NeedsDrop, NeedsDrop))
         _0 = ()
         drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] _x_4
         ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] pair._1
-            ↳⚡ unwind_terminate
+            ↳⚡ unwind_terminate(in_cleanup)
             unwind_continue
         storage_dead(_x_4)
     }
@@ -220,9 +220,9 @@ fn pair2(pair: (NeedsDrop, NeedsDrop))
             _0 = ()
             drop[impl_Destruct_for_tuple::drop_glue<'0, NeedsDrop, NeedsDrop>[{built_in impl Sized for NeedsDrop}]] _x_3
             ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'3>] pair._0
-                ↳⚡ unwind_terminate
+                ↳⚡ unwind_terminate(in_cleanup)
                 conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'5>] pair._1
-                ↳⚡ unwind_terminate
+                ↳⚡ unwind_terminate(in_cleanup)
                 unwind_continue
             storage_dead(_x_3)
         },
@@ -232,9 +232,9 @@ fn pair2(pair: (NeedsDrop, NeedsDrop))
             _0 = ()
             drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] _x_4
             ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'3>] pair._0
-                ↳⚡ unwind_terminate
+                ↳⚡ unwind_terminate(in_cleanup)
                 conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'5>] pair._1
-                ↳⚡ unwind_terminate
+                ↳⚡ unwind_terminate(in_cleanup)
                 unwind_continue
             storage_dead(_x_4)
         },
@@ -244,9 +244,9 @@ fn pair2(pair: (NeedsDrop, NeedsDrop))
             _0 = ()
             drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] _x_5
             ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'3>] pair._0
-                ↳⚡ unwind_terminate
+                ↳⚡ unwind_terminate(in_cleanup)
                 conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'5>] pair._1
-                ↳⚡ unwind_terminate
+                ↳⚡ unwind_terminate(in_cleanup)
                 unwind_continue
             storage_dead(_x_5)
         },
@@ -257,7 +257,7 @@ fn pair2(pair: (NeedsDrop, NeedsDrop))
     storage_dead(_2)
     conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'4>] pair._0
     ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'7>] pair._1
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'6>] pair._1
     ↳⚡ unwind_continue
@@ -292,7 +292,7 @@ pub fn pair3(pair: (NeedsDrop, NeedsDrop), move_pair: bool, move_first: bool)
             _0 = ()
             drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] _x_7
             ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] pair._1
-                ↳⚡ unwind_terminate
+                ↳⚡ unwind_terminate(in_cleanup)
                 unwind_continue
             storage_dead(_x_7)
         } else {
@@ -301,7 +301,7 @@ pub fn pair3(pair: (NeedsDrop, NeedsDrop), move_pair: bool, move_first: bool)
         storage_dead(_6)
         conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'3>] pair._0
         ↳⚡ drop[impl_Destruct_for_NeedsDrop::drop_glue<'5>] pair._1
-            ↳⚡ unwind_terminate
+            ↳⚡ unwind_terminate(in_cleanup)
             unwind_continue
         drop[impl_Destruct_for_NeedsDrop::drop_glue<'4>] pair._1
         ↳⚡ unwind_continue
@@ -312,7 +312,7 @@ pub fn pair3(pair: (NeedsDrop, NeedsDrop), move_pair: bool, move_first: bool)
     _0 = ()
     drop[impl_Destruct_for_tuple::drop_glue<'0, NeedsDrop, NeedsDrop>[{built_in impl Sized for NeedsDrop}]] _x_5
     ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] pair._1
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_x_5)
     storage_dead(_4)
@@ -340,7 +340,7 @@ pub fn re_assign(x: NeedsDrop)
         _4 = move x
         _3 = consume<NeedsDrop>[{built_in impl Sized for NeedsDrop}](move _4)
         ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] x
-            ↳⚡ unwind_terminate
+            ↳⚡ unwind_terminate(in_cleanup)
             unwind_continue
         storage_dead(_4)
         storage_dead(_3)
@@ -355,7 +355,7 @@ pub fn re_assign(x: NeedsDrop)
         conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] x
         ↳⚡ x = move _6
             conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] x
-            ↳⚡ unwind_terminate
+            ↳⚡ unwind_terminate(in_cleanup)
             unwind_continue
         x = move _6
         storage_dead(_6)
@@ -394,7 +394,7 @@ pub fn in_loop(x: NeedsDrop)
                 _5 = move x
                 _4 = consume<NeedsDrop>[{built_in impl Sized for NeedsDrop}](move _5)
                 ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] x
-                    ↳⚡ unwind_terminate
+                    ↳⚡ unwind_terminate(in_cleanup)
                     unwind_continue
                 storage_dead(_5)
                 storage_dead(_4)
@@ -406,7 +406,7 @@ pub fn in_loop(x: NeedsDrop)
             conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] x
             ↳⚡ x = move _6
                 conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] x
-                ↳⚡ unwind_terminate
+                ↳⚡ unwind_terminate(in_cleanup)
                 unwind_continue
             x = move _6
             storage_dead(_6)
@@ -471,7 +471,7 @@ fn partial_enum_move(value: EnumWithTwoDrops, b: bool)
                 switch move _12 {
                     0isize => {
                         conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] (value as variant EnumWithTwoDrops::Pair)._1
-                        ↳⚡ unwind_terminate
+                        ↳⚡ unwind_terminate(in_cleanup)
                     },
                     _ => {
                     },
@@ -496,7 +496,7 @@ fn partial_enum_move(value: EnumWithTwoDrops, b: bool)
                         switch move _12 {
                             0isize => {
                                 conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] (value as variant EnumWithTwoDrops::Pair)._1
-                                ↳⚡ unwind_terminate
+                                ↳⚡ unwind_terminate(in_cleanup)
                             },
                             _ => {
                             },

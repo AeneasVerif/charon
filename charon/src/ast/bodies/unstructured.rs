@@ -158,7 +158,7 @@ pub enum TerminatorKind {
         on_unwind: BlockId,
     },
     /// Unwinding must stop for ABI reasons or because cleanup code panicked again.
-    UnwindTerminate,
+    UnwindTerminate(UnwindTerminateReason),
     /// Unwind out of the current function into its caller.
     UnwindResume,
 
@@ -264,7 +264,9 @@ impl BlockData {
             match &self.terminator.kind {
                 TerminatorKind::Panic { name, .. } => Some(AbortKind::Panic(Some(name.clone()))),
                 TerminatorKind::UndefinedBehavior => Some(AbortKind::UndefinedBehavior),
-                TerminatorKind::UnwindTerminate => Some(AbortKind::UnwindTerminate),
+                TerminatorKind::UnwindTerminate(reason) => {
+                    Some(AbortKind::UnwindTerminate(*reason))
+                }
                 _ => None,
             }
         } else {
@@ -407,7 +409,7 @@ impl Terminator {
     pub fn is_error(&self) -> bool {
         use TerminatorKind::*;
         match &self.kind {
-            Panic { .. } | UndefinedBehavior | UnwindTerminate => true,
+            Panic { .. } | UndefinedBehavior | UnwindTerminate(..) => true,
             Goto { .. }
             | Switch { .. }
             | InlineAsm { .. }
@@ -459,7 +461,7 @@ impl Terminator {
             } => smallvec![*target, *on_unwind],
             TerminatorKind::Panic { on_unwind, .. } => smallvec![*on_unwind],
             TerminatorKind::UndefinedBehavior
-            | TerminatorKind::UnwindTerminate
+            | TerminatorKind::UnwindTerminate(..)
             | TerminatorKind::Return
             | TerminatorKind::UnwindResume => {
                 smallvec![]
@@ -496,7 +498,7 @@ impl Terminator {
             } => smallvec![target, on_unwind],
             TerminatorKind::Panic { on_unwind, .. } => smallvec![on_unwind],
             TerminatorKind::UndefinedBehavior
-            | TerminatorKind::UnwindTerminate
+            | TerminatorKind::UnwindTerminate(..)
             | TerminatorKind::Return
             | TerminatorKind::UnwindResume => {
                 smallvec![]
@@ -527,7 +529,7 @@ impl Terminator {
             }
             TerminatorKind::Panic { .. }
             | TerminatorKind::UndefinedBehavior
-            | TerminatorKind::UnwindTerminate
+            | TerminatorKind::UnwindTerminate(..)
             | TerminatorKind::Return
             | TerminatorKind::UnwindResume => {
                 smallvec![]

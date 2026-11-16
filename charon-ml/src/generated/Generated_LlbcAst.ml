@@ -117,7 +117,7 @@ and statement_kind =
           Fields:
           - [name]: The name of the function that was called.
           - [on_unwind] *)
-  | UnwindTerminate
+  | UnwindTerminate of unwind_terminate_reason
       (** Unwinding must stop for ABI reasons or because cleanup code panicked
           again. *)
   | UnwindResume  (** Unwind out of the current function into its caller. *)

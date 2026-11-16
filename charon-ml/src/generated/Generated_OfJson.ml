@@ -88,7 +88,9 @@ and abort_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = option_of_json name_of_json ctx _0 in
         Ok (AbortPanic _0)
     | `String "UndefinedBehavior" -> Ok AbortUndefinedBehavior
-    | `String "UnwindTerminate" -> Ok AbortUnwindTerminate
+    | `Assoc [ ("UnwindTerminate", _0) ] ->
+        let* _0 = unwind_terminate_reason_of_json ctx _0 in
+        Ok (AbortUnwindTerminate _0)
     | _ -> Error "")
 
 and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
@@ -1871,6 +1873,14 @@ and unsizing_metadata_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Unknown" -> Ok MetaUnknown
     | _ -> Error "")
 
+and unwind_terminate_reason_of_json (ctx : of_json_ctx) (js : json) :
+    (unwind_terminate_reason, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Abi" -> Ok Abi
+    | `String "InCleanup" -> Ok InCleanup
+    | _ -> Error "")
+
 and variance_of_json (ctx : of_json_ctx) (js : json) : (variance, string) result
     =
   combine_error_msgs js __FUNCTION__
@@ -2089,7 +2099,9 @@ module Ullbc = struct
           let* name = name_of_json ctx name in
           let* on_unwind = block_id_of_json ctx on_unwind in
           Ok (Panic (name, on_unwind))
-      | `String "UnwindTerminate" -> Ok UnwindTerminate
+      | `Assoc [ ("UnwindTerminate", _0) ] ->
+          let* _0 = unwind_terminate_reason_of_json ctx _0 in
+          Ok (UnwindTerminate _0)
       | `String "UnwindResume" -> Ok UnwindResume
       | `String "Return" -> Ok Return
       | `String "UndefinedBehavior" -> Ok UndefinedBehavior
@@ -2268,7 +2280,9 @@ module Llbc = struct
           let* name = name_of_json ctx name in
           let* on_unwind = block_of_json ctx on_unwind in
           Ok (Panic (name, on_unwind))
-      | `String "UnwindTerminate" -> Ok UnwindTerminate
+      | `Assoc [ ("UnwindTerminate", _0) ] ->
+          let* _0 = unwind_terminate_reason_of_json ctx _0 in
+          Ok (UnwindTerminate _0)
       | `String "UnwindResume" -> Ok UnwindResume
       | `String "Return" -> Ok Return
       | `String "UndefinedBehavior" -> Ok UndefinedBehavior

@@ -236,18 +236,18 @@ where
     _5 = &foo
     _4 = TraitClause1::ImpliedClause2::get_ty<'6>(move _5)
     ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'7>] foo
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     _3 = &(*_4) with_metadata(read _4.metadata)
     storage_dead(_5)
     _2 = TraitClause1::ImpliedClause2::ImpliedClause2::clone<'9>(move _3)
     ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'7>] foo
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_3)
     conditional_drop[{built_in impl Destruct for TraitClause1::ImpliedClause2::Type}::drop_glue<'10>] _2
     ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'7>] foo
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_4)
     storage_dead(_2)

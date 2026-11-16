@@ -134,7 +134,7 @@ pub enum StatementKind {
         on_unwind: Block,
     },
     /// Unwinding must stop for ABI reasons or because cleanup code panicked again.
-    UnwindTerminate,
+    UnwindTerminate(UnwindTerminateReason),
     /// Unwind out of the current function into its caller.
     UnwindResume,
 

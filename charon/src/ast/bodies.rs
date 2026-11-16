@@ -253,7 +253,17 @@ pub enum AbortKind {
     /// Undefined behavior in the rust abstract machine.
     UndefinedBehavior,
     /// Unwind had to stop for ABI reasons or because cleanup code panicked again.
-    UnwindTerminate,
+    UnwindTerminate(UnwindTerminateReason),
+}
+
+/// Why unwinding had to stop.
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+pub enum UnwindTerminateReason {
+    /// Unwinding out of a function that cannot unwind (e.g. an `extern "C"` function).
+    Abi,
+    /// Cleanup code panicked again.
+    InCleanup,
 }
 
 /// A `Drop` statement/terminator can mean two things, depending on what MIR phase we retrieved

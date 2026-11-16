@@ -75,7 +75,7 @@ pub unsafe extern "C" fn sum(...) -> i32
     ↳⚡ conditional_drop[drop_glue<'17, '18>] ap
         ↳⚡ storage_dead(_8)
             storage_dead(ap)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_8)
         storage_dead(ap)
         unwind_continue
@@ -88,7 +88,7 @@ pub unsafe extern "C" fn sum(...) -> i32
     ↳⚡ conditional_drop[drop_glue<'17, '18>] ap
         ↳⚡ storage_dead(_8)
             storage_dead(ap)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_8)
         storage_dead(ap)
         unwind_continue

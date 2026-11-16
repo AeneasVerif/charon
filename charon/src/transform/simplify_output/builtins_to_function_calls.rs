@@ -719,7 +719,7 @@ impl LlbcPass for Transform {
                     | Assert { .. }
                     | Panic { .. }
                     | UndefinedBehavior
-                    | UnwindTerminate
+                    | UnwindTerminate(..)
                     | StorageDead(..)
                     | StorageLive(..)
                     | Return

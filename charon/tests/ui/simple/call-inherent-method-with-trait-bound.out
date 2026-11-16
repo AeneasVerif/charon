@@ -82,7 +82,7 @@ where
     ↳⚡ conditional_drop[drop_glue<'2, S>[TraitClause0]] _x
         ↳⚡ storage_dead(_k)
             storage_dead(_x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_k)
         storage_dead(_x)
         unwind_continue
@@ -113,7 +113,7 @@ where
     ↳⚡ conditional_drop[drop_glue<'2, S>[TraitClause0]] _x
         ↳⚡ storage_dead(_k)
             storage_dead(_x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_k)
         storage_dead(_x)
         unwind_continue

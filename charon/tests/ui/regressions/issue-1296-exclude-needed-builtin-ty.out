@@ -26,7 +26,7 @@ fn main()
     conditional_drop[{impl#6}<MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]}, {built_in impl Sized for Global}]::drop_glue<'0>] _3
     ↳⚡ conditional_drop[{impl#6}<MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]}, {built_in impl Sized for Global}]::drop_glue<'1>] _2
         ↳⚡ storage_dead(ret)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_3)
     storage_live(b)
@@ -40,7 +40,7 @@ fn main()
         storage_dead(b)
         conditional_drop[{impl#6}<MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]}, {built_in impl Sized for Global}]::drop_glue<'1>] _2
         ↳⚡ storage_dead(ret)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     y = unsize_cast<Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], 1usize>(move x)
     ret = into_vec<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}](move y)
@@ -49,7 +49,7 @@ fn main()
         storage_dead(b)
         conditional_drop[{impl#6}<MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]}, {built_in impl Sized for Global}]::drop_glue<'1>] _2
         ↳⚡ storage_dead(ret)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(y)
     storage_dead(x)

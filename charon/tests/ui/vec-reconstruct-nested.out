@@ -116,12 +116,12 @@ fn nested_vecs()
         ↳⚡ storage_dead(ret_14)
             storage_dead(ret_11)
             storage_dead(ret_8)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_Box::drop_glue<'0, MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]}]}, {built_in impl Sized for Global}]] _3
         ↳⚡ storage_dead(ret_14)
             storage_dead(ret_11)
             storage_dead(ret_8)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_live(ret_8)
     storage_live(x_9)
@@ -137,12 +137,12 @@ fn nested_vecs()
         ↳⚡ storage_dead(ret_14)
             storage_dead(ret_11)
             storage_dead(ret_8)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_Box::drop_glue<'0, MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]}]}, {built_in impl Sized for Global}]] _3
         ↳⚡ storage_dead(ret_14)
             storage_dead(ret_11)
             storage_dead(ret_8)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(y_10)
     storage_dead(x_9)
@@ -158,17 +158,17 @@ fn nested_vecs()
         ↳⚡ storage_dead(ret_14)
             storage_dead(ret_11)
             storage_dead(ret_8)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_Vec::drop_glue<'3, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _4
         ↳⚡ storage_dead(ret_14)
             storage_dead(ret_11)
             storage_dead(ret_8)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_Box::drop_glue<'0, MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]}]}, {built_in impl Sized for Global}]] _3
         ↳⚡ storage_dead(ret_14)
             storage_dead(ret_11)
             storage_dead(ret_8)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_live(ret_11)
     storage_live(x_12)
@@ -184,17 +184,17 @@ fn nested_vecs()
         ↳⚡ storage_dead(ret_14)
             storage_dead(ret_11)
             storage_dead(ret_8)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_Vec::drop_glue<'3, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _4
         ↳⚡ storage_dead(ret_14)
             storage_dead(ret_11)
             storage_dead(ret_8)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_Box::drop_glue<'0, MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]}]}, {built_in impl Sized for Global}]] _3
         ↳⚡ storage_dead(ret_14)
             storage_dead(ret_11)
             storage_dead(ret_8)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(y_13)
     storage_dead(x_12)
@@ -207,12 +207,12 @@ fn nested_vecs()
         ↳⚡ storage_dead(ret_14)
             storage_dead(ret_11)
             storage_dead(ret_8)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_Box::drop_glue<'0, MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]}]}, {built_in impl Sized for Global}]] _3
         ↳⚡ storage_dead(ret_14)
             storage_dead(ret_11)
             storage_dead(ret_8)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_6)
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'7, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _4
@@ -220,7 +220,7 @@ fn nested_vecs()
         ↳⚡ storage_dead(ret_14)
             storage_dead(ret_11)
             storage_dead(ret_8)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_4)
     storage_live(_18)
@@ -229,7 +229,7 @@ fn nested_vecs()
         ↳⚡ storage_dead(ret_14)
             storage_dead(ret_11)
             storage_dead(ret_8)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_3)
     storage_live(ret_14)
@@ -246,7 +246,7 @@ fn nested_vecs()
         ↳⚡ storage_dead(ret_14)
             storage_dead(ret_11)
             storage_dead(ret_8)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(y_16)
     storage_dead(x_15)
@@ -297,11 +297,11 @@ fn nested_single()
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'2, MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]}, {built_in impl Sized for Global}]] _5
         ↳⚡ storage_dead(ret_9)
             storage_dead(ret_6)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_Box::drop_glue<'0, MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]}]}, {built_in impl Sized for Global}]] _3
         ↳⚡ storage_dead(ret_9)
             storage_dead(ret_6)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_live(ret_6)
     storage_live(x_7)
@@ -316,11 +316,11 @@ fn nested_single()
         conditional_drop[impl_Destruct_for_Box::drop_glue<'2, MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]}, {built_in impl Sized for Global}]] _5
         ↳⚡ storage_dead(ret_9)
             storage_dead(ret_6)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_Box::drop_glue<'0, MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]}]}, {built_in impl Sized for Global}]] _3
         ↳⚡ storage_dead(ret_9)
             storage_dead(ret_6)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(y_8)
     storage_dead(x_7)
@@ -332,7 +332,7 @@ fn nested_single()
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'0, MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]}]}, {built_in impl Sized for Global}]] _3
         ↳⚡ storage_dead(ret_9)
             storage_dead(ret_6)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_4)
     storage_live(_13)
@@ -340,7 +340,7 @@ fn nested_single()
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'5, MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]}]}, {built_in impl Sized for Global}]] _2
         ↳⚡ storage_dead(ret_9)
             storage_dead(ret_6)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_3)
     storage_live(ret_9)
@@ -356,7 +356,7 @@ fn nested_single()
         conditional_drop[impl_Destruct_for_Box::drop_glue<'5, MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]}]}, {built_in impl Sized for Global}]] _2
         ↳⚡ storage_dead(ret_9)
             storage_dead(ret_6)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(y_11)
     storage_dead(x_10)

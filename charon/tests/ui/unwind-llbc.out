@@ -155,7 +155,7 @@ fn main()
     storage_live(_2)
     _2 = may_unwind()
     ↳⚡ conditional_drop[drop_glue<'2>] f
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_2)
     storage_live(_3)
@@ -163,7 +163,7 @@ fn main()
     ↳⚡ undefined_behavior
     assert(move _4._1 == false) (overflow) else panic
     ↳⚡ conditional_drop[drop_glue<'2>] f
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     _3 = move _4._0
     storage_dead(_3)

@@ -100,12 +100,12 @@ fn main()
     storage_dead(_6)
     _4 = dyn_to_string<'21>(move _5)
     ↳⚡ conditional_drop[drop_glue<'22>] str
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_5)
     conditional_drop[drop_glue<'23>] _4
     ↳⚡ conditional_drop[drop_glue<'22>] str
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_7)
     storage_dead(_4)

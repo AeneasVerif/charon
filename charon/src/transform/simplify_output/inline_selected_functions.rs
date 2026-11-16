@@ -45,7 +45,7 @@ impl Transform {
                                     && matches!(
                                         block.terminator.kind,
                                         TerminatorKind::UnwindResume
-                                            | TerminatorKind::UnwindTerminate
+                                            | TerminatorKind::UnwindTerminate(..)
                                             | TerminatorKind::UndefinedBehavior
                                     )
                         })

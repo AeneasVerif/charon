@@ -1002,8 +1002,9 @@ impl<'a> ReconstructCtx<'a> {
             src::TerminatorKind::UndefinedBehavior => {
                 tgt::Statement::new(src_span, tgt::StatementKind::UndefinedBehavior).into_block()
             }
-            src::TerminatorKind::UnwindTerminate => {
-                tgt::Statement::new(src_span, tgt::StatementKind::UnwindTerminate).into_block()
+            src::TerminatorKind::UnwindTerminate(reason) => {
+                tgt::Statement::new(src_span, tgt::StatementKind::UnwindTerminate(*reason))
+                    .into_block()
             }
             src::TerminatorKind::Return => {
                 tgt::Statement::new(src_span, tgt::StatementKind::Return).into_block()

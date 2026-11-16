@@ -413,7 +413,7 @@ where
                             storage_dead(_10)
                             storage_dead(_9)
                             storage_dead(_8)
-                            unwind_terminate
+                            unwind_terminate(in_cleanup)
                         continue 0
                     }
                 }
@@ -563,7 +563,7 @@ where
     _0 = len<'8, T>[TraitClause0](move _2)
     ↳⚡ conditional_drop[impl_Destruct_for_array::drop_glue<'9, T, 32usize>[TraitClause0]] s
         ↳⚡ storage_dead(s)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(s)
         unwind_continue
     storage_dead(_2)

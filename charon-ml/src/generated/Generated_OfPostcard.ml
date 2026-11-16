@@ -84,7 +84,9 @@ and abort_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _0 = option_of_postcard name_of_postcard ctx st in
          Ok (AbortPanic _0)
      | 1 -> Ok AbortUndefinedBehavior
-     | 2 -> Ok AbortUnwindTerminate
+     | 2 ->
+         let* _0 = unwind_terminate_reason_of_postcard ctx st in
+         Ok (AbortUnwindTerminate _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and aggregate_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -1607,6 +1609,15 @@ and unsizing_metadata_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
      | 3 -> Ok MetaUnknown
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and unwind_terminate_reason_of_postcard (ctx : of_postcard_ctx)
+    (st : postcard_state) : (unwind_terminate_reason, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok Abi
+     | 1 -> Ok InCleanup
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and variance_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (variance, string) result =
   combine_error_msgs st __FUNCTION__
@@ -1748,7 +1759,9 @@ module Ullbc = struct
            let* name = name_of_postcard ctx st in
            let* on_unwind = block_id_of_postcard ctx st in
            Ok (Panic (name, on_unwind))
-       | 8 -> Ok UnwindTerminate
+       | 8 ->
+           let* _0 = unwind_terminate_reason_of_postcard ctx st in
+           Ok (UnwindTerminate _0)
        | 9 -> Ok UnwindResume
        | 10 -> Ok Return
        | 11 -> Ok UndefinedBehavior
@@ -1871,7 +1884,9 @@ module Llbc = struct
            let* name = name_of_postcard ctx st in
            let* on_unwind = block_of_postcard ctx st in
            Ok (Panic (name, on_unwind))
-       | 16 -> Ok UnwindTerminate
+       | 16 ->
+           let* _0 = unwind_terminate_reason_of_postcard ctx st in
+           Ok (UnwindTerminate _0)
        | 17 -> Ok UnwindResume
        | 18 -> Ok Return
        | 19 -> Ok UndefinedBehavior

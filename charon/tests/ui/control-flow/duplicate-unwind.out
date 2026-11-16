@@ -149,11 +149,11 @@ fn shared_cleanup()
     }
 
     bb8 (terminate): {
-        unwind_terminate;
+        unwind_terminate(in_cleanup);
     }
 
     bb9 (terminate): {
-        unwind_terminate;
+        unwind_terminate(in_cleanup);
     }
 }
 

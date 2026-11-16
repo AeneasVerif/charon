@@ -83,7 +83,7 @@ where
                     storage_dead(e)
                     storage_dead(self)
                     storage_dead(_6)
-                    unwind_terminate
+                    unwind_terminate(in_cleanup)
                 storage_dead(_5)
                 storage_dead(_4)
                 storage_dead(_3)

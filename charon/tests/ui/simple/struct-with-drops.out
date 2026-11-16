@@ -108,12 +108,12 @@ unsafe fn impl_Destruct_for_B::drop_glue<'_0>(_1: &'_0 mut B)
         ↳⚡ storage_dead(_3)
             storage_dead(_2)
             storage_dead(_1)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         drop[impl_Destruct_for_Box::drop_glue<'9, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {built_in impl Destruct for Global}]] (*_1).y
         ↳⚡ storage_dead(_3)
             storage_dead(_2)
             storage_dead(_1)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -123,7 +123,7 @@ unsafe fn impl_Destruct_for_B::drop_glue<'_0>(_1: &'_0 mut B)
         ↳⚡ storage_dead(_3)
             storage_dead(_2)
             storage_dead(_1)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -150,7 +150,7 @@ unsafe fn impl_Destruct_for_A::drop_glue<'_0>(_1: &'_0 mut A)
     drop[impl_Destruct_for_Box::drop_glue<'2, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {built_in impl Destruct for Global}]] (*_1).x
     ↳⚡ drop[impl_Destruct_for_B::drop_glue<'4>] (*_1).b
         ↳⚡ storage_dead(_1)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_1)
         unwind_continue
     drop[impl_Destruct_for_B::drop_glue<'3>] (*_1).b

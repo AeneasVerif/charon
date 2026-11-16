@@ -610,7 +610,7 @@ where
             storage_dead(_22)
             storage_dead(_21)
             storage_dead(_20)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_19)
         storage_dead(_18)
         storage_dead(x)
@@ -633,7 +633,7 @@ where
             storage_dead(_22)
             storage_dead(_21)
             storage_dead(_20)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_19)
         storage_dead(_18)
         storage_dead(x)
@@ -660,7 +660,7 @@ where
             storage_dead(_22)
             storage_dead(_21)
             storage_dead(_20)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_19)
         storage_dead(_18)
         storage_dead(x)
@@ -688,7 +688,7 @@ where
             storage_dead(_22)
             storage_dead(_21)
             storage_dead(_20)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_19)
         storage_dead(_18)
         storage_dead(x)
@@ -719,7 +719,7 @@ where
             storage_dead(_22)
             storage_dead(_21)
             storage_dead(_20)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_19)
         storage_dead(_18)
         storage_dead(x)

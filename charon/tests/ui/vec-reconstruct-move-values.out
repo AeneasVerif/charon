@@ -122,7 +122,7 @@ fn move_values(flag: bool)
         ↳⚡ storage_dead(flag)
             storage_dead(ret_14)
             storage_dead(ret_11)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(flag)
         unwind_continue
     storage_live(ret_11)
@@ -139,7 +139,7 @@ fn move_values(flag: bool)
         ↳⚡ storage_dead(flag)
             storage_dead(ret_14)
             storage_dead(ret_11)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(flag)
         unwind_continue
     storage_dead(y_13)
@@ -166,12 +166,12 @@ fn move_values(flag: bool)
             ↳⚡ storage_dead(flag)
                 storage_dead(ret_14)
                 storage_dead(ret_11)
-                unwind_terminate
+                unwind_terminate(in_cleanup)
             conditional_drop[impl_Destruct_for_Vec::drop_glue<'2, NoCopy, Global>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}]] _v
             ↳⚡ storage_dead(flag)
                 storage_dead(ret_14)
                 storage_dead(ret_11)
-                unwind_terminate
+                unwind_terminate(in_cleanup)
             storage_dead(flag)
             unwind_continue
         storage_live(ret_14)
@@ -188,12 +188,12 @@ fn move_values(flag: bool)
             ↳⚡ storage_dead(flag)
                 storage_dead(ret_14)
                 storage_dead(ret_11)
-                unwind_terminate
+                unwind_terminate(in_cleanup)
             conditional_drop[impl_Destruct_for_Vec::drop_glue<'2, NoCopy, Global>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}]] _v
             ↳⚡ storage_dead(flag)
                 storage_dead(ret_14)
                 storage_dead(ret_11)
-                unwind_terminate
+                unwind_terminate(in_cleanup)
             storage_dead(flag)
             unwind_continue
         storage_dead(y_16)
@@ -207,7 +207,7 @@ fn move_values(flag: bool)
             ↳⚡ storage_dead(flag)
                 storage_dead(ret_14)
                 storage_dead(ret_11)
-                unwind_terminate
+                unwind_terminate(in_cleanup)
             storage_dead(flag)
             unwind_continue
         storage_dead(_w)

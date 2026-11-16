@@ -202,7 +202,7 @@ fn core::ptr::write_bytes::precondition_check(addr: *const (), align: usize, zer
     storage_live(_7)
     _7 = copy zero_size
     _4 = maybe_is_aligned_and_not_null(move _5, move _6, move _7)
-    ↳⚡ unwind_terminate
+    ↳⚡ unwind_terminate(abi)
     if move _4 {
     } else {
         storage_dead(_7)
@@ -215,7 +215,7 @@ fn core::ptr::write_bytes::precondition_check(addr: *const (), align: usize, zer
         storage_live(_11)
         _11 = &(*msg) with_metadata(read msg.metadata)
         _10 = from_str<'7>(move _11)
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(abi)
         storage_dead(_11)
         _9 = panic_nounwind_fmt<'12>(move _10, const false)
         ↳⚡ undefined_behavior
@@ -430,7 +430,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
     storage_live(_3)
     _3 = copy align
     _2 = is_power_of_two(move _3)
-    ↳⚡ unwind_terminate
+    ↳⚡ unwind_terminate(abi)
     if move _2 {
     } else {
         storage_dead(_3)
@@ -441,7 +441,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
         storage_live(_7)
         _7 = &(*msg) with_metadata(read msg.metadata)
         _6 = from_str<'7>(move _7)
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(abi)
         storage_dead(_7)
         _5 = panic_nounwind_fmt<'12>(move _6, const false)
         ↳⚡ undefined_behavior
@@ -909,7 +909,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut 
     storage_live(_14)
     _14 = copy zero_size
     _11 = maybe_is_aligned_and_not_null(move _12, move _13, move _14)
-    ↳⚡ unwind_terminate
+    ↳⚡ unwind_terminate(abi)
     if move _11 {
         storage_dead(_14)
         storage_dead(_13)
@@ -925,7 +925,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut 
         storage_live(_19)
         _19 = copy zero_size
         _15 = maybe_is_aligned_and_not_null(move _16, move _18, move _19)
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(abi)
         if move _15 {
             storage_dead(_19)
             storage_dead(_18)
@@ -942,7 +942,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut 
             storage_live(_24)
             _24 = copy count
             _6 = maybe_is_nonoverlapping(move _20, move _21, move _23, move _24)
-            ↳⚡ unwind_terminate
+            ↳⚡ unwind_terminate(abi)
             storage_dead(_24)
             storage_dead(_23)
             storage_dead(_21)
@@ -971,7 +971,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut 
         storage_live(_28)
         _28 = &(*msg) with_metadata(read msg.metadata)
         _27 = from_str<'7>(move _28)
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(abi)
         storage_dead(_28)
         _26 = panic_nounwind_fmt<'12>(move _27, const false)
         ↳⚡ undefined_behavior
@@ -1858,7 +1858,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr: *mu
     storage_live(_3)
     _3 = copy ptr
     _2 = core::ptr::mut_ptr::{*mut T}::is_null<()>(move _3)
-    ↳⚡ unwind_terminate
+    ↳⚡ unwind_terminate(abi)
     if move _2 {
     } else {
         storage_dead(_3)
@@ -1874,7 +1874,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr: *mu
     storage_live(_7)
     _7 = &(*msg) with_metadata(read msg.metadata)
     _6 = from_str<'7>(move _7)
-    ↳⚡ unwind_terminate
+    ↳⚡ unwind_terminate(abi)
     storage_dead(_7)
     _5 = panic_nounwind_fmt<'12>(move _6, const false)
     ↳⚡ undefined_behavior
@@ -2141,14 +2141,14 @@ where
     drop[{built_in impl Destruct for T}::drop_glue<'4>] (*_6)
     ↳⚡ _4 = &mut (*_1)
         _5 = drop<'11, T, A>[TraitClause0, TraitClause1, TraitClause2](move _4)
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         drop[{built_in impl Destruct for A}::drop_glue<'12>] (*_1)._1
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     _2 = &mut (*_1)
     _3 = drop<'8, T, A>[TraitClause0, TraitClause1, TraitClause2](move _2)
     ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'12>] (*_1)._1
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     drop[{built_in impl Destruct for A}::drop_glue<'13>] (*_1)._1
     ↳⚡ unwind_continue
@@ -2252,7 +2252,7 @@ where
     _4 = box_new_uninit(read LAYOUT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]])
     ↳⚡ if copy _7 {
             drop[{built_in impl Destruct for T}::drop_glue<'0>] x
-            ↳⚡ unwind_terminate
+            ↳⚡ unwind_terminate(in_cleanup)
         } else {
         }
         unwind_continue
@@ -2293,7 +2293,7 @@ where
     _4 = copy raw
     _3 = core::ptr::unique::{Unique<T>}::new_unchecked<T>(move _4)
     ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'0>] alloc
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_4)
     storage_live(_5)

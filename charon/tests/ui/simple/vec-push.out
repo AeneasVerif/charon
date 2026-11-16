@@ -235,7 +235,7 @@ where
                 storage_dead(_6)
                 storage_dead(value)
                 storage_dead(self_1)
-                unwind_terminate
+                unwind_terminate(in_cleanup)
             storage_dead(_13)
             storage_dead(end)
             storage_dead(_6)

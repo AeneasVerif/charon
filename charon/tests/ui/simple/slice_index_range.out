@@ -1115,7 +1115,7 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(star
         storage_dead(len)
         storage_dead(end)
         storage_dead(start)
-        unwind_terminate
+        unwind_terminate(abi)
     storage_dead(_13)
     _11 = panic_nounwind_fmt<'12>(move _12, const false)
     ↳⚡ undefined_behavior
@@ -1275,7 +1275,7 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(
         storage_dead(len)
         storage_dead(end)
         storage_dead(start)
-        unwind_terminate
+        unwind_terminate(abi)
     storage_dead(_13)
     _11 = panic_nounwind_fmt<'12>(move _12, const false)
     ↳⚡ undefined_behavior
