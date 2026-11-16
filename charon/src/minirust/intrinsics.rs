@@ -118,7 +118,26 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             self.make_intrinsic_function(span, fdecl, intrinsic_op)?
         } else if let Some(lang_item) = &fdecl.item_meta.lang_item {
             match lang_item {
-                LangItem::PanicFmt | LangItem::PanicImpl => {
+                LangItem::Panic
+                | LangItem::PanicFmt
+                | LangItem::PanicImpl
+                | LangItem::PanicBoundsCheck
+                | LangItem::PanicMisalignedPointerDereference
+                | LangItem::PanicCannotUnwind
+                | LangItem::PanicInCleanup
+                | LangItem::PanicAddOverflow
+                | LangItem::PanicSubOverflow
+                | LangItem::PanicMulOverflow
+                | LangItem::PanicDivOverflow
+                | LangItem::PanicRemOverflow
+                | LangItem::PanicNegOverflow
+                | LangItem::PanicShrOverflow
+                | LangItem::PanicShlOverflow
+                | LangItem::PanicDivZero
+                | LangItem::PanicRemZero
+                | LangItem::PanicNullPointerDereference
+                | LangItem::PanicNullReferenceConstructed
+                | LangItem::PanicInvalidEnumConstruction => {
                     self.make_unwind_function(span, fdecl, UnwindSource::OpaquePayload)?
                 }
                 _ => return Ok(None),
@@ -352,7 +371,6 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         source: UnwindSource,
     ) -> Result<mini::Function> {
         let mut builder = FunctionBuilder::new(self, span, &fdecl.signature)?;
-        let arg = builder.argument(0);
         let start = builder.declare_block();
         let unwind = builder.declare_block();
         builder.set_block(
@@ -361,7 +379,9 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 &[],
                 mini::Terminator::StartUnwind {
                     unwind_payload: match source {
-                        UnwindSource::ExplicitPayload => mb::load(mini::PlaceExpr::Local(arg)),
+                        UnwindSource::ExplicitPayload => {
+                            mb::load(mini::PlaceExpr::Local(builder.argument(0)))
+                        }
                         UnwindSource::OpaquePayload => self.opaque_panic_payload(),
                     },
                     unwind_block: unwind,
