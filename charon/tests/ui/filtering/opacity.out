@@ -48,6 +48,22 @@ where
     return
 }
 
+struct str {
+  _0: [u8],
+}
+
+// Full name: core::convert::num::{impl From<u32> for u64}::from::{promoted_const#1}
+pub const core::convert::num::impl_From_u32_for_u64::from::{promoted_const#1}: str = "assertion failed: <u32>::MAX as u128 <= <u64>::MAX as u128" with_metadata(58usize)
+
+// Full name: core::convert::num::{impl From<u32> for u64}::from::{promoted_const}
+pub const core::convert::num::impl_From_u32_for_u64::from::{promoted_const}: str = "assertion failed: <u64>::MIN as i128 <= <u32>::MIN as i128" with_metadata(58usize)
+
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(_1: &'static str) -> !
+= <opaque>
+
 struct () {}
 
 pub fn core::num::{u64}::MAX() -> u64
@@ -84,6 +100,8 @@ pub fn from(small: u32) -> u64
     let mut _8: u128; // anonymous local
     let mut _9: u128; // anonymous local
     let mut _10: u32; // anonymous local
+    let mut _11: &'1 str; // anonymous local
+    let mut _12: &'2 str; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -95,7 +113,9 @@ pub fn from(small: u32) -> u64
         storage_live(_5)
         _5 = cast<i128>(read core::num::{u32}::MIN)
         _3 = move _4 <= move _5
-        assert(move _3 == true) else panic(core::panicking::panic)
+        storage_live(_11)
+        _11 = &core::convert::num::impl_From_u32_for_u64::from::{promoted_const} with_metadata(const 58usize)
+        assert(move _3 == true) else panic(panic(move _11))
         ↳⚡ unwind_continue
         storage_dead(_5)
         storage_dead(_4)
@@ -112,7 +132,9 @@ pub fn from(small: u32) -> u64
         storage_live(_9)
         _9 = cast<u128>(read core::num::{u64}::MAX)
         _7 = move _8 <= move _9
-        assert(move _7 == true) else panic(core::panicking::panic)
+        storage_live(_12)
+        _12 = &core::convert::num::impl_From_u32_for_u64::from::{promoted_const#1} with_metadata(const 58usize)
+        assert(move _7 == true) else panic(panic(move _12))
         ↳⚡ unwind_continue
         storage_dead(_9)
         storage_dead(_8)
@@ -125,6 +147,8 @@ pub fn from(small: u32) -> u64
     _0 = cast<u64>(move _10)
     storage_dead(_10)
     storage_dead(small)
+    storage_dead(_12)
+    storage_dead(_11)
     return
 }
 

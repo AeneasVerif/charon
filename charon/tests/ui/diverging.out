@@ -1,15 +1,45 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct str {
+  _0: [u8],
+}
+
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(_1: &'static str) -> !
+= <opaque>
+
 struct () {}
+
+pub const test_crate::my_panic::{promoted_const}: str = "explicit panic" with_metadata(14usize)
 
 // Full name: test_crate::my_panic
 fn my_panic(_x: u32) -> !
 {
     let mut _0: !; // return
     let _x: u32; // arg #1
+    let mut _2: &'1 str; // anonymous local
 
     storage_live(_0)
-    panic(core::panicking::panic)
+    storage_live(_2)
+    _2 = &test_crate::my_panic::{promoted_const} with_metadata(const 14usize)
+    storage_dead(_2)
+    panic(panic(move _2))
     ↳⚡ storage_dead(_x)
         unwind_continue
 }

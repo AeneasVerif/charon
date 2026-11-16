@@ -52,12 +52,34 @@ where
   Some { _0: T },
 }
 
+struct str {
+  _0: [u8],
+}
+
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(_1: &'static str) -> !
+= <opaque>
+
 // Full name: core::panicking::AssertKind
 pub enum AssertKind {
   Eq,
   Ne,
   Match,
 }
+
+// Full name: core::panicking::assert_failed
+#[track_caller]
+pub fn assert_failed<'_0, '_1, '_2, T, U>(_1: AssertKind, _2: &'_0 T, _3: &'_1 U, _4: Option<Arguments<'_2>>[{built_in impl Sized for Arguments<'_2>}]) -> !
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (U: MetaSized),
+    TraitClause2: (T: Debug),
+    TraitClause3: (U: Debug),
+    Outlives0: (T: '_0),
+    Outlives1: (U: '_1),
+= <opaque>
 
 // Full name: alloc::string::String
 #[lang_item(String)]
@@ -89,10 +111,6 @@ where
     TraitClause1: (T: Display),
     Outlives0: (T: '_0),
 = <opaque>
-
-struct str {
-  _0: [u8],
-}
 
 struct (_, _)<A, B>
 where
@@ -298,6 +316,9 @@ trait NoParam<Self>
     vtable: test_crate::NoParam::{vtable}
 }
 
+// Full name: test_crate::{impl NoParam for i32}::dummy::{promoted_const}
+pub const test_crate::impl_NoParam_for_i32::dummy::{promoted_const}: str = "assertion failed: *self > 0" with_metadata(27usize)
+
 // Full name: test_crate::{impl NoParam for i32}::dummy
 fn dummy<'_0>(self: &'_0 i32)
 {
@@ -305,6 +326,7 @@ fn dummy<'_0>(self: &'_0 i32)
     let self: &'1 i32; // arg #1
     let mut _2: bool; // anonymous local
     let mut _3: i32; // anonymous local
+    let mut _4: &'3 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -312,12 +334,15 @@ fn dummy<'_0>(self: &'_0 i32)
     storage_live(_3)
     _3 = copy (*self)
     _2 = move _3 > const 0i32
-    assert(move _2 == true) else panic(core::panicking::panic)
+    storage_live(_4)
+    _4 = &test_crate::impl_NoParam_for_i32::dummy::{promoted_const} with_metadata(const 27usize)
+    assert(move _2 == true) else panic(panic(move _4))
     ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
     storage_dead(self)
+    storage_dead(_4)
     return
 }
 
@@ -634,6 +659,9 @@ where
     return
 }
 
+// Full name: test_crate::{impl BaseOn<i32> for i32}::operate_on::{promoted_const}
+pub const test_crate::impl_BaseOn_i32_for_i32::operate_on::{promoted_const}: str = "assertion failed: *self > *t" with_metadata(28usize)
+
 // Full name: test_crate::{impl BaseOn<i32> for i32}::operate_on
 fn impl_BaseOn_i32_for_i32::operate_on<'_0, '_1>(self: &'_0 i32, t: &'_1 i32)
 {
@@ -643,6 +671,7 @@ fn impl_BaseOn_i32_for_i32::operate_on<'_0, '_1>(self: &'_0 i32, t: &'_1 i32)
     let mut _3: bool; // anonymous local
     let mut _4: i32; // anonymous local
     let mut _5: i32; // anonymous local
+    let mut _6: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -652,7 +681,9 @@ fn impl_BaseOn_i32_for_i32::operate_on<'_0, '_1>(self: &'_0 i32, t: &'_1 i32)
     storage_live(_5)
     _5 = copy (*t)
     _3 = move _4 > move _5
-    assert(move _3 == true) else panic(core::panicking::panic)
+    storage_live(_6)
+    _6 = &test_crate::impl_BaseOn_i32_for_i32::operate_on::{promoted_const} with_metadata(const 28usize)
+    assert(move _3 == true) else panic(panic(move _6))
     ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
@@ -660,6 +691,7 @@ fn impl_BaseOn_i32_for_i32::operate_on<'_0, '_1>(self: &'_0 i32, t: &'_1 i32)
     _0 = ()
     storage_dead(t)
     storage_dead(self)
+    storage_dead(_6)
     return
 }
 
@@ -713,6 +745,9 @@ impl "impl_BaseOn_i32_for_i32" BaseOn<i32> for i32 {
     vtable: impl_BaseOn_i32_for_i32::{vtable}
 }
 
+// Full name: test_crate::{impl BaseOn<i64> for i32}::operate_on::{promoted_const}
+pub const test_crate::impl_BaseOn_i64_for_i32::operate_on::{promoted_const}: str = "assertion failed: *self as i64 > *t" with_metadata(35usize)
+
 // Full name: test_crate::{impl BaseOn<i64> for i32}::operate_on
 fn impl_BaseOn_i64_for_i32::operate_on<'_0, '_1>(self: &'_0 i32, t: &'_1 i64)
 {
@@ -723,6 +758,7 @@ fn impl_BaseOn_i64_for_i32::operate_on<'_0, '_1>(self: &'_0 i32, t: &'_1 i64)
     let mut _4: i64; // anonymous local
     let mut _5: i32; // anonymous local
     let mut _6: i64; // anonymous local
+    let mut _7: &'5 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -735,7 +771,9 @@ fn impl_BaseOn_i64_for_i32::operate_on<'_0, '_1>(self: &'_0 i32, t: &'_1 i64)
     storage_live(_6)
     _6 = copy (*t)
     _3 = move _4 > move _6
-    assert(move _3 == true) else panic(core::panicking::panic)
+    storage_live(_7)
+    _7 = &test_crate::impl_BaseOn_i64_for_i32::operate_on::{promoted_const} with_metadata(const 35usize)
+    assert(move _3 == true) else panic(panic(move _7))
     ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_4)
@@ -743,6 +781,7 @@ fn impl_BaseOn_i64_for_i32::operate_on<'_0, '_1>(self: &'_0 i32, t: &'_1 i64)
     _0 = ()
     storage_dead(t)
     storage_dead(self)
+    storage_dead(_7)
     return
 }
 
@@ -899,6 +938,9 @@ trait LifetimeTrait<Self>
     vtable: test_crate::LifetimeTrait::{vtable}<Self::Ty>
 }
 
+// Full name: test_crate::{impl LifetimeTrait for i32}::lifetime_method::{promoted_const}
+pub const test_crate::impl_LifetimeTrait_for_i32::lifetime_method::{promoted_const}: str = "assertion failed: *self > *arg" with_metadata(30usize)
+
 // Full name: test_crate::{impl LifetimeTrait for i32}::lifetime_method
 fn lifetime_method<'a, '_1>(self: &'_1 i32, arg: &'a i32) -> &'a i32
 {
@@ -908,6 +950,7 @@ fn lifetime_method<'a, '_1>(self: &'_1 i32, arg: &'a i32) -> &'a i32
     let mut _3: bool; // anonymous local
     let mut _4: i32; // anonymous local
     let mut _5: i32; // anonymous local
+    let mut _6: &'8 str; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -916,7 +959,9 @@ fn lifetime_method<'a, '_1>(self: &'_1 i32, arg: &'a i32) -> &'a i32
     storage_live(_5)
     _5 = copy (*arg)
     _3 = move _4 > move _5
-    assert(move _3 == true) else panic(core::panicking::panic)
+    storage_live(_6)
+    _6 = &test_crate::impl_LifetimeTrait_for_i32::lifetime_method::{promoted_const} with_metadata(const 30usize)
+    assert(move _3 == true) else panic(panic(move _6))
     ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
@@ -924,6 +969,7 @@ fn lifetime_method<'a, '_1>(self: &'_1 i32, arg: &'a i32) -> &'a i32
     _0 = copy arg
     storage_dead(arg)
     storage_dead(self)
+    storage_dead(_6)
     return
 }
 
@@ -1079,7 +1125,11 @@ fn use_alias<'_0>(x: &'_0 (dyn Both32And64 + '_0))
     return
 }
 
-pub const test_crate::main::{promoted_const#18}: str = "Hello" with_metadata(5usize)
+pub const test_crate::main::{promoted_const#19}: str = "Hello" with_metadata(5usize)
+
+pub const test_crate::main::{promoted_const#21}: str = "assertion failed: !modify_trait_object(&"Hello".to_string()).is_empty()" with_metadata(71usize)
+
+pub const test_crate::main::{promoted_const#18}: str = "assertion failed: x.check()" with_metadata(27usize)
 
 // Full name: test_crate::main
 fn main()
@@ -1207,6 +1257,8 @@ fn main()
     let mut _110: i32; // anonymous local
     let mut _111: &'312 i32; // anonymous local
     let mut _112: i32; // anonymous local
+    let mut _113: &'167 str; // anonymous local
+    let mut _114: &'182 str; // anonymous local
 
     storage_live(_86)
     storage_live(_95)
@@ -1273,7 +1325,9 @@ fn main()
         storage_dead(_32)
         storage_dead(kind_31)
         unwind_continue
-    assert(move _4 == true) else panic(core::panicking::panic)
+    storage_live(_113)
+    _113 = &test_crate::main::{promoted_const#18} with_metadata(const 27usize)
+    assert(move _4 == true) else panic(panic(move _113))
     ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
@@ -1296,7 +1350,7 @@ fn main()
     storage_live(_15)
     storage_live(_16)
     storage_live(_17)
-    _17 = &test_crate::main::{promoted_const#18} with_metadata(const 5usize)
+    _17 = &test_crate::main::{promoted_const#19} with_metadata(const 5usize)
     _16 = &(*_17) with_metadata(read _17.metadata)
     _15 = to_string<'166, str>[{built_in impl MetaSized for str}, {impl#16}](move _16)
     ↳⚡ storage_dead(_85)
@@ -1351,6 +1405,8 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             storage_dead(kind_31)
+            storage_dead(_114)
+            storage_dead(_113)
             storage_dead(_112)
             storage_dead(_111)
             storage_dead(_110)
@@ -1430,6 +1486,8 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             storage_dead(kind_31)
+            storage_dead(_114)
+            storage_dead(_113)
             storage_dead(_112)
             storage_dead(_111)
             storage_dead(_110)
@@ -1482,6 +1540,8 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             storage_dead(kind_31)
+            storage_dead(_114)
+            storage_dead(_113)
             storage_dead(_112)
             storage_dead(_111)
             storage_dead(_110)
@@ -1562,6 +1622,8 @@ fn main()
                 storage_dead(_33)
                 storage_dead(_32)
                 storage_dead(kind_31)
+                storage_dead(_114)
+                storage_dead(_113)
                 storage_dead(_112)
                 storage_dead(_111)
                 storage_dead(_110)
@@ -1724,6 +1786,8 @@ fn main()
             _35 = &(*_36)
             storage_live(_37)
             _37 = Option::None {  }
+            storage_dead(_114)
+            storage_dead(_113)
             storage_dead(_112)
             storage_dead(_111)
             storage_dead(_110)
@@ -1751,7 +1815,7 @@ fn main()
             storage_dead(_88)
             storage_dead(_87)
             storage_dead(_86)
-            panic(core::panicking::assert_failed)
+            panic(assert_failed<'228, '229, '230, i32, i32>[{built_in impl MetaSized for i32}, {built_in impl MetaSized for i32}, {impl#21}, {impl#21}](move _32, move _33, move _35, move _37))
             ↳⚡ storage_dead(_85)
                 storage_dead(_84)
                 storage_dead(_83)
@@ -2038,6 +2102,8 @@ fn main()
             _74 = &(*_75)
             storage_live(_76)
             _76 = Option::None {  }
+            storage_dead(_114)
+            storage_dead(_113)
             storage_dead(_112)
             storage_dead(_111)
             storage_dead(_110)
@@ -2065,7 +2131,7 @@ fn main()
             storage_dead(_88)
             storage_dead(_87)
             storage_dead(_86)
-            panic(core::panicking::assert_failed)
+            panic(assert_failed<'301, '302, '303, i32, i32>[{built_in impl MetaSized for i32}, {built_in impl MetaSized for i32}, {impl#21}, {impl#21}](move _71, move _72, move _74, move _76))
             ↳⚡ storage_dead(_85)
                 storage_dead(_84)
                 storage_dead(_83)
@@ -2129,6 +2195,8 @@ fn main()
         storage_dead(_33)
         storage_dead(_32)
         storage_dead(kind_31)
+        storage_dead(_114)
+        storage_dead(_113)
         storage_dead(_112)
         storage_dead(_111)
         storage_dead(_110)
@@ -2184,6 +2252,8 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             storage_dead(kind_31)
+            storage_dead(_114)
+            storage_dead(_113)
             storage_dead(_112)
             storage_dead(_111)
             storage_dead(_110)
@@ -2265,6 +2335,10 @@ fn main()
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_12)
+    storage_live(_114)
+    _114 = &test_crate::main::{promoted_const#21} with_metadata(const 71usize)
+    storage_dead(_114)
+    storage_dead(_113)
     storage_dead(_112)
     storage_dead(_111)
     storage_dead(_110)
@@ -2292,7 +2366,7 @@ fn main()
     storage_dead(_88)
     storage_dead(_87)
     storage_dead(_86)
-    panic(core::panicking::panic)
+    panic(panic(move _114))
     ↳⚡ storage_dead(_85)
         storage_dead(_84)
         storage_dead(_83)

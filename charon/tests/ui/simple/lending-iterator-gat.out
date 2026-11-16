@@ -85,6 +85,18 @@ pub enum AssertKind {
   Match,
 }
 
+// Full name: core::panicking::assert_failed
+#[track_caller]
+pub fn assert_failed<'_0, '_1, '_2, T, U>(_1: AssertKind, _2: &'_0 T, _3: &'_1 U, _4: Option<Arguments<'_2>>[{built_in impl Sized for Arguments<'_2>}]) -> !
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (U: MetaSized),
+    TraitClause2: (T: Debug),
+    TraitClause3: (U: Debug),
+    Outlives0: (T: '_0),
+    Outlives1: (U: '_1),
+= <opaque>
+
 struct (_,)<A> {
   _0: A,
 }
@@ -593,7 +605,7 @@ pub fn main()
         storage_dead(_28)
         storage_dead(_27)
         storage_dead(_26)
-        panic(core::panicking::assert_failed)
+        panic(assert_failed<'291, '292, '293, i32, i32>[{built_in impl MetaSized for i32}, {built_in impl MetaSized for i32}, {impl#13}, {impl#13}](move _18, move _19, move _21, move _23))
         ↳⚡ storage_dead(_25)
             storage_dead(_24)
             storage_dead(_23)

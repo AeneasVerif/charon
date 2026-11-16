@@ -62,9 +62,25 @@ where
   end: Idx,
 }
 
+// Full name: core::panicking::panic_fmt
+#[track_caller]
+#[lang_item(PanicFmt)]
+pub fn panic_fmt<'_0>(_1: Arguments<'_0>) -> !
+= <opaque>
+
 // Full name: core::panicking::panic_nounwind_fmt
 #[track_caller]
 pub fn panic_nounwind_fmt<'_0>(_1: Arguments<'_0>, _2: bool) -> !
+= <opaque>
+
+struct str {
+  _0: [u8],
+}
+
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(_1: &'static str) -> !
 = <opaque>
 
 pub fn core::ptr::const_ptr::{*const [T]}::len<T>(_1: *const [T]) -> usize
@@ -235,7 +251,7 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
     storage_dead(_13)
     storage_dead(_12)
     storage_dead(_16)
-    panic(core::panicking::panic_fmt)
+    panic(panic_fmt<'91>(move _3))
     ↳⚡ storage_dead(args_7)
         storage_dead(args_4)
         storage_dead(_3)
@@ -349,7 +365,7 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
     storage_dead(_13)
     storage_dead(_12)
     storage_dead(_16)
-    panic(core::panicking::panic_fmt)
+    panic(panic_fmt<'91>(move _3))
     ↳⚡ storage_dead(args_7)
         storage_dead(args_4)
         storage_dead(_3)
@@ -463,7 +479,7 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
     storage_dead(_13)
     storage_dead(_12)
     storage_dead(_16)
-    panic(core::panicking::panic_fmt)
+    panic(panic_fmt<'91>(move _3))
     ↳⚡ storage_dead(args_7)
         storage_dead(args_4)
         storage_dead(_3)
@@ -577,7 +593,7 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
     storage_dead(_13)
     storage_dead(_12)
     storage_dead(_16)
-    panic(core::panicking::panic_fmt)
+    panic(panic_fmt<'91>(move _3))
     ↳⚡ storage_dead(args_7)
         storage_dead(args_4)
         storage_dead(_3)
@@ -1200,10 +1216,6 @@ where
         unwind_continue
 }
 
-struct str {
-  _0: [u8],
-}
-
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check::{promoted_const}
 pub const core::slice::index::impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check::{promoted_const}: str = "unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety." with_metadata(218usize)
 
@@ -1743,6 +1755,8 @@ where
     vtable: lazy
 }
 
+pub const test_crate::main::{promoted_const}: str = "assertion failed: slice[0] == 3" with_metadata(31usize)
+
 // Full name: test_crate::main
 fn main()
 {
@@ -1755,8 +1769,9 @@ fn main()
     let mut _6: bool; // anonymous local
     let mut _7: i32; // anonymous local
     let _8: usize; // anonymous local
-    let mut _9: &'_ [i32]; // anonymous local
-    let mut _10: &'_ i32; // anonymous local
+    let mut _9: &'13 str; // anonymous local
+    let mut _10: &'_ [i32]; // anonymous local
+    let mut _11: &'_ i32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1779,14 +1794,16 @@ fn main()
     storage_live(_7)
     storage_live(_8)
     _8 = const 0usize
-    storage_live(_9)
-    _9 = &(*slice) with_metadata(read slice.metadata)
     storage_live(_10)
-    _10 = impl_SliceIndex_slice_for_usize::index<'_, i32>[{built_in impl Sized for i32}](copy _8, move _9)
+    _10 = &(*slice) with_metadata(read slice.metadata)
+    storage_live(_11)
+    _11 = impl_SliceIndex_slice_for_usize::index<'_, i32>[{built_in impl Sized for i32}](copy _8, move _10)
     ↳⚡ undefined_behavior
-    _7 = copy (*_10)
+    _7 = copy (*_11)
     _6 = move _7 == const 3i32
-    assert(move _6 == true) else panic(core::panicking::panic)
+    storage_live(_9)
+    _9 = &test_crate::main::{promoted_const} with_metadata(const 31usize)
+    assert(move _6 == true) else panic(panic(move _9))
     ↳⚡ unwind_continue
     storage_dead(_7)
     storage_dead(_8)
@@ -1795,6 +1812,7 @@ fn main()
     storage_dead(_3)
     storage_dead(slice)
     storage_dead(array)
+    storage_dead(_11)
     storage_dead(_10)
     storage_dead(_9)
     return

@@ -1,12 +1,12 @@
 //! Transform calls to builtin panicking functions into `TerminatorKind::Panic`.
-use std::collections::HashMap;
+use std::collections::HashSet;
 
 use crate::ast::{Name, from_rustc, names};
 use crate::transform::{CowBox, TransformCtx, ctx::UllbcPass};
 use crate::ullbc_ast::*;
 
 pub struct Transform {
-    panic_fns: HashMap<FunDeclId, Name>,
+    panic_fns: HashSet<FunDeclId>,
 }
 
 impl Transform {
@@ -31,7 +31,7 @@ impl Transform {
                 (is_panic_lang_item
                     || decl.item_meta.name == explicit_panic
                     || decl.item_meta.name == assert_failed)
-                    .then(|| (id, decl.item_meta.name.clone()))
+                    .then_some(id)
             })
             .collect();
         CowBox::Owned(Box::new(Self { panic_fns }))
@@ -50,10 +50,10 @@ impl UllbcPass for Transform {
             } = &block.terminator.kind
                 && let FnOperand::Regular(fn_ptr) = &call.func
                 && let FnPtrKind::Fun(id) = fn_ptr.kind.as_ref()
-                && let Some(name) = self.panic_fns.get(id)
+                && self.panic_fns.contains(id)
             {
                 block.terminator.kind = TerminatorKind::Panic {
-                    name: name.clone(),
+                    call: call.clone(),
                     on_unwind: *on_unwind,
                 };
             }

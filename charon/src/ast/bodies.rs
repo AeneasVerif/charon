@@ -248,8 +248,9 @@ pub enum BorrowckStatement {
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Abort"))]
 pub enum AbortKind {
-    /// A built-in panicking function, or a panic due to a failed built-in check (e.g. for out-of-bounds accesses).
-    Panic(Option<Name>),
+    /// A built-in panicking function, or a panic due to a failed built-in check (e.g. for
+    /// out-of-bounds accesses).
+    Panic,
     /// Undefined behavior in the rust abstract machine.
     UndefinedBehavior,
     /// Unwind had to stop for ABI reasons or because cleanup code panicked again.
@@ -313,6 +314,8 @@ pub struct Assert {
     /// The kind of check performed by this assert. This is only used for error reporting, as the check
     /// is actually performed by the instructions preceding the assert.
     pub check_kind: Option<BuiltinAssertKind>,
+    /// The call to a panicking function that happens when the check fails
+    pub call: Box<Call>,
 }
 
 /// The kind of a built-in assertion, which may panic and unwind. These are removed

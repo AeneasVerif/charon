@@ -30,9 +30,9 @@ type fun_decl_id = Types.fun_decl_id [@@deriving show, ord]
     - Undefined behavior (caused by an "assume")
     - Unwind termination *)
 type abort_kind =
-  | AbortPanic of name option
-      (** A built-in panicking function, or a panic due to a failed built-in
-          check (e.g. for out-of-bounds accesses). *)
+  | AbortPanic of call
+      (** A call to a built-in panicking function, or a panic due to a failed
+          built-in check (e.g. for out-of-bounds accesses). *)
   | AbortUndefinedBehavior
       (** Undefined behavior in the rust abstract machine. *)
   | AbortUnwindTerminate of unwind_terminate_reason
@@ -151,6 +151,8 @@ and assertion = {
       (** The kind of check performed by this assert. This is only used for
           error reporting, as the check is actually performed by the
           instructions preceding the assert. *)
+  call : call;
+      (** The call to a panicking function that happens when the check fails *)
 }
 
 (** Statements that only affect borrow-checking. They are no-ops at runtime. *)

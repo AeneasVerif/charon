@@ -148,6 +148,12 @@ where
   Some { _0: T },
 }
 
+// Full name: core::panicking::panic_const::panic_const_add_overflow
+#[track_caller]
+#[lang_item(PanicAddOverflow)]
+pub fn panic_const_add_overflow() -> !
+= <opaque>
+
 // Full name: core::panicking::AssertKind
 pub enum AssertKind {
   Eq,
@@ -218,7 +224,7 @@ extern "rust-call" fn call_once(_1: {closure}, tupled_args: (u32,)) -> u32
     _4 = copy y
     _5 = add_with_overflow<u32>[{built_in impl Sized for u32}, impl_Copy_for_u32](copy _4, const 1u32)
     ↳⚡ undefined_behavior
-    assert(move _5._1 == false) (overflow) else panic
+    assert(move _5._1 == false) (overflow) else panic(panic_const_add_overflow())
     ↳⚡ unwind_continue
     _0 = move _5._0
     storage_dead(_4)

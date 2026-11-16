@@ -5,6 +5,58 @@
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
+// Full name: core::any::TypeId
+#[lang_item(TypeId)]
+pub opaque type TypeId
+
+// Full name: core::any::Any
+#[diagnostic_item("Any")]
+pub trait Any<Self>
+where
+    Outlives0: (Self: 'static),
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    fn type_id<'_0_1, Outlives0: (Self: '_0_1)>;
+    vtable: core::any::Any::{vtable}
+}
+
+// Full name: core::any::{impl Any for T}::type_id
+pub fn type_id<'_0, T>(_1: &'_0 T) -> TypeId
+where
+    TraitClause0: (T: MetaSized),
+    Outlives0: (T: 'static),
+    Outlives1: (T: '_0),
+= <opaque>
+
+// Full name: core::any::{impl Any for T}
+impl<T> "impl_Any_for_T" Any for T
+where
+    TraitClause0: (T: MetaSized),
+    Outlives0: (T: 'static),
+{
+    proof ImpliedClause0: (T: MetaSized) = TraitClause0
+    fn type_id<'_0_1> = type_id<'_0_1, T>[TraitClause0]
+    vtable: lazy
+}
+
+// Full name: core::marker::Send
+#[diagnostic_item("Send")]
+pub unsafe trait Send<Self>
+
+// Full name: core::marker::Sync
+#[lang_item(Sync)]
+#[diagnostic_item("Sync")]
+pub unsafe trait Sync<Self>
+
+// Full name: core::marker::{impl Send for &'_0 T}
+unsafe impl<'_0, T> Send for &'_0 T
+where
+    TraitClause0: (T: Sync),
+    Outlives0: (T: '_0),
+{
+    vtable: lazy
+}
+
 // Full name: core::marker::Sized
 #[fundamental]
 #[lang_item(Sized)]
@@ -14,20 +66,48 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-struct () {}
+// Full name: core::panicking::panic_fmt
+#[track_caller]
+#[lang_item(PanicFmt)]
+pub fn panic_fmt<'_0>(_1: Arguments<'_0>) -> !
+= <opaque>
 
 struct str {
   _0: [u8],
 }
 
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(_1: &'static str) -> !
+= <opaque>
+
+// Full name: std::panicking::begin_panic
+#[track_caller]
+#[lang_item(BeginPanic)]
+pub fn begin_panic<M>(_1: M) -> !
+where
+    TraitClause0: (M: Sized),
+    TraitClause1: (M: Any),
+    TraitClause2: (M: Send),
+= <opaque>
+
+struct () {}
+
+pub const test_crate::panic1::{promoted_const}: str = "explicit panic" with_metadata(14usize)
+
 // Full name: test_crate::panic1
 fn panic1()
 {
     let mut _0: (); // return
+    let mut _1: &'1 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
-    panic(core::panicking::panic)
+    storage_live(_1)
+    _1 = &test_crate::panic1::{promoted_const} with_metadata(const 14usize)
+    storage_dead(_1)
+    panic(panic(move _1))
     ↳⚡ unwind_continue
 }
 
@@ -49,7 +129,7 @@ fn panic2()
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_2)
-    panic(core::panicking::panic_fmt)
+    panic(panic_fmt<'11>(move _1))
     ↳⚡ storage_dead(_1)
         unwind_continue
 }
@@ -72,25 +152,31 @@ fn panic3()
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_2)
-    panic(core::panicking::panic_fmt)
+    panic(panic_fmt<'11>(move _1))
     ↳⚡ storage_dead(_1)
         unwind_continue
 }
+
+pub const test_crate::panic4::{promoted_const}: str = "assertion failed: false" with_metadata(23usize)
 
 // Full name: test_crate::panic4
 fn panic4()
 {
     let mut _0: (); // return
     let mut _1: bool; // anonymous local
+    let mut _2: &'1 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = const false
-    assert(move _1 == true) else panic(core::panicking::panic)
+    storage_live(_2)
+    _2 = &test_crate::panic4::{promoted_const} with_metadata(const 23usize)
+    assert(move _1 == true) else panic(panic(move _2))
     ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()
+    storage_dead(_2)
     return
 }
 
@@ -117,7 +203,7 @@ fn panic5()
         ↳⚡ storage_dead(_2)
             unwind_continue
         storage_dead(_3)
-        panic(core::panicking::panic_fmt)
+        panic(panic_fmt<'11>(move _2))
         ↳⚡ storage_dead(_2)
             unwind_continue
     }
@@ -128,14 +214,20 @@ fn panic5()
     return
 }
 
+pub const test_crate::panic6::{promoted_const}: str = "internal error: entered unreachable code" with_metadata(40usize)
+
 // Full name: test_crate::panic6
 fn panic6()
 {
     let mut _0: (); // return
+    let mut _1: &'1 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
-    panic(core::panicking::panic)
+    storage_live(_1)
+    _1 = &test_crate::panic6::{promoted_const} with_metadata(const 40usize)
+    storage_dead(_1)
+    panic(panic(move _1))
     ↳⚡ unwind_continue
 }
 
@@ -157,30 +249,42 @@ fn panic7()
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_2)
-    panic(core::panicking::panic_fmt)
+    panic(panic_fmt<'11>(move _1))
     ↳⚡ storage_dead(_1)
         unwind_continue
 }
+
+pub const test_crate::panic8::{promoted_const}: str = "not yet implemented" with_metadata(19usize)
 
 // Full name: test_crate::panic8
 fn panic8()
 {
     let mut _0: (); // return
+    let mut _1: &'1 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
-    panic(core::panicking::panic)
+    storage_live(_1)
+    _1 = &test_crate::panic8::{promoted_const} with_metadata(const 19usize)
+    storage_dead(_1)
+    panic(panic(move _1))
     ↳⚡ unwind_continue
 }
+
+pub const test_crate::panic9::{promoted_const}: str = "explicit panic" with_metadata(14usize)
 
 // Full name: test_crate::panic9
 fn panic9()
 {
     let mut _0: (); // return
+    let mut _1: &'47 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
-    panic(std::panicking::begin_panic)
+    storage_live(_1)
+    _1 = &test_crate::panic9::{promoted_const} with_metadata(const 14usize)
+    storage_dead(_1)
+    panic(begin_panic<&'18 str>[{built_in impl Sized for &'18 str}, impl_Any_for_T<&'18 str>[{built_in impl MetaSized for &'18 str}], {impl Send for &'_0 T}<'18, str>[{built_in impl Sync for str}]](move _1))
     ↳⚡ unwind_continue
 }
 

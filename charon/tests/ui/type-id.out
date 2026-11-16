@@ -22,8 +22,7 @@ pub struct TypeId {
   data: [*const (); 2usize],
 }
 
-// Full name: core::intrinsics::type_id::{fallback}
-fn {fallback}<T>() -> TypeId
+fn core::intrinsics::type_id::{fallback}<T>() -> TypeId
 where
     TraitClause0: (T: MetaSized),
 {
@@ -39,7 +38,7 @@ where
 pub fn type_id<T>() -> TypeId
 where
     TraitClause0: (T: MetaSized),
-= <intrinsic:type_id> with fallback (spec) {fallback}<T>[TraitClause0]
+= <intrinsic:type_id> with fallback (spec) core::intrinsics::type_id::{fallback}<T>[TraitClause0]
 
 // Full name: core::any::{TypeId}::of
 pub fn of<T>() -> TypeId

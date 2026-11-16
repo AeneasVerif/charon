@@ -296,7 +296,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         mktest(
             "workspace",
             root.join("workspace"),
-            &["--extract-opaque-bodies".to_owned()],
+            &[
+                "--extract-opaque-bodies".to_owned(),
+                // Keep the panic functions called by built-in checks opaque.
+                "--opaque=core::panicking".to_owned(),
+            ],
             &["--package=crate2".to_owned()],
             Success,
         ),

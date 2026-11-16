@@ -85,6 +85,12 @@ where
     Outlives0: (Self: '_0),
 = <opaque>
 
+// Full name: core::panicking::panic_const::panic_const_add_overflow
+#[track_caller]
+#[lang_item(PanicAddOverflow)]
+pub fn panic_const_add_overflow() -> !
+= <opaque>
+
 // Full name: test_crate::Foo
 struct Foo {}
 
@@ -161,7 +167,7 @@ fn main()
     storage_live(_3)
     _4 = add_with_overflow<u8>[{built_in impl Sized for u8}, impl_Copy_for_u8](const 255u8, const 1u8)
     ↳⚡ undefined_behavior
-    assert(move _4._1 == false) (overflow) else panic
+    assert(move _4._1 == false) (overflow) else panic(panic_const_add_overflow())
     ↳⚡ conditional_drop[drop_glue<'2>] f
         ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue

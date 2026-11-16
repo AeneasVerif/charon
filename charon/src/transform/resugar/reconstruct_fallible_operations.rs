@@ -246,6 +246,7 @@ fn remove_dynamic_checks(
                                 cond: Operand::Move(cond),
                                 expected: true,
                                 check_kind: Some(BuiltinAssertKind::BoundsCheck { .. }),
+                                ..
                             },
                         ..
                     },
@@ -298,6 +299,7 @@ fn remove_dynamic_checks(
                                         | BuiltinAssertKind::RemainderByZero(_)
                                         | BuiltinAssertKind::OverflowNeg(_),
                                     ),
+                                ..
                             },
                         ..
                     },
@@ -353,6 +355,7 @@ fn remove_dynamic_checks(
                                 cond: Operand::Move(cond),
                                 expected: false,
                                 check_kind: Some(BuiltinAssertKind::Overflow(..)),
+                                ..
                             },
                         ..
                     },
@@ -388,6 +391,7 @@ fn remove_dynamic_checks(
                                 cond: Operand::Move(cond),
                                 expected: true,
                                 check_kind: Some(BuiltinAssertKind::Overflow(..)),
+                                ..
                             },
                         ..
                     },
@@ -451,6 +455,7 @@ fn remove_dynamic_checks(
                                         BuiltinAssertKind::Overflow(..)
                                         | BuiltinAssertKind::BoundsCheck { .. },
                                     ),
+                                ..
                             },
                         ..
                     },
@@ -699,6 +704,7 @@ fn reconstruct_overflow_calls(ctx: &TransformCtx, body: &mut ExprBody) {
                             cond: Operand::Move(cond),
                             expected: false,
                             check_kind: Some(BuiltinAssertKind::Overflow(..)),
+                            ..
                         },
                         ..
                     },

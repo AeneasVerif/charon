@@ -4,7 +4,33 @@
 pub fn eq<'_0, '_1>(_1: &'_0 bool, _2: &'_1 bool) -> bool
 = <opaque>
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct str {
+  _0: [u8],
+}
+
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(_1: &'static str) -> !
+= <opaque>
+
 struct () {}
+
+pub const test_crate::do_test::<bool>::{promoted_const}: str = "assertion failed: expected == init" with_metadata(34usize)
 
 // Full name: test_crate::do_test::<bool>
 fn do_test::<bool>(init: bool, expected: bool)
@@ -15,6 +41,7 @@ fn do_test::<bool>(init: bool, expected: bool)
     let mut _3: bool; // anonymous local
     let mut _4: &'1 bool; // anonymous local
     let mut _5: &'2 bool; // anonymous local
+    let mut _6: &'15 str; // anonymous local
 
     bb0: {
         storage_live(_0);
@@ -24,23 +51,37 @@ fn do_test::<bool>(init: bool, expected: bool)
         _4 = &expected;
         storage_live(_5);
         _5 = &init;
-        _3 = eq<'9, '10>(move _4, move _5) -> bb1 (unwind: bb2);
+        _3 = eq<'9, '10>(move _4, move _5) -> bb1 (unwind: bb4);
     }
 
     bb1: {
-        assert(move _3 == true) else panic(core::panicking::panic);
+        if move _3 -> bb2 else -> bb3;
+    }
+
+    bb2: {
         storage_dead(_5);
         storage_dead(_4);
         storage_dead(_3);
         _0 = ();
         storage_dead(expected);
         storage_dead(init);
+        storage_dead(_6);
         return;
     }
 
-    bb2 (cleanup): {
+    bb3: {
+        storage_dead(_5);
+        storage_dead(_4);
+        storage_live(_6);
+        _6 = &test_crate::do_test::<bool>::{promoted_const} with_metadata(const 34usize);
+        storage_dead(_6);
+        panic(panic(move _6)) -> (unwind: bb4);
+    }
+
+    bb4 (cleanup): {
         storage_dead(expected);
         storage_dead(init);
+        storage_dead(_6);
         unwind_continue;
     }
 }

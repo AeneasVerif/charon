@@ -89,6 +89,12 @@ impl "impl_Copy_for_i32" Copy for i32 {
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_const::panic_const_add_overflow
+#[track_caller]
+#[lang_item(PanicAddOverflow)]
+pub fn panic_const_add_overflow() -> !
+= <opaque>
+
 // Full name: alloc::alloc::Global
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
@@ -172,7 +178,7 @@ where
     storage_live(_3)
     _3 = add_with_overflow<i32>[{built_in impl Sized for i32}, impl_Copy_for_i32, {built_in impl Destruct for i32}](copy (*(*self)), const 1i32)
     ↳⚡ undefined_behavior
-    assert(move _3._1 == false) (overflow) else panic
+    assert(move _3._1 == false) (overflow) else panic(panic_const_add_overflow())
     ↳⚡ unwind_continue
     (*(*self)) = move _3._0
     storage_live(_4)

@@ -78,6 +78,16 @@ where
   Some { _0: T },
 }
 
+struct str {
+  _0: [u8],
+}
+
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(_1: &'static str) -> !
+= <opaque>
+
 // Full name: core::slice::index::SliceIndex
 #[diagnostic_item("SliceIndex")]
 pub unsafe trait SliceIndex<Self, T>
@@ -261,6 +271,8 @@ where
   Right,
 }
 
+pub const test_crate::destructure::{promoted_const}: str = "explicit panic" with_metadata(14usize)
+
 // Full name: test_crate::destructure
 pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]) -> &'a u32
 {
@@ -270,6 +282,7 @@ pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u
         where x :< &'5 u32;
     let mut _3: &'6 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // anonymous local
         where _3 :< &'0 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}];
+    let mut _4: &'8 str; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -279,7 +292,10 @@ pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u
         },
         _ => {
             storage_dead(_3)
-            panic(core::panicking::panic)
+            storage_live(_4)
+            _4 = &test_crate::destructure::{promoted_const} with_metadata(const 14usize)
+            storage_dead(_4)
+            panic(panic(move _4))
             ↳⚡ storage_dead(input)
                 unwind_continue
         },
@@ -290,6 +306,7 @@ pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u
     _0 = &(*x)
     storage_dead(x)
     storage_dead(input)
+    storage_dead(_4)
     return
 }
 

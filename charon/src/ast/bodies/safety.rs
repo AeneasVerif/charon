@@ -324,7 +324,7 @@ impl HasSafety for AbortKind {
     fn safety(&self, _krate: &TranslatedCrate) -> Safety {
         match self {
             AbortKind::UndefinedBehavior => Safety::Unsafe,
-            AbortKind::Panic(..) | AbortKind::UnwindTerminate(..) => Safety::Safe,
+            AbortKind::Panic | AbortKind::UnwindTerminate(..) => Safety::Safe,
         }
     }
 }

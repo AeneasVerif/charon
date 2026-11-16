@@ -1733,10 +1733,34 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             } => {
                 let on_unwind = self.translate_unwind_action(span, unwind);
                 let kind = self.translate_assert_kind(span, msg)?;
+                let (lang_item, args) = match &kind {
+                    BuiltinAssertKind::BoundsCheck { len, index } => {
+                        (LangItem::PanicBoundsCheck, vec![index.clone(), len.clone()])
+                    }
+                    BuiltinAssertKind::MisalignedPointerDereference { required, found } => (
+                        LangItem::PanicMisalignedPointerDereference,
+                        vec![required.clone(), found.clone()],
+                    ),
+                    BuiltinAssertKind::InvalidEnumConstruction(source) => {
+                        (msg.panic_function(), vec![source.clone()])
+                    }
+                    _ => (msg.panic_function(), vec![]),
+                };
+                let def_id = self
+                    .tcx
+                    .require_lang_item(lang_item, terminator.source_info.span);
+                let item =
+                    hax::translate_item_ref(&self.hax_state, def_id, ty::GenericArgs::empty());
+                let func = self.translate_fn_ptr(span, &item, TransItemSourceKind::Fun)?;
                 let assert = Assert {
                     cond: self.translate_operand(span, cond)?,
                     expected: *expected,
                     check_kind: Some(kind),
+                    call: Box::new(Call {
+                        func: FnOperand::Regular(func),
+                        args,
+                        safety: CallSafety::Inherit,
+                    }),
                 };
                 let target = self.translate_basic_block_id(*target);
                 ullbc_ast::TerminatorKind::Assert {

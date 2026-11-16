@@ -2564,6 +2564,18 @@ pub enum AssertKind {
   Match,
 }
 
+// Full name: core::panicking::assert_failed
+#[track_caller]
+pub fn assert_failed<'_0, '_1, '_2, T, U>(_1: AssertKind, _2: &'_0 T, _3: &'_1 U, _4: Option<Arguments<'_2>>[{built_in impl Sized for Arguments<'_2>}]) -> !
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (U: MetaSized),
+    TraitClause2: (T: Debug),
+    TraitClause3: (U: Debug),
+    Outlives0: (T: '_0),
+    Outlives1: (U: '_1),
+= <opaque>
+
 // Full name: core::slice::iter::Iter
 #[diagnostic_item("SliceIter")]
 pub opaque type Iter<'a, T>
@@ -6062,7 +6074,7 @@ fn main()
         _56 = &(*_57)
         storage_live(_58)
         _58 = Option::None {  }
-        panic(core::panicking::assert_failed)
+        panic(assert_failed<'284, '285, '286, i32, i32>[{built_in impl MetaSized for i32}, {built_in impl MetaSized for i32}, {impl#17}, {impl#17}](move _53, move _54, move _56, move _58))
         ↳⚡ storage_dead(_58)
             storage_dead(_57)
             storage_dead(_56)

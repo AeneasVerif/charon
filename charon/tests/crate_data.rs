@@ -835,10 +835,8 @@ fn rename_attribute() -> anyhow::Result<()> {
 #[test]
 fn declaration_groups() -> anyhow::Result<()> {
     let crate_data = translate(
-        r#"//@ charon-arg=--reconstruct-panic-calls
-        fn foo() {
-            panic!()
-        }
+        r#"
+        fn foo() {}
         trait Foo {
             const FOO: usize = 42;
         }
@@ -846,9 +844,8 @@ fn declaration_groups() -> anyhow::Result<()> {
         "#,
     )?;
 
-    // There are 4 function items: `foo`, the initializer of `Trait::FOO`, and two dependencies of
-    // the panic call.
-    assert_eq!(crate_data.fun_decls.iter().count(), 4);
+    // There are 2 function items: `foo`, and the initializer of `Trait::FOO`.
+    assert_eq!(crate_data.fun_decls.iter().count(), 2);
     let initializer = crate_data
         .fun_decls
         .iter()

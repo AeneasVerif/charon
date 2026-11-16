@@ -1,5 +1,29 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct str {
+  _0: [u8],
+}
+
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(_1: &'static str) -> !
+= <opaque>
+
 struct () {}
 
 // Full name: test_crate::Point::<i32>
@@ -8,6 +32,8 @@ struct Point::<i32> {
   y: u64,
   z: i32,
 }
+
+pub const test_crate::{impl SomeTrait for Point::<i32>}::some_method::{promoted_const}: str = "assertion failed: self.x > 0 && self.y < 100 && self.z != 0" with_metadata(59usize)
 
 // Full name: test_crate::{impl SomeTrait for Point::<i32>}::some_method
 fn some_method<'_0>(self: &'_0 Point::<i32>)
@@ -20,6 +46,7 @@ fn some_method<'_0>(self: &'_0 Point::<i32>)
     let mut _5: u64; // anonymous local
     let mut _6: bool; // anonymous local
     let mut _7: i32; // anonymous local
+    let mut _8: &'3 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -46,6 +73,7 @@ fn some_method<'_0>(self: &'_0 Point::<i32>)
                 storage_dead(_2)
                 _0 = ()
                 storage_dead(self)
+                storage_dead(_8)
                 return
             } else {
                 storage_dead(_7)
@@ -56,7 +84,10 @@ fn some_method<'_0>(self: &'_0 Point::<i32>)
     } else {
         storage_dead(_3)
     }
-    panic(core::panicking::panic)
+    storage_live(_8)
+    _8 = &test_crate::{impl SomeTrait for Point::<i32>}::some_method::{promoted_const} with_metadata(const 59usize)
+    storage_dead(_8)
+    panic(panic(move _8))
     ↳⚡ storage_dead(self)
         unwind_continue
 }

@@ -47,10 +47,10 @@ impl UllbcPass for Transform {
                 unreachable!();
             };
 
-            let on_failure = panics
+            let (on_failure, _) = panics
                 .get(&on_unwind)
                 .cloned()
-                .unwrap_or(AbortKind::Panic(None));
+                .unwrap_or((AbortKind::Panic, None));
 
             block.statements.push(Statement {
                 kind: StatementKind::Assert { assert, on_failure },

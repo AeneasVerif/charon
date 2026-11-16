@@ -125,12 +125,12 @@ and terminator_kind =
           - [assert]
           - [target]
           - [on_unwind] *)
-  | Panic of name * block_id
+  | Panic of call * block_id
       (** Call to a built-in panicking function. Only if
           [--reconstruct-panic-calls] is passed.
 
           Fields:
-          - [name]: The name of the function that was called.
+          - [call]
           - [on_unwind] *)
   | UnwindTerminate of unwind_terminate_reason
       (** Unwinding must stop for ABI reasons or because cleanup code panicked

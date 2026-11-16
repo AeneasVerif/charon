@@ -17,18 +17,32 @@ struct () {}
 
 pub const core::num::{u32}::MAX: u32 = core::num::{u32}::MAX()
 
+struct str {
+  _0: [u8],
+}
+
+#[track_caller]
+#[lang_item(Panic)]
+pub fn core::panicking::panic(_1: &'static str) -> !
+= <opaque>
+
+pub const test_crate::const_time_array_copy_mwe::{promoted_const}: str = "assertion failed: N <= u32::MAX as usize" with_metadata(40usize)
+
 pub fn test_crate::const_time_array_copy_mwe<'_0, const N : usize>(_a: &'_0 mut [u8; N])
 {
     let mut _0: (); // return
     let _a: &'1 mut [u8; N]; // arg #1
     let mut _2: bool; // anonymous local
     let mut _3: usize; // anonymous local
+    let mut _4: &'3 str; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
     _3 = cast<usize>(read core::num::{u32}::MAX)
     _2 = const N <= move _3
-    assert(move _2 == true) else panic(core::panicking::panic)
+    storage_live(_4)
+    _4 = &test_crate::const_time_array_copy_mwe::{promoted_const} with_metadata(const 40usize)
+    assert(move _2 == true) else panic(core::panicking::panic(move _4))
     ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
@@ -36,6 +50,7 @@ pub fn test_crate::const_time_array_copy_mwe<'_0, const N : usize>(_a: &'_0 mut 
     _0 = ()
     _0 = ()
     storage_dead(_a)
+    storage_dead(_4)
     return
 }
 

@@ -341,7 +341,7 @@ where
             storage_live(_4)
             _4 = copy n
             _5 = copy _4 == const 0usize
-            assert(move _5 == false) (division_by_zero) else panic
+            assert(move _5 == false) (division_by_zero) else panic(panic_const_div_by_zero())
             ↳⚡ unwind_continue
             _0 = move _3 ub./ move _4
             storage_dead(_4)

@@ -76,6 +76,16 @@ where
   Some { _0: T },
 }
 
+struct str {
+  _0: [u8],
+}
+
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(_1: &'static str) -> !
+= <opaque>
+
 struct () {}
 
 // Full name: core::result::Result::{impl Destruct for Result<T, E>[TraitClause0, TraitClause1]}::drop_glue
@@ -159,6 +169,8 @@ trait Foo<Self>
     vtable: test_crate::Foo::{vtable}<Self::S>
 }
 
+pub const test_crate::f::{promoted_const}: str = "not yet implemented" with_metadata(19usize)
+
 // Full name: test_crate::f
 fn f<T, U>() -> Option<TraitClause3::S>[TraitClause3::ImpliedClause1]
 where
@@ -169,9 +181,13 @@ where
     TypeConstraint0: TraitClause2::S = TraitClause3::S,
 {
     let mut _0: Option<TraitClause3::S>[TraitClause3::ImpliedClause1]; // return
+    let mut _1: &'1 str; // anonymous local
 
     storage_live(_0)
-    panic(core::panicking::panic)
+    storage_live(_1)
+    _1 = &test_crate::f::{promoted_const} with_metadata(const 19usize)
+    storage_dead(_1)
+    panic(panic(move _1))
     ↳⚡ unwind_continue
 }
 

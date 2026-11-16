@@ -129,8 +129,7 @@ pub enum StatementKind {
 
     /// Call to a built-in panicking function. Only if `--reconstruct-panic-calls` is passed.
     Panic {
-        /// The name of the function that was called.
-        name: Name,
+        call: Call,
         on_unwind: Block,
     },
     /// Unwinding must stop for ABI reasons or because cleanup code panicked again.

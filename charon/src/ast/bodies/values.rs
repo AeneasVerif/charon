@@ -300,6 +300,19 @@ impl ConstantExpr {
         }
     }
 
+    pub fn mk_bool(value: bool) -> Self {
+        match value {
+            true => static_constant!(ConstantExpr::new(
+                ConstantExprKind::Bool(true),
+                Ty::mk_bool()
+            )),
+            false => static_constant!(ConstantExpr::new(
+                ConstantExprKind::Bool(false),
+                Ty::mk_bool()
+            )),
+        }
+    }
+
     pub fn as_usize_literal(&self) -> Option<u128> {
         match self.kind() {
             ConstantExprKind::Integer(IntegerValue::Unsigned(UIntTy::Usize, value)) => Some(*value),

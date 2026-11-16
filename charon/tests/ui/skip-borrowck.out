@@ -14,6 +14,16 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct str {
+  _0: [u8],
+}
+
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(_1: &'static str) -> !
+= <opaque>
+
 struct () {}
 
 // Full name: test_crate::choose
@@ -55,6 +65,14 @@ where
     return
 }
 
+pub const test_crate::choose_test::{promoted_const#3}: str = "assertion failed: *z == 1" with_metadata(25usize)
+
+pub const test_crate::choose_test::{promoted_const#2}: str = "assertion failed: y == 0" with_metadata(24usize)
+
+pub const test_crate::choose_test::{promoted_const#1}: str = "assertion failed: x == 1" with_metadata(24usize)
+
+pub const test_crate::choose_test::{promoted_const}: str = "assertion failed: *z == 1" with_metadata(25usize)
+
 // Full name: test_crate::choose_test
 pub fn choose_test()
 {
@@ -75,6 +93,10 @@ pub fn choose_test()
     let mut _14: i32; // anonymous local
     let mut _15: bool; // anonymous local
     let mut _16: i32; // anonymous local
+    let mut _17: &'11 str; // anonymous local
+    let mut _18: &'12 str; // anonymous local
+    let mut _19: &'13 str; // anonymous local
+    let mut _20: &'14 str; // anonymous local
 
     storage_live(_0)
     storage_live(_8)
@@ -108,7 +130,9 @@ pub fn choose_test()
     storage_live(_10)
     _10 = copy (*z)
     _9 = move _10 == const 1i32
-    assert(move _9 == true) else panic(core::panicking::panic)
+    storage_live(_17)
+    _17 = &test_crate::choose_test::{promoted_const} with_metadata(const 25usize)
+    assert(move _9 == true) else panic(panic(move _17))
     ↳⚡ unwind_continue
     storage_dead(_10)
     storage_dead(_9)
@@ -117,7 +141,9 @@ pub fn choose_test()
     // drop(z)
     _12 = copy x
     _11 = move _12 == const 1i32
-    assert(move _11 == true) else panic(core::panicking::panic)
+    storage_live(_18)
+    _18 = &test_crate::choose_test::{promoted_const#1} with_metadata(const 24usize)
+    assert(move _11 == true) else panic(panic(move _18))
     ↳⚡ unwind_continue
     storage_dead(_12)
     storage_dead(_11)
@@ -125,7 +151,9 @@ pub fn choose_test()
     storage_live(_14)
     _14 = copy y
     _13 = move _14 == const 0i32
-    assert(move _13 == true) else panic(core::panicking::panic)
+    storage_live(_19)
+    _19 = &test_crate::choose_test::{promoted_const#2} with_metadata(const 24usize)
+    assert(move _13 == true) else panic(panic(move _19))
     ↳⚡ unwind_continue
     storage_dead(_14)
     storage_dead(_13)
@@ -133,7 +161,9 @@ pub fn choose_test()
     storage_live(_16)
     _16 = copy (*z)
     _15 = move _16 == const 1i32
-    assert(move _15 == true) else panic(core::panicking::panic)
+    storage_live(_20)
+    _20 = &test_crate::choose_test::{promoted_const#3} with_metadata(const 25usize)
+    assert(move _15 == true) else panic(panic(move _20))
     ↳⚡ unwind_continue
     storage_dead(_16)
     storage_dead(_15)
@@ -142,6 +172,10 @@ pub fn choose_test()
     storage_dead(y)
     storage_dead(x)
     storage_dead(_8)
+    storage_dead(_20)
+    storage_dead(_19)
+    storage_dead(_18)
+    storage_dead(_17)
     return
 }
 

@@ -1,5 +1,15 @@
 # Final LLBC before serialization:
 
+struct str {
+  _0: [u8],
+}
+
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(_1: &'static str) -> !
+= <opaque>
+
 struct () {}
 
 // Full name: test_crate::HasAssoc
@@ -16,17 +26,26 @@ trait Trait<Self>
     non-dyn-compatible
 }
 
+pub const test_crate::Trait::default_method::{promoted_const}: str = "not yet implemented" with_metadata(19usize)
+
 fn test_crate::Trait::default_method<Self, T>() -> TraitClause1::Assoc
 where
     TraitClause0: (Self: Trait),
     TraitClause1: (T: HasAssoc),
 {
     let mut _0: TraitClause1::Assoc; // return
+    let mut _1: &'1 str; // anonymous local
 
     storage_live(_0)
-    panic(core::panicking::panic)
+    storage_live(_1)
+    _1 = &test_crate::Trait::default_method::{promoted_const} with_metadata(const 19usize)
+    storage_dead(_1)
+    panic(panic(move _1))
     ↳⚡ unwind_continue
 }
+
+// Full name: test_crate::{impl Trait for T}::default_method::{promoted_const}
+pub const test_crate::impl_Trait_for_T::default_method::{promoted_const}: str = "not yet implemented" with_metadata(19usize)
 
 // Full name: test_crate::{impl Trait for T}::default_method
 fn impl_Trait_for_T::default_method<T, T>() -> TraitClause0::Assoc
@@ -34,9 +53,13 @@ where
     TraitClause0: (T: HasAssoc),
 {
     let mut _0: TraitClause0::Assoc; // return
+    let mut _1: &'1 str; // anonymous local
 
     storage_live(_0)
-    panic(core::panicking::panic)
+    storage_live(_1)
+    _1 = &test_crate::impl_Trait_for_T::default_method::{promoted_const} with_metadata(const 19usize)
+    storage_dead(_1)
+    panic(panic(move _1))
     ↳⚡ unwind_continue
 }
 
