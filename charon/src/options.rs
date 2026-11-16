@@ -99,11 +99,15 @@ pub struct CliOpts {
     )]
     #[serde(default)]
     pub monomorphize_mut: Option<MonomorphizeMut>,
-    /// Record the layouts of encountered monomorphic type declarations in `TypeDecl::monomorphic_layouts`.
-    /// Useful to retrieve real layouts in polymorphic contexts.
+    /// Record the layout of each instantiation of a polymorphic type that we encounter during
+    /// translation. The instantiated layouts are stored in `TypeDecl::monomorphic_layouts`.
+    ///
+    /// This does not collect all the instantiations we would see post-monomorphization however,
+    /// e.g. `fn foo<T>() -> usize { size_of::<Option<T>>() }; foo<&u8>()` will not record
+    /// `Option<&u8>`.
     #[clap(long)]
     #[serde(default)]
-    pub monomorphic_layouts: bool,
+    pub collect_instantiated_layouts: bool,
 
     /// A list of item paths to use as starting points for the translation. We will translate these
     /// items and any items they refer to, according to the opacity rules. When absent, we start
@@ -718,10 +722,10 @@ impl CliOpts {
         if self.resugar_drops && self.desugar_drops {
             anyhow::bail!("`--desugar-drops` and `--resugar-drops` are mutually incompatible")
         }
-        if self.monomorphic_layouts && self.monomorphize {
+        if self.collect_instantiated_layouts && self.monomorphize {
             anyhow::bail!(
-                "`--monomorphic-layouts` is not compatible with `--monomorphize`, we already \
-                  translate instantiated layouts with it. "
+                "`--collect-instantiated-layouts` is not compatible with `--monomorphize`, we \
+                  already translate instantiated layouts with it. "
             )
         }
         Ok(())
@@ -794,7 +798,7 @@ pub struct TranslateOptions {
     /// indicates whether to partially monomorphize types.
     pub monomorphize_mut: Option<MonomorphizeMut>,
     /// Record the layouts of the instantiated poly ADTs in `TypeDecl::monomorphic_layouts`.
-    pub monomorphic_layouts: bool,
+    pub collect_instantiated_layouts: bool,
     /// Whether to hide various marker traits such as `*Sized` and `Destruct` anywhere they show
     /// up.
     pub hide_marker_traits: bool,
@@ -1009,7 +1013,7 @@ impl TranslateOptions {
             start_from,
             mir_level,
             monomorphize_mut: options.monomorphize_mut,
-            monomorphic_layouts: options.monomorphic_layouts,
+            collect_instantiated_layouts: options.collect_instantiated_layouts,
             hide_marker_traits: options.hide_marker_traits,
             hide_allocator: options.hide_allocator,
             no_doc_comments: options.no_doc_comments,

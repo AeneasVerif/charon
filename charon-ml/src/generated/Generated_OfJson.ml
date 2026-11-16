@@ -2604,7 +2604,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("sysroot", sysroot);
           ("monomorphize", monomorphize);
           ("monomorphize_mut", monomorphize_mut);
-          ("monomorphic_layouts", monomorphic_layouts);
+          ("collect_instantiated_layouts", collect_instantiated_layouts);
           ("start_from", start_from);
           ("start_from_if_exists", start_from_if_exists);
           ("start_from_attribute", start_from_attribute);
@@ -2673,7 +2673,9 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* monomorphize_mut =
           option_of_json monomorphize_mut_of_json ctx monomorphize_mut
         in
-        let* monomorphic_layouts = bool_of_json ctx monomorphic_layouts in
+        let* collect_instantiated_layouts =
+          bool_of_json ctx collect_instantiated_layouts
+        in
         let* start_from = list_of_json string_of_json ctx start_from in
         let* start_from_if_exists =
           list_of_json string_of_json ctx start_from_if_exists
@@ -2765,7 +2767,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              sysroot;
              monomorphize;
              monomorphize_mut;
-             monomorphic_layouts;
+             collect_instantiated_layouts;
              start_from;
              start_from_if_exists;
              start_from_attribute;

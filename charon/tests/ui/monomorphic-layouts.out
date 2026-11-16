@@ -14,6 +14,13 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::mem::size_of
+#[diagnostic_item("mem_size_of")]
+pub fn size_of<T>() -> usize
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
 // Full name: core::option::Option
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
@@ -89,6 +96,23 @@ where
 //             offset of _0: 1,
 //             inhabited: true,
 //             tagger: [0 := 1u8],
+//         },
+//     ],
+//     repr(Rust),
+// layout of `Option<&'_ u64>[{built_in impl Sized for &'_ u64}]`:
+//     size: 8usize,
+//     align: 8usize,
+//     discriminator: read at offset 0 { 0isize => None, _ => Some },
+//     inhabited: true,
+//     variants: [
+//         None: {
+//             inhabited: true,
+//             tagger: [0 := 0isize],
+//         },
+//         Some: {
+//             offset of _0: 0,
+//             inhabited: true,
+//             tagger: [],
 //         },
 //     ],
 //     repr(Rust),
@@ -336,6 +360,96 @@ fn uses_opaque()
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()
+    return
+}
+
+// Full name: test_crate::const_block
+fn const_block()
+{
+    let mut _0: (); // return
+    let mut _1: usize; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    _1 = const 8usize
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::doc_example::foo
+fn foo<T>() -> usize
+where
+    TraitClause0: (T: Sized),
+{
+    let mut _0: usize; // return
+
+    storage_live(_0)
+    _0 = size_of<Option<T>[TraitClause0]>[{built_in impl Sized for Option<T>[TraitClause0]}]()
+    ↳⚡ unwind_continue
+    return
+}
+
+// Full name: test_crate::doc_example
+fn doc_example()
+{
+    let mut _0: (); // return
+    let _1: usize; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    _1 = foo<&'0 u8>[{built_in impl Sized for &'0 u8}]()
+    ↳⚡ unwind_continue
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::check_equal
+fn check_equal<T>(size: usize)
+where
+    TraitClause0: (T: Sized),
+{
+    let mut _0: (); // return
+    let size: usize; // arg #1
+    let mut _2: bool; // anonymous local
+    let mut _3: usize; // anonymous local
+    let mut _4: usize; // anonymous local
+    let mut _5: usize; // anonymous local
+
+    storage_live(_4)
+    storage_live(_5)
+    _5 = size_of<T>[TraitClause0]()
+    ↳⚡ undefined_behavior
+    _4 = move _5
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy size
+    _2 = move _3 == move _4
+    assert(move _2 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
+    storage_dead(_3)
+    _0 = ()
+    storage_dead(_2)
+    storage_dead(size)
+    storage_dead(_5)
+    storage_dead(_4)
+    return
+}
+
+// Full name: test_crate::do_check
+fn do_check()
+{
+    let mut _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = check_equal<Option<&'0 u64>[{built_in impl Sized for &'0 u64}]>[{built_in impl Sized for Option<&'0 u64>[{built_in impl Sized for &'0 u64}]}](const 8usize)
+    ↳⚡ unwind_continue
     return
 }
 

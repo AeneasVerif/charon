@@ -147,7 +147,7 @@ pub struct TranslateCtx<'tcx> {
     pub cached_item_metas: HashMap<TransItemSource<'tcx>, ItemMeta>,
     /// Compute which lifetimes are used in a `&'a mut T`. This is a global fixpoint analysis.
     pub lt_mutability_computer: LifetimeMutabilityComputer,
-    /// The layouts of the monomorphic instances of the type declarations, for `--monomorphic-layouts`.
+    /// The layouts of the monomorphic instances of the type declarations, for `--collect-instantiated-layouts`.
     pub monomorphic_layouts: SeqHashMap<TypeDeclRef, Layout>,
 }
 
@@ -192,7 +192,7 @@ pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     pub binding_levels: BindingStack<BindingLevel<'tcx>>,
     /// When `Some`, translate any erased lifetime to a fresh `Region::Body` lifetime.
     pub lifetime_freshener: Option<IndexMap<RegionId, ()>>,
-    /// With `--monomorphic-layouts`, we instantiate all fields of reachable monomorphic types. However
+    /// With `--collect-instantiated-layouts`, we instantiate all fields of reachable monomorphic types. However
     /// we don't want to also translate these types' layouts, as it could cause cycles (like in
     /// `struct S<T>(Box<S<(T, T)>>)`). So when this flag is set, we stop recursing into monomorphic
     /// layouts, to avoid that.

@@ -1,4 +1,4 @@
-//@ charon-args=--print-layouts --monomorphic-layouts
+//@ charon-args=--print-layouts --collect-instantiated-layouts
 
 struct Wrap<T>(Option<T>);
 struct Grow<T>(T, *const Grow<(T, T)>);
@@ -11,4 +11,25 @@ fn opaque() -> impl Copy {
 }
 fn uses_opaque() {
     let _ = Some(opaque());
+}
+
+// rustc evaluates the constant before we see it, so `Option<&u64>` isn't recorded
+fn const_block() {
+    let _ = const { size_of::<Option<&u8>>() };
+}
+
+// here too, we won't reach `Option<&u8>`
+fn doc_example() {
+    fn foo<T>() -> usize {
+        size_of::<Option<T>>()
+    }
+    foo::<&u8>();
+}
+
+// instantiated layouts are useful here!
+fn check_equal<T>(size: usize) {
+    assert!(size == const { size_of::<T>() })
+}
+fn do_check() {
+    check_equal::<Option<&u64>>(const { size_of::<Option<&u64>>() })
 }

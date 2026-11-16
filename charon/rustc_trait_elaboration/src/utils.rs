@@ -40,6 +40,30 @@ pub fn param_env_from_clauses<'tcx>(
     normalize_param_env_or_error(tcx, param_env, ObligationCause::dummy())
 }
 
+/// Make the opaque types in `value` non-rigid, so that normalizing reveals them.
+fn unrigid_opaques<'tcx, T: TypeFoldable<TyCtxt<'tcx>>>(tcx: TyCtxt<'tcx>, value: T) -> T {
+    use rustc_middle::ty::TypeVisitableExt;
+    if !value.has_opaque_types() {
+        return value;
+    }
+
+    struct UnrigidOpaques<'tcx>(TyCtxt<'tcx>);
+    impl<'tcx> TypeFolder<TyCtxt<'tcx>> for UnrigidOpaques<'tcx> {
+        fn cx(&self) -> TyCtxt<'tcx> {
+            self.0
+        }
+        fn fold_ty(&mut self, ty: Ty<'tcx>) -> Ty<'tcx> {
+            match ty.kind() {
+                Alias(_, alias) if matches!(alias.kind, AliasTyKind::Opaque { .. }) => {
+                    Ty::new_alias(self.0, IsRigid::No, alias.fold_with(self))
+                }
+                _ => ty.super_fold_with(self),
+            }
+        }
+    }
+    value.fold_with(&mut UnrigidOpaques(tcx))
+}
+
 /// Normalize a value.
 pub fn normalize<'tcx, T>(
     tcx: TyCtxt<'tcx>,
@@ -59,6 +83,7 @@ where
         return value;
     }
     let fallback = value.clone();
+    let value = unrigid_opaques(tcx, value);
     let (infcx, param_env) = tcx.infer_ctxt().build_with_typing_env(typing_env);
     infcx
         .at(&ObligationCause::dummy(), param_env)
@@ -139,6 +164,7 @@ where
     T: TypeFoldable<TyCtxt<'tcx>> + Copy,
 {
     let fallback = x.skip_normalization();
+    let x = Unnormalized::new_wip(unrigid_opaques(tcx, fallback));
     erase_free_regions(
         tcx,
         tcx.try_normalize_erasing_regions(typing_env, x)

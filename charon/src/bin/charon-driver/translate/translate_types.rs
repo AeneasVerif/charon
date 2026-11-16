@@ -140,16 +140,17 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             let ty = self
                 .translate_ty_inner(span, hax_ty)
                 .unwrap_or_else(|e| TyKind::Error(e.msg).into_ty());
-            self.innermost_binder_mut()
-                .type_trans_cache
-                .insert(hax_ty.clone(), ty.clone());
+            self.innermost_binder_mut().type_trans_cache.insert(
+                hax_ty.clone(),
+                ty.clone().replace_erased_regions(|| Region::Erased),
+            );
             ty
         };
         if let Some(v) = &mut self.lifetime_freshener {
             // We might be reusing a value from cache: we must refresh the erased & body regions.
             ty = ty.replace_erased_regions(|| Region::Body(v.push(())));
         }
-        if self.options.monomorphic_layouts && !self.recording_mono_layouts {
+        if self.options.collect_instantiated_layouts && !self.recording_mono_layouts {
             // Avoid cycles from recursing into all mentioned types
             self.recording_mono_layouts = true;
             // Drop the lifetime freshener, so regions are erased and can be used as keys.
