@@ -717,29 +717,8 @@ impl<'a> ItemDeduplicator<'a> {
             }
         }
 
-        // Remap `TypeDecl::monomorphic_layouts` separately, as the keys may mention remapped IDs.
-        let monomorphic_layouts: Vec<_> = self
-            .krate
-            .type_decls
-            .iter_mut()
-            .map(|decl| (decl.def_id, mem::take(&mut decl.monomorphic_layouts)))
-            .collect();
-
         // Remap all ids.
-        let mut mapper = IdRefMapperVisitor::new(&remap);
-        self.krate.drive_mut(&mut mapper);
-
-        for (id, mut layouts) in monomorphic_layouts {
-            if let Some(decl) = self.krate.type_decls.get_mut(id) {
-                let _ = layouts.drive_mut(&mut mapper);
-                for (args, layouts) in layouts {
-                    decl.monomorphic_layouts
-                        .entry(args)
-                        .or_default()
-                        .extend(layouts.0);
-                }
-            }
-        }
+        self.krate.drive_mut(&mut IdRefMapperVisitor::new(&remap));
 
         for decl in facade_decls {
             self.krate

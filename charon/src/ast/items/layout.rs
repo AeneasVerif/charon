@@ -14,7 +14,7 @@ pub type ByteCount = u64;
 /// Does not include information about niches.
 /// If the type does not have a fully known layout (e.g. it is ?Sized)
 /// some of the layout parts are not available.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Layout {
     /// The size of the type in bytes.
@@ -62,7 +62,7 @@ impl std::ops::DerefMut for TargetLayouts {
 /// Simplified layout of a single variant.
 ///
 /// Maps fields to their offset within the layout.
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct VariantLayout {
     /// The offset of each field.
@@ -184,7 +184,7 @@ impl Layout {
 
 /// Decision tree used to determine the active variant by reading memory. Mirrors MiniRust's
 /// `Discriminator`.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(state_implements = DedupSerializerState)]
 pub enum Discriminator {
@@ -208,7 +208,7 @@ pub enum Discriminator {
 }
 
 /// An expression denoting a size in bytes.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Size {
     /// The size chosen by this rustc run. For sized types, this is a plain integer, and for unsized
@@ -220,7 +220,7 @@ pub struct Size {
 }
 
 /// An expression denoting an offset in bytes.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct OffsetExpr {
     /// The guarantees about this offset that can be relied on according to the Rust Reference.
@@ -515,7 +515,7 @@ pub enum AlignmentModifier {
     Pack(ByteCount),
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(stateless)]
 pub struct TargetInfo {

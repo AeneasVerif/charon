@@ -14,7 +14,7 @@ pub enum FieldPredecessor {
 }
 
 /// Guaranteed facts about a field offset.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[derive(EnumAsInner)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum OffsetGuarantee {
