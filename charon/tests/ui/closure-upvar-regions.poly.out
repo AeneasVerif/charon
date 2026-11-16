@@ -93,8 +93,8 @@ struct test_crate::captured_ref::{closure}<'_0, '_1> {
 // Full name: test_crate::captured_ref
 pub fn captured_ref<'a>(x: &'a u8) -> test_crate::captured_ref::{closure}<'a, 'a>
 {
-    let mut _0: test_crate::captured_ref::{closure}<'8, '9>; // return
-    let x: &'10 u8; // arg #1
+    let mut _0: test_crate::captured_ref::{closure}<'2, '3>; // return
+    let x: &'5 u8; // arg #1
 
     storage_live(_0)
     _0 = test_crate::captured_ref::{closure} { _0: copy x }
@@ -109,7 +109,7 @@ where
     Outlives1: ('_1: '_2),
 {
     let mut _0: &'1 u8; // return
-    let mut _1: &'10 test_crate::captured_ref::{closure}<'_0, '_1>; // arg #1
+    let mut _1: &'5 test_crate::captured_ref::{closure}<'_0, '_1>; // arg #1
     let mut tupled_args: (); // arg #2
 
     storage_live(_0)
@@ -130,9 +130,9 @@ struct test_crate::captured_closure::{closure#1}<'_0, '_1, '_2> {
 // Full name: test_crate::captured_closure
 pub fn captured_closure<'a>(x: &'a u8) -> test_crate::captured_closure::{closure#1}<'a, 'a, 'a>
 {
-    let mut _0: test_crate::captured_closure::{closure#1}<'16, '17, '18>; // return
-    let x: &'19 u8; // arg #1
-    let inner: test_crate::captured_closure::{closure}<'20, '21>; // local
+    let mut _0: test_crate::captured_closure::{closure#1}<'3, '4, '5>; // return
+    let x: &'7 u8; // arg #1
+    let inner: test_crate::captured_closure::{closure}<'10, '11>; // local
 
     storage_live(_0)
     storage_live(inner)
@@ -151,7 +151,7 @@ where
     Outlives1: ('_1: '_2),
 {
     let mut _0: &'1 u8; // return
-    let mut _1: &'10 test_crate::captured_closure::{closure}<'_0, '_1>; // arg #1
+    let mut _1: &'5 test_crate::captured_closure::{closure}<'_0, '_1>; // arg #1
     let mut tupled_args: (); // arg #2
 
     storage_live(_0)
@@ -169,10 +169,10 @@ where
     Outlives2: ('_2: '_3),
 {
     let mut _0: &'1 u8; // return
-    let mut _1: &'18 test_crate::captured_closure::{closure#1}<'_0, '_1, '_2>; // arg #1
+    let mut _1: &'6 test_crate::captured_closure::{closure#1}<'_0, '_1, '_2>; // arg #1
     let mut tupled_args: (); // arg #2
-    let _3: &'19 u8; // anonymous local
-    let mut _4: &'23 test_crate::captured_closure::{closure}<'24, '25>; // anonymous local
+    let _3: &'7 u8; // anonymous local
+    let mut _4: &'13 test_crate::captured_closure::{closure}<'14, '15>; // anonymous local
     let mut _5: (); // anonymous local
 
     storage_live(_0)
@@ -181,7 +181,7 @@ where
     _4 = &(*_1)._0
     storage_live(_5)
     _5 = ()
-    _3 = {impl Fn<()> for test_crate::captured_closure::{closure}<'_0, '_1>}::call<'42, '43, '61>(move _4, move _5)
+    _3 = {impl Fn<()> for test_crate::captured_closure::{closure}<'_0, '_1>}::call<'24, '25, '35>(move _4, move _5)
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)
         unwind_continue
@@ -242,16 +242,16 @@ struct test_crate::captured_generic_closure::{closure}<'_0, '_1> {
 // Full name: test_crate::captured_generic_closure
 pub fn captured_generic_closure<'a>(x: &'a u8) -> test_crate::captured_generic_closure::{closure}<'a, 'a>
 {
-    let mut _0: test_crate::captured_generic_closure::{closure}<'31, '32>; // return
-    let x: &'33 u8; // arg #1
-    let inner: test_crate::generic_closure::{closure}<&'34 u8>[{built_in impl Sized for &'34 u8}, {impl Copy for &'_0 T}<'34, u8>]; // local
-    let mut _3: &'40 u8; // anonymous local
+    let mut _0: test_crate::captured_generic_closure::{closure}<'2, '3>; // return
+    let x: &'5 u8; // arg #1
+    let inner: test_crate::generic_closure::{closure}<&'16 u8>[{built_in impl Sized for &'16 u8}, {impl Copy for &'_0 T}<'16, u8>]; // local
+    let mut _3: &'22 u8; // anonymous local
 
     storage_live(_0)
     storage_live(inner)
     storage_live(_3)
     _3 = copy x
-    inner = generic_closure<&'55 u8>[{built_in impl Sized for &'55 u8}, {impl Copy for &'_0 T}<'55, u8>](move _3)
+    inner = generic_closure<&'37 u8>[{built_in impl Sized for &'37 u8}, {impl Copy for &'_0 T}<'37, u8>](move _3)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_3)
@@ -269,10 +269,10 @@ where
     Outlives1: ('_1: '_2),
 {
     let mut _0: &'1 u8; // return
-    let mut _1: &'33 test_crate::captured_generic_closure::{closure}<'_0, '_1>; // arg #1
+    let mut _1: &'5 test_crate::captured_generic_closure::{closure}<'_0, '_1>; // arg #1
     let mut tupled_args: (); // arg #2
-    let _3: &'34 u8; // anonymous local
-    let mut _4: &'42 test_crate::generic_closure::{closure}<&'43 u8>[{built_in impl Sized for &'43 u8}, {impl Copy for &'_0 T}<'43, u8>]; // anonymous local
+    let _3: &'6 u8; // anonymous local
+    let mut _4: &'24 test_crate::generic_closure::{closure}<&'25 u8>[{built_in impl Sized for &'25 u8}, {impl Copy for &'_0 T}<'25, u8>]; // anonymous local
     let mut _5: (); // anonymous local
 
     storage_live(_0)
@@ -281,7 +281,7 @@ where
     _4 = &(*_1)._0
     storage_live(_5)
     _5 = ()
-    _3 = {impl Fn<()> for test_crate::generic_closure::{closure}<T>[TraitClause0, TraitClause1]}::call<'122, &'82 u8>[{built_in impl Sized for &'82 u8}, {impl Copy for &'_0 T}<'82, u8>](move _4, move _5)
+    _3 = {impl Fn<()> for test_crate::generic_closure::{closure}<T>[TraitClause0, TraitClause1]}::call<'104, &'64 u8>[{built_in impl Sized for &'64 u8}, {impl Copy for &'_0 T}<'64, u8>](move _4, move _5)
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)
         unwind_continue
@@ -351,8 +351,8 @@ struct test_crate::captured_fn_ptr_with_free_region::{closure}<'_0, '_1> {
 // Full name: test_crate::captured_fn_ptr_with_free_region
 pub fn captured_fn_ptr_with_free_region<'a>(f: fn<'b>(&'b u8) -> &'a u8) -> test_crate::captured_fn_ptr_with_free_region::{closure}<'a, 'a>
 {
-    let mut _0: test_crate::captured_fn_ptr_with_free_region::{closure}<'9, '10>; // return
-    let f: fn<'b>(&'b u8) -> &'11 u8; // arg #1
+    let mut _0: test_crate::captured_fn_ptr_with_free_region::{closure}<'2, '3>; // return
+    let f: fn<'b>(&'b u8) -> &'6 u8; // arg #1
 
     storage_live(_0)
     _0 = test_crate::captured_fn_ptr_with_free_region::{closure} { _0: copy f }
@@ -367,11 +367,11 @@ where
     Outlives1: ('_1: '_3),
 {
     let mut _0: &'1 u8; // return
-    let mut _1: &'12 test_crate::captured_fn_ptr_with_free_region::{closure}<'_0, '_1>; // arg #1
+    let mut _1: &'5 test_crate::captured_fn_ptr_with_free_region::{closure}<'_0, '_1>; // arg #1
     let mut tupled_args: (&'_2 u8,); // arg #2
-    let x: &'13 u8; // local
-    let mut _4: fn<'b>(&'b u8) -> &'14 u8; // anonymous local
-    let mut _5: &'15 u8; // anonymous local
+    let x: &'6 u8; // local
+    let mut _4: fn<'b>(&'b u8) -> &'9 u8; // anonymous local
+    let mut _5: &'10 u8; // anonymous local
 
     storage_live(_0)
     storage_live(x)
@@ -380,7 +380,7 @@ where
     _4 = copy (*_1)._0
     storage_live(_5)
     _5 = &(*x)
-    _0 = (move _4)<'38>(move _5)
+    _0 = (move _4)<'33>(move _5)
     ↳⚡ storage_dead(x)
         storage_dead(tupled_args)
         storage_dead(_1)
@@ -428,8 +428,8 @@ where
     TraitClause1: (T: WithItem),
     Outlives0: (TraitClause1::Item: 'a),
 {
-    let mut _0: test_crate::generic_assoc_closure::{closure}<'8, '9, T>[TraitClause0, TraitClause1]; // return
-    let x: &'10 TraitClause1::Item; // arg #1
+    let mut _0: test_crate::generic_assoc_closure::{closure}<'2, '3, T>[TraitClause0, TraitClause1]; // return
+    let x: &'5 TraitClause1::Item; // arg #1
 
     storage_live(_0)
     _0 = test_crate::generic_assoc_closure::{closure} { _0: copy x }
@@ -449,7 +449,7 @@ where
     Outlives4: (TraitClause1::Item: '_0),
 {
     let mut _0: &'1 TraitClause1::Item; // return
-    let mut _1: &'10 test_crate::generic_assoc_closure::{closure}<'_0, '_1, T>[TraitClause0, TraitClause1]; // arg #1
+    let mut _1: &'5 test_crate::generic_assoc_closure::{closure}<'_0, '_1, T>[TraitClause0, TraitClause1]; // arg #1
     let mut tupled_args: (); // arg #2
 
     storage_live(_0)
@@ -471,16 +471,16 @@ pub fn captured_assoc_closure<'a>(x: &'a u8) -> test_crate::captured_assoc_closu
 where
     Outlives0: (u8: 'a),
 {
-    let mut _0: test_crate::captured_assoc_closure::{closure}<'15, '16>; // return
-    let x: &'17 u8; // arg #1
-    let inner: test_crate::generic_assoc_closure::{closure}<'18, '19, ()>[{built_in impl Sized for ()}, impl_WithItem_for_unit]; // local
-    let mut _3: &'20 u8; // anonymous local
+    let mut _0: test_crate::captured_assoc_closure::{closure}<'2, '3>; // return
+    let x: &'5 u8; // arg #1
+    let inner: test_crate::generic_assoc_closure::{closure}<'8, '9, ()>[{built_in impl Sized for ()}, impl_WithItem_for_unit]; // local
+    let mut _3: &'10 u8; // anonymous local
 
     storage_live(_0)
     storage_live(inner)
     storage_live(_3)
     _3 = &(*x)
-    inner = generic_assoc_closure<'24, ()>[{built_in impl Sized for ()}, impl_WithItem_for_unit](move _3)
+    inner = generic_assoc_closure<'14, ()>[{built_in impl Sized for ()}, impl_WithItem_for_unit](move _3)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_3)
@@ -499,10 +499,10 @@ where
     Outlives2: ('_1: '_2),
 {
     let mut _0: &'1 u8; // return
-    let mut _1: &'17 test_crate::captured_assoc_closure::{closure}<'_0, '_1>; // arg #1
+    let mut _1: &'5 test_crate::captured_assoc_closure::{closure}<'_0, '_1>; // arg #1
     let mut tupled_args: (); // arg #2
-    let _3: &'18 u8; // anonymous local
-    let mut _4: &'22 test_crate::generic_assoc_closure::{closure}<'23, '24, ()>[{built_in impl Sized for ()}, impl_WithItem_for_unit]; // anonymous local
+    let _3: &'6 u8; // anonymous local
+    let mut _4: &'12 test_crate::generic_assoc_closure::{closure}<'13, '14, ()>[{built_in impl Sized for ()}, impl_WithItem_for_unit]; // anonymous local
     let mut _5: (); // anonymous local
 
     storage_live(_0)
@@ -511,7 +511,7 @@ where
     _4 = &(*_1)._0
     storage_live(_5)
     _5 = ()
-    _3 = {impl Fn<()> for test_crate::generic_assoc_closure::{closure}<'_0, '_1, T>[TraitClause0, TraitClause1]}::call<'41, '42, '60, ()>[{built_in impl Sized for ()}, impl_WithItem_for_unit](move _4, move _5)
+    _3 = {impl Fn<()> for test_crate::generic_assoc_closure::{closure}<'_0, '_1, T>[TraitClause0, TraitClause1]}::call<'23, '24, '34, ()>[{built_in impl Sized for ()}, impl_WithItem_for_unit](move _4, move _5)
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)
         unwind_continue
@@ -534,7 +534,7 @@ trait WithLifetimeItem<'a, Self>
     vtable: test_crate::WithLifetimeItem::{vtable}<'a, Self::Item>
 }
 
-struct test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>
+struct test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithLifetimeItem<'a>),
@@ -543,12 +543,12 @@ where
 }
 
 // Full name: test_crate::lifetime_assoc_closure
-fn lifetime_assoc_closure<'a, T>(x: TraitClause1::Item) -> test_crate::lifetime_assoc_closure::{closure}<'a, 'a, 'a, 'a, T>[TraitClause0, TraitClause1]
+fn lifetime_assoc_closure<'a, T>(x: TraitClause1::Item) -> test_crate::lifetime_assoc_closure::{closure}<'a, 'a, 'a, T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithLifetimeItem<'a>),
 {
-    let mut _0: test_crate::lifetime_assoc_closure::{closure}<'12, '13, '14, '15, T>[TraitClause0, TraitClause1]; // return
+    let mut _0: test_crate::lifetime_assoc_closure::{closure}<'4, '5, '6, T>[TraitClause0, TraitClause1]; // return
     let x: TraitClause1::Item; // arg #1
 
     storage_live(_0)
@@ -557,19 +557,18 @@ where
     return
 }
 
-// Full name: test_crate::lifetime_assoc_closure::{impl Fn<()> for test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>[TraitClause0, TraitClause1]}::call
-extern "rust-call" fn {impl Fn<()> for test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '_2, '_3, '_4, T>(_1: &'_4 test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>[TraitClause0, TraitClause1], tupled_args: ()) -> TraitClause1::Item
+// Full name: test_crate::lifetime_assoc_closure::{impl Fn<()> for test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '_2, '_3, T>(_1: &'_3 test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1], tupled_args: ()) -> TraitClause1::Item
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithLifetimeItem<'a>),
-    Outlives0: ('a: '_4),
-    Outlives1: ('_1: '_4),
-    Outlives2: ('_2: '_4),
-    Outlives3: ('_3: '_4),
-    Outlives4: (T: '_4),
+    Outlives0: ('a: '_3),
+    Outlives1: ('_1: '_3),
+    Outlives2: ('_2: '_3),
+    Outlives3: (T: '_3),
 {
     let mut _0: TraitClause1::Item; // return
-    let mut _1: &'15 test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>[TraitClause0, TraitClause1]; // arg #1
+    let mut _1: &'8 test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1
     let mut tupled_args: (); // arg #2
 
     storage_live(_0)
@@ -579,26 +578,26 @@ where
     return
 }
 
-struct test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, '_4, T>
+struct test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithLifetimeItem<'a>),
     TypeConstraint0: TraitClause1::Item = &'a (),
 {
-  _0: test_crate::lifetime_assoc_closure::{closure}<'_4, '_4, '_, '_, T>[TraitClause0, TraitClause1],
+  _0: test_crate::lifetime_assoc_closure::{closure}<'_3, '_, '_, T>[TraitClause0, TraitClause1],
 }
 
 // Full name: test_crate::captured_lifetime_assoc_closure
-pub fn captured_lifetime_assoc_closure<'a, T>(x: &'a ()) -> test_crate::captured_lifetime_assoc_closure::{closure}<'a, 'a, 'a, '_, 'a, T>[TraitClause0, TraitClause1]
+pub fn captured_lifetime_assoc_closure<'a, T>(x: &'a ()) -> test_crate::captured_lifetime_assoc_closure::{closure}<'a, 'a, '_, 'a, T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithLifetimeItem<'a>),
     TypeConstraint0: TraitClause1::Item = &'a (),
 {
-    let mut _0: test_crate::captured_lifetime_assoc_closure::{closure}<'38, '39, '40, '41, '42, T>[TraitClause0, TraitClause1]; // return
-    let x: &'45 (); // arg #1
-    let inner: test_crate::lifetime_assoc_closure::{closure}<'46, '47, '48, '49, T>[TraitClause0, TraitClause1]; // local
-    let mut _3: &'51 (); // anonymous local
+    let mut _0: test_crate::captured_lifetime_assoc_closure::{closure}<'5, '6, '7, '8, T>[TraitClause0, TraitClause1]; // return
+    let x: &'11 (); // arg #1
+    let inner: test_crate::lifetime_assoc_closure::{closure}<'16, '17, '18, T>[TraitClause0, TraitClause1]; // local
+    let mut _3: &'20 (); // anonymous local
 
     storage_live(_0)
     storage_live(inner)
@@ -615,23 +614,22 @@ where
     return
 }
 
-// Full name: test_crate::captured_lifetime_assoc_closure::{impl Fn<()> for test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, '_4, T>[TraitClause0, TraitClause1]}::call
-extern "rust-call" fn {impl Fn<()> for test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, '_4, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '_2, '_3, '_4, '_5, T>(_1: &'_5 test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, '_4, T>[TraitClause0, TraitClause1], tupled_args: ()) -> &'_2 ()
+// Full name: test_crate::captured_lifetime_assoc_closure::{impl Fn<()> for test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>[TraitClause0, TraitClause1]}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '_2, '_3, '_4, T>(_1: &'_4 test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>[TraitClause0, TraitClause1], tupled_args: ()) -> &'_1 ()
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: WithLifetimeItem<'a>),
-    Outlives0: ('a: '_5),
-    Outlives1: ('_1: '_5),
-    Outlives2: ('_2: '_5),
-    Outlives3: ('_3: '_5),
-    Outlives4: ('_4: '_5),
-    Outlives5: (T: '_5),
+    Outlives0: ('a: '_4),
+    Outlives1: ('_1: '_4),
+    Outlives2: ('_2: '_4),
+    Outlives3: ('_3: '_4),
+    Outlives4: (T: '_4),
     TypeConstraint0: TraitClause1::Item = &'a (),
 {
     let mut _0: &'1 (); // return
-    let mut _1: &'42 test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, '_4, T>[TraitClause0, TraitClause1]; // arg #1
+    let mut _1: &'9 test_crate::captured_lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>[TraitClause0, TraitClause1]; // arg #1
     let mut tupled_args: (); // arg #2
-    let mut _3: &'50 test_crate::lifetime_assoc_closure::{closure}<'51, '52, '53, '54, T>[TraitClause0, TraitClause1]; // anonymous local
+    let mut _3: &'20 test_crate::lifetime_assoc_closure::{closure}<'21, '22, '23, T>[TraitClause0, TraitClause1]; // anonymous local
     let mut _4: (); // anonymous local
 
     storage_live(_0)
@@ -639,7 +637,7 @@ where
     _3 = &(*_1)._0
     storage_live(_4)
     _4 = ()
-    _0 = {impl Fn<()> for test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, '_3, T>[TraitClause0, TraitClause1]}::call<'82, '82, '84, '85, '112, T>[TraitClause0, TraitClause1](move _3, move _4)
+    _0 = {impl Fn<()> for test_crate::lifetime_assoc_closure::{closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]}::call<'42, '43, '44, '63, T>[TraitClause0, TraitClause1](move _3, move _4)
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)
         unwind_continue

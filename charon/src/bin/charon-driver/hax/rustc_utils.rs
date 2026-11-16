@@ -357,7 +357,10 @@ where
 {
     match args {
         None => x.instantiate_identity().skip_normalization(),
-        Some(args) => normalize(tcx, typing_env, x.instantiate(tcx, args)),
+        Some(args) => {
+            let x = x.instantiate(tcx, args).skip_normalization();
+            normalize(tcx, typing_env, ty::set_aliases_to_non_rigid(tcx, x))
+        }
     }
 }
 
@@ -388,10 +391,13 @@ pub fn identity_args_with_inferred<'tcx>(
                 .type_of(def_id)
                 .instantiate_identity()
                 .skip_normalization();
-            match *type_of.kind() {
+            let args = match *type_of.kind() {
                 ty::Closure(_, args) | ty::Coroutine(_, args) => args,
                 _ => unreachable!(),
-            }
+            };
+            // `type_of` erases too much; use the parent args as a base.
+            let parent = tcx.generics_of(def_id).parent.unwrap();
+            args.rebase_onto(tcx, parent, ty::GenericArgs::identity_for_item(tcx, parent))
         }
         RDefKind::AnonConst
             if tcx.anon_const_kind(def_id) == ty::AnonConstKind::NonTypeSystemInline =>
@@ -439,6 +445,116 @@ where
         }
     });
     (val, extra_regions)
+}
+
+/// Takes two values that differ only in their regions, where `template` has placeholder regions
+/// used each once in the places that they differ. Returns a mapping from those placeholders to the
+/// corresponding regions in `actual`.
+pub fn match_region_args<'tcx, T: Relate<ty::TyCtxt<'tcx>>>(
+    tcx: ty::TyCtxt<'tcx>,
+    template: T,
+    actual: T,
+) -> Result<HashMap<ty::PlaceholderRegion<'tcx>, ty::Region<'tcx>>, ty::error::TypeError<'tcx>> {
+    struct RegionMapping<'tcx> {
+        tcx: ty::TyCtxt<'tcx>,
+        args: HashMap<ty::PlaceholderRegion<'tcx>, ty::Region<'tcx>>,
+        depth: u32,
+    }
+
+    impl<'tcx> TypeRelation<ty::TyCtxt<'tcx>> for RegionMapping<'tcx> {
+        fn cx(&self) -> ty::TyCtxt<'tcx> {
+            self.tcx
+        }
+
+        fn regions(
+            &mut self,
+            source: ty::Region<'tcx>,
+            target: ty::Region<'tcx>,
+        ) -> RelateResult<'tcx, ty::Region<'tcx>> {
+            if let ty::RePlaceholder(placeholder) = source.kind() {
+                let target =
+                    if let ty::ReBound(ty::BoundVarIndexKind::Bound(db), br) = target.kind() {
+                        if db.as_u32() < self.depth {
+                            return Err(ty::error::TypeError::RegionsPlaceholderMismatch);
+                        }
+                        ty::Region::new_bound(self.tcx, db.shifted_out(self.depth), br)
+                    } else {
+                        target
+                    };
+                let slot = self
+                    .args
+                    .entry(placeholder)
+                    .or_insert(self.tcx.lifetimes.re_erased);
+                if slot.is_erased() || *slot == target {
+                    *slot = target;
+                } else {
+                    return Err(ty::error::TypeError::RegionsPlaceholderMismatch);
+                }
+            }
+            Ok(source)
+        }
+
+        fn relate_with_variance<T: Relate<ty::TyCtxt<'tcx>>>(
+            &mut self,
+            _: ty::Variance,
+            _: ty::VarianceDiagInfo<ty::TyCtxt<'tcx>>,
+            a: T,
+            b: T,
+        ) -> RelateResult<'tcx, T> {
+            self.relate(a, b)
+        }
+
+        fn relate_ty_args(
+            &mut self,
+            a_ty: ty::Ty<'tcx>,
+            _: ty::Ty<'tcx>,
+            _: rustc_span::def_id::DefId,
+            a_args: ty::GenericArgsRef<'tcx>,
+            b_args: ty::GenericArgsRef<'tcx>,
+            _: impl FnOnce(ty::GenericArgsRef<'tcx>) -> ty::Ty<'tcx>,
+        ) -> RelateResult<'tcx, ty::Ty<'tcx>> {
+            self.relate(a_args, b_args)?;
+            Ok(a_ty)
+        }
+
+        fn tys(&mut self, a: ty::Ty<'tcx>, b: ty::Ty<'tcx>) -> RelateResult<'tcx, ty::Ty<'tcx>> {
+            structurally_relate_tys(self, a, b)
+        }
+
+        fn consts(
+            &mut self,
+            a: ty::Const<'tcx>,
+            b: ty::Const<'tcx>,
+        ) -> RelateResult<'tcx, ty::Const<'tcx>> {
+            structurally_relate_consts(self, a, b)
+        }
+
+        fn binders<T>(
+            &mut self,
+            a: ty::Binder<'tcx, T>,
+            b: ty::Binder<'tcx, T>,
+        ) -> RelateResult<'tcx, ty::Binder<'tcx, T>>
+        where
+            T: Relate<ty::TyCtxt<'tcx>>,
+        {
+            if a.bound_vars().len() != b.bound_vars().len() {
+                return Err(ty::error::TypeError::Mismatch);
+            }
+            self.depth += 1;
+            let result = self.relate(a.skip_binder(), b.skip_binder());
+            self.depth -= 1;
+            result?;
+            Ok(a)
+        }
+    }
+
+    let mut mapping = RegionMapping {
+        tcx,
+        args: HashMap::default(),
+        depth: 0,
+    };
+    mapping.relate(template, actual)?;
+    Ok(mapping.args)
 }
 
 #[extension_traits::extension(pub trait SubstBinder)]

@@ -1,0 +1,91 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+// Full name: test_crate::foo::{closure}
+struct {closure}<'_0, '_1, '_2> {
+  _0: &'_2 u8,
+}
+
+// Full name: test_crate::foo
+pub fn foo<'a>(x: &'a u8) -> {closure}<'a, 'static, 'a>
+{
+    let mut _0: {closure}<'3, '4, '5>; // return
+    let x: &'7 u8; // arg #1
+
+    storage_live(_0)
+    _0 = {closure} { _0: copy x }
+    return
+}
+
+// Full name: test_crate::foo::{closure}::{promoted_const}
+fn {promoted_const}<'_0, '_1, '_2>() -> &'_ u8
+{
+    let mut _0: &'0 u8; // return
+    let mut _1: u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = const 42u8
+    _0 = &_1
+    return
+}
+
+// Full name: test_crate::foo::{closure}::{promoted_const}
+const {promoted_const}<'_0, '_1, '_2>: &'_ u8 = {promoted_const}<'_0, '_1, '_2>()
+
+// Full name: test_crate::foo::{impl Fn<()> for {closure}<'_0, '_1, '_2>}::call
+extern "rust-call" fn call<'_0, '_1, '_2, '_3>(_1: &'_3 {closure}<'_0, '_1, '_2>, tupled_args: ()) -> (&'_0 u8, &'_1 u8)
+where
+    Outlives0: ('_0: '_3),
+    Outlives1: ('_1: '_3),
+    Outlives2: ('_2: '_3),
+{
+    let mut _0: (&'9 u8, &'10 u8); // return
+    let mut _1: &'18 {closure}<'_0, '_1, '_2>; // arg #1
+    let mut tupled_args: (); // arg #2
+    let mut _3: &'19 u8; // anonymous local
+    let mut _4: &'20 u8; // anonymous local
+    let _5: &'21 u8; // anonymous local
+    let mut _6: &'22 u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(_6)
+    storage_live(_3)
+    _3 = copy (*_1)._0
+    storage_live(_4)
+    storage_live(_5)
+    _6 = const {promoted_const}<'_0, '_1, '_2>
+    _5 = &(*_6)
+    _4 = &(*_5)
+    _0 = (move _3, move _4)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    return
+}
+
+
+

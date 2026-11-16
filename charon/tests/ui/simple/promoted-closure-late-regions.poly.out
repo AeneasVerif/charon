@@ -1,0 +1,119 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+struct (_,)<A> {
+  _0: A,
+}
+
+// Full name: test_crate::foo::{closure}
+struct {closure} {}
+
+// Full name: test_crate::foo
+pub fn foo() -> {closure}
+{
+    let mut _0: {closure}; // return
+
+    storage_live(_0)
+    _0 = {closure} {  }
+    return
+}
+
+// Full name: test_crate::foo::{closure}::{promoted_const}
+fn {promoted_const}() -> &'_ u8
+{
+    let mut _0: &'0 u8; // return
+    let mut _1: u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = const 42u8
+    _0 = &_1
+    return
+}
+
+// Full name: test_crate::foo::{closure}::{promoted_const}
+const {promoted_const}: &'_ u8 = {promoted_const}()
+
+// Full name: test_crate::foo::{impl Fn<(&'_0 u8,)> for {closure}}::call
+extern "rust-call" fn impl_Fn_tuple_for_closure::call<'_0, '_1>(_1: &'_1 {closure}, tupled_args: (&'_0 u8,)) -> (&'_0 u8, &'_0 u8)
+{
+    let mut _0: (&'9 u8, &'10 u8); // return
+    let mut _1: &'15 {closure}; // arg #1
+    let mut tupled_args: (&'_0 u8,); // arg #2
+    let x: &'16 u8; // local
+    let mut _4: &'17 u8; // anonymous local
+    let mut _5: &'18 u8; // anonymous local
+    let _6: &'19 u8; // anonymous local
+    let mut _7: &'20 u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(x)
+    storage_live(_7)
+    x = noretag move tupled_args._0
+    storage_live(_4)
+    _4 = copy x
+    storage_live(_5)
+    storage_live(_6)
+    _7 = const {promoted_const}
+    _6 = &(*_7)
+    _5 = &(*_6)
+    _0 = (move _4, move _5)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    return
+}
+
+pub fn test_crate::call<'_0>(x: &'_0 u8) -> (&'_0 u8, &'_0 u8)
+{
+    let mut _0: (&'9 u8, &'10 u8); // return
+    let x: &'14 u8; // arg #1
+    let mut _2: &'16 {closure}; // anonymous local
+    let _3: {closure}; // anonymous local
+    let mut _4: (&'18 u8,); // anonymous local
+    let mut _5: &'19 u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = foo()
+    ↳⚡ unwind_continue
+    _2 = &_3
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &(*x)
+    _4 = (move _5,)
+    _0 = impl_Fn_tuple_for_closure::call<'25, '32>(move _2, move _4)
+    ↳⚡ unwind_continue
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_2)
+    storage_dead(_3)
+    return
+}
+
+
+

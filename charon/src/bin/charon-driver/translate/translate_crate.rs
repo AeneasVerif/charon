@@ -214,6 +214,20 @@ impl TransItemSourceKind {
             TransItemSourceKind::TraitDecl | TransItemSourceKind::VTable
         )
     }
+
+    /// Whether the corresponding item binds the late-bound lifetimes of the closure, or just its
+    /// early-bound ones.
+    pub fn has_closure_late_params(&self) -> bool {
+        matches!(
+            self,
+            Self::TraitImpl(TransImplSource::Callable(..))
+                | Self::VTableInstance(TransImplSource::Callable(..))
+                | Self::VTableDropShim(TransImplSource::Callable(..))
+                | Self::CallableMethod(..)
+                | Self::VTableMethod(TransImplSource::Callable(..))
+                | Self::ClosureAsFnCast
+        )
+    }
 }
 
 impl<'tcx> RustcItem<'tcx> {
@@ -863,26 +877,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 | hax::DefKind::Ctor(..)
         ) {
             let def = self.hax_def(hax_item)?;
-            let sig = match def.kind() {
-                hax::FullDefKind::Fn(f) => Some(f.sig()),
-                hax::FullDefKind::FnPtr(f) => Some(f.sig()),
-                hax::FullDefKind::AssocFn(f) => Some(f.sig()),
-                hax::FullDefKind::Ctor(f) => Some(f.sig()),
-                hax::FullDefKind::Closure(c)
-                    if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))
-                    | TransItemSourceKind::VTableInstance(TransImplSource::Callable(..))
-                    | TransItemSourceKind::VTableDropShim(TransImplSource::Callable(..))
-                    | TransItemSourceKind::CallableMethod(..)
-                    | TransItemSourceKind::VTableMethod(TransImplSource::Callable(..))
-                    | TransItemSourceKind::ClosureAsFnCast = kind =>
-                {
-                    Some(c.sig())
-                }
-                _ => None,
-            };
-            if let Some(sig) = sig {
+            if let Some(param_env) = def.param_env()
+                && (!matches!(def.kind(), hax::FullDefKind::Closure(_))
+                    || kind.has_closure_late_params())
+            {
                 generics.regions.extend(
-                    sig.bound_vars
+                    param_env
+                        .late_bound
+                        .bound_vars
                         .iter()
                         .map(|_| self.translate_erased_region()),
                 );
@@ -1010,7 +1012,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         let trait_ref = self.translate_trait_proof(span, in_trait)?.erase();
         let generics = self.translate_generic_args(span, item)?;
-        self.translate_region_binder(span, &f.sig().as_ref().rebind(()), |ctx, _| {
+        self.translate_region_binder(span, &f.param_env().late_bound, |ctx, _| {
             let method_id = ctx.translate_trait_method_id(trait_ref.trait_id(), &item.def_id)?;
             let fn_kind = FnPtrKind::Trait(trait_ref.move_under_binder(), method_id);
             let generics = generics.move_under_binder();
@@ -1074,8 +1076,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             return Ok(fn_ptr);
         }
 
-        let late_bound = self.hax_def(item)?.late_bound();
-        self.translate_region_binder(span, &late_bound, |ctx, _| {
+        let def = self.hax_def(item)?;
+        // The late-bound lifetimes of closures are treated separately.
+        let late_bound = if let Some(param_env) = def.param_env()
+            && !matches!(def.kind(), hax::FullDefKind::Closure(_))
+        {
+            &param_env.late_bound
+        } else {
+            &hax::Binder::empty()
+        };
+        self.translate_region_binder(span, late_bound, |ctx, _| {
             ctx.translate_unbound_fn_ptr_maybe_enqueue(span, item, kind, enqueue)
         })
     }

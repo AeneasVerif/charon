@@ -257,7 +257,7 @@ impl<'tcx> ItemRef<'tcx> {
     }
 
     /// The parent of this item if the item inherits the typing context from its parent (e.g. closures and methods).
-    pub fn typing_parent<S: BaseState<'tcx>>(&self, s: &S) -> Option<ItemRef<'tcx>> {
+    pub fn typing_parent<S: UnderOwnerState<'tcx>>(&self, s: &S) -> Option<ItemRef<'tcx>> {
         match self.def_id.kind {
             DefKind::AssocTy
             | DefKind::AssocFn
@@ -268,7 +268,6 @@ impl<'tcx> ItemRef<'tcx> {
                 let tcx = s.base().tcx;
                 let parent = self.def_id.generics_of(s).parent?.sinto(s);
                 let parent_args = self.rustc_args(s).truncate_to(tcx, parent.generics_of(s));
-                let s = &s.with_hax_owner(&self.def_id);
                 Some(ItemRef::translate_from_hax_def_id(s, parent, parent_args))
             }
             DefKind::Ctor(..) | DefKind::Variant => {
@@ -278,6 +277,68 @@ impl<'tcx> ItemRef<'tcx> {
             }
             _ => None,
         }
+    }
+
+    /// Like [`Self::typing_parent`], but includes enclosing closures and inline consts that
+    /// rustc does not consider "parents" for the purposes of generic arguments. E.g. a closure has
+    /// three extra inference parameters, and a nested closure does not inherit them.
+    ///
+    /// Also returns
+    /// 1. the suffix of the arguments that was cut off, if any, and
+    /// 2. the corresponding suffix of this item's unerased + instantiated identity args.
+    ///
+    /// These two are almost always the same, except for typeck children: these have some erased
+    /// regions in their indentity args, which we will want to unify with the actual provided args
+    /// in order to recover their values. The unerased identity args contain placeholder regions at
+    /// these erased locations, corresponding to the `ParamEnv`'s `extra_early_regions`.
+    pub fn soft_typing_parent<S: UnderOwnerState<'tcx>>(
+        &self,
+        s: &S,
+    ) -> (
+        Option<ItemRef<'tcx>>,
+        ty::GenericArgsRef<'tcx>,
+        ty::GenericArgsRef<'tcx>,
+    ) {
+        let tcx = s.tcx();
+        let typing_parent = self.typing_parent(s);
+        let typing_parent_count = match &typing_parent {
+            Some(typing_parent) => typing_parent.rustc_args(s).len(),
+            None => 0,
+        };
+        let args = self.rustc_args(s);
+        let own_args = tcx.mk_args(&args[typing_parent_count..]);
+        let (identity_args, _) = self.def_id.identity_args_with_extra_regions(s);
+        let own_template = substitute(
+            tcx,
+            s.typing_env(),
+            Some(args),
+            tcx.mk_args(&identity_args[typing_parent_count..]),
+        );
+
+        let soft_parent = if self.def_id.is_typeck_child(s)
+            && let Some(typing_parent) = &typing_parent
+            && let Some(nesting_parent) = self.def_id.parent(s)
+            && nesting_parent != typing_parent.def_id
+        {
+            // We construct a reference to the nesting parent. This may have _more_ arguments (e.g.
+            // if we'r ea closure inside a closure). Thankfully these extra args can always be
+            // recovered (modulo erased lifetimes) from the (common) typing parent's arguments.
+            // We do so here, using our `DefId::identity_args`.
+            let parent_args = substitute(
+                s.tcx(),
+                s.typing_env(),
+                Some(typing_parent.rustc_args(s)),
+                nesting_parent.identity_args(s),
+            );
+            Some(ItemRef::translate_from_hax_def_id(
+                s,
+                nesting_parent,
+                parent_args,
+            ))
+        } else {
+            typing_parent
+        };
+        (soft_parent, own_args, own_template)
     }
 }
 

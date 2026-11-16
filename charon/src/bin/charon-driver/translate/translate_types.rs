@@ -1,8 +1,8 @@
 use itertools::Itertools;
+use rustc_hash::FxHashMap as HashMap;
 use rustc_middle::ty;
 use rustc_span::sym;
 use rustc_trait_elaboration::ItemId;
-use std::ops::ControlFlow;
 
 use super::translate_ctx::*;
 use crate::hax::{self, UnderOwnerState, Visibility};
@@ -262,7 +262,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::TyKind::Param(param) => {
                 // A type parameter, for example `T` in `fn f<T>(x : T) {}`.
                 match self.lookup_type_var(span, param) {
-                    Ok(ty) => ty.kind().clone(),
+                    Ok(var) => TyKind::TypeVar(var),
                     Err(err) => TyKind::Error(err.msg),
                 }
             }
@@ -484,11 +484,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// and represent closure upvars and signature, or inline const return type. Instead of these
     /// types, we add lifetime parameters. This method extracts the value of the lifetime
     /// parameters in question.
-    // FIXME: iterate through parents, e.g. a promoted const in a closure needs these args provided,
-    // see `promoted-in-closure-regions.rs`. This is made harder by mono; we could streamline the
-    // whole thing by storing mono args inside the param defs, just like for inferred variables.
-    // Indeed the handling of inferred variables is pretty much a partial monomorphization. Maybe
-    // this would help with mono+traits.
     pub(crate) fn recover_extra_early_regions(
         &mut self,
         span: Span,
@@ -498,120 +493,40 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let Some(param_env) = def.param_env() else {
             return Ok(vec![]);
         };
-        let num_regions = param_env.extra_early_regions.len();
-        if num_regions == 0 || self.options.monomorphize_with_hax {
-            return Ok((0..num_regions)
-                .map(|_| self.translate_erased_region())
-                .collect());
-        }
-        let actual = self.translate_raw_generic_args(span, &item.generic_args)?;
-
-        // We start from the original full args (with placeholder lifetimes), and
-        // instantiate+normalize them. This is crucial because the def may contain an associated
-        // type which has gotten normalized in `item`. Thankfully (I sure damn hope) going from
-        // erased to unerased lifetims can't make more normalization available, so this should
-        // guarantee that the types match structurally.
-        let template = hax::substitute(
-            self.tcx,
-            self.hax_state.typing_env(),
-            Some(item.rustc_args(self.hax_state())),
-            def.this().rustc_args(self.hax_state()),
-        );
-        let template: Vec<hax::GenericArg<'tcx>> = self.catch_sinto(span, &template)?;
-
-        // Translate the template arguments, with free regions instead of the placeholder ones.
-        let template = {
-            let template = self.inside_binder(BinderKind::Other, None, |this| {
-                let binder = this.innermost_binder_mut();
-                binder.is_hax_binder = false;
-                for region in &param_env.extra_early_regions {
-                    binder.push_unerased_region(region.clone());
-                }
-                this.translate_raw_generic_args(span, &template)
-            })?;
-            // Turn the regions we care about into `Free` regions.
-            let liberated_regions = template
-                .params
-                .regions
-                .map_ref_indexed(|id, _| Region::Var(DeBruijnVar::Free(id)));
-            template.apply(&GenericArgs::new_lifetimes(liberated_regions))
+        let (parent, actual, template) = item.soft_typing_parent(self.hax_state_with_id());
+        // Recover parent arguments, in the same order as `push_generics_for_def`.
+        let mut regions = if let Some(parent) = parent {
+            self.recover_extra_early_regions(span, &parent)?
+        } else {
+            Vec::new()
         };
-
-        struct RegionMapping {
-            args: charon_lib::ids::IndexVec<RegionId, Option<Region>>,
-            depth: DeBruijnId,
-        }
-        impl Visitor for RegionMapping {
-            type Break = ();
-        }
-        impl ZipAst for RegionMapping {
-            fn visit_region_param(&mut self, _: &RegionParam, _: &RegionParam) -> ControlFlow<()> {
-                ControlFlow::Continue(())
-            }
-
-            fn visit_region(&mut self, source: &Region, target: &Region) -> ControlFlow<()> {
-                if let (Region::Lub(source), Region::Lub(target)) = (source, target) {
-                    return self.visit(source, target);
-                }
-                if let Region::Var(DeBruijnVar::Free(id)) = *source
-                    && !matches!(target, Region::Erased | Region::Body(_))
-                {
-                    let Some(target) = target.clone().move_from_under_binders(self.depth) else {
-                        return ControlFlow::Break(());
-                    };
-                    let slot = &mut self.args[id];
-                    if slot.as_ref().is_none_or(|previous| *previous == target) {
-                        *slot = Some(target);
-                    } else {
-                        return ControlFlow::Break(());
-                    }
-                }
-                ControlFlow::Continue(())
-            }
-
-            fn visit_binder<T: AstVisitable>(
-                &mut self,
-                source: &Binder<T>,
-                target: &Binder<T>,
-            ) -> ControlFlow<()> {
-                self.depth = self.depth.incr();
-                let result = self.visit_inner(source, target);
-                self.depth = self.depth.decr();
-                result
-            }
-
-            fn visit_region_binder<T: AstVisitable>(
-                &mut self,
-                source: &RegionBinder<T>,
-                target: &RegionBinder<T>,
-            ) -> ControlFlow<()> {
-                self.depth = self.depth.incr();
-                let result = self.visit_inner(source, target);
-                self.depth = self.depth.decr();
-                result
-            }
-        }
-        let mut mapping = RegionMapping {
-            args: (0..num_regions).map(|_| None).collect(),
-            depth: DeBruijnId::zero(),
+        // See `soft_typing_parent` for details: `template` and `actual` should be the same
+        // arguments, except that `template` has placeholder regions corresponding to the items
+        // `extra_early_regions`, and actual has actual regions in the same locations. We zip the
+        // two to infer a mapping.
+        let mapping = hax::match_region_args(self.tcx, template, actual);
+        let mapping = match mapping {
+            Ok(mapping) => mapping,
+            Err(err) => raise_error!(
+                self,
+                span,
+                "Inferred arguments don't match their definition: {template:?} vs {actual:?}: {err:?}"
+            ),
         };
-        error_assert!(
-            self,
-            span,
-            ZipAst::visit(&mut mapping, &template, &actual).is_continue(),
-            "Inferred arguments don't match their definition: {:?} vs {:?}",
-            template,
-            actual
-        );
-        // Normalization may discard a parameter, for example through an associated type.
-        Ok(mapping
-            .args
+        let mapping: HashMap<hax::PlaceholderRegion, ty::Region<'tcx>> = mapping
             .into_iter()
-            .map(|r| match r {
-                Some(r) => r,
-                None => self.translate_erased_region(),
-            })
-            .collect())
+            .map(|(placeholder, region)| Ok((self.catch_sinto(span, &placeholder)?, region)))
+            .collect::<Result<_, Error>>()?;
+        for placeholder in &param_env.extra_early_regions {
+            // Normalization may discard a parameter, for example through an associated type.
+            let region = mapping
+                .get(placeholder)
+                .copied()
+                .unwrap_or(self.tcx.lifetimes.re_erased);
+            let region = self.catch_sinto(span, &region)?;
+            regions.push(self.translate_region(span, &region)?);
+        }
+        Ok(regions)
     }
 
     /// Whether Rust treats this type specially, i.e. whether it is a tuple, `str` or `Box`.

@@ -1,27 +1,10 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
-#[fundamental]
-#[lang_item(MetaSized)]
-pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[fundamental]
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
 struct () {}
 
-struct (_, _)<A, B>
-where
-    TraitClause0: (A: Sized),
-{
-  _0: A,
-  _1: B,
+struct (_, _)::<&'_ u8, &'_ u8> {
+  _0: &'_ u8,
+  _1: &'_ u8,
 }
 
 // Full name: test_crate::foo::{closure}
@@ -32,8 +15,8 @@ struct {closure}<'_0, '_1, '_2> {
 // Full name: test_crate::foo
 pub fn foo<'a>(x: &'a u8) -> {closure}<'a, 'static, 'a>
 {
-    let mut _0: {closure}<'25, '26, '27>; // return
-    let x: &'28 u8; // arg #1
+    let mut _0: {closure}<'3, '4, '5>; // return
+    let x: &'7 u8; // arg #1
 
     storage_live(_0)
     _0 = {closure} { _0: copy x }
@@ -57,19 +40,19 @@ fn {promoted_const}<'_0, '_1, '_2>() -> &'_ u8
 const {promoted_const}<'_0, '_1, '_2>: &'_ u8 = {promoted_const}<'_0, '_1, '_2>()
 
 // Full name: test_crate::foo::{impl Fn<()> for {closure}<'_0, '_1, '_2>}::call
-extern "rust-call" fn call<'_0, '_1, '_2, '_3>(_1: &'_3 {closure}<'_0, '_1, '_2>, tupled_args: ()) -> (&'_0 u8, &'_1 u8)
+extern "rust-call" fn call<'_0, '_1, '_2, '_3>(_1: &'_3 {closure}<'_0, '_1, '_2>, tupled_args: ()) -> (&'_ u8, &'_ u8)
 where
     Outlives0: ('_0: '_3),
     Outlives1: ('_1: '_3),
     Outlives2: ('_2: '_3),
 {
-    let mut _0: (&'9 u8, &'10 u8); // return
-    let mut _1: &'39 {closure}<'_0, '_1, '_2>; // arg #1
+    let mut _0: (&'_ u8, &'_ u8); // return
+    let mut _1: &'4 {closure}<'_0, '_1, '_2>; // arg #1
     let mut tupled_args: (); // arg #2
-    let mut _3: &'40 u8; // anonymous local
-    let mut _4: &'41 u8; // anonymous local
-    let _5: &'42 u8; // anonymous local
-    let mut _6: &'43 u8; // anonymous local
+    let mut _3: &'6 u8; // anonymous local
+    let mut _4: &'7 u8; // anonymous local
+    let _5: &'8 u8; // anonymous local
+    let mut _6: &'9 u8; // anonymous local
 
     storage_live(_0)
     storage_live(_6)
@@ -77,7 +60,7 @@ where
     _3 = copy (*_1)._0
     storage_live(_4)
     storage_live(_5)
-    _6 = const {promoted_const}
+    _6 = const {promoted_const}<'_0, '_1, '_2>
     _5 = &(*_6)
     _4 = &(*_5)
     _0 = (move _3, move _4)

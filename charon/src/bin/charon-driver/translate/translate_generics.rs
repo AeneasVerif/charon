@@ -24,15 +24,15 @@ use charon_lib::utils::CycleDetector;
 /// this level, and various maps from the rustc-internal indices to our indices.
 #[derive(Debug, Default)]
 pub(crate) struct BindingLevel<'tcx> {
-    /// Whether this binding level exists in Hax's De Bruijn indices. `dyn Trait` introduces an
-    /// existential binder in Charon that has no corresponding binder in rustc/Hax.
-    pub is_hax_binder: bool,
     /// The definition whose generics this binding level contains, if this is an item binder.
     pub def_id: Option<hax::DefId>,
     /// Dummy rustc `DefId` that we use to `liberate_bound_regions` for our synthetic fn pointer items.
     pub late_bound_scope_alias: Option<RDefId>,
     /// The parameters and predicates bound at this level.
     pub params: GenericParams,
+    /// Whether this binding level exists in Hax's De Bruijn indices. `dyn Trait` introduces an
+    /// existential binder in Charon that has no corresponding binder in rustc/Hax.
+    pub counts_for_de_bruijn: bool,
     /// Rust makes the distinction between early and late-bound region parameters. We do not make
     /// this distinction, and merge early and late bound regions. For details, see:
     /// <https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/>
@@ -51,9 +51,9 @@ pub(crate) struct BindingLevel<'tcx> {
     pub closure_call_method_region: Option<RegionId>,
     /// Region added for the borrow accepted by a drop glue method or vtable drop shim.
     pub drop_glue_region: Option<RegionId>,
-    /// The map from rust type variable indices to the value they take in this scope. Ordinary
-    /// parameters map to type variables; inference-only parameters map to their known types.
-    pub type_vars_map: HashMap<u32, Ty>,
+    /// The map from rust type variable indices to translated type variable indices. `None` marks
+    /// inference-only parameters, which hax should normally never give us.
+    pub type_vars_map: HashMap<u32, Option<TypeVarId>>,
     /// The map from rust const generic variables to translated const generic variable indices.
     pub const_generic_vars_map: HashMap<u32, ConstGenericVarId>,
     /// The map from trait predicates to the translated trait clause indices, and the number of
@@ -88,14 +88,14 @@ impl<'tcx> BindingLevel<'tcx> {
     pub(crate) fn new(def_id: Option<hax::DefId>) -> Self {
         Self {
             def_id,
-            is_hax_binder: true,
+            counts_for_de_bruijn: true,
             ..Default::default()
         }
     }
 
     pub(crate) fn new_dyn() -> Self {
         let mut level = Self::new(None);
-        level.is_hax_binder = false;
+        level.counts_for_de_bruijn = false;
         level
     }
 
@@ -192,10 +192,7 @@ impl<'tcx> BindingLevel<'tcx> {
             name,
             variance,
         });
-        self.type_vars_map.insert(
-            rid,
-            TyKind::TypeVar(DeBruijnVar::new_at_zero(var_id)).into_ty(),
-        );
+        self.type_vars_map.insert(rid, Some(var_id));
         var_id
     }
 
@@ -212,17 +209,20 @@ impl<'tcx> BindingLevel<'tcx> {
     }
 
     /// Translate a binder of regions by appending the stored reguions to the given vector.
-    pub(crate) fn push_params_from_binder(&mut self, binder: hax::Binder<()>) -> Result<(), Error> {
+    pub(crate) fn push_params_from_binder(
+        &mut self,
+        binder: &hax::Binder<()>,
+    ) -> Result<(), Error> {
         assert!(
             self.bound_region_vars.is_empty(),
             "Trying to use two binders at the same binding level"
         );
         use crate::hax::BoundVariableKind::*;
-        for p in binder.bound_vars {
+        for p in &binder.bound_vars {
             match p {
                 Region(region, variance) => {
                     let variance = translate_variance(variance.as_ref());
-                    self.push_bound_region(region, variance);
+                    self.push_bound_region(region.clone(), variance);
                 }
                 Ty(_) => {
                     panic!("Unexpected locally bound type variable");
@@ -285,7 +285,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         if let Some((charon_dbid, level)) = self
             .binding_levels
             .iter_enumerated()
-            .filter(|(_, l)| l.is_hax_binder)
+            .filter(|(_, l)| l.counts_for_de_bruijn)
             .nth(hax_dbid)
             && let Some(rid) = level.bound_region_vars.get(var)
         {
@@ -380,12 +380,25 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         param: &hax::ParamTy,
-    ) -> Result<Ty, Error> {
-        self.lookup_param(
+    ) -> Result<TypeDbVar, Error> {
+        let var = self.lookup_param(
             span,
-            |bl| bl.type_vars_map.get(&param.index).cloned(),
+            |bl| {
+                let var = *bl.type_vars_map.get(&param.index)?;
+                Some(var.map(DeBruijnVar::new_at_zero))
+            },
             || format!("the type variable {}", param.name),
-        )
+        )?;
+        if let Some(var) = var {
+            Ok(var)
+        } else {
+            raise_error!(
+                self,
+                span,
+                "Inference parameter {param:?} should have been replaced \
+                with its known type before translation"
+            );
+        }
     }
 
     pub(crate) fn lookup_const_generic_var(
@@ -457,16 +470,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 );
             }
             hax::GenericParamDefKind::Type {
-                inference_value: Some(ty),
+                inference_value: Some(_),
                 ..
             } => {
-                // Inference-only type parameter, as used in closures and inline consts. We record
-                // their known value in case a nested item references the parameter.
-                let span = self.def_span(&param.def_id);
-                let ty = self.translate_ty(span, ty)?;
+                // Inference-only type parameter, as used in closures and inline consts. We make
+                // sure to get rid of them in hax, and error if found in Charon.
                 self.innermost_binder_mut()
                     .type_vars_map
-                    .insert(param.index, ty);
+                    .insert(param.index, None);
             }
             hax::GenericParamDefKind::Type {
                 inference_value: None,
@@ -489,30 +500,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Ok(())
     }
 
-    // The parameters (and in particular the lifetimes) are split between
-    // early bound and late bound parameters. See those blog posts for explanations:
-    // https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
-    // https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
-    // Note that only lifetimes can be late bound at the moment.
-    //
-    // [TyCtxt.generics_of] gives us the early-bound parameters. We add the late-bound parameters
-    // here.
-    fn push_late_bound_generics_for_def(
-        &mut self,
-        _span: Span,
-        def: &hax::FullDef<'tcx>,
-    ) -> Result<(), Error> {
-        let sig = match def.kind() {
-            hax::FullDefKind::Fn(f) => Some(f.sig()),
-            hax::FullDefKind::FnPtr(f) => Some(f.sig()),
-            hax::FullDefKind::AssocFn(f) => Some(f.sig()),
-            hax::FullDefKind::Ctor(f) => Some(f.sig()),
-            _ => None,
-        };
-        if let Some(sig) = sig {
-            let innermost_binder = self.innermost_binder_mut();
-            assert!(innermost_binder.bound_region_vars.is_empty());
-            innermost_binder.push_params_from_binder(sig.rebind(()))?;
+    /// Push the item's late-bound parameters in the current binding level.
+    fn push_late_bound_generics_for_def(&mut self, def: &hax::FullDef<'tcx>) -> Result<(), Error> {
+        if let Some(param_env) = def.param_env() {
+            self.innermost_binder_mut()
+                .push_params_from_binder(&param_env.late_bound)?;
         }
         if let hax::FullDefKind::FnPtr(f) = def.kind() {
             self.innermost_binder_mut().late_bound_scope_alias = Some(f.late_bound_scope());
@@ -524,11 +516,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     #[tracing::instrument(skip(self, span, def))]
     fn push_generics_for_def(&mut self, span: Span, def: &hax::FullDef<'tcx>) -> Result<(), Error> {
         trace!("{:?}", def.param_env());
-        // Add generics from the parent item, recursively (recursivity is important for closures,
-        // as they can be nested). Instantiated defs have no generics, so we can skip it.
-        let def_is_instantiated = self.monomorphize() && !self.item_src.kind.is_for_trait();
-        if !def_is_instantiated && let Some(parent_item) = def.typing_parent(self.hax_state()) {
-            let parent_def = self.hax_def(&parent_item)?;
+        // Add generics from the parent item, recursively.
+        if let Some(param_env) = def.param_env()
+            && let Some(parent_item) = &param_env.soft_parent
+        {
+            let parent_def = self.hax_def(parent_item)?;
             self.push_generics_for_def(span, &parent_def)?;
         }
         self.push_generics_for_def_without_parents(span, def)?;
@@ -553,12 +545,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn predicate_origin_for_def(def: &hax::FullDef<'tcx>) -> PredicateOrigin {
         use crate::hax::FullDefKind;
         match &def.kind {
-            FullDefKind::Adt(_) | FullDefKind::TyAlias(_) | FullDefKind::AssocTy(_) => {
-                PredicateOrigin::WhereClauseOnType
-            }
+            FullDefKind::Adt(_)
+            | FullDefKind::Variant(_)
+            | FullDefKind::TyAlias(_)
+            | FullDefKind::AssocTy(_) => PredicateOrigin::WhereClauseOnType,
             FullDefKind::Fn(_)
             | FullDefKind::FnPtr(_)
             | FullDefKind::AssocFn(_)
+            | FullDefKind::Ctor(_)
             | FullDefKind::Closure(_)
             | FullDefKind::Const(_)
             | FullDefKind::AssocConst(_)
@@ -604,20 +598,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.binding_levels
             .push(BindingLevel::new(Some(def.def_id().clone())));
         self.push_generics_for_def(span, def)?;
-        self.push_late_bound_generics_for_def(span, def)?;
-
-        if let hax::FullDefKind::Closure(c) = def.kind() {
-            // Add the lifetime generics coming from the higher-kindedness of the signature.
-            if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))
-            | TransItemSourceKind::VTableInstance(TransImplSource::Callable(..))
-            | TransItemSourceKind::VTableDropShim(TransImplSource::Callable(..))
-            | TransItemSourceKind::CallableMethod(..)
-            | TransItemSourceKind::VTableMethod(TransImplSource::Callable(..))
-            | TransItemSourceKind::ClosureAsFnCast = kind
-            {
-                self.the_only_binder_mut()
-                    .push_params_from_binder(c.sig().rebind(()))?;
-            }
+        // Add the lifetime generics coming from the higher-kindedness of the signature. For
+        // closures, late-bound variables are only bound on the impl, not the state struct.
+        if !matches!(def.kind(), hax::FullDefKind::Closure(_)) || kind.has_closure_late_params() {
+            self.push_late_bound_generics_for_def(def)?;
         }
 
         if let hax::FullDefKind::Fn(_)
@@ -692,7 +676,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let outer_hax_state = mem::replace(&mut self.hax_state, inner_hax_state);
         let ret = self.inside_binder(kind, Some(def.def_id().clone()), |this| {
             this.push_generics_for_def_without_parents(span, def)?;
-            this.push_late_bound_generics_for_def(span, def)?;
+            this.push_late_bound_generics_for_def(def)?;
             this.innermost_binder().params.check_consistency();
             f(this)
         });
@@ -718,7 +702,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let ret = self.inside_binder(kind, Some(binder.def_id.clone()), |this| {
             this.push_param_env_without_parents(&binder.param_env, predicate_origin)?;
             this.innermost_binder_mut()
-                .push_params_from_binder(binder.late_bound.clone())?;
+                .push_params_from_binder(&binder.param_env.late_bound)?;
             this.innermost_binder().params.check_consistency();
             f(this, &binder.skip_binder)
         });
@@ -740,7 +724,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     {
         let binder = self.inside_binder(BinderKind::Other, None, |this| {
             this.innermost_binder_mut()
-                .push_params_from_binder(binder.rebind(()))?;
+                .push_params_from_binder(&binder.rebind(()))?;
             f(this, binder.hax_skip_binder_ref())
         })?;
         // Convert to a region-only binder.

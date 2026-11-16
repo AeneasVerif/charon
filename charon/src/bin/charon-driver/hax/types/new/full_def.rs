@@ -50,14 +50,9 @@ where
     let this = if def_id.can_have_generics(s) {
         // Construct the args for this item, unerasing lifetimes found erased (see
         // `ParamEnv.extra_early_regions`).
-        let args_or_default = {
-            let mut identity_args = def_id.identity_args(s);
-            if def_id.is_typeck_child(s) {
-                let name = rustc_span::Symbol::intern(&format!("__unerased_region_{def_id:?}"));
-                (identity_args, extra_early_regions) = unerase_lifetimes(s, identity_args, name);
-            }
-            substitute(tcx, s.typing_env(), args, identity_args)
-        };
+        let (identity_args, regions) = def_id.identity_args_with_extra_regions(s);
+        extra_early_regions = regions;
+        let args_or_default = substitute(tcx, s.typing_env(), args, identity_args);
         ItemRef::translate_from_hax_def_id(s, def_id.clone(), args_or_default)
     } else {
         ItemRef::dummy_without_generics(s, def_id.clone())
@@ -66,9 +61,10 @@ where
     let source_span;
     let lang_item;
     let diagnostic_item;
-    let mut kind;
+    let kind;
     match def_id.base {
         DefIdBase::Synthetic(item) => {
+            let param_env = get_param_env(s, args, this.typing_parent(s));
             match item {
                 SyntheticItem::Array
                 | SyntheticItem::Slice
@@ -84,7 +80,7 @@ where
                     kind = FullDefKind::Adt(Adt {
                         def_id: def_id.clone(),
                         self_ty: inst_binder(tcx, s.typing_env(), args, def_id.type_of(s)),
-                        param_env: get_param_env(s, args),
+                        param_env,
                         adt_kind,
                         variants: [].into_iter().collect(),
                         repr: ReprOptions {
@@ -104,12 +100,16 @@ where
                     };
                     let sig = sig_tys.with(*header);
                     let late_bound_scope = item.late_bound_scope(s);
+                    let hax_sig: PolyFnSig<'tcx> = sig.sinto(s);
                     kind = FullDefKind::FnPtr(FnPointer {
                         def_id: def_id.clone(),
                         self_ty,
                         rustc_sig: sig,
-                        param_env: get_param_env(s, args),
-                        sig: sig.sinto(s),
+                        param_env: ParamEnv {
+                            late_bound: hax_sig.rebind(()),
+                            ..param_env
+                        },
+                        sig: hax_sig,
                         late_bound_scope,
                         fn_trait_impls: OnceCell::new(),
                     });
@@ -121,9 +121,7 @@ where
             diagnostic_item = Default::default();
         }
         DefIdBase::Promoted(rust_def_id, promoted_id) => {
-            let parent_def_id = rust_def_id.sinto(s);
-            let parent_def = parent_def_id.full_def_maybe_instantiated(s, args);
-            let param_env = ParamEnv::empty(s, Some(parent_def.this()));
+            let param_env = ParamEnv::empty(s, this.typing_parent(s).as_ref());
             let (span, ty) =
                 rustc_const_uneval::promoted_body(tcx, rust_def_id, promoted_id, |body| {
                     (
@@ -143,7 +141,31 @@ where
             diagnostic_item = Default::default();
         }
         DefIdBase::Real(rust_def_id) => {
-            kind = translate_full_def_kind(s, &this, args);
+            let mut param_env = if def_id.can_have_generics(s) {
+                get_param_env(s, args, this.typing_parent(s))
+            } else {
+                ParamEnv::empty(s, None)
+            };
+            let (soft_parent, _, _) = this.soft_typing_parent(s);
+            param_env.soft_parent = soft_parent;
+            if def_id.is_typeck_child(s) {
+                // Record the value of the inference-only type vars.
+                let identity_args = this.rustc_args(s);
+                for param in &mut param_env.generics.params {
+                    let GenericParamDefKind::Type {
+                        inference_value, ..
+                    } = &mut param.kind
+                    else {
+                        unreachable!("typeck_child inference parameters must be types")
+                    };
+                    *inference_value =
+                        Some(identity_args[param.index as usize].expect_ty().sinto(s));
+                }
+                // Record the extra early regions added into these vars.
+                param_env.extra_early_regions = extra_early_regions.sinto(s);
+            }
+
+            kind = translate_full_def_kind(s, &this, args, param_env);
 
             source_span = rust_def_id.as_local().map(|ldid| tcx.source_span(ldid));
             lang_item = s
@@ -173,25 +195,6 @@ where
         DefIdBase::ImplAssocItem(_) => {
             panic!("virtual trait impl associated items do not have `FullDef`s")
         }
-    }
-
-    if let FullDefKind::Closure(Closure { param_env, .. })
-    | FullDefKind::Const(Const { param_env, .. }) = &mut kind
-        && def_id.is_typeck_child(s)
-    {
-        // Record the value of the inference-only type vars.
-        let identity_args = this.rustc_args(s);
-        for param in &mut param_env.generics.params {
-            let GenericParamDefKind::Type {
-                inference_value, ..
-            } = &mut param.kind
-            else {
-                unreachable!("typeck_child inference parameters must be types")
-            };
-            *inference_value = Some(identity_args[param.index as usize].expect_ty().sinto(s));
-        }
-        // Record the extra early regions added into these vars.
-        param_env.extra_early_regions = extra_early_regions.sinto(s);
     }
 
     let attributes = def_id.attrs(tcx).to_vec();
@@ -278,10 +281,34 @@ impl<'tcx> ItemRef<'tcx> {
 }
 
 /// The combination of type generics and related predicates.
+///
+/// Hax serves as a bridge between rustc's handling of generics and a more consistent scheme.
+/// `ParamEnv` lists all the kinds of variables that may be mentioned in this item's scope: its
+/// normal generics, its late bound lifetimes if any, and extra lifetimes that come from the fact
+/// that we partially instantiate some definitions to hide type parameters that rustc only uses for
+/// inference (namely, closures and inline consts get special inference-only parameters; we retain
+/// their inferred value, and the lifetimes mentioned therein become the `extra_early_regions`
+/// parameters).
 #[derive(Debug, Clone)]
 pub struct ParamEnv<'tcx> {
-    /// Generic parameters of the item.
+    /// "True" generic parameters of the item, matching what rustc uses i.e. `TyCtxt::generics_of`.
+    ///
+    /// This does not include parameters of its parent; any `GenericArgs` for this item will start
+    /// with a prefix that apply to the parents, and a suffix that corresponds to this `TyGenerics`
+    /// list.
     pub generics: TyGenerics<'tcx>,
+    /// The item's late-bound parameters: when the item denotes a `for<'a> fn(...)` higher-ranked
+    /// function, these are the parameters bound in that higher-ranked binder. We treat them as
+    /// normal parameters to unify parameter handling; for example a nested closure can name a
+    /// late-bound param of its parent function, so pretending they only show up in the signature
+    /// doesn't work.
+    ///
+    /// See those blog posts for more explanations on the difference:
+    /// - https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
+    /// - https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
+    ///
+    /// Note that only lifetimes can be late bound at the moment.
+    pub late_bound: Binder<()>,
     /// Extra early regions that we add to replace regions that rustc normally erases. We represent
     /// them with placeholders so the types that mention them can still flow through rustc APIs.
     pub extra_early_regions: Vec<PlaceholderRegion>,
@@ -289,6 +316,10 @@ pub struct ParamEnv<'tcx> {
     pub predicates: GenericPredicates<'tcx>,
     /// A reference to the parent of this item, with appropriate args.
     pub parent: Option<ItemRef<'tcx>>,
+    /// Like `parent`, but also includes enclosing closures and inline consts, which don't count
+    /// for rustc's argument lists but do count for e.g. late bound variables. See also
+    /// [`ItemRef::soft_typing_parent`].
+    pub soft_parent: Option<ItemRef<'tcx>>,
 }
 
 impl<'tcx> ParamEnv<'tcx> {
@@ -316,8 +347,10 @@ impl<'tcx> ParamEnv<'tcx> {
                 params: vec![],
             },
             predicates: GenericPredicates { predicates: vec![] },
+            late_bound: Binder::empty(),
             extra_early_regions: vec![],
             parent: parent.cloned(),
+            soft_parent: parent.cloned(),
         }
     }
 }
@@ -407,7 +440,7 @@ pub enum FullDefKind<'tcx> {
 
     // ADT parts
     /// Refers to the variant definition, [`DefKind::Ctor`] refers to its constructor if it exists.
-    Variant,
+    Variant(ParamEnv<'tcx>),
     /// The constructor function of a tuple/unit struct or tuple/unit enum variant.
     Ctor(Ctor<'tcx>),
     /// A field in a struct, enum or union. e.g.
@@ -697,13 +730,13 @@ impl<'tcx> TraitImpl<'tcx> {
                     let param_env = {
                         // Pass `None` to get the generics, but add the known parent.
                         // FIXME: maybe a custom enum instead of `Option<Args>`.
-                        let mut param_env = get_param_env(s, None);
+                        let mut param_env = get_param_env(s, None, Some(this.clone()));
                         param_env.generics.parent = Some(this.def_id.clone());
-                        param_env.parent = Some(this.clone());
+                        param_env.late_bound =
+                            late_bound_for_def(s, impl_assoc.def_id, Some(item_impl_args));
                         param_env
                     };
                     let item = ItemRef::translate(s, impl_assoc.def_id, item_impl_args);
-                    let late_bound = late_bound_for_def(s, impl_assoc.def_id, Some(item_impl_args));
                     let value = ImplAssocItemValue {
                         item,
                         assoc_ty_value,
@@ -712,7 +745,6 @@ impl<'tcx> TraitImpl<'tcx> {
                     TraitItemBinder {
                         def_id: virtual_item_def_id,
                         param_env,
-                        late_bound,
                         skip_binder: value,
                     }
                 });
@@ -1138,6 +1170,7 @@ impl ForeignMod {
 #[derive(Debug, Clone)]
 pub struct Ctor<'tcx> {
     def_id: DefId,
+    param_env: ParamEnv<'tcx>,
     args: ty::GenericArgsRef<'tcx>,
     /// The signature, instantiated with `args`.
     rustc_sig: ty::PolyFnSig<'tcx>,
@@ -1152,6 +1185,9 @@ pub struct Ctor<'tcx> {
 }
 
 impl<'tcx> Ctor<'tcx> {
+    pub fn param_env(&self) -> &ParamEnv<'tcx> {
+        &self.param_env
+    }
     pub fn adt_def_id(&self) -> &DefId {
         &self.adt_def_id
     }
@@ -1304,6 +1340,7 @@ fn translate_full_def_kind<'tcx, S>(
     s: &S,
     this: &ItemRef<'tcx>,
     args: Option<ty::GenericArgsRef<'tcx>>,
+    param_env: ParamEnv<'tcx>,
 ) -> FullDefKind<'tcx>
 where
     S: BaseState<'tcx>,
@@ -1342,7 +1379,7 @@ where
             FullDefKind::Adt(Adt {
                 def_id: hax_def_id.clone(),
                 self_ty: type_of_self(),
-                param_env: get_param_env(s, args),
+                param_env,
                 adt_kind: def.adt_kind().sinto(s),
                 variants,
                 repr: def.repr().sinto(s),
@@ -1350,14 +1387,14 @@ where
             })
         }
         RDefKind::TyAlias { .. } => FullDefKind::TyAlias(TyAlias {
-            param_env: get_param_env(s, args),
+            param_env,
             ty: type_of_self().sinto(s),
         }),
         RDefKind::ForeignTy => FullDefKind::ForeignTy,
         RDefKind::AssocTy { .. } => FullDefKind::AssocTy(AssocTy {
             def_id: hax_def_id.clone(),
             args,
-            param_env: get_param_env(s, args),
+            param_env,
             implied_predicates: get_implied_predicates(s, args),
             associated_item: AssocItem::sfrom_instantiated(s, &tcx.associated_item(def_id), args),
         }),
@@ -1366,7 +1403,7 @@ where
             def_id: hax_def_id.clone(),
             args,
             is_unsafe: tcx.trait_is_unsafe(def_id),
-            param_env: get_param_env(s, args),
+            param_env,
             implied_predicates: get_implied_predicates(s, args),
             self_predicate: get_self_predicate(s, args),
             dyn_self: get_trait_decl_dyn_self_ty(s, args).sinto(s),
@@ -1374,13 +1411,12 @@ where
             items: OnceCell::new(),
         }),
         RDefKind::TraitAlias { .. } => FullDefKind::TraitAlias(TraitAlias {
-            param_env: get_param_env(s, args),
+            param_env,
             implied_predicates: get_implied_predicates(s, args),
             self_predicate: get_self_predicate(s, args),
             dyn_self: get_trait_decl_dyn_self_ty(s, args).sinto(s),
         }),
         RDefKind::Impl { of_trait, .. } => {
-            let param_env = get_param_env(s, args);
             if !of_trait {
                 FullDefKind::InherentImpl(InherentImpl {
                     def_id: hax_def_id.clone(),
@@ -1415,27 +1451,35 @@ where
         RDefKind::Fn { .. } => {
             let sig = tcx.fn_sig(def_id);
             let sig = inst_binder(tcx, s.typing_env(), args, sig);
+            let hax_sig: PolyFnSig<'tcx> = sig.sinto(s);
             FullDefKind::Fn(Fn {
                 def_id: hax_def_id.clone(),
                 args,
                 rustc_sig: sig,
-                param_env: get_param_env(s, args),
+                param_env: ParamEnv {
+                    late_bound: hax_sig.rebind(()),
+                    ..param_env
+                },
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
-                sig: sig.sinto(s),
+                sig: hax_sig,
                 fn_trait_impls: OnceCell::new(),
             })
         }
         RDefKind::AssocFn { .. } => {
             let item = tcx.associated_item(def_id);
             let sig = get_method_sig(tcx, s.typing_env(), def_id, args);
+            let hax_sig: PolyFnSig<'tcx> = sig.sinto(s);
             FullDefKind::AssocFn(AssocFn {
                 def_id: hax_def_id.clone(),
                 args,
                 rustc_sig: sig,
-                param_env: get_param_env(s, args),
+                param_env: ParamEnv {
+                    late_bound: hax_sig.rebind(()),
+                    ..param_env
+                },
                 associated_item: AssocItem::sfrom_instantiated(s, &item, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
-                sig: sig.sinto(s),
+                sig: hax_sig,
                 fn_trait_impls: OnceCell::new(),
             })
         }
@@ -1446,12 +1490,16 @@ where
             let raw_sig = closure.sig();
             let sig = tcx.signature_unclosure(raw_sig, hir::Safety::Safe);
             let input_ty = tcx.liberate_late_bound_regions(def_id, raw_sig).inputs()[0];
+            let hax_sig: PolyFnSig<'tcx> = sig.sinto(s);
             FullDefKind::Closure(Closure {
                 def_id: hax_def_id.clone(),
                 kind: closure.kind().sinto(s),
-                param_env: get_param_env(s, args),
+                param_env: ParamEnv {
+                    late_bound: hax_sig.rebind(()),
+                    ..param_env
+                },
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
-                sig: sig.sinto(s),
+                sig: hax_sig,
                 fn_trait_args: [closure_ty, input_ty],
                 upvar_tys: closure.upvar_tys().sinto(s),
                 fn_trait_impls: Default::default(),
@@ -1466,20 +1514,20 @@ where
             };
 
             FullDefKind::Const(Const {
-                param_env: get_param_env(s, args),
+                param_env,
                 ty: type_of_self().sinto(s),
                 kind,
             })
         }
         RDefKind::AssocConst => FullDefKind::AssocConst(AssocConst {
-            param_env: get_param_env(s, args),
+            param_env,
             associated_item: AssocItem::sfrom_instantiated(s, &tcx.associated_item(def_id), args),
             ty: type_of_self().sinto(s),
         }),
         RDefKind::Static {
             safety, mutability, ..
         } => FullDefKind::Static(Static {
-            param_env: get_param_env(s, args),
+            param_env,
             safety: safety.sinto(s),
             mutability: mutability.sinto(s),
             thread_local: tcx.is_thread_local_static(def_id),
@@ -1497,7 +1545,7 @@ where
         RDefKind::TyParam => FullDefKind::TyParam,
         RDefKind::ConstParam => FullDefKind::ConstParam,
         RDefKind::LifetimeParam => FullDefKind::LifetimeParam,
-        RDefKind::Variant => FullDefKind::Variant,
+        RDefKind::Variant => FullDefKind::Variant(param_env),
         RDefKind::Ctor(ctor_of, _) => {
             let adt_args = args_or_default;
             let ctor_of = ctor_of.sinto(s);
@@ -1517,16 +1565,21 @@ where
                 .collect();
             let output_ty = ty::Ty::new_adt(tcx, adt_def, adt_args).sinto(s);
             let sig = inst_binder(tcx, s.typing_env(), args, tcx.fn_sig(def_id));
+            let hax_sig: PolyFnSig<'tcx> = sig.sinto(s);
             FullDefKind::Ctor(Ctor {
                 def_id: hax_def_id.clone(),
                 args: adt_args,
                 rustc_sig: sig,
+                param_env: ParamEnv {
+                    late_bound: hax_sig.rebind(()),
+                    ..param_env
+                },
                 adt_def_id: adt_def_id.sinto(s),
                 ctor_of,
                 variant_id: variant_id.sinto(s),
                 fields,
                 output_ty,
-                sig: sig.sinto(s),
+                sig: hax_sig,
                 fn_trait_impls: OnceCell::new(),
             })
         }
@@ -1574,8 +1627,6 @@ pub struct TraitItemBinder<'tcx, T> {
     pub def_id: DefId,
     /// Parameters bound by the item.
     pub param_env: ParamEnv<'tcx>,
-    /// Late-bound parameters, if any.
-    pub late_bound: Binder<()>,
     pub skip_binder: T,
 }
 
@@ -1749,17 +1800,14 @@ impl<'tcx> FullDef<'tcx> {
             FullDefKind::AssocFn(d) => Some(d.param_env()),
             FullDefKind::Closure(d) => Some(d.param_env()),
             FullDefKind::Const(d) => Some(d.param_env()),
+            FullDefKind::Ctor(d) => Some(d.param_env()),
+            FullDefKind::Variant(param_env) => Some(param_env),
             FullDefKind::AssocConst(d) => Some(d.param_env()),
             FullDefKind::Static(d) => Some(d.param_env()),
             FullDefKind::TraitImpl(d) => Some(d.param_env()),
             FullDefKind::InherentImpl(d) => Some(d.param_env()),
             _ => None,
         }
-    }
-
-    /// Return the parent of this item if the item inherits the typing context from its parent.
-    pub fn typing_parent(&self, s: &impl BaseState<'tcx>) -> Option<ItemRef<'tcx>> {
-        self.this().typing_parent(s)
     }
 
     /// Whether the item has any generics at all (including parent generics).
@@ -1794,17 +1842,6 @@ impl<'tcx> FullDef<'tcx> {
                 self.has_own_generics() || has_predicates
             }
             None => false,
-        }
-    }
-
-    /// Returns the late bound parameters of this item, if any. Returns an empty binder if there a
-    /// are none.
-    pub fn late_bound(&self) -> Binder<()> {
-        match self.kind() {
-            FullDefKind::Fn(f) => f.sig().as_ref().rebind(()),
-            FullDefKind::FnPtr(f) => f.sig().as_ref().rebind(()),
-            FullDefKind::AssocFn(f) => f.sig().as_ref().rebind(()),
-            _ => Binder::empty(),
         }
     }
 
@@ -1963,22 +2000,17 @@ where
 fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     args: Option<ty::GenericArgsRef<'tcx>>,
+    parent: Option<ItemRef<'tcx>>,
 ) -> ParamEnv<'tcx> {
-    let tcx = s.base().tcx;
     let owner = s.owner();
     let generics = owner.generics_of(s).sinto(s);
-
-    let parent = generics.parent.as_ref().map(|parent| {
-        let parent_args = args
-            .map(|args| args.truncate_to(tcx, parent.generics_of(s)))
-            .unwrap_or_else(|| parent.identity_args(s));
-        ItemRef::translate_from_hax_def_id(s, parent.clone(), parent_args)
-    });
     match args {
         None => ParamEnv {
             generics,
+            late_bound: Binder::empty(),
             extra_early_regions: vec![],
             predicates: owner.required_predicates(s).sinto(s),
+            soft_parent: parent.clone(),
             parent,
         },
         // An instantiated item is monomorphic.
@@ -1988,8 +2020,10 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
                 params: Default::default(),
                 ..generics
             },
+            late_bound: Binder::empty(),
             extra_early_regions: vec![],
             predicates: GenericPredicates::default(),
+            soft_parent: parent.clone(),
             parent,
         },
     }
