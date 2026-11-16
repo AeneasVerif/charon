@@ -378,28 +378,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             && let Some(layout) = self.translate_layout(span, &item, None)
         {
             self.monomorphic_layouts.insert(tref, layout);
-
-            let Ok(def) = self.t_ctx.mono_hax_def(&item) else {
-                return;
-            };
-            let fields: Vec<hax::Ty<'tcx>> = match def.kind() {
-                hax::FullDefKind::Adt(adt) if matches!(adt.adt_kind(), hax::AdtKind::Tuple) => item
-                    .generic_args
-                    .iter()
-                    .filter_map(|arg| arg.as_type().cloned())
-                    .collect(),
-                hax::FullDefKind::Adt(adt) => (adt.variants().iter())
-                    .flat_map(|variant| &variant.fields)
-                    .map(|field| field.ty.clone())
-                    .collect(),
-                hax::FullDefKind::Closure(closure) => closure.upvar_tys().to_vec(),
-                _ => vec![],
-            };
-
-            for field_ty in fields {
-                self.record_monomorphic_layout(span, &field_ty);
-            }
-        };
+        }
     }
 
     pub fn translate_pattern(
@@ -860,6 +839,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let align = Size::from_expr(align.normalize(Some(&self.translated), None, false));
         let layout = ty_layout.layout;
 
+        // Record the layout of all fields, if using `--collect-instantiated-layouts`
+        let record_field_layouts = |this: &mut Self, variant: ty::layout::TyAndLayout<'tcx>| {
+            if this.recording_mono_layouts {
+                for i in 0..variant.fields.count() {
+                    let field_ty = variant.field(&layout_cx, i).ty;
+                    if let Ok(field_ty) = this.catch_sinto::<_, hax::Ty<'tcx>>(span, &field_ty) {
+                        this.record_monomorphic_layout(span, &field_ty);
+                    }
+                }
+            }
+        };
+
         let num_variants = match ty.variant_range(self.t_ctx.tcx) {
             Some(range) => range.end.index(),
             None => match layout.fields() {
@@ -951,6 +942,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let mut children = Vec::new();
 
                 for (id, variant_layout) in variants.iter_enumerated() {
+                    record_field_layouts(self, ty_layout.for_variant(&layout_cx, id));
+
                     let variant_id = self.translate_variant_id(id);
                     let taginfo = taginfo_for_variant(id);
                     let variant_inhabited = self
@@ -1043,6 +1036,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let variant_id = self.translate_variant_id(*index);
                 match layout.fields() {
                     r_abi::FieldsShape::Arbitrary { .. } | r_abi::FieldsShape::Union(_) => {
+                        record_field_layouts(self, ty_layout);
+
                         let variant_inhabited = self
                             .translate_inhabited_predicate(span, rustc_variant_inhabited(*index))
                             .ok()?;
