@@ -579,6 +579,10 @@ impl CliOpts {
                     self.unbind_item_vars = true;
                     self.deallocate_all_locals = true;
                     self.no_gen_tuple_structs = true;
+                    // Aeneas can't model the generic functions of `Pin` (they are instantiated with
+                    // `&mut T`): it rewrites their calls to aggregates and field accesses, which
+                    // requires the definition of `Pin`.
+                    self.include.push("core::pin::Pin".to_owned());
                 }
                 Preset::Eurydice => {
                     self.inline_anon_consts = true;

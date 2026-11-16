@@ -33,7 +33,9 @@ where
 // Full name: core::pin::Pin
 #[fundamental]
 #[lang_item(Pin)]
-pub opaque type Pin<Ptr>
+pub struct Pin<Ptr> {
+  pointer: Ptr,
+}
 
 pub fn core::pin::{Pin<Ptr>}::new<Ptr, Clause0_Target>(_1: Ptr) -> Pin<Ptr>
 where
