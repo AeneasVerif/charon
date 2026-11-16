@@ -1,0 +1,102 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::Unpin
+#[lang_item(Unpin)]
+pub trait Unpin<Self>
+
+// Full name: core::ops::deref::Deref
+#[lang_item(Deref)]
+#[diagnostic_item("Deref")]
+pub trait Deref<Self, Self_Target>
+{
+    fn deref<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Self_Target: '_0_1)>;
+    vtable: core::ops::deref::Deref::{vtable}<Self_Target>
+}
+
+// Full name: core::ops::deref::{impl Deref<T> for &'_0 mut T}::deref
+pub fn deref<'_0, '_1, T>(_1: &'_1 &'_0 mut T) -> &'_1 T
+where
+    Outlives0: ('_0: '_1),
+    Outlives1: (T: '_0),
+    Outlives2: (T: '_1),
+= <opaque>
+
+// Full name: core::ops::deref::{impl Deref<T> for &'_0 mut T}
+impl<'_0, T> Deref<T> for &'_0 mut T
+where
+    Outlives0: (T: '_0),
+{
+    fn deref<'_0_1> = deref<'_0, '_0_1, T>
+    vtable: lazy
+}
+
+// Full name: core::pin::Pin
+#[fundamental]
+#[lang_item(Pin)]
+pub opaque type Pin<Ptr>
+
+pub fn core::pin::{Pin<Ptr>}::new<Ptr, Clause0_Target>(_1: Ptr) -> Pin<Ptr>
+where
+    TraitClause0: (Ptr: Deref<Clause0_Target>),
+    TraitClause1: (Clause0_Target: Unpin),
+= <opaque>
+
+pub fn core::pin::{Pin<&'a mut T>}::get_mut<'a, T>(_1: Pin<&'a mut T>) -> &'a mut T
+where
+    TraitClause0: (T: Unpin),
+    Outlives0: (T: 'a),
+= <opaque>
+
+opaque type ()
+
+pub fn test_crate::new<'_0, T>(x: &'_0 mut T) -> Pin<&'_0 mut T>
+where
+    TraitClause0: (T: Unpin),
+    Outlives0: (T: '_0),
+{
+    let mut _0: Pin<&'5 mut T>; // return
+    let x: &'6 mut T; // arg #1
+    let mut _2: &'7 mut T; // anonymous local
+
+    storage_live(_0)
+    set T: '2
+    storage_live(_2)
+    _2 = &two-phase-mut (*x)
+    _0 = core::pin::{Pin<Ptr>}::new<&'2 mut T, T>[{impl Deref<T> for &'_0 mut T}<'2, T>, TraitClause0](move _2)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+pub fn test_crate::get_mut<'_0, T>(p: Pin<&'_0 mut T>) -> &'_0 mut T
+where
+    TraitClause0: (T: Unpin),
+    Outlives0: (T: '_0),
+{
+    let mut _0: &'1 mut T; // return
+    let p: Pin<&'3 mut T>; // arg #1
+    let mut _2: &'4 mut T; // anonymous local
+    let mut _3: &'5 mut T; // anonymous local
+    let mut _4: Pin<&'6 mut T>; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = move p
+    _3 = core::pin::{Pin<&'a mut T>}::get_mut<'8, T>[TraitClause0](move _4)
+    ↳⚡ storage_dead(p)
+        unwind_continue
+    _2 = &mut (*_3)
+    storage_dead(_4)
+    _0 = &mut (*_2)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(p)
+    return
+}
+
+
+
