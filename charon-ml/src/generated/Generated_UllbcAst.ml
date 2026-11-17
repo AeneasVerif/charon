@@ -132,9 +132,9 @@ and terminator_kind =
           Fields:
           - [call]
           - [on_unwind] *)
-  | UnwindTerminate of unwind_terminate_reason
+  | UnwindTerminate of unwind_terminate_reason * fun_decl_ref
       (** Unwinding must stop for ABI reasons or because cleanup code panicked
-          again. *)
+          again. The function is the lang item that rustc calls in that case. *)
   | UnwindResume  (** Unwind out of the current function into its caller. *)
   | Return
   | UndefinedBehavior

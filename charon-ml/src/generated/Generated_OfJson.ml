@@ -84,9 +84,7 @@ and abort_kind_of_json (ctx : of_json_ctx) (js : json) :
     (abort_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Panic", _0) ] ->
-        let* _0 = call_of_json ctx _0 in
-        Ok (AbortPanic _0)
+    | `String "Panic" -> Ok AbortPanic
     | `String "UndefinedBehavior" -> Ok AbortUndefinedBehavior
     | `Assoc [ ("UnwindTerminate", _0) ] ->
         let* _0 = unwind_terminate_reason_of_json ctx _0 in
@@ -830,6 +828,16 @@ and fun_decl_id_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | x -> FunDeclId.id_of_json ctx x
+    | _ -> Error "")
+
+and fun_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
+    (fun_decl_ref, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("id", id); ("generics", generics) ] ->
+        let* id = fun_decl_id_of_json ctx id in
+        let* generics = box_of_json generic_args_of_json ctx generics in
+        Ok ({ id; generics } : fun_decl_ref)
     | _ -> Error "")
 
 and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =
@@ -2036,9 +2044,10 @@ module Ullbc = struct
           let* call = call_of_json ctx call in
           let* on_unwind = block_id_of_json ctx on_unwind in
           Ok (Panic (call, on_unwind))
-      | `Assoc [ ("UnwindTerminate", _0) ] ->
+      | `Assoc [ ("UnwindTerminate", `List [ _0; _1 ]) ] ->
           let* _0 = unwind_terminate_reason_of_json ctx _0 in
-          Ok (UnwindTerminate _0)
+          let* _1 = fun_decl_ref_of_json ctx _1 in
+          Ok (UnwindTerminate (_0, _1))
       | `String "UnwindResume" -> Ok UnwindResume
       | `String "Return" -> Ok Return
       | `String "UndefinedBehavior" -> Ok UndefinedBehavior
@@ -2217,9 +2226,10 @@ module Llbc = struct
           let* call = call_of_json ctx call in
           let* on_unwind = block_of_json ctx on_unwind in
           Ok (Panic (call, on_unwind))
-      | `Assoc [ ("UnwindTerminate", _0) ] ->
+      | `Assoc [ ("UnwindTerminate", `List [ _0; _1 ]) ] ->
           let* _0 = unwind_terminate_reason_of_json ctx _0 in
-          Ok (UnwindTerminate _0)
+          let* _1 = fun_decl_ref_of_json ctx _1 in
+          Ok (UnwindTerminate (_0, _1))
       | `String "UnwindResume" -> Ok UnwindResume
       | `String "Return" -> Ok Return
       | `String "UndefinedBehavior" -> Ok UndefinedBehavior
@@ -3064,16 +3074,6 @@ and fun_decl_of_json (ctx : of_json_ctx) (js : json) : (fun_decl, string) result
         let* src = fun_source_of_json ctx src in
         let* body = body_of_json ctx body in
         Ok ({ def_id; item_meta; generics; signature; src; body } : fun_decl)
-    | _ -> Error "")
-
-and fun_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
-    (fun_decl_ref, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("id", id); ("generics", generics) ] ->
-        let* id = fun_decl_id_of_json ctx id in
-        let* generics = box_of_json generic_args_of_json ctx generics in
-        Ok ({ id; generics } : fun_decl_ref)
     | _ -> Error "")
 
 and fun_source_of_json (ctx : of_json_ctx) (js : json) :

@@ -80,9 +80,7 @@ and abort_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* __tag = int_of_postcard ctx st in
      match __tag with
-     | 0 ->
-         let* _0 = call_of_postcard ctx st in
-         Ok (AbortPanic _0)
+     | 0 -> Ok AbortPanic
      | 1 -> Ok AbortUndefinedBehavior
      | 2 ->
          let* _0 = unwind_terminate_reason_of_postcard ctx st in
@@ -751,6 +749,13 @@ and fn_ptr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
 and fun_decl_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (fun_decl_id, string) result =
   combine_error_msgs st __FUNCTION__ (FunDeclId.id_of_postcard ctx st)
+
+and fun_decl_ref_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (fun_decl_ref, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* id = fun_decl_id_of_postcard ctx st in
+     let* generics = box_of_postcard generic_args_of_postcard ctx st in
+     Ok ({ id; generics } : fun_decl_ref))
 
 and fun_sig_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (fun_sig, string) result =
@@ -1693,7 +1698,8 @@ module Ullbc = struct
            Ok (Panic (call, on_unwind))
        | 8 ->
            let* _0 = unwind_terminate_reason_of_postcard ctx st in
-           Ok (UnwindTerminate _0)
+           let* _1 = fun_decl_ref_of_postcard ctx st in
+           Ok (UnwindTerminate (_0, _1))
        | 9 -> Ok UnwindResume
        | 10 -> Ok Return
        | 11 -> Ok UndefinedBehavior
@@ -1818,7 +1824,8 @@ module Llbc = struct
            Ok (Panic (call, on_unwind))
        | 16 ->
            let* _0 = unwind_terminate_reason_of_postcard ctx st in
-           Ok (UnwindTerminate _0)
+           let* _1 = fun_decl_ref_of_postcard ctx st in
+           Ok (UnwindTerminate (_0, _1))
        | 17 -> Ok UnwindResume
        | 18 -> Ok Return
        | 19 -> Ok UndefinedBehavior
@@ -2502,13 +2509,6 @@ and fun_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* src = fun_source_of_postcard ctx st in
      let* body = body_of_postcard ctx st in
      Ok ({ def_id; item_meta; generics; signature; src; body } : fun_decl))
-
-and fun_decl_ref_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (fun_decl_ref, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* id = fun_decl_id_of_postcard ctx st in
-     let* generics = box_of_postcard generic_args_of_postcard ctx st in
-     Ok ({ id; generics } : fun_decl_ref))
 
 and fun_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (fun_source, string) result =

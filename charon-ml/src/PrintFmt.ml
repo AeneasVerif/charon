@@ -2326,9 +2326,9 @@ module Llbc = struct
     | UndefinedBehavior ->
         Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env)
           AbortUndefinedBehavior
-    | UnwindTerminate fun_ref ->
+    | UnwindTerminate (reason, _) ->
         Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env)
-          (AbortUnwindTerminate fun_ref)
+          (AbortUnwindTerminate reason)
     | Return -> Format.fprintf fmt "%sreturn" indent
     | UnwindResume -> Format.fprintf fmt "%sunwind_continue" indent
     | Break i -> Format.fprintf fmt "%sbreak %d" indent i
@@ -2531,9 +2531,9 @@ module Ullbc = struct
     | UndefinedBehavior ->
         Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env)
           AbortUndefinedBehavior
-    | UnwindTerminate fun_ref ->
+    | UnwindTerminate (reason, _) ->
         Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env)
-          (AbortUnwindTerminate fun_ref)
+          (AbortUnwindTerminate reason)
     | Return -> Format.fprintf fmt "%sreturn" indent
     | UnwindResume -> Format.fprintf fmt "%sunwind_continue" indent
 

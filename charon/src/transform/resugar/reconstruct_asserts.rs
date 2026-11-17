@@ -56,9 +56,9 @@ impl UllbcPass for Transform {
                 };
 
                 let call = match abort {
-                    AbortKind::Panic | AbortKind::UnwindTerminate(..) => {
-                        call.clone().expect("panics and unwind terminates always have a call")
-                    }
+                    AbortKind::Panic | AbortKind::UnwindTerminate(..) => call
+                        .clone()
+                        .expect("panics and unwind terminates always have a call"),
                     AbortKind::UndefinedBehavior => assume.clone(),
                 };
                 let _ = std::mem::replace(
