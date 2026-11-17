@@ -1,0 +1,111 @@
+# Final LLBC before serialization:
+
+struct () {}
+
+// Full name: test_crate::SHARED
+fn SHARED() -> u32
+{
+    let mut _0: u32; // return
+
+    storage_live(_0)
+    _0 = const 0u32
+    return
+}
+
+// Full name: test_crate::SHARED
+static SHARED: u32 = SHARED()
+
+// Full name: test_crate::MUT
+fn MUT() -> u32
+{
+    let mut _0: u32; // return
+
+    storage_live(_0)
+    _0 = const 0u32
+    return
+}
+
+// Full name: test_crate::MUT
+static mut MUT: u32 = MUT()
+
+// Full name: test_crate::THREAD_LOCAL
+fn THREAD_LOCAL() -> u32
+{
+    let mut _0: u32; // return
+
+    storage_live(_0)
+    _0 = const 0u32
+    return
+}
+
+// Full name: test_crate::THREAD_LOCAL
+thread_local THREAD_LOCAL: u32 = THREAD_LOCAL()
+
+// Full name: test_crate::read_shared
+fn read_shared() -> u32
+{
+    let mut _0: u32; // return
+
+    storage_live(_0)
+    _0 = copy SHARED
+    return
+}
+
+// Full name: test_crate::ref_shared
+fn ref_shared() -> &'static u32
+{
+    let mut _0: &'1 u32; // return
+    let _1: &'2 u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = &SHARED
+    _0 = &(*_1)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::read_mut
+fn read_mut() -> u32
+{
+    let mut _0: u32; // return
+
+    storage_live(_0)
+    _0 = copy MUT
+    return
+}
+
+// Full name: test_crate::write_mut
+fn write_mut()
+{
+    let mut _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    MUT = const 1u32
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::read_thread_local
+fn read_thread_local() -> u32
+{
+    let mut _0: u32; // return
+
+    storage_live(_0)
+    _0 = copy THREAD_LOCAL
+    return
+}
+
+// Full name: test_crate::raw_mut
+fn raw_mut() -> *const u32
+{
+    let mut _0: *const u32; // return
+
+    storage_live(_0)
+    _0 = &raw const MUT
+    return
+}
+
+
+
