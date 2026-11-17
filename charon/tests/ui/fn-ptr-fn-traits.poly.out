@@ -1329,7 +1329,7 @@ pub fn test_dyn_fn(x: u32) -> u32
     _8 = copy x
     _7 = (move _8,)
     storage_live(_9)
-    _9 = vtable_lookup<core::ops::function::Fn::{vtable}<(u32,), u32>>.method_call(read _6.metadata)
+    _9 = vtable_lookup<method_call>(read _6.metadata)
     _0 = (read _9)<'23>(move _6, move _7)
     ↳⚡ storage_dead(x)
         storage_dead(_9)
@@ -1384,7 +1384,7 @@ pub fn test_dyn_fn_mut(x: u32) -> u32
     _8 = copy x
     _7 = (move _8,)
     storage_live(_9)
-    _9 = vtable_lookup<core::ops::function::FnMut::{vtable}<(u32,), u32>>.method_call_mut(read _6.metadata)
+    _9 = vtable_lookup<method_call_mut>(read _6.metadata)
     _0 = (read _9)<'23>(move _6, move _7)
     ↳⚡ storage_dead(x)
         storage_dead(_9)

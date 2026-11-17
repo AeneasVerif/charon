@@ -142,7 +142,7 @@ unsafe fn impl_Destruct_for_A::drop_glue<'_0>(_1: &'_0 mut A)
     drop_arg = &mut (*_1)._0 with_metadata(read _1.metadata)
     storage_live(drop_ret)
     storage_live(_4)
-    _4 = vtable_lookup<test_crate::T::{vtable}>.drop(read drop_arg.metadata)
+    _4 = vtable_lookup<drop>(read drop_arg.metadata)
     drop_ret = (read _4)<'4>(move drop_arg)
     ↳⚡ unwind_continue
     _0 = ()

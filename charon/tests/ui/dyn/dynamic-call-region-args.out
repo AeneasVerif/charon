@@ -45,7 +45,7 @@ where
     storage_live(_5)
     _5 = &(*input)
     storage_live(_6)
-    _6 = vtable_lookup<test_crate::Processor::{vtable}<'26>>.method_process(read _4.metadata)
+    _6 = vtable_lookup<method_process>(read _4.metadata)
     _3 = (read _6)<'37, '38>(move _4, move _5)
     ↳⚡ storage_dead(input)
         storage_dead(processor)

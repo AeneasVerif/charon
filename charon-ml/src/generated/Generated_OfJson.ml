@@ -1813,10 +1813,10 @@ and unop_of_json (ctx : of_json_ctx) (js : json) : (unop, string) result =
     | `Assoc [ ("Cast", _0) ] ->
         let* _0 = cast_kind_of_json ctx _0 in
         Ok (Cast _0)
-    | `Assoc [ ("VTableMethodLookup", `List [ _0; _1 ]) ] ->
+    | `Assoc [ ("VTableLookup", `List [ _0; _1 ]) ] ->
         let* _0 = type_decl_ref_of_json ctx _0 in
         let* _1 = v_table_field_of_json ctx _1 in
-        Ok (VTableMethodLookup (_0, _1))
+        Ok (VTableLookup (_0, _1))
     | _ -> Error "")
 
 and unsizing_metadata_of_json (ctx : of_json_ctx) (js : json) :

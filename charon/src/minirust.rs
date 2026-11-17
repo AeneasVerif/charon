@@ -854,16 +854,18 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             UnOp::Neg(_) => mini::UnOp::Int(mini::IntUnOp::Neg),
             // MiniRust vtables are opaque: a method or the drop function is read through its
             // lookup operation, from the vtable pointer.
-            UnOp::VTableMethodLookup(
-                tref,
-                field @ (VTableField::Drop | VTableField::Method(..)),
-            ) if let TypeDecl {
-                kind: TypeDeclKind::Struct(fields),
-                src: TypeSource::VTable { field_map, .. },
-                ..
-            } = &self.krate.type_decls[tref.id]
-                && let Some((id, _)) = field_map.iter_enumerated().find(|(_, f)| *f == field) =>
-            {
+            UnOp::VTableLookup(tref, field @ (VTableField::Drop | VTableField::Method(..))) => {
+                let TypeDecl {
+                    kind: TypeDeclKind::Struct(fields),
+                    src: TypeSource::VTable { field_map, .. },
+                    ..
+                } = &self.krate.type_decls[tref.id]
+                else {
+                    raise!(span, "Vtable lookup into a non-vtable type")
+                };
+                let Some((id, _)) = field_map.iter_enumerated().find(|(_, f)| *f == field) else {
+                    raise!(span, "Vtable lookup of a missing entry: {field:?}")
+                };
                 let lookup = mb::vtable_method_lookup(operand_value, self.method_name(id));
                 // In mono mode the vtable holds the function erased, as a `*const ()`.
                 let field_ty = fields[id].ty.clone().substitute(&tref.generics);
@@ -873,7 +875,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     mb::transmute(lookup, self.ty(span, &field_ty)?)
                 });
             }
-            UnOp::VTableMethodLookup(..) => raise!(
+            UnOp::VTableLookup(..) => raise!(
                 span,
                 "Unsupported vtable lookup in MiniRust: {}",
                 op.with_ctx(&self.fmt)

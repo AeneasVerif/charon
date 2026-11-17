@@ -1619,8 +1619,8 @@ and pp_unop (env : fmt_env) (fmt : Format.formatter) (unop : unop) : unit =
   | Not -> pp_string fmt "~"
   | Neg om -> Format.fprintf fmt "%a.-" pp_overflow_mode om
   | Cast cast_kind -> pp_cast_kind env fmt cast_kind
-  | VTableMethodLookup (vtable, field) ->
-      Format.fprintf fmt "vtable_lookup<%a>.%s" (pp_type_decl_ref env) vtable
+  | VTableLookup (vtable, field) ->
+      Format.fprintf fmt "vtable_lookup<%s>"
         (vtable_field_to_string env vtable field)
 
 (** The name of the field of the vtable struct that holds the entry. *)
