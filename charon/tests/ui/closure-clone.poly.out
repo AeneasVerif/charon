@@ -1,0 +1,268 @@
+# Final LLBC before serialization:
+
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
+    non-dyn-compatible
+}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (Self: Destruct), Outlives0: (Self: '_0_1), Outlives1: (Self: '_1_1)> = core::clone::Clone::clone_from<'_0_1, '_1_1, Self>[Self, TraitClause0_1]
+    non-dyn-compatible
+}
+
+pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(_1: &'_0 mut Self, _2: &'_1 Self)
+where
+    TraitClause0: (Self: Clone),
+    TraitClause1: (Self: Destruct),
+    Outlives0: (Self: '_0),
+    Outlives1: (Self: '_1),
+= <opaque>
+
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+struct test_crate::closure::{closure} {
+  _0: u32,
+}
+
+// Full name: test_crate::closure
+pub fn closure(x: u32)
+{
+    let mut _0: (); // return
+    let x: u32; // arg #1
+    let f: test_crate::closure::{closure}; // local
+    let mut g: test_crate::closure::{closure}; // local
+    let mut _4: &'1 test_crate::closure::{closure}; // anonymous local
+    let _5: (); // anonymous local
+    let mut _6: &'3 mut test_crate::closure::{closure}; // anonymous local
+    let mut _7: &'4 test_crate::closure::{closure}; // anonymous local
+    let _8: &'5 test_crate::closure::{closure}; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(f)
+    f = test_crate::closure::{closure} { _0: copy x }
+    fake_read(f)
+    storage_live(g)
+    storage_live(_4)
+    _4 = &f
+    g = {built_in impl Clone for test_crate::closure::{closure}}::clone<'7>(move _4)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_4)
+    fake_read(g)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = &two-phase-mut g
+    storage_live(_7)
+    storage_live(_8)
+    _8 = &f
+    _7 = &(*_8)
+    _5 = {built_in impl Clone for test_crate::closure::{closure}}::clone_from<'10, '11>[{built_in impl Destruct for test_crate::closure::{closure}}](move _6, move _7)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_8)
+    storage_dead(_5)
+    _0 = ()
+    storage_dead(g)
+    storage_dead(f)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::closure::{impl Fn<()> for test_crate::closure::{closure}}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::closure::{closure}}::call<'_0>(_1: &'_0 test_crate::closure::{closure}, tupled_args: ()) -> u32
+{
+    let mut _0: u32; // return
+    let mut _1: &'1 test_crate::closure::{closure}; // arg #1
+    let mut tupled_args: (); // arg #2
+
+    storage_live(_0)
+    _0 = copy (*_1)._0
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+struct test_crate::closure_generic::{closure}<T>
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+{
+  _0: T,
+}
+
+// Full name: test_crate::closure_generic::{closure}::{impl Destruct for test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn drop_glue<'_0, T>(_1: &'_0 mut test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1])
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+    Outlives0: (T: '_0),
+{
+    let mut _0: (); // return
+    let _1: &'1 mut test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1]; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_1)._0
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::closure_generic
+pub fn closure_generic<T>(x: T)
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+{
+    let mut _0: (); // return
+    let x: T; // arg #1
+    let f: test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1]; // local
+    let mut _3: test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1]; // anonymous local
+    let mut _4: &'1 test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1]; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(f)
+    f = test_crate::closure_generic::{closure} { _0: move x }
+    fake_read(f)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &f
+    _3 = {built_in impl Clone for test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1]}::clone<'3>(move _4)
+    ↳⚡ conditional_drop[drop_glue<'4, T>[TraitClause0, TraitClause1]] f
+        ↳⚡ storage_dead(x)
+            unwind_terminate(in_cleanup)
+        conditional_drop[{built_in impl Destruct for T}::drop_glue<'6>] x
+        ↳⚡ storage_dead(x)
+            unwind_terminate(in_cleanup)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_4)
+    conditional_drop[drop_glue<'5, T>[TraitClause0, TraitClause1]] _3
+    ↳⚡ conditional_drop[drop_glue<'4, T>[TraitClause0, TraitClause1]] f
+        ↳⚡ storage_dead(x)
+            unwind_terminate(in_cleanup)
+        conditional_drop[{built_in impl Destruct for T}::drop_glue<'6>] x
+        ↳⚡ storage_dead(x)
+            unwind_terminate(in_cleanup)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_3)
+    _0 = ()
+    conditional_drop[drop_glue<'7, T>[TraitClause0, TraitClause1]] f
+    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'6>] x
+        ↳⚡ storage_dead(x)
+            unwind_terminate(in_cleanup)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(f)
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'8>] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::closure_generic::{impl Fn<()> for test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1]}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1]}::call<'_0, T>(_1: &'_0 test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1], tupled_args: ()) -> T
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+    Outlives0: (T: '_0),
+{
+    let mut _0: T; // return
+    let mut _1: &'1 test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1]; // arg #1
+    let mut tupled_args: (); // arg #2
+    let mut _3: &'3 T; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = &(*_1)._0
+    _0 = TraitClause1::clone<'5>(move _3)
+    ↳⚡ storage_dead(tupled_args)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::tuple
+pub fn tuple<'_0, '_1>(x: &'_0 (u32, u8), y: &'_1 mut (u32, u8)) -> (u32, u8)
+{
+    let mut _0: (u32, u8); // return
+    let x: &'1 (u32, u8); // arg #1
+    let y: &'3 mut (u32, u8); // arg #2
+    let _3: (); // anonymous local
+    let mut _4: &'4 mut (u32, u8); // anonymous local
+    let mut _5: &'5 (u32, u8); // anonymous local
+    let mut _6: &'6 (u32, u8); // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &two-phase-mut (*y)
+    storage_live(_5)
+    _5 = &(*x)
+    _3 = {built_in impl Clone for (u32, u8)}::clone_from<'9, '10>[{built_in impl Destruct for (u32, u8)}](move _4, move _5)
+    ↳⚡ storage_dead(y)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_live(_6)
+    _6 = &(*x)
+    _0 = {built_in impl Clone for (u32, u8)}::clone<'12>(move _6)
+    ↳⚡ storage_dead(y)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_6)
+    storage_dead(y)
+    storage_dead(x)
+    return
+}
+
+
+
