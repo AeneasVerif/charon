@@ -172,6 +172,9 @@ Options:
       --reconstruct-asserts
           Replace `if x { panic() }` with `assert(x)`
 
+      --no-reconstruct-static-accesses
+          Keep the temporaries through which MIR accesses statics, instead of naming the statics directly. Aliasing models such as Tree Borrows retag the references they hold
+
       --reconstruct-matches
           Recombine a `read_discriminant(place)` followed by a `switch` into a single operation that uses enum variants instead of their discriminants
 

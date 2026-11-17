@@ -2213,6 +2213,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* reconstruct_fallible_operations = bool_of_postcard ctx st in
      let* reconstruct_panic_calls = bool_of_postcard ctx st in
      let* reconstruct_asserts = bool_of_postcard ctx st in
+     let* no_reconstruct_static_accesses = bool_of_postcard ctx st in
      let* reconstruct_matches = bool_of_postcard ctx st in
      let* deallocate_all_locals = bool_of_postcard ctx st in
      let* unbind_item_vars = bool_of_postcard ctx st in
@@ -2283,6 +2284,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           reconstruct_fallible_operations;
           reconstruct_panic_calls;
           reconstruct_asserts;
+          no_reconstruct_static_accesses;
           reconstruct_matches;
           deallocate_all_locals;
           unbind_item_vars;

@@ -45,9 +45,13 @@ thread_local THREAD_LOCAL: u32 = THREAD_LOCAL()
 fn read_shared() -> u32
 {
     let mut _0: u32; // return
+    let mut _1: &'1 u32; // anonymous local
 
     storage_live(_0)
-    _0 = copy SHARED
+    storage_live(_1)
+    _1 = &SHARED
+    _0 = copy (*_1)
+    storage_dead(_1)
     return
 }
 
@@ -56,11 +60,15 @@ fn ref_shared() -> &'static u32
 {
     let mut _0: &'1 u32; // return
     let _1: &'2 u32; // anonymous local
+    let _2: &'3 u32; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
-    _1 = &SHARED
+    storage_live(_2)
+    _2 = &SHARED
+    _1 = &(*_2)
     _0 = &(*_1)
+    storage_dead(_2)
     storage_dead(_1)
     return
 }
@@ -69,9 +77,13 @@ fn ref_shared() -> &'static u32
 fn read_mut() -> u32
 {
     let mut _0: u32; // return
+    let mut _1: *mut u32; // anonymous local
 
     storage_live(_0)
-    _0 = copy MUT
+    storage_live(_1)
+    _1 = &raw mut MUT
+    _0 = copy (*_1)
+    storage_dead(_1)
     return
 }
 
@@ -79,11 +91,15 @@ fn read_mut() -> u32
 fn write_mut()
 {
     let mut _0: (); // return
+    let mut _1: *mut u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
-    MUT = const 1u32
+    storage_live(_1)
+    _1 = &raw mut MUT
+    (*_1) = const 1u32
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -91,9 +107,13 @@ fn write_mut()
 fn read_thread_local() -> u32
 {
     let mut _0: u32; // return
+    let mut _1: &'1 u32; // anonymous local
 
     storage_live(_0)
-    _0 = copy THREAD_LOCAL
+    storage_live(_1)
+    _1 = &THREAD_LOCAL
+    _0 = copy (*_1)
+    storage_dead(_1)
     return
 }
 
@@ -101,9 +121,13 @@ fn read_thread_local() -> u32
 fn raw_mut() -> *const u32
 {
     let mut _0: *const u32; // return
+    let _1: *mut u32; // anonymous local
 
     storage_live(_0)
-    _0 = &raw const MUT
+    storage_live(_1)
+    _1 = &raw mut MUT
+    _0 = &raw const (*_1)
+    storage_dead(_1)
     return
 }
 

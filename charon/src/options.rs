@@ -304,6 +304,11 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub reconstruct_asserts: bool,
+    /// Keep the temporaries through which MIR accesses statics, instead of naming the statics
+    /// directly. Aliasing models such as Tree Borrows retag the references they hold.
+    #[clap(long)]
+    #[serde(default)]
+    pub no_reconstruct_static_accesses: bool,
     /// Recombine a `read_discriminant(place)` followed by a `switch` into a single operation that
     /// uses enum variants instead of their discriminants.
     #[clap(long)]
@@ -849,6 +854,8 @@ pub struct TranslateOptions {
     pub reconstruct_panic_calls: bool,
     /// Replace `if x { panic() }` with `assert(x)`.
     pub reconstruct_asserts: bool,
+    /// Keep the temporaries through which MIR accesses statics.
+    pub no_reconstruct_static_accesses: bool,
     /// Reconstruct matches on enum variants.
     pub reconstruct_matches: bool,
     /// Insert the `StorageDead`s that MIR omits for some locals.
@@ -1036,6 +1043,7 @@ impl TranslateOptions {
             reconstruct_fallible_operations: options.reconstruct_fallible_operations,
             reconstruct_panic_calls: options.reconstruct_panic_calls,
             reconstruct_asserts: options.reconstruct_asserts,
+            no_reconstruct_static_accesses: options.no_reconstruct_static_accesses,
             reconstruct_matches: options.reconstruct_matches,
             deallocate_all_locals: options.deallocate_all_locals,
             lift_associated_types,

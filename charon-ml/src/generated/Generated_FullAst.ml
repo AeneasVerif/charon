@@ -335,6 +335,10 @@ and cli_options = {
       *)
   reconstruct_asserts : bool;
       (** Replace [if x { panic() }] with [assert(x)]. *)
+  no_reconstruct_static_accesses : bool;
+      (** Keep the temporaries through which MIR accesses statics, instead of
+          naming the statics directly. Aliasing models such as Tree Borrows
+          retag the references they hold. *)
   reconstruct_matches : bool;
       (** Recombine a [read_discriminant(place)] followed by a [switch] into a
           single operation that uses enum variants instead of their

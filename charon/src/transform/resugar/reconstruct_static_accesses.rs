@@ -5,6 +5,7 @@
 //! will lower safe static access to otherwise unsafe raw pointer accesses.
 use rustc_hash::FxHashMap as HashMap;
 
+use crate::options::TranslateOptions;
 use crate::transform::TransformCtx;
 use crate::transform::ctx::UllbcPass;
 use crate::ullbc_ast::*;
@@ -19,6 +20,10 @@ struct StaticInfo {
 
 pub struct Transform;
 impl UllbcPass for Transform {
+    fn should_run(&self, options: &TranslateOptions) -> bool {
+        !options.no_reconstruct_static_accesses
+    }
+
     fn transform_body(&self, ctx: &mut TransformCtx, body: &mut ExprBody) {
         // Find the locals assigned the address of a static, and where they're assigned.
         let mut statics: HashMap<LocalId, StaticInfo> = body

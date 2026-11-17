@@ -1,3 +1,4 @@
+//@ charon-args=--no-reconstruct-static-accesses
 #![feature(thread_local)]
 
 static SHARED: u32 = 0;
