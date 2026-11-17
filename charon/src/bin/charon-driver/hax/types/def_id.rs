@@ -290,6 +290,14 @@ impl rustc_trait_elaboration::ItemId for DefId {
             _ => None,
         }
     }
+
+    fn has_default_value<'tcx>(&self, s: &Self::State<'tcx>) -> bool {
+        let tcx = s.base().tcx;
+        match self.base {
+            DefIdBase::Real(def_id) => def_id.has_default_value(&tcx),
+            _ => false,
+        }
+    }
 }
 
 impl DefId {
