@@ -3,52 +3,29 @@
 //! introduce `if ... then { panic!(...) } else { ...}`.
 //! This pass introduces `assert` instead in order to make the code shorter.
 
-use crate::ast::from_rustc::LangItem;
 use crate::name_matcher::NamePattern;
 use crate::transform::ctx::UllbcPass;
 use crate::transform::{CowBox, TransformCtx};
 use crate::ullbc_ast::*;
 
-/// The calls to emit for the asserts we reconstruct
-struct AssertFailureCalls {
-    assume: Call,
-    cannot_unwind: Call,
-    in_cleanup: Call,
-}
-
 pub struct Transform {
-    calls: Option<AssertFailureCalls>,
+    assume: Option<Call>,
 }
 
 impl Transform {
     pub fn new(ctx: &TransformCtx) -> CowBox<dyn UllbcPass> {
         let assume_pattern = NamePattern::parse("core::intrinsics::assume").unwrap();
-        let (mut assume, mut cannot_unwind, mut in_cleanup) = (None, None, None);
-        for (id, decl) in ctx.translated.fun_decls.iter_indexed() {
-            let mut args = vec![];
-            let slot = match decl.item_meta.lang_item {
-                Some(LangItem::PanicCannotUnwind) => &mut cannot_unwind,
-                Some(LangItem::PanicInCleanup) => &mut in_cleanup,
-                None if assume_pattern.matches(&ctx.translated, &decl.item_meta.name) => {
-                    args.push(Operand::Const(ConstantExpr::mk_bool(false)));
-                    &mut assume
-                }
-                _ => continue,
-            };
-            *slot = Some(Call {
+        let assume = ctx
+            .translated
+            .fun_decls
+            .iter_indexed()
+            .find(|(_, decl)| assume_pattern.matches(&ctx.translated, &decl.item_meta.name))
+            .map(|(id, _)| Call {
                 func: FnOperand::Regular(FnPtr::new(FnPtrKind::Fun(id), GenericArgs::empty())),
-                args,
+                args: vec![Operand::Const(ConstantExpr::mk_bool(false))],
                 safety: CallSafety::Inherit,
             });
-        }
-        let calls = assume.zip(cannot_unwind).zip(in_cleanup).map(
-            |((assume, cannot_unwind), in_cleanup)| AssertFailureCalls {
-                assume,
-                cannot_unwind,
-                in_cleanup,
-            },
-        );
-        CowBox::Owned(Box::new(Self { calls }))
+        CowBox::Owned(Box::new(Self { assume }))
     }
 }
 
@@ -58,7 +35,7 @@ impl UllbcPass for Transform {
     }
 
     fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
-        let Some(calls) = &self.calls else { return };
+        let Some(assume) = &self.assume else { return };
         // Start by computing the set of blocks which are actually panics.
         // Remark: doing this in two steps because reading the blocks at random
         // while doing in-place updates is not natural to do in Rust.
@@ -78,12 +55,11 @@ impl UllbcPass for Transform {
                     continue;
                 };
 
-                use UnwindTerminateReason::*;
                 let call = match abort {
-                    AbortKind::Panic => call.clone().expect("panic always has a call"),
-                    AbortKind::UndefinedBehavior => calls.assume.clone(),
-                    AbortKind::UnwindTerminate(Abi) => calls.cannot_unwind.clone(),
-                    AbortKind::UnwindTerminate(InCleanup) => calls.in_cleanup.clone(),
+                    AbortKind::Panic | AbortKind::UnwindTerminate(..) => {
+                        call.clone().expect("panics and unwind terminates always have a call")
+                    }
+                    AbortKind::UndefinedBehavior => assume.clone(),
                 };
                 let _ = std::mem::replace(
                     &mut block.terminator.kind,

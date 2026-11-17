@@ -19,6 +19,11 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: alloc::boxed::Box::<(), Global>
 #[fundamental]
 #[lang_item(OwnedBox)]

@@ -156,8 +156,9 @@ pub enum TerminatorKind {
         call: Call,
         on_unwind: BlockId,
     },
-    /// Unwinding must stop for ABI reasons or because cleanup code panicked again.
-    UnwindTerminate(UnwindTerminateReason),
+    /// Unwinding must stop for ABI reasons or because cleanup code panicked again. The function is
+    /// the lang item that rustc calls in that case.
+    UnwindTerminate(UnwindTerminateReason, FunDeclRef),
     /// Unwind out of the current function into its caller.
     UnwindResume,
 
@@ -180,7 +181,7 @@ pub struct Terminator {
 impl ExprBody {
     /// Returns a map from blocks in this body to their abort kind, if they correspond to an abort
     /// block (ie. a block with only bookkeeping statements and an unconditional error terminator).
-    /// We include a `Call` for `AbortKind::Panic`, to avoid losing the arguments.
+    /// We include the `Call` when there is one.
     pub fn as_abort_map(&self) -> HashMap<BlockId, (AbortKind, Option<Call>)> {
         self.body
             .iter_enumerated()
@@ -264,8 +265,13 @@ impl BlockData {
             match &self.terminator.kind {
                 TerminatorKind::Panic { call, .. } => Some((AbortKind::Panic, Some(call.clone()))),
                 TerminatorKind::UndefinedBehavior => Some((AbortKind::UndefinedBehavior, None)),
-                TerminatorKind::UnwindTerminate(reason) => {
-                    Some((AbortKind::UnwindTerminate(*reason), None))
+                TerminatorKind::UnwindTerminate(reason, fun_ref) => {
+                    let call = Call {
+                        func: FnOperand::Regular(fun_ref.clone().into()),
+                        args: vec![],
+                        safety: CallSafety::Inherit,
+                    };
+                    Some((AbortKind::UnwindTerminate(*reason), Some(call)))
                 }
                 _ => None,
             }

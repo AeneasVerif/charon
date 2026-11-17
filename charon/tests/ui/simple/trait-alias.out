@@ -45,6 +45,11 @@ where
   Some { _0: T },
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: test_crate::Trait
 trait Trait<Self, T, Self_Item>
 {

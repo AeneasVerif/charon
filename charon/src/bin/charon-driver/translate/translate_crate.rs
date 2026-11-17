@@ -296,16 +296,6 @@ impl<'tcx> TranslateCtx<'tcx> {
     fn register_builtin_functions(&mut self) -> Result<(), Error> {
         if self.options.reconstruct_asserts {
             self.register_poly_function_by_path("core::intrinsics::assume")?;
-            // what is called when UnwindTerminate is reached
-            for terminate in [
-                rustc_middle::mir::UnwindTerminateReason::Abi,
-                rustc_middle::mir::UnwindTerminateReason::InCleanup,
-            ] {
-                self.register_polymorphic_function(
-                    self.tcx
-                        .require_lang_item(terminate.lang_item(), rustc_span::DUMMY_SP),
-                );
-            }
         }
         if self.options.ops_to_function_calls {
             self.register_poly_function_by_path("array::as_slice")?;

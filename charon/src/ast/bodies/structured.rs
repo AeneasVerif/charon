@@ -132,8 +132,9 @@ pub enum StatementKind {
         call: Call,
         on_unwind: Block,
     },
-    /// Unwinding must stop for ABI reasons or because cleanup code panicked again.
-    UnwindTerminate(UnwindTerminateReason),
+    /// Unwinding must stop for ABI reasons or because cleanup code panicked again. The function is
+    /// the lang item that rustc calls in that case.
+    UnwindTerminate(UnwindTerminateReason, FunDeclRef),
     /// Unwind out of the current function into its caller.
     UnwindResume,
 

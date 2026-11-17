@@ -44,6 +44,11 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: std::io::stdio::_print
 pub fn _print<'_0>(_1: Arguments<'_0>)
 = <opaque>

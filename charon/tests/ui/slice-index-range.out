@@ -83,6 +83,11 @@ struct str {
 pub fn panic(_1: &'static str) -> !
 = <opaque>
 
+// Full name: core::panicking::panic_cannot_unwind
+#[lang_item(PanicCannotUnwind)]
+fn panic_cannot_unwind() -> !
+= <opaque>
+
 pub fn core::ptr::const_ptr::{*const [T]}::len<T>(_1: *const [T]) -> usize
 where
     TraitClause0: (T: Sized),

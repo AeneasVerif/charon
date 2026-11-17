@@ -64,6 +64,11 @@ where
     Outlives1: (C: '_0),
 = <opaque>
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: core::result::Result
 #[diagnostic_item("Result")]
 pub enum Result<T, E>

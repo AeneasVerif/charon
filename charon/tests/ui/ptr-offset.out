@@ -70,6 +70,11 @@ struct str {
 pub fn panic(_1: &'static str) -> !
 = <opaque>
 
+// Full name: core::panicking::panic_cannot_unwind
+#[lang_item(PanicCannotUnwind)]
+fn panic_cannot_unwind() -> !
+= <opaque>
+
 // Full name: core::ptr::const_ptr::{*const T}::addr
 pub fn addr<T>(_1: *const T) -> usize
 = <opaque>

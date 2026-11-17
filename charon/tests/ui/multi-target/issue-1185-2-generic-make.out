@@ -7,6 +7,10 @@ pub trait core::marker::Destruct<Self>
     non-dyn-compatible
 }
 
+#[lang_item(PanicInCleanup)]
+fn core::panicking::panic_in_cleanup() -> !
+= <opaque>
+
 pub struct test_crate::State<H> {
   _h: H,
 }

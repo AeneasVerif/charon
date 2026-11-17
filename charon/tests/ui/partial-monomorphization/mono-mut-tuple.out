@@ -76,6 +76,11 @@ pub trait core::marker::Destruct::<&_ mut _><'_0, T0>
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: (_, _)::{impl Destruct for (A, B)}::drop_glue::<_, &_ mut _, _>
 unsafe fn (_, _)::impl_Destruct_for_tuple::drop_glue::<_, &_ mut _, _><'_0, '_1, T0, T1>(_1: &'_0 mut (&'_1 mut T0, T1))
 where

@@ -153,8 +153,9 @@ where
   force_no_backtrace: bool,
 }
 
+// Full name: core::panicking::panic_fmt::panic_impl
 #[lang_item(PanicImpl)]
-extern unsafe fn core::panicking::panic_fmt::panic_impl<'_0, '_1>(_1: &'_0 PanicInfo<'_1>) -> !
+extern unsafe fn panic_impl<'_0, '_1>(_1: &'_0 PanicInfo<'_1>) -> !
 where
     Outlives0: ('_1: '_0),
 = <extern:_RNvCs<hash>_7___rustc17rust_begin_unwind>
@@ -264,7 +265,7 @@ pub fn panic_fmt<'_0>(fmt: Arguments<'_0>) -> !
         storage_live(_9)
         _9 = &pi
         _8 = &(*_9)
-        _0 = core::panicking::panic_fmt::panic_impl<'35, '36>(move _8)
+        _0 = panic_impl<'35, '36>(move _8)
         ↳⚡ storage_dead(_9)
             storage_dead(_8)
             storage_dead(pi)

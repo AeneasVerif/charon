@@ -207,6 +207,11 @@ pub trait FnOnce<Self, Args>
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: core::ptr::non_null::{NonNull<[T]>}::as_mut_ptr
 pub fn as_mut_ptr<T>(_1: NonNull<[T]>) -> *mut T
 where

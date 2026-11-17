@@ -89,6 +89,11 @@ pub trait core::marker::Destruct::<Option<Option<&_ mut _>>><'_0, T0>
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: test_crate::identity
 fn identity<T>(x: T) -> T
 where

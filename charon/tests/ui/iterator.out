@@ -2557,6 +2557,11 @@ where
 pub fn add_assign<'_0, '_1>(_1: &'_1 mut i32, _2: &'_0 i32)
 = <opaque>
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: core::panicking::AssertKind
 pub enum AssertKind {
   Eq,

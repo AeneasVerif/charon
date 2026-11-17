@@ -101,6 +101,11 @@ struct str {
 pub fn panic(_1: &'static str) -> !
 = <opaque>
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: core::result::Result
 #[diagnostic_item("Result")]
 pub enum Result<T, E>

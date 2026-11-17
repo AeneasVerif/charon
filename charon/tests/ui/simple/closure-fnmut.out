@@ -60,6 +60,11 @@ pub trait FnMut<Self, Args>
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 struct (_,)<A> {
   _0: A,
 }

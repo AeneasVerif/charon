@@ -2636,7 +2636,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             StatementKind::UndefinedBehavior => {
                 write!(f, "{}", AbortKind::UndefinedBehavior.with_ctx(ctx))
             }
-            StatementKind::UnwindTerminate(reason) => {
+            StatementKind::UnwindTerminate(reason, _) => {
                 write!(f, "{}", AbortKind::UnwindTerminate(*reason).with_ctx(ctx))
             }
             StatementKind::Return => write!(f, "return"),
@@ -2851,7 +2851,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
             TerminatorKind::UndefinedBehavior => {
                 write!(f, "{}", AbortKind::UndefinedBehavior.with_ctx(ctx))
             }
-            TerminatorKind::UnwindTerminate(reason) => {
+            TerminatorKind::UnwindTerminate(reason, _) => {
                 write!(f, "{}", AbortKind::UnwindTerminate(*reason).with_ctx(ctx))
             }
             TerminatorKind::Return => write!(f, "return"),

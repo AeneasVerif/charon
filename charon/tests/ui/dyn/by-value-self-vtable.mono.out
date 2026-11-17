@@ -13,6 +13,11 @@ vtable core::marker::MetaSized::{vtable}::<S>: core::marker::MetaSized::{vtable}
 
 vtable core::marker::MetaSized::{vtable}::<*mut u32>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: alloc::boxed::Box::<S>
 #[fundamental]
 #[lang_item(OwnedBox)]

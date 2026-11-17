@@ -24,6 +24,11 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <missing>
+
 // Full name: core::result::Result
 #[diagnostic_item("Result")]
 pub enum Result<T, E>

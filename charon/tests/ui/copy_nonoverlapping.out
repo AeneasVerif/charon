@@ -371,6 +371,8 @@ fn check_language_ub() -> bool
 
 pub const core::mem::alignment::{Alignment}::new_unchecked::precondition_check::{promoted_const}: str = "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety." with_metadata(198usize)
 
+pub const core::panicking::panic_cannot_unwind::{promoted_const}: str = "panic in a function that cannot unwind" with_metadata(38usize)
+
 struct (_, _)<A, B>
 where
     TraitClause0: (A: Sized),
@@ -535,6 +537,45 @@ pub fn panic_nounwind_fmt<'_0>(fmt: Arguments<'_0>, force_no_backtrace: bool) ->
         storage_dead(force_no_backtrace)
         storage_dead(fmt)
         unwind_terminate(abi)
+}
+
+// Full name: core::panicking::panic_nounwind
+#[lang_item(PanicNounwind)]
+pub fn panic_nounwind(expr: &'static str) -> !
+{
+    let mut _0: !; // return
+    let expr: &'1 str; // arg #1
+    let _2: !; // anonymous local
+    let mut _3: Arguments<'3>; // anonymous local
+    let mut _4: &'4 str; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = copy expr
+    _3 = from_str<'9>(move _4)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(expr)
+        unwind_terminate(abi)
+    storage_dead(_4)
+    _2 = panic_nounwind_fmt<'14>(move _3, const false)
+    ↳⚡ undefined_behavior
+}
+
+// Full name: core::panicking::panic_cannot_unwind
+#[lang_item(PanicCannotUnwind)]
+fn panic_cannot_unwind() -> !
+{
+    let mut _0: !; // return
+    let mut _1: &'1 str; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = &core::panicking::panic_cannot_unwind::{promoted_const} with_metadata(const 38usize)
+    _0 = panic_nounwind(move _1)
+    ↳⚡ undefined_behavior
 }
 
 #[track_caller]

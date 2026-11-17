@@ -35,6 +35,11 @@ pub trait Deref<Self>
     vtable: core::ops::deref::Deref::{vtable}<Self::Target>
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: alloc::alloc::Global
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
