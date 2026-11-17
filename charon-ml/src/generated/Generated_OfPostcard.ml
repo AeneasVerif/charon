@@ -1590,7 +1590,7 @@ and unop_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 3 ->
          let* _0 = type_decl_ref_of_postcard ctx st in
          let* _1 = v_table_field_of_postcard ctx st in
-         Ok (VTableMethodLookup (_0, _1))
+         Ok (VTableLookup (_0, _1))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and unsizing_metadata_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)

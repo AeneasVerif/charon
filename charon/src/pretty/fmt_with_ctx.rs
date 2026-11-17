@@ -3405,8 +3405,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for UnOp {
             UnOp::Not => write!(f, "~"),
             UnOp::Neg(mode) => write!(f, "{}.-", mode),
             UnOp::Cast(kind) => write!(f, "{}", kind.with_ctx(ctx)),
-            UnOp::VTableMethodLookup(vtable, field) => {
-                write!(f, "vtable_lookup<{}>", vtable.with_ctx(ctx))?;
+            UnOp::VTableLookup(vtable, field) => {
+                write!(f, "vtable_lookup<")?;
                 // Show the entry by the name of the vtable struct's field that holds it.
                 if let Some(krate) = ctx.get_crate()
                     && let Some(decl) = krate.type_decls.get(vtable.id)
@@ -3417,9 +3417,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for UnOp {
                         .find(|(_, entry)| *entry == field)
                     && let Some(field_decl) = fields.get(id)
                 {
-                    write!(f, ".{}", field_decl.name)
+                    write!(f, "{}>", field_decl.name)
                 } else {
-                    write!(f, ".{field:?}")
+                    write!(f, "{field:?}>")
                 }
             }
         }

@@ -219,7 +219,7 @@ fn transform_dyn_trait_call(
             .ty
             .clone()
             .substitute(&current_vtable_ref.generics);
-        let lookup = UnOp::VTableMethodLookup(
+        let lookup = UnOp::VTableLookup(
             current_vtable_ref.clone(),
             VTableField::SuperTrait(clause_id),
         );
@@ -235,7 +235,7 @@ fn transform_dyn_trait_call(
         vtable_ptr = Operand::Move(supertrait_vtable_ptr);
     }
     let method_lookup = Rvalue::UnaryOp(
-        UnOp::VTableMethodLookup(
+        UnOp::VTableLookup(
             vtable_ty
                 .as_adt()
                 .expect("vtable place should have an ADT type")

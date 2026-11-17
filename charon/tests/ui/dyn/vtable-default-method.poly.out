@@ -207,7 +207,7 @@ pub fn main()
     storage_live(_5)
     _5 = &(*b) with_metadata(read b.metadata)
     storage_live(_7)
-    _7 = vtable_lookup<test_crate::Trait::{vtable}>.method_dflt(read _5.metadata)
+    _7 = vtable_lookup<method_dflt>(read _5.metadata)
     _4 = (read _7)<'23>(move _5)
     ↳⚡ storage_dead(_6)
         unwind_continue

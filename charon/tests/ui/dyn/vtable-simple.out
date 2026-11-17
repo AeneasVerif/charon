@@ -194,7 +194,7 @@ where
     storage_live(_7)
     _7 = &(*arg)
     storage_live(_8)
-    _8 = vtable_lookup<test_crate::Modifiable::{vtable}<T>>.method_modify(read _6.metadata)
+    _8 = vtable_lookup<method_modify>(read _6.metadata)
     _0 = (read _8)<'25, '26>(move _6, move _7)
     ↳⚡ storage_dead(arg)
         unwind_continue

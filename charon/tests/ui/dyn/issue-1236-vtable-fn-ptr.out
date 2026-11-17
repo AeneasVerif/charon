@@ -134,7 +134,7 @@ fn main()
         storage_live(_6);
         _6 = &(*some_foo) with_metadata(read some_foo.metadata);
         storage_live(_7);
-        _7 = vtable_lookup<test_crate::Foo::{vtable}>.method_foo(read _6.metadata);
+        _7 = vtable_lookup<method_foo>(read _6.metadata);
         storage_live(_8);
         _8 = cast<fn(&'10 (dyn Foo + '11))>(move _7);
         _5 = (read _8)(move _6) -> bb1 (unwind: bb2);

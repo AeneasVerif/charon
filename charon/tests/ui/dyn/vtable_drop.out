@@ -301,7 +301,7 @@ where
     storage_live(_7)
     _7 = &(*arg)
     storage_live(_8)
-    _8 = vtable_lookup<test_crate::Modifiable::{vtable}<T>>.method_modify(read _6.metadata)
+    _8 = vtable_lookup<method_modify>(read _6.metadata)
     _0 = (read _8)<'23, '24>(move _6, move _7)
     ↳⚡ drop[impl_Destruct_for_Box::drop_glue<'25, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]] _5
         ↳⚡ storage_dead(arg)

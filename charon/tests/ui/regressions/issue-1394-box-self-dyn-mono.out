@@ -145,7 +145,7 @@ fn main()
     storage_live(_5)
     _5 = move b
     storage_live(_6)
-    _6 = vtable_lookup<test_crate::Trait::{vtable}>.method_method(read _5.metadata)
+    _6 = vtable_lookup<method_method>(read _5.metadata)
     storage_live(_7)
     _7 = cast<fn(Box::<(dyn Trait), Global>)>(move _6)
     _4 = (read _7)(move _5)
