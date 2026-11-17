@@ -97,10 +97,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .generic_args
                     .first()?
                     .as_type()?;
-                let hax::TyKind::Closure(closure) = ty.kind() else {
-                    return None;
+                let s = self.hax_state_with_id();
+                let item = match ty.kind() {
+                    hax::TyKind::Closure(closure) => closure.item.erase(s),
+                    hax::TyKind::Tuple(tuple) => {
+                        let args = tuple.item.erase(s).rustc_args(s);
+                        let synthetic = hax::SyntheticItem::TupleClone(args.len());
+                        hax::ItemRef::translate_synthetic(s, synthetic, args)
+                    }
+                    _ => return None,
                 };
-                let item = closure.item.erase(self.hax_state_with_id());
                 Some((item, VirtualImplKind::Clone))
             }
             hax::BuiltinTraitData::Other(lang_item @ (FnOnce | FnMut | Fn)) => {

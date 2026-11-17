@@ -354,6 +354,7 @@ impl DefId {
     pub fn make_synthetic<'tcx, S: BaseState<'tcx>>(s: &S, synthetic: SyntheticItem) -> Self {
         let kind = match synthetic {
             SyntheticItem::FnPtr(_) => DefKind::FnPtr,
+            SyntheticItem::TupleClone(_) => DefKind::Impl { of_trait: true },
             _ => DefKind::Struct,
         };
         let contents = DefIdContents {

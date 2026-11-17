@@ -84,6 +84,25 @@ struct str {
   _0: [u8],
 }
 
+// Full name: ()::{impl Clone for ()}::clone
+fn impl_Clone_for_unit::clone<'_0>(_1: &'_0 ())
+{
+    let mut _0: (); // return
+    let _1: &'1 (); // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: ()::{impl Clone for ()}
+impl "impl_Clone_for_unit" Clone for () {
+    proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
+    fn clone<'_0_1> = impl_Clone_for_unit::clone<'_0_1>
+    non-dyn-compatible
+}
+
 // Full name: test_crate::Foo
 enum Foo {
   A,
@@ -224,7 +243,7 @@ fn bar<const N : usize>()
     storage_live(_1)
     storage_live(_2)
     _2 = ()
-    _1 = repeat<(), test_crate::bar::{const#2}<N>>[{built_in impl Sized for ()}, {built_in impl Clone for ()}](move _2)
+    _1 = repeat<(), test_crate::bar::{const#2}<N>>[{built_in impl Sized for ()}, impl_Clone_for_unit](move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
     storage_dead(_1)
