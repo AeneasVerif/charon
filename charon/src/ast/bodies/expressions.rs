@@ -160,7 +160,6 @@ pub enum UnOp {
     Cast(CastKind),
     /// Reads the entry `VTableField` of a VTable, which occurs when calling functions of a trait object.
     /// This is the only way code is allowed to read VTables, as a plain read in user code is UB.
-    /// Introduced by `transform_dyn_trait_calls`.
     VTableLookup(TypeDeclRef, VTableField),
 }
 

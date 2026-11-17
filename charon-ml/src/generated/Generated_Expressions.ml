@@ -277,8 +277,7 @@ and unop =
   | VTableLookup of type_decl_ref * v_table_field
       (** Reads the entry [VTableField] of a VTable, which occurs when calling
           functions of a trait object. This is the only way code is allowed to
-          read VTables, as a plain read in user code is UB. Introduced by
-          [transform_dyn_trait_calls]. *)
+          read VTables, as a plain read in user code is UB. *)
 
 (** Used for [[Rvalue::Use]] to indicate whether the operand should be retagged
     (this is used for Rust's aliasing model). *)
