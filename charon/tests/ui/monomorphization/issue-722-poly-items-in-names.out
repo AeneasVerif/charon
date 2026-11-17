@@ -86,9 +86,9 @@ fn some_method<'_0>(self: &'_0 Point::<i32>)
     }
     storage_live(_8)
     _8 = &test_crate::{impl SomeTrait for Point::<i32>}::some_method::{promoted_const} with_metadata(const 59usize)
-    storage_dead(_8)
     panic(panic(move _8))
     ↳⚡ storage_dead(self)
+        storage_dead(_8)
         unwind_continue
 }
 

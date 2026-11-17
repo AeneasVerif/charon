@@ -1549,9 +1549,9 @@ pub fn flabada<'a>(_x: &'a ()) -> Wrapper<(bool, &'a ())>[{built_in impl Sized f
     storage_live(_0)
     storage_live(_2)
     _2 = &test_crate::flabada::{promoted_const} with_metadata(const 19usize)
-    storage_dead(_2)
     panic(panic(move _2))
     ↳⚡ storage_dead(_x)
+        storage_dead(_2)
         unwind_continue
 }
 
@@ -1693,9 +1693,9 @@ where
     storage_live(_0)
     storage_live(_1)
     _1 = &test_crate::assoc_ty_trait_ref::index::{promoted_const} with_metadata(const 19usize)
-    storage_dead(_1)
     panic(panic(move _1))
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
 }
 
 

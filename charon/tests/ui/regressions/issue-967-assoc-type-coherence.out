@@ -83,9 +83,9 @@ where
     storage_live(_0)
     storage_live(_1)
     _1 = &test_crate::foo::{promoted_const} with_metadata(const 14usize)
-    storage_dead(_1)
     panic(panic(move _1))
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
 }
 
 

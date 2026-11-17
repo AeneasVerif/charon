@@ -97,6 +97,7 @@ fn main()
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'1, MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]}, {built_in impl Sized for Global}]] _2
         ↳⚡ storage_dead(ret)
             unwind_terminate(in_cleanup)
+        storage_dead(ret)
         unwind_continue
     storage_live(ret)
     storage_live(x)
@@ -111,13 +112,15 @@ fn main()
         conditional_drop[impl_Destruct_for_Box::drop_glue<'1, MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]}, {built_in impl Sized for Global}]] _2
         ↳⚡ storage_dead(ret)
             unwind_terminate(in_cleanup)
+        storage_dead(ret)
         unwind_continue
     storage_dead(y)
     storage_dead(x)
     _1 = move ret
     storage_dead(_2)
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'2, i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]] _1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(ret)
+        unwind_continue
     storage_dead(_1)
     _0 = ()
     storage_dead(ret)

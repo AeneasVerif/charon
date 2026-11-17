@@ -41,13 +41,15 @@ pub fn test_crate::mod_reduce(a: u32) -> u32
     storage_live(_5)
     _5 = &test_crate::mod_reduce::{promoted_const} with_metadata(const 25usize)
     assert(move _2 == true) else panic(core::panicking::panic(move _5))
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_5)
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
     _4 = copy a
     _0 = core::num::{u32}::wrapping_add(move _4, const 1u32)
     ↳⚡ storage_dead(a)
+        storage_dead(_5)
         unwind_continue
     storage_dead(_4)
     storage_dead(a)

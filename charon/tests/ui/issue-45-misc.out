@@ -583,6 +583,8 @@ fn cbd(prf_input: [u8; 33usize])
     _3 = Range { start: const 0u8, end: const 3u8 }
     _2 = into_iter<Range<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Range<u8>[{built_in impl Sized for u8}]}, impl_Iterator_for_Range<u8>[{built_in impl Sized for u8}, impl_Step_for_u8, {built_in impl Destruct for u8}]](move _3)
     ↳⚡ storage_dead(prf_input)
+        storage_dead(_12)
+        storage_dead(_11)
         unwind_continue
     storage_dead(_3)
     storage_live(iter)
@@ -595,6 +597,8 @@ fn cbd(prf_input: [u8; 33usize])
         _6 = &two-phase-mut (*_7)
         _5 = next<'6, u8>[{built_in impl Sized for u8}, impl_Step_for_u8, {built_in impl Destruct for u8}](move _6)
         ↳⚡ storage_dead(prf_input)
+            storage_dead(_12)
+            storage_dead(_11)
             unwind_continue
         storage_dead(_6)
         match _5 {

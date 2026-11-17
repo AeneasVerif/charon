@@ -384,7 +384,8 @@ fn main()
     ↳⚡ undefined_behavior
     storage_dead(_4)
     ptr = as_ptr<'8, i32>[{built_in impl Sized for i32}](move _3)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_9)
+        unwind_continue
     storage_dead(_3)
     fake_read(ptr)
     storage_live(_5)
@@ -393,14 +394,16 @@ fn main()
     storage_live(_8)
     _8 = copy ptr
     _7 = offset<i32>[{built_in impl Sized for i32}](move _8, const 1isize)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_9)
+        unwind_continue
     storage_dead(_8)
     _6 = copy (*_7)
     _5 = move _6 == const 42i32
     storage_live(_9)
     _9 = &test_crate::main::{promoted_const} with_metadata(const 38usize)
     assert(move _5 == true) else panic(panic(move _9))
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_9)
+        unwind_continue
     storage_dead(_6)
     storage_dead(_7)
     storage_dead(_5)

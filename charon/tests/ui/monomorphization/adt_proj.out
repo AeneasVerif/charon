@@ -56,9 +56,9 @@ fn main()
         _ => {
             storage_live(_3)
             _3 = &test_crate::main::{promoted_const} with_metadata(const 14usize)
-            storage_dead(_3)
             panic(panic(move _3))
-            ↳⚡ unwind_continue
+            ↳⚡ storage_dead(_3)
+                unwind_continue
         },
     }
     storage_live(n)

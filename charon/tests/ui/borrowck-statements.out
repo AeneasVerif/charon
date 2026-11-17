@@ -294,9 +294,9 @@ pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u
             storage_dead(_3)
             storage_live(_4)
             _4 = &test_crate::destructure::{promoted_const} with_metadata(const 14usize)
-            storage_dead(_4)
             panic(panic(move _4))
             ↳⚡ storage_dead(input)
+                storage_dead(_4)
                 unwind_continue
         },
     }

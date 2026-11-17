@@ -188,6 +188,10 @@ where
                 storage_dead(_3)
                 storage_dead(_2)
                 storage_dead(_1)
+                storage_dead(_11)
+                storage_dead(_10)
+                storage_dead(_9)
+                storage_dead(_8)
                 unwind_continue
             continue 0
         }

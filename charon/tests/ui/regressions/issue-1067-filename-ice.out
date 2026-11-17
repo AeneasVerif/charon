@@ -113,7 +113,8 @@ fn main()
     _0 = ()
     storage_live(buf)
     buf = new<u8>[{built_in impl Sized for u8}]()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_8)
+        unwind_continue
     fake_read(buf)
     storage_live(_2)
     storage_live(_3)
@@ -133,6 +134,7 @@ fn main()
     ↳⚡ conditional_drop[impl_Destruct_for_Vec::drop_glue<'17, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf
         ↳⚡ storage_dead(_8)
             unwind_terminate(in_cleanup)
+        storage_dead(_8)
         unwind_continue
     storage_dead(_5)
     storage_dead(_4)
@@ -143,13 +145,15 @@ fn main()
         conditional_drop[impl_Destruct_for_Vec::drop_glue<'17, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf
         ↳⚡ storage_dead(_8)
             unwind_terminate(in_cleanup)
+        storage_dead(_8)
         unwind_continue
     storage_dead(_3)
     storage_dead(_7)
     storage_dead(_2)
     _0 = ()
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'19, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_8)
+        unwind_continue
     storage_dead(buf)
     storage_dead(_8)
     return

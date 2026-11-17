@@ -42,10 +42,11 @@ fn main()
     _2 = &test_crate::main::{promoted_const} with_metadata(const 4usize)
     _1 = from_str<'0>(move _2)
     ↳⚡ storage_dead(_1)
+        storage_dead(_2)
         unwind_continue
-    storage_dead(_2)
     panic(panic_fmt<'11>(move _1))
     ↳⚡ storage_dead(_1)
+        storage_dead(_2)
         unwind_continue
 }
 

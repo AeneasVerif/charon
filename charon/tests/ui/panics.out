@@ -106,9 +106,9 @@ fn panic1()
     _0 = ()
     storage_live(_1)
     _1 = &test_crate::panic1::{promoted_const} with_metadata(const 14usize)
-    storage_dead(_1)
     panic(panic(move _1))
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
 }
 
 pub const test_crate::panic2::{promoted_const}: str = "O no!" with_metadata(5usize)
@@ -127,10 +127,11 @@ fn panic2()
     _2 = &test_crate::panic2::{promoted_const} with_metadata(const 5usize)
     _1 = from_str<'0>(move _2)
     ↳⚡ storage_dead(_1)
+        storage_dead(_2)
         unwind_continue
-    storage_dead(_2)
     panic(panic_fmt<'11>(move _1))
     ↳⚡ storage_dead(_1)
+        storage_dead(_2)
         unwind_continue
 }
 
@@ -150,10 +151,11 @@ fn panic3()
     _2 = &test_crate::panic3::{promoted_const} with_metadata(const 5usize)
     _1 = from_str_nonconst<'0>(move _2)
     ↳⚡ storage_dead(_1)
+        storage_dead(_2)
         unwind_continue
-    storage_dead(_2)
     panic(panic_fmt<'11>(move _1))
     ↳⚡ storage_dead(_1)
+        storage_dead(_2)
         unwind_continue
 }
 
@@ -173,7 +175,8 @@ fn panic4()
     storage_live(_2)
     _2 = &test_crate::panic4::{promoted_const} with_metadata(const 23usize)
     assert(move _1 == true) else panic(panic(move _2))
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_2)
+        unwind_continue
     storage_dead(_1)
     _0 = ()
     storage_dead(_2)
@@ -201,10 +204,11 @@ fn panic5()
         _3 = &test_crate::panic5::{promoted_const} with_metadata(const 13usize)
         _2 = from_str<'0>(move _3)
         ↳⚡ storage_dead(_2)
+            storage_dead(_3)
             unwind_continue
-        storage_dead(_3)
         panic(panic_fmt<'11>(move _2))
         ↳⚡ storage_dead(_2)
+            storage_dead(_3)
             unwind_continue
     }
     storage_dead(_1)
@@ -226,9 +230,9 @@ fn panic6()
     _0 = ()
     storage_live(_1)
     _1 = &test_crate::panic6::{promoted_const} with_metadata(const 40usize)
-    storage_dead(_1)
     panic(panic(move _1))
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
 }
 
 pub const test_crate::panic7::{promoted_const}: str = "internal error: entered unreachable code: can't reach this" with_metadata(58usize)
@@ -247,10 +251,11 @@ fn panic7()
     _2 = &test_crate::panic7::{promoted_const} with_metadata(const 58usize)
     _1 = from_str_nonconst<'0>(move _2)
     ↳⚡ storage_dead(_1)
+        storage_dead(_2)
         unwind_continue
-    storage_dead(_2)
     panic(panic_fmt<'11>(move _1))
     ↳⚡ storage_dead(_1)
+        storage_dead(_2)
         unwind_continue
 }
 
@@ -266,9 +271,9 @@ fn panic8()
     _0 = ()
     storage_live(_1)
     _1 = &test_crate::panic8::{promoted_const} with_metadata(const 19usize)
-    storage_dead(_1)
     panic(panic(move _1))
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
 }
 
 pub const test_crate::panic9::{promoted_const}: str = "explicit panic" with_metadata(14usize)
@@ -283,9 +288,9 @@ fn panic9()
     _0 = ()
     storage_live(_1)
     _1 = &test_crate::panic9::{promoted_const} with_metadata(const 14usize)
-    storage_dead(_1)
     panic(begin_panic<&'18 str>[{built_in impl Sized for &'18 str}, impl_Any_for_T<&'18 str>[{built_in impl MetaSized for &'18 str}], {impl Send for &'_0 T}<'18, str>[{built_in impl Sync for str}]](move _1))
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
 }
 
 

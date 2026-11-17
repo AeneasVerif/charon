@@ -254,11 +254,11 @@ where
         CList::CNil => {
             storage_live(_12)
             _12 = &test_crate::list_nth::{promoted_const} with_metadata(const 14usize)
-            storage_dead(_12)
             panic(panic(move _12))
             ↳⚡ storage_dead(_11)
                 storage_dead(i)
                 storage_dead(l)
+                storage_dead(_12)
                 unwind_continue
         },
     }
@@ -286,6 +286,7 @@ where
         ↳⚡ storage_dead(_11)
             storage_dead(i)
             storage_dead(l)
+            storage_dead(_12)
             unwind_continue
         _0 = &(*_7)
         storage_dead(_9)
@@ -349,11 +350,11 @@ where
         CList::CNil => {
             storage_live(_17)
             _17 = &test_crate::list_nth_mut::{promoted_const} with_metadata(const 14usize)
-            storage_dead(_17)
             panic(panic(move _17))
             ↳⚡ storage_dead(_16)
                 storage_dead(i)
                 storage_dead(l)
+                storage_dead(_17)
                 unwind_continue
         },
     }
@@ -388,6 +389,7 @@ where
         ↳⚡ storage_dead(_16)
             storage_dead(i)
             storage_dead(l)
+            storage_dead(_17)
             unwind_continue
         _8 = &mut (*_12)
         storage_dead(_14)
@@ -476,11 +478,11 @@ where
     }
     storage_live(_9)
     _9 = &test_crate::list_nth_mut1::{promoted_const} with_metadata(const 14usize)
-    storage_dead(_9)
     panic(panic(move _9))
     ↳⚡ storage_dead(_7)
         storage_dead(i)
         storage_dead(l)
+        storage_dead(_9)
         unwind_continue
 }
 

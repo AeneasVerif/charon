@@ -43,7 +43,8 @@ pub fn test_crate::const_time_array_copy_mwe<'_0, const N : usize>(_a: &'_0 mut 
     storage_live(_4)
     _4 = &test_crate::const_time_array_copy_mwe::{promoted_const} with_metadata(const 40usize)
     assert(move _2 == true) else panic(core::panicking::panic(move _4))
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_4)
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_0)

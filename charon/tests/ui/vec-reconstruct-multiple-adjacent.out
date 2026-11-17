@@ -160,6 +160,9 @@ fn multiple_adjacent()
             storage_dead(ret_10)
             storage_dead(ret_7)
             unwind_terminate(in_cleanup)
+        storage_dead(ret_13)
+        storage_dead(ret_10)
+        storage_dead(ret_7)
         unwind_continue
     storage_live(ret_7)
     storage_live(x_8)
@@ -176,6 +179,9 @@ fn multiple_adjacent()
             storage_dead(ret_10)
             storage_dead(ret_7)
             unwind_terminate(in_cleanup)
+        storage_dead(ret_13)
+        storage_dead(ret_10)
+        storage_dead(ret_7)
         unwind_continue
     storage_dead(y_9)
     storage_dead(x_8)
@@ -198,6 +204,9 @@ fn multiple_adjacent()
             storage_dead(ret_10)
             storage_dead(ret_7)
             unwind_terminate(in_cleanup)
+        storage_dead(ret_13)
+        storage_dead(ret_10)
+        storage_dead(ret_7)
         unwind_continue
     storage_live(ret_10)
     storage_live(x_11)
@@ -219,6 +228,9 @@ fn multiple_adjacent()
             storage_dead(ret_10)
             storage_dead(ret_7)
             unwind_terminate(in_cleanup)
+        storage_dead(ret_13)
+        storage_dead(ret_10)
+        storage_dead(ret_7)
         unwind_continue
     storage_dead(y_12)
     storage_dead(x_11)
@@ -246,6 +258,9 @@ fn multiple_adjacent()
             storage_dead(ret_10)
             storage_dead(ret_7)
             unwind_terminate(in_cleanup)
+        storage_dead(ret_13)
+        storage_dead(ret_10)
+        storage_dead(ret_7)
         unwind_continue
     storage_live(ret_13)
     storage_live(x_14)
@@ -272,6 +287,9 @@ fn multiple_adjacent()
             storage_dead(ret_10)
             storage_dead(ret_7)
             unwind_terminate(in_cleanup)
+        storage_dead(ret_13)
+        storage_dead(ret_10)
+        storage_dead(ret_7)
         unwind_continue
     storage_dead(y_15)
     storage_dead(x_14)
@@ -290,6 +308,9 @@ fn multiple_adjacent()
             storage_dead(ret_10)
             storage_dead(ret_7)
             unwind_terminate(in_cleanup)
+        storage_dead(ret_13)
+        storage_dead(ret_10)
+        storage_dead(ret_7)
         unwind_continue
     storage_dead(_c)
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'9, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _b
@@ -298,10 +319,16 @@ fn multiple_adjacent()
             storage_dead(ret_10)
             storage_dead(ret_7)
             unwind_terminate(in_cleanup)
+        storage_dead(ret_13)
+        storage_dead(ret_10)
+        storage_dead(ret_7)
         unwind_continue
     storage_dead(_b)
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'10, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _a
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(ret_13)
+        storage_dead(ret_10)
+        storage_dead(ret_7)
+        unwind_continue
     storage_dead(_a)
     storage_dead(ret_13)
     storage_dead(ret_10)
@@ -332,6 +359,7 @@ fn multiple_values()
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'1, MaybeUninit<[u8; 3usize]>[{built_in impl Sized for [u8; 3usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 3usize]>[{built_in impl Sized for [u8; 3usize]}]}, {built_in impl Sized for Global}]] _2
         ↳⚡ storage_dead(ret)
             unwind_terminate(in_cleanup)
+        storage_dead(ret)
         unwind_continue
     storage_live(ret)
     storage_live(x)
@@ -346,6 +374,7 @@ fn multiple_values()
         conditional_drop[impl_Destruct_for_Box::drop_glue<'1, MaybeUninit<[u8; 3usize]>[{built_in impl Sized for [u8; 3usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 3usize]>[{built_in impl Sized for [u8; 3usize]}]}, {built_in impl Sized for Global}]] _2
         ↳⚡ storage_dead(ret)
             unwind_terminate(in_cleanup)
+        storage_dead(ret)
         unwind_continue
     storage_dead(y)
     storage_dead(x)
@@ -354,7 +383,8 @@ fn multiple_values()
     fake_read(_a)
     _0 = ()
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'2, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _a
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(ret)
+        unwind_continue
     storage_dead(_a)
     storage_dead(ret)
     return
@@ -384,6 +414,7 @@ fn repeated_value()
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'1, MaybeUninit<[i32; 3usize]>[{built_in impl Sized for [i32; 3usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 3usize]>[{built_in impl Sized for [i32; 3usize]}]}, {built_in impl Sized for Global}]] _2
         ↳⚡ storage_dead(ret)
             unwind_terminate(in_cleanup)
+        storage_dead(ret)
         unwind_continue
     storage_live(ret)
     storage_live(x)
@@ -398,6 +429,7 @@ fn repeated_value()
         conditional_drop[impl_Destruct_for_Box::drop_glue<'1, MaybeUninit<[i32; 3usize]>[{built_in impl Sized for [i32; 3usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 3usize]>[{built_in impl Sized for [i32; 3usize]}]}, {built_in impl Sized for Global}]] _2
         ↳⚡ storage_dead(ret)
             unwind_terminate(in_cleanup)
+        storage_dead(ret)
         unwind_continue
     storage_dead(y)
     storage_dead(x)
@@ -406,7 +438,8 @@ fn repeated_value()
     fake_read(_a)
     _0 = ()
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'2, i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]] _a
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(ret)
+        unwind_continue
     storage_dead(_a)
     storage_dead(ret)
     return
@@ -447,12 +480,14 @@ fn with_fn_calls()
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'0, MaybeUninit<[u8; 2usize]>[{built_in impl Sized for [u8; 2usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 2usize]>[{built_in impl Sized for [u8; 2usize]}]}, {built_in impl Sized for Global}]] _3
         ↳⚡ storage_dead(ret)
             unwind_terminate(in_cleanup)
+        storage_dead(ret)
         unwind_continue
     storage_live(_5)
     _5 = foo()
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'0, MaybeUninit<[u8; 2usize]>[{built_in impl Sized for [u8; 2usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 2usize]>[{built_in impl Sized for [u8; 2usize]}]}, {built_in impl Sized for Global}]] _3
         ↳⚡ storage_dead(ret)
             unwind_terminate(in_cleanup)
+        storage_dead(ret)
         unwind_continue
     storage_live(_9)
     _9 = [move _4, move _5]
@@ -463,6 +498,7 @@ fn with_fn_calls()
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'2, MaybeUninit<[u8; 2usize]>[{built_in impl Sized for [u8; 2usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 2usize]>[{built_in impl Sized for [u8; 2usize]}]}, {built_in impl Sized for Global}]] _2
         ↳⚡ storage_dead(ret)
             unwind_terminate(in_cleanup)
+        storage_dead(ret)
         unwind_continue
     storage_dead(_3)
     storage_live(ret)
@@ -478,6 +514,7 @@ fn with_fn_calls()
         conditional_drop[impl_Destruct_for_Box::drop_glue<'2, MaybeUninit<[u8; 2usize]>[{built_in impl Sized for [u8; 2usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 2usize]>[{built_in impl Sized for [u8; 2usize]}]}, {built_in impl Sized for Global}]] _2
         ↳⚡ storage_dead(ret)
             unwind_terminate(in_cleanup)
+        storage_dead(ret)
         unwind_continue
     storage_dead(y)
     storage_dead(x)
@@ -486,7 +523,8 @@ fn with_fn_calls()
     fake_read(_a)
     _0 = ()
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'3, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _a
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(ret)
+        unwind_continue
     storage_dead(_a)
     storage_dead(ret)
     return

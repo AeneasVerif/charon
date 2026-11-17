@@ -406,7 +406,9 @@ pub fn from(small: i32) -> i64
         storage_live(_11)
         _11 = &core::convert::num::impl_From_i32_for_i64::from::{promoted_const} with_metadata(const 58usize)
         assert(move _3 == true) else panic(panic(move _11))
-        ↳⚡ unwind_continue
+        ↳⚡ storage_dead(_12)
+            storage_dead(_11)
+            unwind_continue
         storage_dead(_5)
         storage_dead(_4)
         storage_dead(_3)
@@ -425,7 +427,9 @@ pub fn from(small: i32) -> i64
         storage_live(_12)
         _12 = &core::convert::num::impl_From_i32_for_i64::from::{promoted_const#1} with_metadata(const 58usize)
         assert(move _7 == true) else panic(panic(move _12))
-        ↳⚡ unwind_continue
+        ↳⚡ storage_dead(_12)
+            storage_dead(_11)
+            unwind_continue
         storage_dead(_9)
         storage_dead(_8)
         storage_dead(_7)

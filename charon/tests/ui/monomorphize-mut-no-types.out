@@ -203,6 +203,9 @@ where
             unwind_terminate(in_cleanup)
         storage_dead(_15)
         storage_dead(x)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_3)
     storage_dead(_2)
@@ -221,6 +224,9 @@ where
             unwind_terminate(in_cleanup)
         storage_dead(_15)
         storage_dead(x)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_5)
     storage_dead(_6)
@@ -243,6 +249,9 @@ where
             unwind_terminate(in_cleanup)
         storage_dead(_15)
         storage_dead(x)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_8)
     storage_dead(_10)
@@ -266,6 +275,9 @@ where
             unwind_terminate(in_cleanup)
         storage_dead(_15)
         storage_dead(x)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_12)
     storage_dead(_11)
@@ -273,6 +285,9 @@ where
     conditional_drop[{built_in impl Destruct for A}::drop_glue<'892>] x
     ↳⚡ storage_dead(_15)
         storage_dead(x)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_15)
     storage_dead(x)

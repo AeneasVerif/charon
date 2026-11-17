@@ -110,7 +110,8 @@ where
     storage_live(_4)
     storage_live(_5)
     _5 = TraitClause4::default()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_13)
+        unwind_continue
     _4 = &_5
     args_3 = (move _4,)
     storage_dead(_4)
@@ -123,6 +124,7 @@ where
     ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'51>] _5
         ↳⚡ storage_dead(_13)
             unwind_terminate(in_cleanup)
+        storage_dead(_13)
         unwind_continue
     storage_dead(_8)
     args_6 = [move _7]
@@ -142,6 +144,7 @@ where
     ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'51>] _5
         ↳⚡ storage_dead(_13)
             unwind_terminate(in_cleanup)
+        storage_dead(_13)
         unwind_continue
     storage_dead(_12)
     storage_dead(_11)
@@ -151,11 +154,13 @@ where
     ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'51>] _5
         ↳⚡ storage_dead(_13)
             unwind_terminate(in_cleanup)
+        storage_dead(_13)
         unwind_continue
     storage_dead(_2)
     storage_dead(args_6)
     conditional_drop[{built_in impl Destruct for U}::drop_glue<'65>] _5
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_13)
+        unwind_continue
     storage_dead(_5)
     storage_dead(args_3)
     storage_dead(_1)

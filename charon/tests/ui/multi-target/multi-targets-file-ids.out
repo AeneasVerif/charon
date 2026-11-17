@@ -771,6 +771,12 @@ fn test_crate::add_scalar<'_0, '_1>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8us
     _3 = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<usize>[{built_in impl core::marker::Sized for usize}]>[{built_in impl core::marker::Sized for core::ops::range::Range<usize>[{built_in impl core::marker::Sized for usize}]}, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[TraitClause0]}<usize>[{built_in impl core::marker::Sized for usize}, core::iter::range::{impl core::iter::range::Step for usize}, {built_in impl core::marker::Destruct for usize}]](move _4)
     ↳⚡ storage_dead(b)
         storage_dead(a)
+        storage_dead(_21)
+        storage_dead(_20)
+        storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_4)
     storage_live(iter)
@@ -784,6 +790,12 @@ fn test_crate::add_scalar<'_0, '_1>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8us
         _6 = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[TraitClause0]}::next<'10, usize>[{built_in impl core::marker::Sized for usize}, core::iter::range::{impl core::iter::range::Step for usize}, {built_in impl core::marker::Destruct for usize}](move _7)
         ↳⚡ storage_dead(b)
             storage_dead(a)
+            storage_dead(_21)
+            storage_dead(_20)
+            storage_dead(_19)
+            storage_dead(_18)
+            storage_dead(_17)
+            storage_dead(_16)
             unwind_continue
         storage_dead(_7)
         match _6 {
@@ -819,6 +831,12 @@ fn test_crate::add_scalar<'_0, '_1>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8us
         _10 = core::num::{u16}::wrapping_add(move _11, move _13)
         ↳⚡ storage_dead(b)
             storage_dead(a)
+            storage_dead(_21)
+            storage_dead(_20)
+            storage_dead(_19)
+            storage_dead(_18)
+            storage_dead(_17)
+            storage_dead(_16)
             unwind_continue
         storage_dead(_13)
         storage_dead(_11)

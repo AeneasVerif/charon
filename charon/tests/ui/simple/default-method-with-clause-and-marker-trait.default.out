@@ -39,9 +39,9 @@ where
     storage_live(_0)
     storage_live(_1)
     _1 = &test_crate::Trait::default_method::{promoted_const} with_metadata(const 19usize)
-    storage_dead(_1)
     panic(panic(move _1))
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
 }
 
 // Full name: test_crate::{impl Trait for T}::default_method::{promoted_const}
@@ -58,9 +58,9 @@ where
     storage_live(_0)
     storage_live(_1)
     _1 = &test_crate::impl_Trait_for_T::default_method::{promoted_const} with_metadata(const 19usize)
-    storage_dead(_1)
     panic(panic(move _1))
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
 }
 
 // Full name: test_crate::{impl Trait for T}

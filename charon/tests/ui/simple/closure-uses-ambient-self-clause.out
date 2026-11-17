@@ -143,6 +143,9 @@ where
             unwind_terminate(in_cleanup)
         storage_dead(_5)
         storage_dead(i)
+        storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_6)
         unwind_continue
     conditional_drop[{built_in impl Destruct for TraitClause0::Item}::drop_glue<'7>] _4
     ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause0::Item}::drop_glue<'10>] i
@@ -154,6 +157,9 @@ where
             unwind_terminate(in_cleanup)
         storage_dead(_5)
         storage_dead(i)
+        storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_6)
         unwind_continue
     storage_dead(_4)
     storage_dead(_3)
@@ -161,6 +167,9 @@ where
     conditional_drop[{built_in impl Destruct for TraitClause0::Item}::drop_glue<'9>] i
     ↳⚡ storage_dead(_5)
         storage_dead(i)
+        storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_6)
         unwind_continue
     storage_dead(_5)
     storage_dead(i)

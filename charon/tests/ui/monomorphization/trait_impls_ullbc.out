@@ -74,7 +74,6 @@ fn do_test::<bool>(init: bool, expected: bool)
         storage_dead(_4);
         storage_live(_6);
         _6 = &test_crate::do_test::<bool>::{promoted_const} with_metadata(const 34usize);
-        storage_dead(_6);
         panic(panic(move _6)) -> (unwind: bb4);
     }
 

@@ -213,6 +213,7 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
         storage_dead(_3)
         storage_dead(len)
         storage_dead(end)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_9)
     storage_live(_10)
@@ -224,6 +225,7 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
         storage_dead(_3)
         storage_dead(len)
         storage_dead(end)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_11)
     args_7 = [move _8, move _10]
@@ -245,18 +247,19 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
         storage_dead(_3)
         storage_dead(len)
         storage_dead(end)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_13)
     storage_dead(_12)
-    storage_dead(_16)
     panic(panic_fmt<'91>(move _3))
     ↳⚡ storage_dead(args_7)
         storage_dead(args_4)
         storage_dead(_3)
         storage_dead(len)
         storage_dead(end)
+        storage_dead(_16)
         unwind_continue
 }
 
@@ -327,6 +330,7 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
         storage_dead(_3)
         storage_dead(end)
         storage_dead(start)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_9)
     storage_live(_10)
@@ -338,6 +342,7 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
         storage_dead(_3)
         storage_dead(end)
         storage_dead(start)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_11)
     args_7 = [move _8, move _10]
@@ -359,18 +364,19 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
         storage_dead(_3)
         storage_dead(end)
         storage_dead(start)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_13)
     storage_dead(_12)
-    storage_dead(_16)
     panic(panic_fmt<'91>(move _3))
     ↳⚡ storage_dead(args_7)
         storage_dead(args_4)
         storage_dead(_3)
         storage_dead(end)
         storage_dead(start)
+        storage_dead(_16)
         unwind_continue
 }
 
@@ -441,6 +447,7 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
         storage_dead(_3)
         storage_dead(len)
         storage_dead(end)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_9)
     storage_live(_10)
@@ -452,6 +459,7 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
         storage_dead(_3)
         storage_dead(len)
         storage_dead(end)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_11)
     args_7 = [move _8, move _10]
@@ -473,18 +481,19 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
         storage_dead(_3)
         storage_dead(len)
         storage_dead(end)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_13)
     storage_dead(_12)
-    storage_dead(_16)
     panic(panic_fmt<'91>(move _3))
     ↳⚡ storage_dead(args_7)
         storage_dead(args_4)
         storage_dead(_3)
         storage_dead(len)
         storage_dead(end)
+        storage_dead(_16)
         unwind_continue
 }
 
@@ -555,6 +564,7 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
         storage_dead(_3)
         storage_dead(len)
         storage_dead(start)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_9)
     storage_live(_10)
@@ -566,6 +576,7 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
         storage_dead(_3)
         storage_dead(len)
         storage_dead(start)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_11)
     args_7 = [move _8, move _10]
@@ -587,18 +598,19 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
         storage_dead(_3)
         storage_dead(len)
         storage_dead(start)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_13)
     storage_dead(_12)
-    storage_dead(_16)
     panic(panic_fmt<'91>(move _3))
     ↳⚡ storage_dead(args_7)
         storage_dead(args_4)
         storage_dead(_3)
         storage_dead(len)
         storage_dead(start)
+        storage_dead(_16)
         unwind_continue
 }
 
@@ -1785,7 +1797,10 @@ fn main()
     storage_live(_5)
     _5 = Range { start: const 2usize, end: const 5usize }
     _3 = impl_Index_for_array::index<'8, i32, Range<usize>[{built_in impl Sized for usize}], 6usize>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Index_for_slice<i32, Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_SliceIndex_slice_for_Range_usize<i32>[{built_in impl Sized for i32}]]](move _4, move _5)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_11)
+        storage_dead(_10)
+        storage_dead(_9)
+        unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     slice = &(*_3) with_metadata(read _3.metadata)
@@ -1804,7 +1819,10 @@ fn main()
     storage_live(_9)
     _9 = &test_crate::main::{promoted_const} with_metadata(const 31usize)
     assert(move _6 == true) else panic(panic(move _9))
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_11)
+        storage_dead(_10)
+        storage_dead(_9)
+        unwind_continue
     storage_dead(_7)
     storage_dead(_8)
     storage_dead(_6)

@@ -887,9 +887,9 @@ fn unwrap_failed() -> !
     storage_live(_0)
     storage_live(_1)
     _1 = &core::option::unwrap_failed::{promoted_const} with_metadata(const 43usize)
-    storage_dead(_1)
     panic(panic(move _1))
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
 }
 
 // Full name: core::option::{Option<T>[TraitClause0]}::unwrap
