@@ -10,6 +10,7 @@
 //!   subvalues encountered.
 //!
 //! Underneath it all, this uses `derive_generic_visitor::Drive[Mut]` to do the actual visiting.
+use std::fmt::Debug;
 use std::mem;
 use std::path::PathBuf;
 use std::{any::Any, hash::Hash};
@@ -242,6 +243,7 @@ use derive_generic_visitor::*;
         SizeExpr,
         SizeExprKind,
         Span,
+        TargetLayouts,
         TraitAssocConst,
         TraitAssocTy,
         TraitAssocTyImpl,
@@ -297,8 +299,41 @@ pub trait AstVisitable: Any {
     }
 }
 
-/// Manual impl that visits the keys and values
-impl<K: AstVisitable + Hash + Eq, T: AstVisitable> AstVisitable for SeqHashMap<K, T> {
+/// Utility trait to handle merging values when visiting maps, in the case of a key
+/// changing. This avoids accidental data loss from keys overriding eachother.
+pub trait MergeValue: Sized {
+    fn merge(&mut self, other: Self);
+}
+impl<T: PartialEq + Debug> MergeValue for T {
+    fn merge(&mut self, other: Self) {
+        assert_eq!(*self, other, "cannot merge two different values of a map");
+    }
+}
+impl MergeValue for TargetLayouts {
+    fn merge(&mut self, other: Self) {
+        other.0.into_iter().for_each(|(k, v)| {
+            assert!(
+                !self.contains_key(&k),
+                "cannot merge overlapping TargetLayouts"
+            );
+            self.insert(k, v);
+        });
+    }
+}
+
+/// Insert in `map`, merging with the existing value if the key is already there.
+fn insert_or_merge<K: Hash + Eq, T: MergeValue>(map: &mut SeqHashMap<K, T>, k: K, x: T) {
+    use indexmap::map::Entry;
+    match map.entry(k) {
+        Entry::Occupied(mut entry) => entry.get_mut().merge(x),
+        Entry::Vacant(entry) => {
+            entry.insert(x);
+        }
+    }
+}
+
+/// Manual impl that visits the keys and values, merging the values of keys that became equal.
+impl<K: AstVisitable + Hash + Eq, T: AstVisitable + MergeValue> AstVisitable for SeqHashMap<K, T> {
     fn drive<V: VisitAst>(&self, v: &mut V) -> ControlFlow<V::Break> {
         for (k, x) in self {
             v.visit(k)?;
@@ -310,7 +345,7 @@ impl<K: AstVisitable + Hash + Eq, T: AstVisitable> AstVisitable for SeqHashMap<K
         for (mut k, mut x) in mem::take(self) {
             v.visit(&mut k)?;
             v.visit(&mut x)?;
-            self.insert(k, x);
+            insert_or_merge(self, k, x);
         }
         Continue(())
     }
@@ -325,7 +360,9 @@ impl<K: AstVisitable + Hash + Eq, T: AstVisitable> AstVisitable for SeqHashMap<K
         Continue(())
     }
 }
-impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMap<K, T> {
+impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable + MergeValue> BodyVisitable
+    for SeqHashMap<K, T>
+{
     fn drive_body<V: VisitBody>(&self, v: &mut V) -> ControlFlow<V::Break> {
         for (k, x) in self {
             v.visit(k)?;
@@ -337,7 +374,7 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
         for (mut k, mut x) in mem::take(self) {
             v.visit(&mut k)?;
             v.visit(&mut x)?;
-            self.insert(k, x);
+            insert_or_merge(self, k, x);
         }
         Continue(())
     }

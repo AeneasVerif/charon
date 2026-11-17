@@ -139,14 +139,24 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             let ty = self
                 .translate_ty_inner(span, hax_ty)
                 .unwrap_or_else(|e| TyKind::Error(e.msg).into_ty());
-            self.innermost_binder_mut()
-                .type_trans_cache
-                .insert(hax_ty.clone(), ty.clone());
+            self.innermost_binder_mut().type_trans_cache.insert(
+                hax_ty.clone(),
+                ty.clone().replace_erased_regions(|| Region::Erased),
+            );
             ty
         };
         if let Some(v) = &mut self.lifetime_freshener {
             // We might be reusing a value from cache: we must refresh the erased & body regions.
             ty = ty.replace_erased_regions(|| Region::Body(v.push(())));
+        }
+        if self.options.collect_instantiated_layouts && !self.recording_mono_layouts {
+            // Avoid cycles from recursing into all mentioned types
+            self.recording_mono_layouts = true;
+            // Drop the lifetime freshener, so regions are erased and can be used as keys.
+            let lifetime_freshener = self.lifetime_freshener.take();
+            self.record_monomorphic_layout(span, hax_ty);
+            self.lifetime_freshener = lifetime_freshener;
+            self.recording_mono_layouts = false;
         }
         Ok(ty)
     }
@@ -346,6 +356,31 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
         };
         Ok(kind.into_ty())
+    }
+
+    /// If `ty` is monomorphic, record its computed layout for `TypeDecl::monomorphic_layouts`.
+    fn record_monomorphic_layout(&mut self, span: Span, ty: &hax::Ty<'tcx>) {
+        if
+        // We only care about types that have a `TypeDecl`...
+        let hax::TyKind::Adt(hax::AdtTy { item })
+        | hax::TyKind::Tuple(hax::TupleTy { item })
+        | hax::TyKind::Closure(hax::ClosureTy { item }) = ty.kind()
+            // ...which is instantiated
+            && !item.has_non_lt_param
+            && let item = item.erase(self.hax_state_with_id())
+            // ...but is otherwise polymorphic
+            // FIXME: do that check on `item` directly
+            && let Ok(generics) = self.translate_generic_args_without_trait_refs(span, &item)
+            && generics.has_non_lt_explicits()
+            && let Ok(tref) = self.translate_type_decl_ref(span, &item)
+            // ...and doesn't depend on the current scope
+            && tref.type_info().is_closed()
+            // ...and hasn't been seen yet
+            && !self.monomorphic_layouts.contains_key(&tref)
+            && let Some(layout) = self.translate_layout(span, &item, None)
+        {
+            self.monomorphic_layouts.insert(tref, layout);
+        }
     }
 
     pub fn translate_pattern(
@@ -623,10 +658,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub fn translate_layout(
         &mut self,
         span: Span,
-        def: &hax::FullDef<'tcx>,
-        kind: &TypeDeclKind,
+        item: &hax::ItemRef<'tcx>,
+        fallback: Option<&TypeDeclKind>,
     ) -> Option<Layout> {
-        let item = def.this();
         use rustc_abi as r_abi;
 
         fn translate_variant_layout_data(
@@ -772,7 +806,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         let tcx = self.t_ctx.tcx;
         let hax_state = self.hax_state_with_id();
-        assert_eq!(hax_state.owner(), item.def_id);
         let ty_env = hax_state.typing_env();
         let ty = item
             .def_id
@@ -782,13 +815,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let pseudo_input = ty_env.as_query_input(ty);
         let ptr_size = self.translated.the_target_information().target_pointer_size;
 
-        let repr = match &def.kind {
+        let repr = match &self.poly_hax_def(&item.def_id).ok()?.kind {
             hax::FullDefKind::Adt(adt) => self.translate_repr_options(adt.repr()),
             _ => ReprOptions::default(),
         };
         let ty_layout = match tcx.layout_of(pseudo_input) {
             Ok(layout) => layout,
-            Err(_) => return Layout::for_type(&self.translated, kind, repr),
+            Err(_) => return Layout::for_type(&self.translated, fallback?, repr),
         };
         let rustc_variant_inhabited = |id| match ty.kind() {
             ty::Adt(adt, args) if adt.is_enum() => adt
@@ -806,15 +839,25 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let align = Size::from_expr(align.normalize(Some(&self.translated), None, false));
         let layout = ty_layout.layout;
 
-        let num_variants = match kind {
-            TypeDeclKind::Struct(_) | TypeDeclKind::Union(_) => 1,
-            TypeDeclKind::Enum(variants) => variants.len(),
-            _ => match ty.variant_range(self.t_ctx.tcx) {
-                Some(range) => range.end.index(),
-                None => match layout.fields() {
-                    r_abi::FieldsShape::Arbitrary { .. } | r_abi::FieldsShape::Union(_) => 1,
-                    r_abi::FieldsShape::Primitive | r_abi::FieldsShape::Array { .. } => 0,
-                },
+        // Record the layout of all fields, if using `--collect-instantiated-layouts`
+        let record_field_layouts = |this: &mut Self, variant: ty::layout::TyAndLayout<'tcx>| {
+            if this.recording_mono_layouts {
+                for i in 0..variant.fields.count() {
+                    let field_ty = variant.field(&layout_cx, i).ty;
+                    if let Ok(field_ty) = this.catch_sinto::<_, hax::Ty<'tcx>>(span, &field_ty) {
+                        this.record_monomorphic_layout(span, &field_ty);
+                    }
+                }
+            }
+        };
+
+        let num_variants = match ty.variant_range(self.t_ctx.tcx) {
+            Some(range) => range.end.index(),
+            None => match layout.fields() {
+                r_abi::FieldsShape::Arbitrary { .. } | r_abi::FieldsShape::Union(_) => 1,
+                // We interpret `str` as a struct, hence one variant.
+                r_abi::FieldsShape::Array { .. } if ty.is_str() => 1,
+                r_abi::FieldsShape::Primitive | r_abi::FieldsShape::Array { .. } => 0,
             },
         };
         let mut variant_layouts: IndexVec<VariantId, Option<VariantLayout>> =
@@ -899,6 +942,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let mut children = Vec::new();
 
                 for (id, variant_layout) in variants.iter_enumerated() {
+                    record_field_layouts(self, ty_layout.for_variant(&layout_cx, id));
+
                     let variant_id = self.translate_variant_id(id);
                     let taginfo = taginfo_for_variant(id);
                     let variant_inhabited = self
@@ -991,16 +1036,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let variant_id = self.translate_variant_id(*index);
                 match layout.fields() {
                     r_abi::FieldsShape::Arbitrary { .. } | r_abi::FieldsShape::Union(_) => {
+                        record_field_layouts(self, ty_layout);
+
                         let variant_inhabited = self
                             .translate_inhabited_predicate(span, rustc_variant_inhabited(*index))
                             .ok()?;
                         variant_layouts[variant_id] =
                             translate_variant_layout_data(&layout, variant_inhabited, vec![]);
                     }
-                    r_abi::FieldsShape::Array { .. }
-                        if matches!(ty.kind(), ty::Str)
-                            && matches!(kind, TypeDeclKind::Struct(_)) =>
-                    {
+                    r_abi::FieldsShape::Array { .. } if ty.is_str() => {
                         // Charon models `str` as a struct containing a single `[u8]` field.
                         variant_layouts[variant_id] = Some(VariantLayout {
                             field_offsets: [OffsetExpr::new(0)].into(),
@@ -1015,7 +1059,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             r_abi::Variants::Empty => None,
         };
 
-        let union_chunks = kind.is_union().then(|| {
+        let union_chunks = ty.is_union().then(|| {
             let mut markers = vec![false; ty_layout.size.bytes_usize()];
             mark_data_bytes(&layout_cx, ty_layout, &mut markers);
             let mut chunks = vec![];

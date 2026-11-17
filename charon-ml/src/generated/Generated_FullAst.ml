@@ -208,6 +208,15 @@ and cli_options = {
           monomorphized with a mutable reference (or type containing one); said
           differently, so that the presence of mutable references in a type is
           independent of its generics. This is used by Aeneas. *)
+  collect_instantiated_layouts : bool;
+      (** Record the layout of each instantiation of a polymorphic type that we
+          encounter during translation. The instantiated layouts are stored in
+          [TypeDecl::monomorphic_layouts].
+
+          This does not collect all the instantiations we would see
+          post-monomorphization however, e.g.
+          [fn foo<T>() -> usize { size_of::<Option<T>>() }; foo<&u8>()] will not
+          record [Option<&u8>]. *)
   start_from : string list;
       (** A list of item paths to use as starting points for the translation. We
           will translate these items and any items they refer to, according to

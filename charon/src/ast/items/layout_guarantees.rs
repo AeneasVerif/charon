@@ -14,7 +14,7 @@ pub enum FieldPredecessor {
 }
 
 /// Guaranteed facts about a field offset.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[derive(EnumAsInner)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum OffsetGuarantee {
@@ -967,7 +967,8 @@ mod tests {
                 generics,
                 src: TypeSource::Normal,
                 kind: TypeDeclKind::Opaque,
-                layout: layouts,
+                layout: TargetLayouts(layouts),
+                monomorphic_layouts: Default::default(),
                 ptr_metadata: PtrMetadata::None,
                 marker_traits: None,
             },

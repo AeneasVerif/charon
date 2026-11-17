@@ -34,8 +34,11 @@ pub struct TypeDecl {
     pub kind: TypeDeclKind,
     /// The layout of the type for each target. Information may be partial because of generics or
     /// dynamically-sized types. If we cannot compute a layout, the target has no entry.
-    #[serde(with = "SeqHashMapToArray::<TargetTriple, Layout>")]
-    pub layout: SeqHashMap<TargetTriple, Layout>,
+    pub layout: TargetLayouts,
+    /// The layouts of the monomorphic instances of this type that were reached while translating.
+    /// This is empty in monomorphic mode, or when the type is already monomorphic; just use `layout` instead.
+    #[serde(with = "SeqHashMapToArray::<GenericArgs, TargetLayouts>")]
+    pub monomorphic_layouts: SeqHashMap<GenericArgs, TargetLayouts>,
     /// The metadata associated with a pointer to the type.
     pub ptr_metadata: PtrMetadata,
     /// Which built-in marker traits are implemented by this type. This is only known for

@@ -1,0 +1,221 @@
+# Final LLBC before serialization:
+
+// Full name: core::num::nonzero::NonZero::<u32>
+#[diagnostic_item("NonZero")]
+pub opaque type NonZero::<u32>
+// layout:
+//     size: 4usize,
+//     align: 4usize,
+//     discriminator: @Variant0,
+//     inhabited: (false || if_inhabited(NonZeroU32Inner)),
+//     variants: [
+//         @Variant0: {
+//             offset of 0: 0,
+//             inhabited: (false || if_inhabited(NonZeroU32Inner)),
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust, transparent),
+
+struct () {}
+// layout:
+//     size: 0usize (guaranteed: at_least(0usize)),
+//     align: 1usize (guaranteed: at_least(1usize)),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+struct (_, _)::<u8, u32> {
+  _0: u8,
+  _1: u32,
+}
+// layout:
+//     size: 8usize (guaranteed: at_least(align_to(max((offset_of((_, _)::<u8, u32>._0) + size_of::<u8>()), (offset_of((_, _)::<u8, u32>._1) + size_of::<u32>())), max(align_of::<u8>(), align_of::<u32>())))),
+//     align: 4usize (guaranteed: at_least(max(align_of::<u8>(), align_of::<u32>()))),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             offset of _0: 0 (guaranteed: aligned(align_of::<u8>())),
+//             offset of _1: 4 (guaranteed: aligned(align_of::<u32>())),
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+// Full name: test_crate::GenericStruct::<u8>
+struct GenericStruct::<u8> {
+  a: usize,
+  b: u8,
+}
+// layout:
+//     size: 16usize (guaranteed: at_least(align_to(max((offset_of(GenericStruct::<u8>.a) + size_of::<usize>()), (offset_of(GenericStruct::<u8>.b) + size_of::<u8>())), max(align_of::<usize>(), align_of::<u8>())))),
+//     align: 8usize (guaranteed: at_least(max(align_of::<usize>(), align_of::<u8>()))),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             offset of a: 0 (guaranteed: aligned(align_of::<usize>())),
+//             offset of b: 8 (guaranteed: aligned(align_of::<u8>())),
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+// Full name: test_crate::Reordered::<u32>
+struct Reordered::<u32> {
+  x: u8,
+  y: u32,
+  z: u8,
+}
+// layout:
+//     size: 8usize (guaranteed: at_least(align_to(max((offset_of(Reordered::<u32>.x) + size_of::<u8>()), (offset_of(Reordered::<u32>.y) + size_of::<u32>()), (offset_of(Reordered::<u32>.z) + size_of::<u8>())), max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>())))),
+//     align: 4usize (guaranteed: at_least(max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>()))),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             offset of x: 4 (guaranteed: aligned(align_of::<u8>())),
+//             offset of y: 0 (guaranteed: aligned(align_of::<u32>())),
+//             offset of z: 5 (guaranteed: aligned(align_of::<u8>())),
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+// Full name: test_crate::PolyReprC::<u32>
+struct PolyReprC::<u32> {
+  hd: u8,
+  tl: u32,
+}
+// layout:
+//     size: 8usize (guaranteed: align_to((offset_of(PolyReprC::<u32>.tl) + size_of::<u32>()), max(align_of::<u8>(), align_of::<u32>()))),
+//     align: 4usize (guaranteed: max(align_of::<u8>(), align_of::<u32>())),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             offset of hd: 0 (guaranteed: 0usize),
+//             offset of tl: 4 (guaranteed: repr_c_after(0)),
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(C),
+
+// Full name: test_crate::GenericEnum::<u32>
+enum GenericEnum::<u32> {
+  None,
+  Some { _0: u32 },
+}
+// layout:
+//     size: 8usize (guaranteed: at_least(align_to((offset_of(GenericEnum::<u32>.Some._0) + size_of::<u32>()), align_of::<u32>()))),
+//     align: 4usize (guaranteed: at_least(align_of::<u32>())),
+//     discriminator: read at offset 0 { 0u32 => None, 1u32 => Some, _ => invalid },
+//     inhabited: true,
+//     variants: [
+//         None: {
+//             inhabited: true,
+//             tagger: [0 := 0u32],
+//         },
+//         Some: {
+//             offset of _0: 4 (guaranteed: aligned(align_of::<u32>())),
+//             inhabited: true,
+//             tagger: [0 := 1u32],
+//         },
+//     ],
+//     repr(Rust),
+
+// Full name: test_crate::GenericEnum::<NonZero::<u32>>
+enum GenericEnum::<NonZero::<u32>> {
+  None,
+  Some { _0: NonZero::<u32> },
+}
+// layout:
+//     size: 4usize (guaranteed: at_least(align_to((offset_of(GenericEnum::<NonZero::<u32>>.Some._0) + size_of::<NonZero::<u32>>()), align_of::<NonZero::<u32>>()))),
+//     align: 4usize (guaranteed: at_least(align_of::<NonZero::<u32>>())),
+//     discriminator: read at offset 0 { 0u32 => None, _ => Some },
+//     inhabited: true,
+//     variants: [
+//         None: {
+//             inhabited: true,
+//             tagger: [0 := 0u32],
+//         },
+//         Some: {
+//             offset of _0: 0 (guaranteed: aligned(align_of::<NonZero::<u32>>())),
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+// Full name: test_crate::GenericEnum::<!>
+enum GenericEnum::<!> {
+  None,
+  Some { _0: ! },
+}
+// layout:
+//     size: 0usize (guaranteed: at_least(offset_of(GenericEnum::<!>.Some._0))),
+//     align: 1usize (guaranteed: at_least(1usize)),
+//     discriminator: None,
+//     inhabited: true,
+//     variants: [
+//         None: {
+//             inhabited: true,
+//             tagger: [],
+//         },
+//         Some: none,
+//     ],
+//     repr(Rust),
+
+// Full name: test_crate::GenericUnion::<u64>
+union GenericUnion::<u64> {
+  x: u64,
+  y: u8,
+}
+// layout:
+//     size: 8usize (guaranteed: at_least(align_to(max((offset_of(GenericUnion::<u64>.x) + size_of::<u64>()), (offset_of(GenericUnion::<u64>.y) + size_of::<u8>())), max(align_of::<u64>(), align_of::<u8>())))),
+//     align: 8usize (guaranteed: at_least(max(align_of::<u64>(), align_of::<u8>()))),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             offset of x: 0 (guaranteed: aligned(align_of::<u64>())),
+//             offset of y: 0 (guaranteed: aligned(align_of::<u8>())),
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     union chunks: [0..8],
+//     repr(Rust),
+
+// Full name: test_crate::instances
+fn instances(_1: GenericStruct::<u8>, _2: Reordered::<u32>, _3: PolyReprC::<u32>, _4: GenericEnum::<NonZero::<u32>>, _5: GenericEnum::<u32>, _6: GenericEnum::<!>, _7: GenericUnion::<u64>, _8: (u8, u32))
+{
+    let mut _0: (); // return
+    let mut _1: GenericStruct::<u8>; // arg #1
+    let mut _2: Reordered::<u32>; // arg #2
+    let mut _3: PolyReprC::<u32>; // arg #3
+    let mut _4: GenericEnum::<NonZero::<u32>>; // arg #4
+    let mut _5: GenericEnum::<u32>; // arg #5
+    let mut _6: GenericEnum::<!>; // arg #6
+    let mut _7: GenericUnion::<u64>; // arg #7
+    let mut _8: (u8, u32); // arg #8
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+
+
