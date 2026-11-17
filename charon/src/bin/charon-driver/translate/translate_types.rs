@@ -369,6 +369,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             && !item.has_non_lt_param
             && let item = item.erase(self.hax_state_with_id())
             // ...but is otherwise polymorphic
+            // FIXME: do that check on `item` directly
             && let Ok(generics) = self.translate_generic_args_without_trait_refs(span, &item)
             && generics.has_non_lt_explicits()
             && let Ok(tref) = self.translate_type_decl_ref(span, &item)
