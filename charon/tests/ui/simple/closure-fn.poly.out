@@ -390,7 +390,7 @@ fn main()
     storage_live(_15)
     storage_live(_16)
     _16 = copy f
-    _15 = apply_to_once<{closure}<'224, '225>>[{built_in impl Sized for {closure}<'224, '225>}, impl_FnOnce_tuple_for_closure<'224, '225>](move _16)
+    _15 = apply_to_once<{closure}<'214, '215>>[{built_in impl Sized for {closure}<'214, '215>}, impl_FnOnce_tuple_for_closure<'214, '215>](move _16)
     ↳⚡ unwind_continue
     storage_dead(_16)
     storage_dead(_15)

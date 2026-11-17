@@ -110,6 +110,8 @@ pub enum VirtualImplKind {
     /// An impl of the appropriate `Fn*` trait for a closure, function item or function pointer.
     /// Its method is `call_once`, `call_mut` or `call`.
     Callable(ClosureKind),
+    /// The `Clone` impl that rustc provides for built-in types.
+    Clone,
 }
 
 impl<'tcx> TransItemSource<'tcx> {

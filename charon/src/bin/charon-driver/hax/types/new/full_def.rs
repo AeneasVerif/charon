@@ -37,17 +37,19 @@ pub struct FullDef<'tcx> {
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum VirtualTrait {
     Destruct,
+    Clone,
     FnOnce,
     FnMut,
     Fn,
 }
 
 impl VirtualTrait {
-    const COUNT: usize = 4;
+    const COUNT: usize = 5;
 
     pub fn lang_item(self) -> LangItem {
         match self {
             VirtualTrait::Destruct => LangItem::Destruct,
+            VirtualTrait::Clone => LangItem::Clone,
             VirtualTrait::FnOnce => LangItem::FnOnce,
             VirtualTrait::FnMut => LangItem::FnMut,
             VirtualTrait::Fn => LangItem::Fn,

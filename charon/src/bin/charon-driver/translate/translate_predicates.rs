@@ -77,6 +77,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let hax::TraitProofKind::Builtin { trait_data, .. } = &trait_proof.kind else {
             return None;
         };
+        use hax::SolverTraitLangItem::*;
         match trait_data {
             hax::BuiltinTraitData::Destruct(hax::DestructData::Glue { ty }) => {
                 let item = match ty.kind() {
@@ -89,12 +90,25 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 };
                 Some((item.clone(), VirtualImplKind::Destruct))
             }
-            hax::BuiltinTraitData::Other(lang_item) => {
+            hax::BuiltinTraitData::Other(Clone) => {
+                let ty = trait_proof
+                    .pred
+                    .hax_skip_binder_ref()
+                    .generic_args
+                    .first()?
+                    .as_type()?;
+                let hax::TyKind::Closure(closure) = ty.kind() else {
+                    return None;
+                };
+                let item = closure.item.erase(self.hax_state_with_id());
+                Some((item, VirtualImplKind::Clone))
+            }
+            hax::BuiltinTraitData::Other(lang_item @ (FnOnce | FnMut | Fn)) => {
                 let kind = match lang_item {
                     hax::SolverTraitLangItem::FnOnce => ClosureKind::FnOnce,
                     hax::SolverTraitLangItem::FnMut => ClosureKind::FnMut,
                     hax::SolverTraitLangItem::Fn => ClosureKind::Fn,
-                    _ => return None,
+                    _ => unreachable!(),
                 };
                 // We skip the binder and erase regions to avoid bound vars escaping.
                 let callable_ty = trait_proof

@@ -43,6 +43,10 @@ where
     Outlives1: (Self: '_1),
 = <opaque>
 
+// Full name: core::clone::impls::{impl Clone for u32}::clone
+pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
+= <opaque>
+
 // Full name: core::panicking::panic_in_cleanup
 #[lang_item(PanicInCleanup)]
 fn panic_in_cleanup() -> !
@@ -58,6 +62,31 @@ where
 
 struct test_crate::closure::{closure} {
   _0: u32,
+}
+
+// Full name: test_crate::closure::{closure}::{impl Clone for test_crate::closure::{closure}}::clone_from
+pub fn {impl Clone for test_crate::closure::{closure}}::clone_from<'_0, '_1>(_1: &'_0 mut test_crate::closure::{closure}, _2: &'_1 test_crate::closure::{closure})
+where
+    TraitClause0: (test_crate::closure::{closure}: Destruct),
+= <opaque>
+
+// Full name: test_crate::closure::{closure}::{impl Clone for test_crate::closure::{closure}}::clone
+fn {impl Clone for test_crate::closure::{closure}}::clone<'_0>(_1: &'_0 test_crate::closure::{closure}) -> test_crate::closure::{closure}
+{
+    let mut _0: test_crate::closure::{closure}; // return
+    let _1: &'1 test_crate::closure::{closure}; // arg #1
+    let _2: &'3 u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = &(*_1)._0
+    _0._0 = impl_Clone_for_u32::clone<'7>(move _2)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
+    return
 }
 
 // Full name: test_crate::closure
@@ -81,7 +110,7 @@ pub fn closure(x: u32)
     storage_live(g)
     storage_live(_4)
     _4 = &f
-    g = {built_in impl Clone for test_crate::closure::{closure}}::clone<'7>(move _4)
+    g = {impl Clone for test_crate::closure::{closure}}::clone<'7>(move _4)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_4)
@@ -93,7 +122,7 @@ pub fn closure(x: u32)
     storage_live(_8)
     _8 = &f
     _7 = &(*_8)
-    _5 = {built_in impl Clone for test_crate::closure::{closure}}::clone_from<'10, '11>[{built_in impl Destruct for test_crate::closure::{closure}}](move _6, move _7)
+    _5 = {impl Clone for test_crate::closure::{closure}}::clone_from<'10, '11>[{built_in impl Destruct for test_crate::closure::{closure}}](move _6, move _7)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_7)
@@ -148,6 +177,29 @@ where
     return
 }
 
+// Full name: test_crate::closure_generic::{closure}::{impl Clone for test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1]}::clone
+fn {impl Clone for test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1]}::clone<'_0, T>(_1: &'_0 test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1]) -> test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+    Outlives0: (T: '_0),
+{
+    let mut _0: test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1]; // return
+    let _1: &'1 test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1]; // arg #1
+    let _2: &'3 T; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = &(*_1)._0
+    _0._0 = TraitClause1::clone<'5>(move _2)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
 // Full name: test_crate::closure_generic
 pub fn closure_generic<T>(x: T)
 where
@@ -168,7 +220,7 @@ where
     storage_live(_3)
     storage_live(_4)
     _4 = &f
-    _3 = {built_in impl Clone for test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1]}::clone<'3>(move _4)
+    _3 = {impl Clone for test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1]}::clone<'3, T>[TraitClause0, TraitClause1](move _4)
     ↳⚡ conditional_drop[drop_glue<'4, T>[TraitClause0, TraitClause1]] f
         ↳⚡ storage_dead(x)
             unwind_terminate(in_cleanup)

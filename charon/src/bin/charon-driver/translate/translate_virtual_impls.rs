@@ -12,6 +12,7 @@ impl VirtualImplKind {
             VirtualImplKind::Callable(ClosureKind::FnOnce) => hax::VirtualTrait::FnOnce,
             VirtualImplKind::Callable(ClosureKind::FnMut) => hax::VirtualTrait::FnMut,
             VirtualImplKind::Callable(ClosureKind::Fn) => hax::VirtualTrait::Fn,
+            VirtualImplKind::Clone => hax::VirtualTrait::Clone,
         }
     }
 
@@ -30,6 +31,7 @@ impl VirtualImplKind {
             VirtualImplKind::Callable(kind) => {
                 PathElem::Ident(kind.method_name().into(), Disambiguator::ZERO)
             }
+            VirtualImplKind::Clone => PathElem::Ident("clone".into(), Disambiguator::ZERO),
         }
     }
 }
@@ -77,12 +79,19 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         kind: VirtualImplKind,
         span: Span,
         def: &hax::FullDef<'tcx>,
+        vimpl: &hax::VirtualTraitImpl<'tcx>,
         signature: &FunSig,
     ) -> Result<Body, Error> {
         match kind {
             VirtualImplKind::Destruct => self.translate_drop_glue_method_body(span, def),
             VirtualImplKind::Callable(target_kind) => {
                 self.translate_callable_method_body(span, def, target_kind, signature)
+            }
+            VirtualImplKind::Clone => {
+                let body = vimpl
+                    .method_shim(self.hax_state(), &vimpl.methods[0].def_id)
+                    .expect("built-in `Clone` impls have a shim");
+                Ok(self.translate_body(span, body, &def.source_text(self.tcx)))
             }
         }
     }
@@ -138,6 +147,33 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
         timpl.methods.set_slot_extend(method_id, method_binder);
 
+        // For the other methods we reuse the default method from the trait decl.
+        let self_predicate = TraitRef::new(
+            TraitRefKind::TraitImpl(TraitImplRef {
+                id: impl_id,
+                generics: Box::new(self.the_only_binder().params.identity_args()),
+            }),
+            timpl.impl_trait.clone(),
+        );
+        if let Ok(ItemRef::TraitDecl(tdecl)) = self.get_or_translate(trait_id.into()) {
+            let default_methods = tdecl
+                .methods
+                .iter_indexed()
+                .filter(|(id, _)| *id != method_id)
+                .map(|(id, bound_method)| {
+                    let bound_fn_ref = bound_method
+                        .clone()
+                        .substitute_with_tref(&self_predicate)
+                        .map(|method| method.default.expect("missing default method"));
+                    (id, bound_fn_ref)
+                })
+                .collect::<Vec<_>>();
+            for (id, bound_fn_ref) in default_methods {
+                self.register_method_impl(trait_id, id, bound_fn_ref.skip_binder.id);
+                timpl.methods.set_slot_extend(id, bound_fn_ref);
+            }
+        }
+
         Ok(timpl)
     }
 
@@ -185,7 +221,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque
         } else {
-            self.virtual_method_body(kind, span, def, &signature)?
+            self.virtual_method_body(kind, span, def, vimpl, &signature)?
         };
 
         Ok(FunDecl {
