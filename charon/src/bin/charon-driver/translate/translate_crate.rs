@@ -390,8 +390,8 @@ impl<'tcx> TranslateCtx<'tcx> {
         })
     }
 
-    /// List all the items of the crate and its dependencies. For the local item,
-    /// only visits HIR items.
+    /// List all the items of the crate and its dependencies. For the local crate,
+    /// only visits HIR-backed items (i.e. skips synthetic ones).
     fn all_items(&self) -> impl Iterator<Item = DefId> + use<'tcx> {
         let tcx = self.tcx;
         let dep_items = tcx
