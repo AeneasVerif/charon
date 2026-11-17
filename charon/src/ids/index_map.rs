@@ -78,6 +78,10 @@ where
         // Push a `None` to ensure we don't reuse the id.
         self.vector.push(None)
     }
+    /// Reserve `n` spots in the vector.
+    pub fn reserve_slots(&mut self, n: usize) {
+        self.vector.resize_with(self.vector.len() + n, || None);
+    }
     /// Ensure there's a slot for this id.
     fn ensure_slot_for(&mut self, id: I) {
         if id.index() >= self.vector.len() {

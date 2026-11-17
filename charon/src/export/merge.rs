@@ -258,10 +258,12 @@ impl CrateMerger {
         self.item_sources
             .extend(item_names.keys().map(|&id| (id, index)));
         self.merged.translated.item_names.extend(item_names);
-        self.merged
-            .translated
+        // add some padding to align assoc IDs with trait IDs
+        let merged = &mut self.merged.translated;
+        merged
             .assoc_item_names
-            .extend_from_other(assoc_item_names);
+            .reserve_slots(merged.trait_decls.slot_count() - merged.assoc_item_names.slot_count());
+        merged.assoc_item_names.extend_from_other(assoc_item_names);
         self.merged
             .translated
             .type_decls
