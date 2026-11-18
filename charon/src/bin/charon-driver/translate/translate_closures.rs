@@ -89,9 +89,7 @@ pub fn callable_virtual_impl<'a, 'tcx>(
     def: &'a hax::FullDef<'tcx>,
     target_kind: ClosureKind,
 ) -> &'a hax::VirtualTraitImpl<'tcx> {
-    CallableFnImpls::from_def(s, def, target_kind)
-        .and_then(|impls| impls.vimpl)
-        .expect("expected a callable with a Fn* impl")
+    def.virtual_impl(s, VirtualImplKind::Callable(target_kind).virtual_trait())
 }
 
 #[derive(Copy, Clone)]
@@ -132,6 +130,22 @@ impl<'tcx, 'a> Callable<'tcx, 'a> {
         }
     }
 
+    fn from_def(def: &'a hax::FullDef<'tcx>) -> Option<Self> {
+        let (kind, sig) = match def.kind() {
+            hax::FullDefKind::Closure(_) => return Some(Self::for_closure_def(def)),
+            hax::FullDefKind::Fn(f) => (CallableKind::FnDef, f.sig()),
+            hax::FullDefKind::AssocFn(f) => (CallableKind::FnDef, f.sig()),
+            hax::FullDefKind::Ctor(f) => (CallableKind::FnDef, f.sig()),
+            hax::FullDefKind::FnPtr(f) => (CallableKind::FnPtr, f.sig()),
+            _ => return None,
+        };
+        Some(Self {
+            kind,
+            item: def.this(),
+            sig,
+        })
+    }
+
     fn kind(self) -> CallableKind {
         self.kind
     }
@@ -142,61 +156,6 @@ impl<'tcx, 'a> Callable<'tcx, 'a> {
 
     fn sig(self) -> &'a hax::PolyFnSig<'tcx> {
         self.sig
-    }
-}
-
-#[derive(Copy, Clone)]
-struct CallableFnImpls<'a, 'tcx> {
-    callable: Callable<'tcx, 'a>,
-    /// The virtual impl of the requested `Fn*` trait, if the callable implements it.
-    vimpl: Option<&'a hax::VirtualTraitImpl<'tcx>>,
-}
-
-impl<'a, 'tcx> CallableFnImpls<'a, 'tcx> {
-    fn from_def(
-        s: &impl hax::BaseState<'tcx>,
-        def: &'a hax::FullDef<'tcx>,
-        target_kind: ClosureKind,
-    ) -> Option<Self> {
-        let vimpl_from_impls = |impls: &'a hax::FnTraitImpls<'tcx>| -> Option<_> {
-            match target_kind {
-                ClosureKind::FnOnce => Some(impls.fn_once_impl.as_ref()),
-                ClosureKind::FnMut => impls.fn_mut_impl.as_deref(),
-                ClosureKind::Fn => impls.fn_impl.as_deref(),
-            }
-        };
-        let for_fn_def = |sig: &'a hax::PolyFnSig<'tcx>, impls: &'a hax::FnTraitImpls<'tcx>| {
-            Some(Self {
-                callable: Callable {
-                    kind: CallableKind::FnDef,
-                    item: def.this(),
-                    sig,
-                },
-                vimpl: vimpl_from_impls(impls),
-            })
-        };
-        match def.kind() {
-            hax::FullDefKind::Closure(c) => Some(Self {
-                callable: Callable::for_closure_def(def),
-                vimpl: vimpl_from_impls(c.fn_trait_impls(s)),
-            }),
-            hax::FullDefKind::Fn(f) => for_fn_def(f.sig(), f.fn_trait_impls(s)?),
-            hax::FullDefKind::AssocFn(f) => for_fn_def(f.sig(), f.fn_trait_impls(s)?),
-            hax::FullDefKind::Ctor(f) => for_fn_def(f.sig(), f.fn_trait_impls(s)?),
-            hax::FullDefKind::FnPtr(f) => {
-                let impls = f.fn_trait_impls(s)?;
-                let sig = f.sig();
-                Some(Self {
-                    callable: Callable {
-                        kind: CallableKind::FnPtr,
-                        item: def.this(),
-                        sig,
-                    },
-                    vimpl: vimpl_from_impls(impls),
-                })
-            }
-            _ => None,
-        }
     }
 }
 
@@ -599,7 +558,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             //
             (FnOnce, Fn | FnMut) => {
                 // Hax (via rustc) gives us the MIR to do this.
-                let Some(body) = def.this.closure_once_shim(self.hax_state()) else {
+                let vimpl = callable_virtual_impl(self.hax_state(), def, FnOnce);
+                let Some(body) = vimpl.method_shim(self.hax_state(), &vimpl.methods[0].def_id)
+                else {
                     panic!("missing shim for closure")
                 };
                 let mut body = self.translate_body(span, body, &def.source_text);
@@ -801,11 +762,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         target_kind: ClosureKind,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
-        let callable_impls = CallableFnImpls::from_def(self.hax_state(), def, target_kind).unwrap();
-        let callable = callable_impls.callable;
+        let callable = Callable::from_def(def).unwrap();
 
         // Hax gives us trait-related information for the impl we're building.
-        let vimpl = callable_impls.vimpl.unwrap();
+        let vimpl = callable_virtual_impl(self.hax_state(), def, target_kind);
         let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
         let method = &vimpl.methods[0];
         let method_id = self.translate_trait_method_id(implemented_trait.id, &method.def_id)?;
@@ -854,11 +814,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         target_kind: ClosureKind,
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
-        let callable_impls = CallableFnImpls::from_def(self.hax_state(), def, target_kind).unwrap();
-        let callable = callable_impls.callable;
+        let callable = Callable::from_def(def).unwrap();
 
         // Hax gives us trait-related information for the impl we're building.
-        let vimpl = callable_impls.vimpl.unwrap();
+        let vimpl = callable_virtual_impl(self.hax_state(), def, target_kind);
         let mut timpl = self.translate_virtual_trait_impl(
             def_id,
             item_meta,
