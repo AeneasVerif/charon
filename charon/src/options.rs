@@ -305,7 +305,7 @@ pub struct CliOpts {
     #[serde(default)]
     pub reconstruct_asserts: bool,
     /// Keep the temporaries through which MIR accesses statics, instead of naming the statics
-    /// directly. Aliasing models such as Tree Borrows retag the references they hold.
+    /// directly.
     #[clap(long)]
     #[serde(default)]
     pub no_reconstruct_static_accesses: bool,
