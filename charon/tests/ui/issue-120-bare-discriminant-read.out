@@ -169,9 +169,8 @@ where
     Outlives0: ('_1: '_0),
 = <extern:_RNvCs<hash>_7___rustc17rust_begin_unwind>
 
-// Full name: core::panicking::panic_nounwind_fmt::runtime
 #[track_caller]
-fn runtime<'_0>(fmt: Arguments<'_0>, force_no_backtrace: bool) -> !
+fn core::panicking::panic_nounwind_fmt::runtime<'_0>(fmt: Arguments<'_0>, force_no_backtrace: bool) -> !
 {
     let mut _0: !; // return
     let fmt: Arguments<'1>; // arg #1
@@ -258,7 +257,7 @@ pub fn panic_nounwind_fmt<'_0>(fmt: Arguments<'_0>, force_no_backtrace: bool) ->
     _3 = (move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
-    _0 = runtime<'24>(move _3._0, move _3._1)
+    _0 = core::panicking::panic_nounwind_fmt::runtime<'24>(move _3._0, move _3._1)
     ↳⚡ storage_dead(_3)
         storage_dead(force_no_backtrace)
         storage_dead(fmt)

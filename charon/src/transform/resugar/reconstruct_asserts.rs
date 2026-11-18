@@ -9,23 +9,23 @@ use crate::transform::{CowBox, TransformCtx};
 use crate::ullbc_ast::*;
 
 pub struct Transform {
-    assume: Option<Call>,
+    unreachable: Option<Call>,
 }
 
 impl Transform {
     pub fn new(ctx: &TransformCtx) -> CowBox<dyn UllbcPass> {
-        let assume_pattern = NamePattern::parse("core::intrinsics::assume").unwrap();
-        let assume = ctx
+        let unreachable_pattern = NamePattern::parse("core::hint::unreachable_unchecked").unwrap();
+        let unreachable = ctx
             .translated
             .fun_decls
             .iter_indexed()
-            .find(|(_, decl)| assume_pattern.matches(&ctx.translated, &decl.item_meta.name))
+            .find(|(_, decl)| unreachable_pattern.matches(&ctx.translated, &decl.item_meta.name))
             .map(|(id, _)| Call {
                 func: FnOperand::Regular(FnPtr::new(FnPtrKind::Fun(id), GenericArgs::empty())),
-                args: vec![Operand::Const(ConstantExpr::mk_bool(false))],
+                args: vec![],
                 safety: CallSafety::Inherit,
             });
-        CowBox::Owned(Box::new(Self { assume }))
+        CowBox::Owned(Box::new(Self { unreachable }))
     }
 }
 
@@ -35,7 +35,9 @@ impl UllbcPass for Transform {
     }
 
     fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
-        let Some(assume) = &self.assume else { return };
+        let Some(unreachable) = &self.unreachable else {
+            return;
+        };
         // Start by computing the set of blocks which are actually panics.
         // Remark: doing this in two steps because reading the blocks at random
         // while doing in-place updates is not natural to do in Rust.
@@ -59,7 +61,7 @@ impl UllbcPass for Transform {
                     AbortKind::Panic | AbortKind::UnwindTerminate(..) => call
                         .clone()
                         .expect("panics and unwind terminates always have a call"),
-                    AbortKind::UndefinedBehavior => assume.clone(),
+                    AbortKind::UndefinedBehavior => unreachable.clone(),
                 };
                 let _ = std::mem::replace(
                     &mut block.terminator.kind,

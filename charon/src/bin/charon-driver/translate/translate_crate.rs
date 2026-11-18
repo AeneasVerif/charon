@@ -295,7 +295,7 @@ impl<'tcx> TranslateCtx<'tcx> {
     /// Register the std functions needed for `builtins_to_function_calls`.
     fn register_builtin_functions(&mut self) -> Result<(), Error> {
         if self.options.reconstruct_asserts {
-            self.register_poly_function_by_path("core::intrinsics::assume")?;
+            self.register_poly_function_by_path("core::hint::unreachable_unchecked")?;
         }
         if self.options.ops_to_function_calls {
             self.register_poly_function_by_path("array::as_slice")?;
