@@ -1600,11 +1600,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         vimpl: &hax::VirtualTraitImpl<'tcx>,
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
-        let src = match impl_kind {
-            TransImplSource::Virtual(kind) => kind.trait_impl_source(),
-            _ => unreachable!("not a virtual impl source: {impl_kind:?}"),
-        };
-
         let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
         let implied_trait_refs = self.translate_trait_proofs(span, &vimpl.implied_trait_proofs)?;
         let vtable = self.translate_trait_impl_vtable(
@@ -1641,7 +1636,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         Ok(TraitImpl {
             def_id,
             item_meta,
-            src,
+            src: TraitImplSource::Builtin,
             impl_trait: implemented_trait,
             is_negative: false,
             is_unsafe: false,

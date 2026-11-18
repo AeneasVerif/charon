@@ -61,13 +61,8 @@ pub enum TraitImplSource {
     Normal,
     /// The blanket implementation generated for a trait alias.
     TraitAlias,
-    /// An implementation of one of the `Fn*` traits, generated for a closure.
-    Closure {
-        #[serde_state(stateless)]
-        kind: ClosureKind,
-    },
-    /// The `Destruct` implementation generated for an ADT or closure.
-    Destruct,
+    /// An implementation that rustc provides without source code.
+    Builtin,
 }
 
 /// The virtual table instance for a trait implementation.

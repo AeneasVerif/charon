@@ -12,13 +12,6 @@ impl VirtualImplKind {
         }
     }
 
-    pub fn trait_impl_source(self) -> TraitImplSource {
-        match self {
-            VirtualImplKind::Destruct => TraitImplSource::Destruct,
-            VirtualImplKind::Callable(kind) => TraitImplSource::Closure { kind },
-        }
-    }
-
     /// The name of the method we generate.
     pub fn method_path_elem(self) -> PathElem {
         match self {

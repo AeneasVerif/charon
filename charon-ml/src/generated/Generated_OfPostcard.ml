@@ -3454,10 +3454,7 @@ and trait_impl_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
      match __tag with
      | 0 -> Ok NormalTraitImpl
      | 1 -> Ok TraitAliasTraitImpl
-     | 2 ->
-         let* kind = closure_kind_of_postcard ctx st in
-         Ok (ClosureTraitImpl kind)
-     | 3 -> Ok DestructTraitImpl
+     | 2 -> Ok BuiltinTraitImpl
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and trait_item_name_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
