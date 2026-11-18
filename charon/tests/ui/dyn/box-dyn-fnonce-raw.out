@@ -559,7 +559,7 @@ where
     _3 = move self
     storage_live(_4)
     _4 = move args
-    _11 = transmute<*const F>(copy _3._0)
+    _11 = box_deref_transmute<*const F>(copy _3._0)
     _0 = TraitClause4::call_once(move (*_11), move _4)
     ↳⚡ _10 = transmute<*const F>(copy _3._0.0)
         _8 = &mut _3

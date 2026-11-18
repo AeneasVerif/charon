@@ -222,6 +222,7 @@ impl HasSafety for UnOp {
             UnOp::Cast(
                 CastKind::Scalar(..)
                 | CastKind::Subtype(..)
+                | CastKind::BoxDerefTransmute(..)
                 | CastKind::RawPtr(..)
                 | CastKind::PtrExposeProvenance(..)
                 | CastKind::PtrWithExposedProvenance(..)

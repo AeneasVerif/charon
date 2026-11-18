@@ -655,6 +655,8 @@ and pp_cast_kind (env : fmt_env) (fmt : Format.formatter) (cast : cast_kind) :
   | CastSubtype tgt -> Format.fprintf fmt "subtype<%a>" (pp_ty env) tgt
   | CastRawPtr tgt -> Format.fprintf fmt "cast<%a>" (pp_ty env) tgt
   | CastTransmute tgt -> Format.fprintf fmt "transmute<%a>" (pp_ty env) tgt
+  | CastBoxDerefTransmute tgt ->
+      Format.fprintf fmt "box_deref_transmute<%a>" (pp_ty env) tgt
   | CastUnsize (tgt, meta, _) ->
       Format.fprintf fmt "unsize_cast<%a, %a>" (pp_ty env) tgt
         (pp_unsizing_metadata env) meta

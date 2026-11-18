@@ -7,7 +7,6 @@
 use itertools::Itertools;
 use minirust_rs::{mem::TreeBorrowsMemory, prelude::TerminationInfo};
 use miniutil::build as mb;
-use smallvec::{SmallVec, smallvec};
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::{io::Write, marker::PhantomData};
 
@@ -395,7 +394,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                         current_block = next_block;
                     }
 
-                    _ => statements.extend(self.statement(statement)?),
+                    _ => self.statement(statement, &mut statements)?,
                 }
             }
             let terminator = self.terminator(
@@ -424,45 +423,49 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
     fn statement(
         &self,
         statement: &ullbc_ast::Statement,
-    ) -> Result<SmallVec<[mini::Statement; 1]>> {
+        statements: &mut Vec<mini::Statement>,
+    ) -> Result<()> {
         use ullbc_ast::StatementKind as S;
         let span = statement.span;
-        Ok(match &statement.kind {
+        match &statement.kind {
             S::Assign(place, value) => {
                 let destination = self.place(span, place)?;
-                let mut statements = smallvec![mini::Statement::Assign {
+                let source = self.rvalue(span, value, statements)?;
+                statements.push(mini::Statement::Assign {
                     destination,
-                    source: self.rvalue(span, value)?,
-                }];
+                    source,
+                });
                 if let Rvalue::Use(_, WithRetag::Yes) = value {
                     statements.push(mini::Statement::Validate {
                         place: destination,
                         fn_entry: false,
                     });
                 }
-                statements
             }
-            S::SetDiscriminant(place, variant) => smallvec![mini::Statement::SetDiscriminant {
-                destination: self.place(span, place)?,
-                value: self.variant_discriminant(span, place.ty(), *variant)?,
-            }],
+            S::SetDiscriminant(place, variant) => {
+                statements.push(mini::Statement::SetDiscriminant {
+                    destination: self.place(span, place)?,
+                    value: self.variant_discriminant(span, place.ty(), *variant)?,
+                })
+            }
             S::StorageLive(local) => {
-                smallvec![mini::Statement::StorageLive(self.local_name(*local))]
+                statements.push(mini::Statement::StorageLive(self.local_name(*local)))
             }
             S::StorageDead(local) => {
-                smallvec![mini::Statement::StorageDead(self.local_name(*local))]
+                statements.push(mini::Statement::StorageDead(self.local_name(*local)))
             }
             S::PlaceMention(place) => {
-                smallvec![mini::Statement::PlaceMention(self.place(span, place)?)]
+                statements.push(mini::Statement::PlaceMention(self.place(span, place)?))
             }
-            S::Borrowck(_) | S::Nop => SmallVec::new(),
+            S::Borrowck(_) | S::Nop => {}
             S::Assert { .. } => {
                 raise!(
                     span,
                     "MiniRust is incompatible with `--reconstruct-asserts`"
                 )
             }
-        })
+        }
+        Ok(())
     }
 
     fn terminator(
@@ -726,7 +729,12 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         }
     }
 
-    fn rvalue(&self, span: Span, value: &Rvalue) -> Result<mini::ValueExpr> {
+    fn rvalue(
+        &self,
+        span: Span,
+        value: &Rvalue,
+        statements: &mut Vec<mini::Statement>,
+    ) -> Result<mini::ValueExpr> {
         Ok(match value {
             // Retagging is handled at the statement level.
             Rvalue::Use(operand, _) => self.operand(span, operand)?,
@@ -748,7 +756,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 },
             },
             Rvalue::BinaryOp(op, left, right) => self.binop(span, *op, left, right)?,
-            Rvalue::UnaryOp(op, operand) => self.unop(span, op, operand)?,
+            Rvalue::UnaryOp(op, operand) => self.unop(span, op, operand, statements)?,
             Rvalue::NullaryOp(op) => {
                 let checks = self.krate.runtime_checks;
                 let value = match op {
@@ -850,7 +858,13 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         }
     }
 
-    fn unop(&self, span: Span, op: &UnOp, operand: &Operand) -> Result<mini::ValueExpr> {
+    fn unop(
+        &self,
+        span: Span,
+        op: &UnOp,
+        operand: &Operand,
+        statements: &mut Vec<mini::Statement>,
+    ) -> Result<mini::ValueExpr> {
         let mut operand_value = self.operand(span, operand)?;
         let operator = match op {
             UnOp::Not if operand.ty().is_bool() => {
@@ -870,6 +884,14 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 }))
             }
             UnOp::Cast(CastKind::Transmute(target_ty) | CastKind::Subtype(target_ty)) => {
+                mini::UnOp::Cast(mini::CastOp::Transmute(self.ty(span, target_ty)?))
+            }
+            UnOp::Cast(CastKind::BoxDerefTransmute(target_ty)) => {
+                let (box_place, _) = operand.as_copy().unwrap().0.as_projection().unwrap();
+                statements.push(mini::Statement::Validate {
+                    place: self.place(span, box_place)?,
+                    fn_entry: false,
+                });
                 mini::UnOp::Cast(mini::CastOp::Transmute(self.ty(span, target_ty)?))
             }
             UnOp::Cast(CastKind::RawPtr(target_ty)) => {

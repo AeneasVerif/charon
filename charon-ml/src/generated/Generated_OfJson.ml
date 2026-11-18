@@ -520,6 +520,9 @@ and cast_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Transmute", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (CastTransmute _0)
+    | `Assoc [ ("BoxDerefTransmute", _0) ] ->
+        let* _0 = ty_of_json ctx _0 in
+        Ok (CastBoxDerefTransmute _0)
     | `Assoc [ ("Concretize", `List [ _0; _1 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
         let* _1 = list_of_json field_id_of_json ctx _1 in
