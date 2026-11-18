@@ -1561,53 +1561,53 @@ pub fn flabada<'a>(_x: &'a ()) -> Wrapper<(bool, &'a ())>[{built_in impl Sized f
 }
 
 // Full name: test_crate::{impl Fn<(&'a (),)> for for<'a> flabada<'a>}::call
-pub extern "rust-call" fn {impl Fn<(&'a (),)> for for<'a> flabada<'a>}::call<'a, '_1>(state: &'_1 for<'a> flabada<'a>, args: (&'a (),)) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
+pub extern "rust-call" fn {impl Fn<(&'a (),)> for for<'a> flabada<'a>}::call<'a, '_1>(_1: &'_1 for<'a> flabada<'a>, _2: (&'a (),)) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
 {
-    let mut _0: Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]; // return
-    let mut state: &'_1 for<'a> flabada<'a>; // arg #1
-    let mut args: (&'a (),); // arg #2
+    let mut _0: Wrapper<(bool, &'12 ())>[{built_in impl Sized for (bool, &'12 ())}]; // return
+    let _1: &'17 for<'a> flabada<'a>; // arg #1
+    let _2: (&'19 (),); // arg #2
 
     storage_live(_0)
-    _0 = flabada<'a>(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(state)
+    _0 = flabada<'20>(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(state)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
 // Full name: test_crate::{impl FnMut<(&'a (),)> for for<'a> flabada<'a>}::call_mut
-pub extern "rust-call" fn call_mut<'a, '_1>(state: &'_1 mut for<'a> flabada<'a>, args: (&'a (),)) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
+pub extern "rust-call" fn call_mut<'a, '_1>(_1: &'_1 mut for<'a> flabada<'a>, _2: (&'a (),)) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
 {
-    let mut _0: Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]; // return
-    let mut state: &'_1 mut for<'a> flabada<'a>; // arg #1
-    let mut args: (&'a (),); // arg #2
+    let mut _0: Wrapper<(bool, &'12 ())>[{built_in impl Sized for (bool, &'12 ())}]; // return
+    let _1: &'17 mut for<'a> flabada<'a>; // arg #1
+    let _2: (&'19 (),); // arg #2
 
     storage_live(_0)
-    _0 = flabada<'a>(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(state)
+    _0 = flabada<'20>(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(state)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
 // Full name: test_crate::{impl FnOnce<(&'a (),)> for for<'a> flabada<'a>}::call_once
-pub extern "rust-call" fn call_once<'a>(state: for<'a> flabada<'a>, args: (&'a (),)) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
+pub extern "rust-call" fn call_once<'a>(_1: for<'a> flabada<'a>, _2: (&'a (),)) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
 {
-    let mut _0: Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]; // return
-    let mut state: for<'a> flabada<'a>; // arg #1
-    let mut args: (&'a (),); // arg #2
+    let mut _0: Wrapper<(bool, &'12 ())>[{built_in impl Sized for (bool, &'12 ())}]; // return
+    let _1: for<'a> flabada<'a>; // arg #1
+    let _2: (&'17 (),); // arg #2
 
     storage_live(_0)
-    _0 = flabada<'a>(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(state)
+    _0 = flabada<'18>(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(state)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 

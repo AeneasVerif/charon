@@ -41,7 +41,7 @@
 //! }
 //! ```
 
-use crate::hax::{self, UnderOwnerState};
+use crate::hax;
 use itertools::Itertools;
 use std::mem;
 
@@ -354,11 +354,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 callable.item(),
                 signature,
             ),
-            CallableKind::FnDef => {
-                self.translate_fn_def_method_body(span, callable.item(), signature)
-            }
-            CallableKind::FnPtr => {
-                self.translate_fn_ptr_method_body(span, callable.item(), signature)
+            CallableKind::FnDef | CallableKind::FnPtr => {
+                let vimpl = callable_virtual_impl(self.hax_state(), def, target_kind);
+                let Some(body) = vimpl.method_shim(self.hax_state(), &vimpl.methods[0].def_id)
+                else {
+                    panic!("missing shim for function item or pointer")
+                };
+                Ok(self.translate_body(span, body, &def.source_text))
             }
         }
     }
@@ -525,120 +527,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 )
             }
         })
-    }
-
-    fn translate_fn_def_method_body(
-        &mut self,
-        span: Span,
-        item: &hax::ItemRef<'tcx>,
-        signature: &FunSig,
-    ) -> Result<Body, Error> {
-        let late_bound_regions: RegionArgs = self
-            .innermost_binder()
-            .bound_region_vars
-            .iter()
-            .map(|rid| Region::Var(DeBruijnVar::new_at_zero(*rid)))
-            .collect();
-        let fn_ptr = self
-            .translate_bound_fn_ptr(span, item, TransItemSourceKind::Fun)?
-            .apply(late_bound_regions);
-        let fn_op = FnOperand::Regular(fn_ptr);
-
-        let mut builder = BodyBuilder::new(span, 2);
-
-        let output = builder.new_var(None, signature.output.clone());
-        let _state = builder.new_var(Some("state".to_string()), signature.inputs[0].clone());
-        let tupled_args_ty = &signature.inputs[1];
-        let tupled_args = builder.new_var(Some("args".to_string()), tupled_args_ty.clone());
-
-        // We need the type declaration to have been translated to get the fields (since in monomorphic)
-        // mode they aren't in the generics. So ensure it's been translated!
-        let tuple_id = tupled_args_ty.as_adt().unwrap().id;
-        let _ = self.get_or_translate(ItemId::Type(tuple_id))?;
-        let arg_tys = tupled_args_ty.as_tuple_fields(&self.t_ctx.translated);
-
-        let args = arg_tys
-            .into_iter()
-            .enumerate()
-            .map(|(i, ty)| {
-                let nth_field = tupled_args
-                    .clone()
-                    .project(ProjectionElem::Field(None, FieldId::new(i)), ty);
-                Operand::Move(nth_field)
-            })
-            .collect();
-
-        builder.call(
-            output,
-            Call {
-                func: fn_op,
-                args,
-                safety: CallSafety::Inherit,
-            },
-        );
-
-        Ok(Body::Unstructured(builder.build()))
-    }
-
-    fn translate_fn_ptr_method_body(
-        &mut self,
-        span: Span,
-        item: &hax::ItemRef<'tcx>,
-        signature: &FunSig,
-    ) -> Result<Body, Error> {
-        let ty = item
-            .def_id
-            .type_of(&self.hax_state)
-            .instantiate(self.tcx, item.rustc_args(&self.hax_state));
-        let ty = hax::normalize(self.tcx, self.hax_state.typing_env(), ty);
-        let copy_proof =
-            hax::solve_copy(&self.hax_state, ty).expect("function pointers are always Copy");
-        let copy_proof = self
-            .translate_trait_proof(span, &copy_proof)?
-            .no_bound_vars();
-        let mut builder = BodyBuilder::new(span, 2);
-        let output = builder.new_var(None, signature.output.clone());
-        let fn_ptr = builder.new_var(Some("fn_ptr".to_string()), signature.inputs[0].clone());
-        let tupled_args_ty = &signature.inputs[1];
-        let tupled_args = builder.new_var(Some("args".to_string()), tupled_args_ty.clone());
-
-        // `FnOnce::call_once` receives the function pointer directly, whereas `Fn::call` and
-        // `FnMut::call_mut` receive it through a shared or mutable reference respectively.
-        let fn_ptr = if matches!(fn_ptr.ty().kind(), TyKind::FnPtr(..)) {
-            fn_ptr
-        } else {
-            fn_ptr.deref()
-        };
-        let fn_ptr = Operand::Copy(fn_ptr, copy_proof);
-        let TyKind::FnPtr(fn_sig) = fn_ptr.ty().kind() else {
-            unreachable!()
-        };
-        let late_bound_regions: RegionArgs = self
-            .innermost_binder()
-            .bound_region_vars
-            .iter()
-            .map(|rid| Region::Var(DeBruijnVar::new_at_zero(*rid)))
-            .collect();
-        let arg_tys = fn_sig.clone().apply(late_bound_regions.clone()).inputs;
-        let args = arg_tys
-            .into_iter()
-            .enumerate()
-            .map(|(i, ty)| {
-                let field = tupled_args
-                    .clone()
-                    .project(ProjectionElem::Field(None, FieldId::new(i)), ty);
-                Operand::Move(field)
-            })
-            .collect();
-        builder.call(
-            output,
-            Call {
-                func: FnOperand::Dynamic(fn_ptr, late_bound_regions),
-                args,
-                safety: CallSafety::Inherit,
-            },
-        );
-        Ok(Body::Unstructured(builder.build()))
     }
 
     /// Given an item that is a non-capturing closure, generate the equivalent function,

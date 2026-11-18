@@ -172,19 +172,19 @@ fn __rust_std_internal_init_fn() -> u32
 
 // Full name: test_crate::FOO::{impl FnOnce<()> for __rust_std_internal_init_fn}::call_once
 #[inline(hint)]
-extern "rust-call" fn {impl FnOnce<()> for __rust_std_internal_init_fn}::call_once(state: __rust_std_internal_init_fn, args: ()) -> u32
+extern "rust-call" fn {impl FnOnce<()> for __rust_std_internal_init_fn}::call_once(_1: __rust_std_internal_init_fn, _2: ()) -> u32
 {
     let mut _0: u32; // return
-    let mut state: __rust_std_internal_init_fn; // arg #1
-    let mut args: (); // arg #2
+    let _1: __rust_std_internal_init_fn; // arg #1
+    let _2: (); // arg #2
 
     storage_live(_0)
     _0 = __rust_std_internal_init_fn()
-    ↳⚡ storage_dead(args)
-        storage_dead(state)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(state)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 

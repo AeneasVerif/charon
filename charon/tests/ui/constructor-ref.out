@@ -74,21 +74,21 @@ where
 }
 
 // Full name: test_crate::Wrapper::{impl FnOnce<(T,)> for Value<T>[TraitClause0]}::call_once
-extern "rust-call" fn call_once<T>(state: Value<T>[TraitClause0], args: (T,)) -> Wrapper<T>[TraitClause0]
+extern "rust-call" fn call_once<T>(_1: Value<T>[TraitClause0], _2: (T,)) -> Wrapper<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
     let mut _0: Wrapper<T>[TraitClause0]; // return
-    let mut state: Value<T>[TraitClause0]; // arg #1
-    let mut args: (T,); // arg #2
+    let _1: Value<T>[TraitClause0]; // arg #1
+    let _2: (T,); // arg #2
 
     storage_live(_0)
-    _0 = Value<T>[TraitClause0](move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(state)
+    _0 = Value<T>[TraitClause0](move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(state)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
