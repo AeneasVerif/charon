@@ -223,6 +223,17 @@ impl TransItemSourceKind {
         )
     }
 
+    /// Whether the item takes an extra lifetime parameter for the borrow of `self`.
+    pub fn has_self_borrow_region(&self) -> bool {
+        match self {
+            Self::VirtualMethod(kind) | Self::VTableMethod(TransImplSource::Virtual(kind)) => {
+                kind.has_self_borrow()
+            }
+            Self::VTableDropShim(..) => true,
+            _ => false,
+        }
+    }
+
     /// Whether the corresponding item binds the late-bound lifetimes of the closure, or just its
     /// early-bound ones.
     pub fn has_closure_late_params(&self) -> bool {
@@ -997,15 +1008,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         .map(|_| self.translate_erased_region()),
                 );
             }
-            if let TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(
-                ClosureKind::FnMut | ClosureKind::Fn,
-            ))
-            | TransItemSourceKind::VTableMethod(TransImplSource::Virtual(
-                VirtualImplKind::Callable(ClosureKind::FnMut | ClosureKind::Fn),
-            )) = kind
-            {
-                generics.regions.push(self.translate_erased_region());
-            }
             // If we're in the process of translating this same item (possibly with a
             // different `TransItemSourceKind`), we can reuse the generics they have in
             // common.
@@ -1021,12 +1023,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
             }
         }
-        if matches!(
-            kind,
-            TransItemSourceKind::VirtualMethod(VirtualImplKind::Destruct)
-                | TransItemSourceKind::VTableDropShim(..)
-        ) {
-            generics = generics.concat(&self.drop_glue_generic_args());
+        if kind.has_self_borrow_region() {
+            generics = generics.concat(&self.self_borrow_generic_args());
         }
 
         let trait_ref = hax_item

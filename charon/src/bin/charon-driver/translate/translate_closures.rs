@@ -783,7 +783,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // We give it the lifetime parameter we had prepared for that purpose.
         let signature = bound_sig.apply(
             self.the_only_binder()
-                .closure_call_method_region
+                .self_borrow_region
                 .iter()
                 .map(|r| Region::Var(DeBruijnVar::new_at_zero(*r)))
                 .collect(),

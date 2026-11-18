@@ -930,7 +930,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     self_ty,
                     Region::Var(DeBruijnVar::new_at_zero(RegionId::ZERO)),
                 );
-                let method_params = Self::drop_glue_params();
+                let method_params = Self::self_borrow_params();
                 Binder::new(
                     BinderKind::TraitMethod(trait_decl_id, method_id),
                     method_params,

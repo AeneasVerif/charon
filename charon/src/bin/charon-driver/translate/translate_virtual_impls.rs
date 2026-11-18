@@ -12,6 +12,12 @@ impl VirtualImplKind {
         }
     }
 
+    /// Whether the method we generate takes `self` by reference. If so, it takes an extra lifetime
+    /// parameter for that borrow.
+    pub fn has_self_borrow(self) -> bool {
+        !matches!(self, VirtualImplKind::Callable(ClosureKind::FnOnce))
+    }
+
     /// The name of the method we generate.
     pub fn method_path_elem(self) -> PathElem {
         match self {

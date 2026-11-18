@@ -32,7 +32,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         )?;
         let fn_ptr = FnPtr::new(
             FnPtrKind::Trait(tref, method_id),
-            self.drop_glue_generic_args(),
+            self.self_borrow_generic_args(),
         );
         Ok(fn_ptr)
     }
@@ -60,7 +60,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         def: &hax::FullDef<'tcx>,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
-        let borrow_region = self.drop_glue_region();
+        let borrow_region = self.self_borrow_region();
 
         // Charon-generated `Destruct` impl for an ADT.
         let trait_pred = &def
@@ -115,28 +115,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         })
     }
 
-    pub(crate) fn drop_glue_region(&self) -> Region {
-        Region::Var(DeBruijnVar::new_at_zero(
-            self.the_only_binder()
-                .drop_glue_region
-                .expect("drop glue item should have a borrow lifetime"),
-        ))
-    }
-
-    pub(crate) fn drop_glue_generic_args(&mut self) -> GenericArgs {
-        let mut generics = GenericArgs::empty();
-        generics.regions.push(self.translate_erased_region());
-        generics
-    }
-
-    pub(crate) fn drop_glue_params() -> GenericParams {
-        let mut params = GenericParams::empty();
-        params
-            .regions
-            .push_with(|index| RegionParam::new(index, None, Variance::Covariant));
-        params
-    }
-
     // Small helper to deduplicate. Generates the signature `&'a mut self_ty -> ()`.
     pub fn drop_glue_method_sig(&self, self_ty: Ty, region: Region) -> FunSig {
         let self_ref = TyKind::Ref(region, self_ty, RefKind::Mut).into_ty();
@@ -150,7 +128,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     }
 
     pub fn drop_glue_fn_ptr_sig(&self, self_ty: Ty) -> RegionBinder<FunSig> {
-        let params = Self::drop_glue_params();
+        let params = Self::self_borrow_params();
         let region = Region::Var(DeBruijnVar::new_at_zero(RegionId::ZERO));
         let self_ty = self_ty.move_under_binder();
         RegionBinder {
@@ -189,7 +167,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 def.this(),
                 TransItemSourceKind::VirtualMethod(VirtualImplKind::Destruct),
             );
-            let method_params = Self::drop_glue_params();
+            let method_params = Self::self_borrow_params();
             let generics = self
                 .outermost_binder()
                 .params
