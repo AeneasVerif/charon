@@ -76,7 +76,7 @@ where
     proof ImpliedClause2: ((&'_0 A,): Tuple) = {built_in impl Tuple for (&'_0 A,)}
     proof ImpliedClause3: (B: Sized) = TraitClause1<'_>
     type Output = B
-    fn call_once = call_once<'_0, A, B>[for<'_0_2> TraitClause0<'_0_2>, for<'_0_2> TraitClause1<'_>]
+    fn call_once = call_once<'_0, A, B>[for<'_0_2> TraitClause0<'_0_2>, for<'_0_2> TraitClause1<'_0_2>]
     vtable: lazy
 }
 

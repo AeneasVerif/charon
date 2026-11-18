@@ -307,7 +307,7 @@ where
     proof ImpliedClause2: ((A, &'_0 B): Tuple) = {built_in impl Tuple for (A, &'_0 B)}
     proof ImpliedClause3: (&'_0 C: Sized) = TraitClause2<'_0>
     type Output = &'_0 C
-    fn call_once = {impl FnOnce<(A, &'_0 B)> for fn<'_0_1 where B: '_0_1, C: '_0_1>(A, &'_0_1 B) -> &'_0_1 C}::call_once<'_0, A, B, C>[for<'_0_2> TraitClause0<'_>, for<'_0_2> TraitClause1<'_0_2>, for<'_0_2> TraitClause2<'_0_2>]
+    fn call_once = {impl FnOnce<(A, &'_0 B)> for fn<'_0_1 where B: '_0_1, C: '_0_1>(A, &'_0_1 B) -> &'_0_1 C}::call_once<'_0, A, B, C>[for<'_0_2> TraitClause0<'_0_2>, for<'_0_2> TraitClause1<'_0_2>, for<'_0_2> TraitClause2<'_0_2>]
     vtable: lazy
 }
 
@@ -388,7 +388,7 @@ where
     proof ImpliedClause2: ((&'_0 A, &'_1 B): Tuple) = {built_in impl Tuple for (&'_0 A, &'_1 B)}
     proof ImpliedClause3: ((&'_1 C, &'_0 D): Sized) = TraitClause2<'_0, '_1>
     type Output = (&'_1 C, &'_0 D)
-    fn call_once = {impl FnOnce<(&'_0 A, &'_1 B)> for fn<'_0_1, '_1_1 where A: '_0_1, B: '_1_1, C: '_1_1, D: '_0_1>(&'_0_1 A, &'_1_1 B) -> (&'_1_1 C, &'_0_1 D)}::call_once<'_0, '_1, A, B, C, D>[for<'_0_2, '_1_2> TraitClause0<'_, '_>, for<'_0_2, '_1_2> TraitClause1<'_, '_>, for<'_0_2, '_1_2> TraitClause2<'_0_2, '_1_2>]
+    fn call_once = {impl FnOnce<(&'_0 A, &'_1 B)> for fn<'_0_1, '_1_1 where A: '_0_1, B: '_1_1, C: '_1_1, D: '_0_1>(&'_0_1 A, &'_1_1 B) -> (&'_1_1 C, &'_0_1 D)}::call_once<'_0, '_1, A, B, C, D>[for<'_0_2, '_1_2> TraitClause0<'_0_2, '_1_2>, for<'_0_2, '_1_2> TraitClause1<'_0_2, '_1_2>, for<'_0_2, '_1_2> TraitClause2<'_0_2, '_1_2>]
     vtable: lazy
 }
 

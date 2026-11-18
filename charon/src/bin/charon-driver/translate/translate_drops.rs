@@ -2,7 +2,6 @@ use rustc_middle::ty;
 
 use super::translate_ctx::*;
 use crate::hax;
-use crate::translate::translate_crate::{TransItemSourceKind, VirtualImplKind};
 use charon_lib::ast::*;
 
 impl<'tcx> ItemTransCtx<'tcx, '_> {
@@ -37,7 +36,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         Ok(fn_ptr)
     }
 
-    fn translate_drop_glue_method_body(
+    pub(crate) fn translate_drop_glue_method_body(
         &mut self,
         span: Span,
         def: &hax::FullDef<'tcx>,
@@ -48,71 +47,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let body = def.this().drop_glue_shim(self.hax_state());
         Ok(self.translate_body(span, body, &def.source_text))
-    }
-
-    /// Translate the body of the fake `Destruct::drop_glue` method we're adding to the
-    /// `Destruct` trait. It contains the drop glue for the type.
-    #[tracing::instrument(skip(self, item_meta, def))]
-    pub fn translate_drop_glue_method(
-        mut self,
-        def_id: FunDeclId,
-        item_meta: ItemMeta,
-        def: &hax::FullDef<'tcx>,
-    ) -> Result<FunDecl, Error> {
-        let span = item_meta.span;
-        let borrow_region = self.self_borrow_region();
-
-        // Charon-generated `Destruct` impl for an ADT.
-        let trait_pred = &def
-            .virtual_impl(self.hax_state(), hax::VirtualTrait::Destruct)
-            .trait_pred;
-
-        let implemented_trait = self.translate_trait_predicate(span, trait_pred)?;
-        let item_id =
-            self.translate_drop_glue_method_id(&trait_pred.trait_ref.def_id, implemented_trait.id)?;
-        let self_ty = implemented_trait
-            .self_ty(&self.t_ctx.translated)
-            .unwrap()
-            .clone();
-
-        let signature = self.drop_glue_method_sig(self_ty.clone(), borrow_region);
-        let src = {
-            let mut impl_generics = self.the_only_binder().params.identity_args();
-            impl_generics
-                .regions
-                .pop()
-                .expect("drop glue method should have a borrow lifetime");
-            let destruct_impl_id = self.register_item(
-                span,
-                def.this(),
-                TransItemSourceKind::TraitImpl(TransImplSource::Virtual(VirtualImplKind::Destruct)),
-            );
-            let impl_ref = TraitImplRef {
-                id: destruct_impl_id,
-                generics: Box::new(impl_generics),
-            };
-            FunSource::TraitImpl {
-                impl_ref,
-                trait_ref: implemented_trait,
-                item_id,
-                reuses_default: false,
-            }
-        };
-
-        let body = if item_meta.opacity.with_private_contents().is_opaque() {
-            Body::Opaque
-        } else {
-            self.translate_drop_glue_method_body(span, def)?
-        };
-
-        Ok(FunDecl {
-            def_id,
-            item_meta,
-            generics: self.into_generics(),
-            signature: Box::new(signature),
-            src,
-            body,
-        })
     }
 
     // Small helper to deduplicate. Generates the signature `&'a mut self_ty -> ()`.
@@ -136,54 +70,5 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             outlives: params.outlives,
             skip_binder: self.drop_glue_method_sig(self_ty, region),
         }
-    }
-
-    #[tracing::instrument(skip(self, item_meta, def))]
-    pub fn translate_implicit_destruct_impl(
-        mut self,
-        impl_id: TraitImplId,
-        item_meta: ItemMeta,
-        def: &hax::FullDef<'tcx>,
-    ) -> Result<TraitImpl, Error> {
-        let span = item_meta.span;
-
-        let destruct_impl = def.virtual_impl(self.hax_state(), hax::VirtualTrait::Destruct);
-        let mut timpl = self.translate_virtual_trait_impl(
-            impl_id,
-            item_meta,
-            def.this(),
-            TransImplSource::Virtual(VirtualImplKind::Destruct),
-            destruct_impl,
-        )?;
-
-        // Add the `drop_glue(&mut self)` method.
-        let destruct_trait_id = timpl.impl_trait.id;
-        let destruct_trait_def_id: &hax::DefId = &destruct_impl.trait_pred.trait_ref.def_id;
-        let method_id =
-            self.translate_drop_glue_method_id(destruct_trait_def_id, destruct_trait_id)?;
-        let method_binder = {
-            let fun_id = self.register_item(
-                span,
-                def.this(),
-                TransItemSourceKind::VirtualMethod(VirtualImplKind::Destruct),
-            );
-            let method_params = Self::self_borrow_params();
-            let generics = self
-                .outermost_binder()
-                .params
-                .identity_args_at_depth(DeBruijnId::one())
-                .concat(&method_params.identity_args());
-            Binder::new(
-                BinderKind::TraitMethod(destruct_trait_id, method_id),
-                method_params,
-                FunDeclRef {
-                    id: fun_id,
-                    generics: Box::new(generics),
-                },
-            )
-        };
-        timpl.methods.set_slot_extend(method_id, method_binder);
-
-        Ok(timpl)
     }
 }

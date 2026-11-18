@@ -170,11 +170,8 @@ impl<'tcx> TranslateCtx<'tcx> {
                     TransImplSource::TraitAlias => {
                         bt_ctx.translate_trait_alias_blanket_impl(id, item_meta, &def)?
                     }
-                    &TransImplSource::Virtual(VirtualImplKind::Callable(kind)) => {
-                        bt_ctx.translate_closure_trait_impl(id, item_meta, &def, kind)?
-                    }
-                    TransImplSource::Virtual(VirtualImplKind::Destruct) => {
-                        bt_ctx.translate_implicit_destruct_impl(id, item_meta, &def)?
+                    &TransImplSource::Virtual(kind) => {
+                        bt_ctx.translate_virtual_impl(id, item_meta, &def, kind)?
                     }
                     TransImplSource::Marker => {
                         unreachable!("marker impls are only used as vtable item sources")
@@ -182,19 +179,14 @@ impl<'tcx> TranslateCtx<'tcx> {
                 };
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
-            &TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(kind)) => {
-                let id = trans_id.expect_item();
-                let fun_decl = bt_ctx.translate_closure_method(id, item_meta, &def, kind)?;
-                self.translated.fun_decls.set_slot(id, fun_decl);
-            }
             TransItemSourceKind::ClosureAsFnCast => {
                 let id = trans_id.expect_item();
                 let fun_decl = bt_ctx.translate_stateless_closure_as_fn(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
-            TransItemSourceKind::VirtualMethod(VirtualImplKind::Destruct) => {
+            &TransItemSourceKind::VirtualMethod(kind) => {
                 let id = trans_id.expect_item();
-                let fun_decl = bt_ctx.translate_drop_glue_method(id, item_meta, &def)?;
+                let fun_decl = bt_ctx.translate_virtual_method(id, item_meta, &def, kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             TransItemSourceKind::VTable => {
