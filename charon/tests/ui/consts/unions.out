@@ -49,33 +49,57 @@ fn main()
 {
     let mut _0: (); // return
     let mut _1: &'1 U; // anonymous local
-    let mut _2: &'3 U; // anonymous local
-    let mut _3: &'5 U; // anonymous local
-    let mut _4: &'7 U; // anonymous local
-    let mut _5: &'9 U; // anonymous local
-    let mut _6: &'12 Same; // anonymous local
+    let _2: &'2 U; // anonymous local
+    let mut _3: &'3 U; // anonymous local
+    let _4: &'4 U; // anonymous local
+    let mut _5: &'5 U; // anonymous local
+    let _6: &'6 U; // anonymous local
+    let mut _7: &'7 U; // anonymous local
+    let _8: &'8 U; // anonymous local
+    let mut _9: &'9 U; // anonymous local
+    let _10: &'10 U; // anonymous local
+    let mut _11: &'12 Same; // anonymous local
+    let _12: &'13 Same; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = &A
-    storage_dead(_1)
     storage_live(_2)
-    _2 = &B
-    storage_dead(_2)
+    _2 = &A
+    _1 = &(*_2)
+    storage_dead(_1)
     storage_live(_3)
-    _3 = &C
-    storage_dead(_3)
     storage_live(_4)
-    _4 = &P1
-    storage_dead(_4)
+    _4 = &B
+    _3 = &(*_4)
+    storage_dead(_3)
     storage_live(_5)
-    _5 = &P2
-    storage_dead(_5)
     storage_live(_6)
-    _6 = &SAME
-    storage_dead(_6)
+    _6 = &C
+    _5 = &(*_6)
+    storage_dead(_5)
+    storage_live(_7)
+    storage_live(_8)
+    _8 = &P1
+    _7 = &(*_8)
+    storage_dead(_7)
+    storage_live(_9)
+    storage_live(_10)
+    _10 = &P2
+    _9 = &(*_10)
+    storage_dead(_9)
+    storage_live(_11)
+    storage_live(_12)
+    _12 = &SAME
+    _11 = &(*_12)
+    storage_dead(_11)
     _0 = ()
+    storage_dead(_12)
+    storage_dead(_10)
+    storage_dead(_8)
+    storage_dead(_6)
+    storage_dead(_4)
+    storage_dead(_2)
     return
 }
 

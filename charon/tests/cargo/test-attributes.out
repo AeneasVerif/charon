@@ -813,10 +813,13 @@ pub fn main()
     let _4: [&'40 TestDescAndFn; 3usize]; // anonymous local
     let mut _5: &'44 TestDescAndFn; // anonymous local
     let _6: &'45 TestDescAndFn; // anonymous local
-    let mut _7: &'47 TestDescAndFn; // anonymous local
-    let _8: &'48 TestDescAndFn; // anonymous local
-    let mut _9: &'50 TestDescAndFn; // anonymous local
-    let _10: &'51 TestDescAndFn; // anonymous local
+    let _7: &'46 TestDescAndFn; // anonymous local
+    let mut _8: &'47 TestDescAndFn; // anonymous local
+    let _9: &'48 TestDescAndFn; // anonymous local
+    let _10: &'49 TestDescAndFn; // anonymous local
+    let mut _11: &'50 TestDescAndFn; // anonymous local
+    let _12: &'51 TestDescAndFn; // anonymous local
+    let _13: &'52 TestDescAndFn; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -826,19 +829,25 @@ pub fn main()
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = &test_attributes::tests::test_foo
-    _5 = &(*_6)
     storage_live(_7)
+    _7 = &test_attributes::tests::test_foo
+    _6 = &(*_7)
+    _5 = &(*_6)
     storage_live(_8)
-    _8 = &test_attributes::tests::test_ignore
-    _7 = &(*_8)
     storage_live(_9)
     storage_live(_10)
-    _10 = &test_attributes::tests::test_should_panic
+    _10 = &test_attributes::tests::test_ignore
     _9 = &(*_10)
-    _4 = [move _5, move _7, move _9]
-    storage_dead(_9)
-    storage_dead(_7)
+    _8 = &(*_9)
+    storage_live(_11)
+    storage_live(_12)
+    storage_live(_13)
+    _13 = &test_attributes::tests::test_should_panic
+    _12 = &(*_13)
+    _11 = &(*_12)
+    _4 = [move _5, move _8, move _11]
+    storage_dead(_11)
+    storage_dead(_8)
     storage_dead(_5)
     _3 = &_4
     _2 = &(*_3)
@@ -847,8 +856,11 @@ pub fn main()
     _0 = test_main_env_args<'72, '73>(move _1)
     ↳⚡ unwind_continue
     storage_dead(_1)
+    storage_dead(_13)
+    storage_dead(_12)
     storage_dead(_10)
-    storage_dead(_8)
+    storage_dead(_9)
+    storage_dead(_7)
     storage_dead(_6)
     storage_dead(_4)
     storage_dead(_3)

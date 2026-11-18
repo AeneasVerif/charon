@@ -33,20 +33,18 @@ impl UllbcPass for Transform {
                 let local = dest
                     .as_local()
                     .filter(|l| !body.locals.is_return_or_arg(*l))?;
+                // This is only sound to do for raw pointers! Eliminating refs would
+                // skip a retagging, which could miss UB
                 let global = match rvalue {
-                    // `Ref` for non-mut statics, `Ptr` for `static mut` and extern statics
                     Rvalue::Use(Operand::Const(c), _)
-                        if let ConstantExprKind::Ref(pointee, _)
-                        | ConstantExprKind::Ptr(_, pointee, _) = c.kind()
+                        if let ConstantExprKind::Ptr(_, pointee, _) = c.kind()
                             && let GlobalPlaceKind::Global(GlobalProvenance::Global(global)) =
                                 &pointee.kind =>
                     {
                         global
                     }
                     // Thread-local statics are accessed through `Rvalue::ThreadLocalRef` in MIR.
-                    Rvalue::Ref { place, .. } | Rvalue::RawPtr { place, .. } => {
-                        place.kind.as_global()?
-                    }
+                    Rvalue::RawPtr { place, .. } => place.kind.as_global()?,
                     _ => return None,
                 };
                 let decl = ctx.translated.global_decls.get(global.id)?;

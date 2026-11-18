@@ -84,15 +84,19 @@ fn foo() -> (u8, *const u8, u8)
     let mut _0: (u8, *const u8, u8); // return
     let mut _1: u8; // anonymous local
     let mut _2: *const u8; // anonymous local
+    let mut _3: &'1 Wrapper; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
     _1 = copy MUTABLE
     storage_live(_2)
-    _2 = copy DANGLING._0
+    storage_live(_3)
+    _3 = &DANGLING
+    _2 = copy (*_3)._0
     _0 = (move _1, move _2, read TRIVIAL<bool, 3usize>[{built_in impl Sized for bool}])
     storage_dead(_2)
     storage_dead(_1)
+    storage_dead(_3)
     return
 }
 
