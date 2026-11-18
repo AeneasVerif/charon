@@ -170,10 +170,10 @@ impl<'tcx> TranslateCtx<'tcx> {
                     TransImplSource::TraitAlias => {
                         bt_ctx.translate_trait_alias_blanket_impl(id, item_meta, &def)?
                     }
-                    &TransImplSource::Callable(kind) => {
+                    &TransImplSource::Virtual(VirtualImplKind::Callable(kind)) => {
                         bt_ctx.translate_closure_trait_impl(id, item_meta, &def, kind)?
                     }
-                    TransImplSource::ImplicitDestruct => {
+                    TransImplSource::Virtual(VirtualImplKind::Destruct) => {
                         bt_ctx.translate_implicit_destruct_impl(id, item_meta, &def)?
                     }
                     TransImplSource::Marker => {
@@ -182,7 +182,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                 };
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
-            &TransItemSourceKind::CallableMethod(kind) => {
+            &TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(kind)) => {
                 let id = trans_id.expect_item();
                 let fun_decl = bt_ctx.translate_closure_method(id, item_meta, &def, kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
@@ -192,9 +192,9 @@ impl<'tcx> TranslateCtx<'tcx> {
                 let fun_decl = bt_ctx.translate_stateless_closure_as_fn(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
-            &TransItemSourceKind::DropGlueMethod(impl_kind) => {
+            TransItemSourceKind::VirtualMethod(VirtualImplKind::Destruct) => {
                 let id = trans_id.expect_item();
-                let fun_decl = bt_ctx.translate_drop_glue_method(id, item_meta, &def, impl_kind)?;
+                let fun_decl = bt_ctx.translate_drop_glue_method(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             TransItemSourceKind::VTable => {
@@ -1601,8 +1601,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
         let src = match impl_kind {
-            TransImplSource::Callable(kind) => TraitImplSource::Closure { kind },
-            TransImplSource::ImplicitDestruct => TraitImplSource::Destruct,
+            TransImplSource::Virtual(kind) => kind.trait_impl_source(),
             _ => unreachable!("not a virtual impl source: {impl_kind:?}"),
         };
 

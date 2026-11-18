@@ -45,7 +45,7 @@ use crate::hax::{self, UnderOwnerState};
 use itertools::Itertools;
 use std::mem;
 
-use super::translate_crate::TransItemSourceKind;
+use super::translate_crate::{TransItemSourceKind, VirtualImplKind};
 use super::translate_ctx::*;
 use charon_lib::ullbc_ast::*;
 
@@ -253,7 +253,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         kind: TransItemSourceKind,
         target_kind: ClosureKind,
     ) -> Result<RegionBinder<DeclRef<ItemId>>, Error> {
-        if !matches!(kind, TransItemSourceKind::CallableMethod(..)) {
+        if !matches!(
+            kind,
+            TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(..))
+        ) {
             raise_error!(
                 self,
                 span,
@@ -328,7 +331,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let Some((callable, target_kind)) = self.recognize_callable_impl_proof(in_trait) else {
             return Ok(None);
         };
-        let kind = TransItemSourceKind::CallableMethod(target_kind);
+        let kind = TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(target_kind));
         let bound_ref = self.translate_callable_bound_ref_with_method_bound(
             span,
             &callable,
@@ -376,7 +379,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         def: &hax::FullDef<'tcx>,
         target_kind: ClosureKind,
     ) -> Result<RegionBinder<TraitImplRef>, Error> {
-        let kind = TransItemSourceKind::TraitImpl(TransImplSource::Callable(target_kind));
+        let kind = TransItemSourceKind::TraitImpl(TransImplSource::Virtual(
+            VirtualImplKind::Callable(target_kind),
+        ));
         let bound_dref = self.translate_callable_bound_ref_with_late_bound(
             span,
             Callable::for_closure_def(def),
@@ -395,7 +400,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         self.translate_item(
             span,
             item,
-            TransItemSourceKind::TraitImpl(TransImplSource::Callable(target_kind)),
+            TransItemSourceKind::TraitImpl(TransImplSource::Virtual(VirtualImplKind::Callable(
+                target_kind,
+            ))),
         )
     }
 
@@ -410,8 +417,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
         let kind = translate_closure_kind(closure.kind());
 
-        let closure_body =
-            self.translate_item(span, def.this(), TransItemSourceKind::CallableMethod(kind))?;
+        let closure_body = self.translate_item(
+            span,
+            def.this(),
+            TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(kind)),
+        )?;
 
         let fn_once_impl = self.translate_closure_bound_impl_ref(span, def, FnOnce)?;
         let fn_mut_impl = if matches!(kind, FnMut | Fn) {
@@ -609,7 +619,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 let fun_id: FunDeclId = self.register_item(
                     span,
                     def.this(),
-                    TransItemSourceKind::CallableMethod(source_kind),
+                    TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(source_kind)),
                 );
                 let impl_ref = self.translate_callable_impl_ref(span, closure, source_kind)?;
                 // TODO: make a trait call to avoid needing to concatenate things ourselves.
@@ -853,7 +863,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             def_id,
             item_meta,
             callable.item(),
-            TransImplSource::Callable(target_kind),
+            TransImplSource::Virtual(VirtualImplKind::Callable(target_kind)),
             vimpl,
         )?;
 
@@ -866,7 +876,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let trait_method_id =
             self.translate_trait_method_id(trait_decl_id, &vimpl.methods[0].def_id)?;
         let call_fn_binder = {
-            let kind = TransItemSourceKind::CallableMethod(target_kind);
+            let kind = TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(target_kind));
             let bound_method_ref: RegionBinder<DeclRef<ItemId>> = self
                 .translate_callable_bound_ref_with_method_bound(
                     span,
@@ -929,7 +939,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             let fun_id: FunDeclId = self.register_item(
                 span,
                 def.this(),
-                TransItemSourceKind::CallableMethod(ClosureKind::FnOnce),
+                TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(ClosureKind::FnOnce)),
             );
             let impl_ref =
                 self.translate_callable_impl_ref(span, def.this(), ClosureKind::FnOnce)?;

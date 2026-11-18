@@ -8,7 +8,7 @@ use std::{
     sync::LazyLock,
 };
 
-use super::translate_crate::RustcItem;
+use super::translate_crate::{RustcItem, VirtualImplKind};
 use super::translate_ctx::*;
 use crate::hax;
 use crate::hax::{BaseState, DefPathItem, SInto};
@@ -435,11 +435,9 @@ impl<'tcx> TranslateCtx<'tcx> {
             | TransItemSourceKind::Module => {}
 
             TransItemSourceKind::TraitImpl(
-                kind @ (TransImplSource::Callable(..)
-                | TransImplSource::ImplicitDestruct
-                | TransImplSource::TraitAlias),
+                kind @ (TransImplSource::Virtual(..) | TransImplSource::TraitAlias),
             ) => {
-                if let TransImplSource::Callable(..) = kind {
+                if let TransImplSource::Virtual(VirtualImplKind::Callable(..)) = kind {
                     let _ = name.name.pop(); // Pop the `{closure}`
                 }
                 let impl_id = self.register_and_enqueue(&None, src.clone()).expect_item();
@@ -448,16 +446,8 @@ impl<'tcx> TranslateCtx<'tcx> {
             TransItemSourceKind::TraitImpl(TransImplSource::Marker) => {
                 unreachable!("marker impls are only used as vtable item sources")
             }
-            TransItemSourceKind::CallableMethod(kind) => {
-                let fn_name = kind.method_name().to_string();
-                name.name
-                    .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
-            }
-            TransItemSourceKind::DropGlueMethod(..) => {
-                name.name.push(PathElem::Builtin(
-                    BuiltinPathElem::DropGlue,
-                    Disambiguator::ZERO,
-                ));
+            TransItemSourceKind::VirtualMethod(kind) => {
+                name.name.push(kind.method_path_elem());
             }
             TransItemSourceKind::ClosureAsFnCast => {
                 name.name.push(PathElem::Builtin(
@@ -653,9 +643,11 @@ impl<'tcx> TranslateCtx<'tcx> {
         } else {
             let kind = match target_def.kind() {
                 // Point at the method that contains the closure code.
-                hax::FullDefKind::Closure(c) => TransItemSourceKind::CallableMethod(
-                    super::translate_closures::translate_closure_kind(c.kind()),
-                ),
+                hax::FullDefKind::Closure(c) => {
+                    TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(
+                        super::translate_closures::translate_closure_kind(c.kind()),
+                    ))
+                }
                 _ => self
                     .base_kind_for_item(&target_def_id)
                     .ok_or_else(|| format!("`{target_def_id:?}` is not a translatable item"))?,
@@ -977,8 +969,10 @@ impl<'tcx> TranslateCtx<'tcx> {
         let span = self.translate_span(span);
         let is_local = def.def_id().is_local();
         let (attr_info, lang_item, diagnostic_item) = if !item_src.is_derived_item()
-            || matches!(item_src.kind, TransItemSourceKind::CallableMethod(..))
-        {
+            || matches!(
+                item_src.kind,
+                TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(..))
+            ) {
             let attr_info = self.translate_attr_info(def);
             let lang_item = def
                 .def_id()
