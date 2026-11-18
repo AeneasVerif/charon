@@ -1,0 +1,32 @@
+//@ aux-crate=link-extern-fns-aux.rs
+//@ charon-args=--link-extern-fns --start-from=crate::sys
+//@ charon-args=--start-from=alloc::alloc::__rust_alloc
+//@ charon-args=--start-from=alloc::alloc::__rust_alloc_error_handler
+//@ charon-args=--start-from=core::panicking::panic_fmt --include=core::panicking::panic_fmt
+//@ rustc-args=--crate-type=bin
+#![feature(linkage)]
+extern crate link_extern_fns_aux;
+
+mod sys {
+    unsafe extern "Rust" {
+        pub fn local_hook(x: u32) -> u32;
+        pub fn dep_hook() -> u8;
+    }
+    unsafe extern "C" {
+        pub fn weak_hook() -> u8;
+    }
+}
+
+#[unsafe(no_mangle)]
+fn local_hook(x: u32) -> u32 {
+    x + 1
+}
+
+// Also defined weakly in the aux crate.
+#[unsafe(no_mangle)]
+#[linkage = "weak"]
+extern "C" fn weak_hook() -> u8 {
+    9
+}
+
+fn main() {}

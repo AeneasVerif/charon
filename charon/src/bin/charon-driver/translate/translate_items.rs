@@ -630,8 +630,42 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 fallback,
                 fallback_is_spec: fallback_is_spec || is_type_id,
             }
-        } else if let Some(name) = self.t_ctx.extern_item_symbol_name(def) {
-            Body::Extern(name)
+        } else if let Some(symbol) = self.t_ctx.extern_item_symbol_name(def) {
+            let mut definition = LinkedExtern::Unlinked;
+            if self.options.link_extern_fns
+                && let hax::FullDefKind::Fn(..) = def.kind()
+            {
+                let exported = self.t_ctx.exported_fns(&symbol);
+                let mut translate_fn = |instance: ty::Instance<'tcx>| {
+                    let item = hax::ItemRef::translate(
+                        self.hax_state_with_id(),
+                        instance.def_id(),
+                        instance.args,
+                    );
+                    self.translate_item(span, &item, TransItemSourceKind::Fun)
+                };
+                definition = match exported {
+                    ExportedFns::None => LinkedExtern::Unlinked,
+                    ExportedFns::Strong(instance) => {
+                        LinkedExtern::StronglyLinked(translate_fn(instance)?)
+                    }
+                    ExportedFns::Weak(instances) => LinkedExtern::WeaklyLinked(
+                        instances.into_iter().map(translate_fn).try_collect()?,
+                    ),
+                    ExportedFns::AllocatorShim(instance) => {
+                        LinkedExtern::AllocatorShim(translate_fn(instance)?)
+                    }
+                    ExportedFns::Many => {
+                        register_error!(
+                            self,
+                            span,
+                            "several functions are exported under the symbol `{symbol}`"
+                        );
+                        LinkedExtern::Unlinked
+                    }
+                };
+            }
+            Body::Extern { symbol, definition }
         } else if item_meta.diagnostic_item.as_deref()
             == Some(names::BOX_ASSUME_INIT_INTO_VEC_UNSAFE)
             && self.options.treat_box_as_builtin

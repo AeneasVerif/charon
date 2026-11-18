@@ -145,10 +145,49 @@ pub struct TranslateCtx<'tcx> {
     pub cached_names: HashMap<RustcItem<'tcx>, Name>,
     /// Cache the `ItemMeta`s to compute them only once each.
     pub cached_item_metas: HashMap<TransItemSource<'tcx>, ItemMeta>,
+    /// The functions that extern functions can link to, by symbol.
+    /// Computed lazily by `exported_fns`.
+    pub exported_fns: Option<HashMap<String, ExportedFns<'tcx>>>,
     /// Compute which lifetimes are used in a `&'a mut T`. This is a global fixpoint analysis.
     pub lt_mutability_computer: LifetimeMutabilityComputer,
     /// The layouts of the monomorphic instances of the type declarations, for `--collect-instantiated-layouts`.
     pub monomorphic_layouts: SeqHashMap<TypeDeclRef, Layout>,
+}
+
+/// The functions exported under a given symbol.
+#[derive(Debug, Default, Clone)]
+pub enum ExportedFns<'tcx> {
+    #[default]
+    None,
+    Strong(rustc_middle::ty::Instance<'tcx>),
+    Weak(Vec<rustc_middle::ty::Instance<'tcx>>),
+    AllocatorShim(rustc_middle::ty::Instance<'tcx>),
+    /// More than one function was strongly exported under this name; this would be a linker
+    /// error so we don't specify them.
+    Many,
+}
+
+impl<'tcx> ExportedFns<'tcx> {
+    pub(crate) fn merge(&mut self, other: ExportedFns<'tcx>) {
+        use ExportedFns::*;
+        *self = match (std::mem::take(self), other) {
+            // this would be a link error
+            (Many, _) | (_, Many) | (Strong(_), Strong(_)) => Many,
+            // strong takes precedence
+            (strong @ Strong(_), _) | (_, strong @ Strong(_)) => strong,
+            // the linker could pick any of them, so we keep them all
+            (Weak(mut weak), Weak(other)) => {
+                weak.extend(other);
+                Weak(weak)
+            }
+            (weak @ Weak(_), None) | (None, weak @ Weak(_)) => weak,
+            (None, None) => None,
+            // impossible
+            (AllocatorShim(_), _) | (_, AllocatorShim(_)) => {
+                panic!("allocator shims are added after merging exported functions")
+            }
+        };
+    }
 }
 
 /// Tracks whether a method is used (i.e. called or (non-opaquely) implemented).

@@ -323,7 +323,22 @@ impl<C: AstFormatter> FmtWithCtx<C> for ast::Body {
                 let body = body.with_ctx(ctx);
                 write!(f, "{{\n{body}{tab}}}")
             }
-            Body::Extern(name) => write!(f, "= <extern:{name}>"),
+            Body::Extern { symbol, definition } => {
+                write!(f, "= <extern:{symbol}>")?;
+                match definition {
+                    LinkedExtern::StronglyLinked(fun) => {
+                        write!(f, " linked(strong) to {}", fun.with_ctx(ctx))
+                    }
+                    LinkedExtern::WeaklyLinked(funs) => {
+                        let funs = funs.iter().map(|fun| fun.with_ctx(ctx)).format(", ");
+                        write!(f, " linked(weak) to {funs}")
+                    }
+                    LinkedExtern::AllocatorShim(fun) => {
+                        write!(f, " linked(alloc) to {}", fun.with_ctx(ctx))
+                    }
+                    LinkedExtern::Unlinked => Ok(()),
+                }
+            }
             Body::Intrinsic {
                 name,
                 fallback,
@@ -790,7 +805,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
                 })
                 .collect(),
             Body::Error(..)
-            | Body::Extern(..)
+            | Body::Extern { .. }
             | Body::Missing
             | Body::Opaque
             | Body::TargetDispatch(..) => (0..n_args)
@@ -1910,8 +1925,15 @@ impl Display for from_rustc::AttributeKind {
                 from_rustc::OptimizeAttr::Size => write!(f, "optimize(size)"),
             },
             AttributeKind::RustcAlign { align, .. } => write!(f, "rustc_align({align})"),
+            AttributeKind::RustcAllocator => write!(f, "rustc_allocator"),
+            AttributeKind::RustcAllocatorZeroed => write!(f, "rustc_allocator_zeroed"),
+            AttributeKind::RustcAllocatorZeroedVariant { name } => {
+                write!(f, "rustc_allocator_zeroed_variant = \"{name}\"")
+            }
+            AttributeKind::RustcDeallocator => write!(f, "rustc_deallocator"),
             AttributeKind::RustcIntrinsic => write!(f, "rustc_intrinsic"),
             AttributeKind::RustcNoWritable => write!(f, "rustc_no_writable"),
+            AttributeKind::RustcReallocator => write!(f, "rustc_reallocator"),
             AttributeKind::ShouldPanic { reason } => {
                 write!(f, "should_panic")?;
                 if let Some(reason) = reason {
