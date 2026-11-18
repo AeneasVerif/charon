@@ -1,6 +1,7 @@
 //@ rustc-args=--target x86_64-unknown-linux-gnu
 #![feature(effective_target_features)]
 #![feature(linkage)]
+#![feature(rustc_attrs)]
 
 #[unsafe(export_name = "exported")]
 fn export_name() {}
@@ -18,3 +19,6 @@ unsafe extern "C" {
     #[linkage = "extern_weak"]
     static extern_weak: Option<unsafe extern "C" fn()>;
 }
+
+#[rustc_no_writable]
+fn no_writable(_: &mut u32) {}
