@@ -1347,6 +1347,7 @@ let pp_rustc_attribute_kind (fmt : Format.formatter)
   | RustcAttributeKindRustcAlign (align, _) ->
       Format.fprintf fmt "rustc_align(%d)" align
   | RustcAttributeKindRustcIntrinsic -> pp_string fmt "rustc_intrinsic"
+  | RustcAttributeKindRustcNoWritable -> pp_string fmt "rustc_no_writable"
   | RustcAttributeKindShouldPanic reason ->
       pp_string fmt "should_panic";
       Option.iter

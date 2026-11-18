@@ -358,6 +358,7 @@ where
 }
 
 // Full name: core::slice::index::{impl IndexMut<I> for [T]}::index_mut
+#[rustc_no_writable]
 pub fn impl_IndexMut_for_slice::index_mut<'_0, T, I>(_1: &'_0 mut [T], _2: I) -> &'_0 mut TraitClause2::Output
 where
     TraitClause0: (T: Sized),
@@ -382,6 +383,7 @@ where
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index_mut
+#[rustc_no_writable]
 pub fn impl_SliceIndex_slice_for_usize::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
 where
     TraitClause0: (T: Sized),
@@ -410,6 +412,7 @@ where
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_mut
+#[rustc_no_writable]
 pub fn impl_SliceIndex_slice_for_usize::get_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> Option<&'_0 mut T>[{built_in impl Sized for &'_0 mut T}]
 where
     TraitClause0: (T: Sized),
