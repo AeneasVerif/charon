@@ -34,6 +34,7 @@ use charon_lib::{
     export::{CrateData, multi_crate, multi_target},
     formatter::IntoFormatter,
     logger,
+    name_matcher::NamePattern,
     options::{CHARON_ARGS, CliOpts, SerializationFormat, selected_crate_var},
     pretty::FmtWithCtx,
     utils::{arg_value, arg_values},
@@ -234,6 +235,20 @@ fn translate_merged_crates(
         None => crate_names[0].clone(),
     };
     let merged = multi_crate::merge(options.clone(), krates, crate_name);
+
+    // Raise all strict `--start-from` issues, as we don't report those in the
+    // individual translations.
+    let krate = &merged.translated;
+    for pat in &options.start_from {
+        let parsed = NamePattern::parse(pat)?;
+        if !krate
+            .all_items()
+            .any(|item| parsed.matches_item(krate, item))
+        {
+            anyhow::bail!("failed to resolve item path `{pat}`");
+        }
+    }
+
     output_merged_crate(&options, merged)
 }
 

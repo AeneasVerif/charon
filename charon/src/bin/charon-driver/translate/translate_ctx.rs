@@ -76,6 +76,7 @@ impl ItemOrModuleId {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum ContainmentNode {
     Start,
+    WholeCrate,
     Item(ItemOrModuleId),
     TraitMethod(TraitDeclId, TraitMethodId),
 }

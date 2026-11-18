@@ -801,6 +801,8 @@ pub enum StartFrom {
 pub struct TranslateOptions {
     /// Items from which to start translation.
     pub start_from: Vec<StartFrom>,
+    /// Whether we are using `--merge-crates`, which affects what items we start translating from.
+    pub merge_crates: bool,
     /// The level at which to extract the MIR
     pub mir_level: MirLevel,
     /// Usually we skip the provided methods that aren't used. When this flag is on, we translate
@@ -1040,6 +1042,7 @@ impl TranslateOptions {
 
         TranslateOptions {
             start_from,
+            merge_crates: options.merge_crates,
             mir_level,
             monomorphize_mut: options.monomorphize_mut,
             collect_instantiated_layouts: options.collect_instantiated_layouts,

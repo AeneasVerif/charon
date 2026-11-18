@@ -345,7 +345,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 "--start-from={impl crate_a::Describe for crate_b::Thing}".to_owned(),
             ],
             &["--workspace".to_owned()],
-            Failure,
+            Success,
         ),
         mktest(
             "multi-targets",

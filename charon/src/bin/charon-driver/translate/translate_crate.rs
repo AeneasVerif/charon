@@ -17,6 +17,7 @@
 use itertools::Itertools;
 use petgraph::visit::{Dfs, Walker};
 use rustc_hash::FxHashMap;
+use rustc_hir::def_id::LOCAL_CRATE;
 use rustc_middle::ty::{self, TyCtxt};
 use rustc_span::{def_id::DefId, sym};
 use std::cell::RefCell;
@@ -1336,6 +1337,8 @@ pub fn translate<'tcx>(
     for start_from in ctx.options.start_from.clone() {
         match start_from {
             StartFrom::Pattern { pattern, strict } => {
+                // in multi-crate translation a pattern may not be found in one crate but be in another.
+                let strict = strict && !ctx.options.merge_crates;
                 if let Ok(def_ids) = ctx.resolve_path(Span::dummy(), &pattern, strict) {
                     for def_id in def_ids {
                         let def_id: hax::DefId = def_id.sinto(&ctx.hax_state);
@@ -1432,6 +1435,22 @@ pub fn translate<'tcx>(
                 }
             }
         }
+    }
+
+    if ctx.options.merge_crates {
+        // With multi-crate translation (`--merge-crates`), we need to enqueue the whole
+        // crate for translation, regardless of `--start-from`. This is to ensure all reachable
+        // local items are translated in one go.
+        // Take for example these two crates:
+        // crate A: `pub fn foo() {}`
+        // crate B: `pub fn bar() { crate_a::foo() }`
+        // If we have `--start-from crate_b::bar`:
+        // - crate A doesn't translate anything, since no start-from pattern mentions it
+        // - crate B translates `bar` as a local fn, but also `foo` as a *foreign* one!
+        // We are then stuck with a foreign `foo`, despite crate A being translatable.
+        // Translating all items and then pruning them after filtering avoids this.
+        let root: hax::DefId = LOCAL_CRATE.as_def_id().sinto(&ctx.hax_state);
+        ctx.enqueue_module_item(&root, ContainmentNode::WholeCrate);
     }
 
     if ctx.errors.borrow().has_errors() {

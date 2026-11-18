@@ -1,16 +1,50 @@
-error: failed to resolve item path `crate_b::entry`: path `crate_b` does not correspond to any item; did you mean `crate::crate_b`?
-  --> crate_a/src/lib.rs:13:3
-   |
-13 | }
-   |  ^
+// Full name: crate_a::used
+pub fn used() -> u32
+{
+    let mut _0: u32; // return
 
-error: failed to resolve item path `{impl crate_a::Describe for crate_b::Thing}`: path `crate_b` does not correspond to any item; did you mean `crate::crate_b`?
-  --> crate_a/src/lib.rs:13:3
-   |
-13 | }
-   |  ^
+    storage_live(_0)
+    _0 = const 0u32
+    return
+}
 
-ERROR Code failed to compile
-error: could not compile `crate_a` (lib)
+// Full name: crate_a::Describe
+pub trait Describe<Self>
+{
+    fn describe<'_0_1, Outlives0: (Self: '_0_1)>;
+    vtable: crate_a::Describe::{vtable}
+}
 
-Caused by:
+// Full name: crate_b::entry
+pub fn entry() -> u32
+{
+    let mut _0: u32; // return
+
+    storage_live(_0)
+    _0 = used()
+    ↳⚡ unwind_continue
+    return
+}
+
+// Full name: crate_b::Thing
+pub struct Thing {}
+
+// Full name: crate_b::{impl Describe for Thing}::describe
+pub fn describe<'_0>(self: &'_0 Thing) -> u32
+{
+    let mut _0: u32; // return
+    let self: &'1 Thing; // arg #1
+
+    storage_live(_0)
+    _0 = const 1u32
+    storage_dead(self)
+    return
+}
+
+// Full name: crate_b::{impl Describe for Thing}
+impl "impl_Describe_for_Thing" Describe for Thing {
+    fn describe<'_0_1> = describe<'_0_1>
+    vtable: lazy
+}
+
+
