@@ -238,6 +238,7 @@ and rustc_attribute_kind =
           - [align]
           - [span] *)
   | RustcAttributeKindRustcIntrinsic  (** Represents [#[rustc_intrinsic]] *)
+  | RustcAttributeKindRustcNoWritable  (** Represents [#[rustc_no_writable]] *)
   | RustcAttributeKindShouldPanic of string option
       (** Represents [#[should_panic]]
 

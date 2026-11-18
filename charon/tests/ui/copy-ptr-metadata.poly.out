@@ -223,6 +223,7 @@ where
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFull}::index_mut
+#[rustc_no_writable]
 pub fn impl_SliceIndex_slice_for_RangeFull::index_mut<'_0, T>(_1: RangeFull, _2: &'_0 mut [T]) -> &'_0 mut [T]
 where
     TraitClause0: (T: Sized),
@@ -249,6 +250,7 @@ where
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFull}::get_mut
+#[rustc_no_writable]
 pub fn impl_SliceIndex_slice_for_RangeFull::get_mut<'_0, T>(_1: RangeFull, _2: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
 where
     TraitClause0: (T: Sized),

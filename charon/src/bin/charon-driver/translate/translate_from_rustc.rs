@@ -129,6 +129,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                 })
             }
             AttributeKind::RustcIntrinsic => Ok(from_rustc::AttributeKind::RustcIntrinsic),
+            AttributeKind::RustcNoWritable => Ok(from_rustc::AttributeKind::RustcNoWritable),
             AttributeKind::ShouldPanic { reason } => Ok(from_rustc::AttributeKind::ShouldPanic {
                 reason: (reason)
                     .as_ref()

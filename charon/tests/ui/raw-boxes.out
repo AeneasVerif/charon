@@ -1599,6 +1599,7 @@ where
   value: T,
 }
 
+#[rustc_no_writable]
 pub fn core::mem::manually_drop::{ManuallyDrop<T>[TraitClause0::ImpliedClause0]}::new<T>(value: T) -> ManuallyDrop<T>[TraitClause0::ImpliedClause0]
 where
     TraitClause0: (T: Sized),
@@ -1656,6 +1657,7 @@ where
 }
 
 // Full name: core::mem::forget
+#[rustc_no_writable]
 #[diagnostic_item("mem_forget")]
 pub fn forget<T>(t: T)
 where

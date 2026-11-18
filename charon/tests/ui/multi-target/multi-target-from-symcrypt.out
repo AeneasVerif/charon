@@ -352,6 +352,7 @@ where
     vtable: lazy
 }
 
+#[rustc_no_writable]
 pub fn core::slice::index::{impl core::ops::index::IndexMut<I> for [T]}::index_mut<'_0, T, I>(_1: &'_0 mut [T], _2: I) -> &'_0 mut TraitClause2::Output
 where
     TraitClause0: (T: core::marker::Sized),
@@ -375,6 +376,7 @@ where
     vtable: lazy
 }
 
+#[rustc_no_writable]
 pub fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
 where
     TraitClause0: (T: core::marker::Sized),
@@ -399,6 +401,7 @@ where
     TraitClause0: (T: core::marker::Sized),
 = <opaque>
 
+#[rustc_no_writable]
 pub fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::get_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> core::option::Option<&'_0 mut T>[{built_in impl core::marker::Sized for &'_0 mut T}]
 where
     TraitClause0: (T: core::marker::Sized),
@@ -435,6 +438,7 @@ where
     Outlives0: (T: '_0),
 = <opaque>
 
+#[rustc_no_writable]
 pub fn core::slice::{[T]}::as_mut_ptr<'_0, T>(_1: &'_0 mut [T]) -> *mut T
 where
     TraitClause0: (T: core::marker::Sized),

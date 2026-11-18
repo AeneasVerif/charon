@@ -910,6 +910,7 @@ where
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::index_mut
+#[rustc_no_writable]
 pub fn impl_SliceIndex_slice_for_Range_usize::index_mut<'_0, T>(self: Range<usize>[{built_in impl Sized for usize}], slice: &'_0 mut [T]) -> &'_0 mut [T]
 where
     TraitClause0: (T: Sized),
@@ -1524,6 +1525,7 @@ where
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_mut
+#[rustc_no_writable]
 pub fn impl_SliceIndex_slice_for_Range_usize::get_mut<'_0, T>(self: Range<usize>[{built_in impl Sized for usize}], slice: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
 where
     TraitClause0: (T: Sized),
