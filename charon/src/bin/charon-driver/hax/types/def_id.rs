@@ -273,13 +273,19 @@ impl rustc_trait_elaboration::ItemId for DefId {
         }
     }
 
-    fn find_in_impl<'tcx>(&self, s: &Self::State<'tcx>, trait_impl: &Self) -> Option<Self> {
+    fn find_in_impl<'tcx>(
+        &self,
+        s: &Self::State<'tcx>,
+        typing_env: ty::TypingEnv<'tcx>,
+        trait_impl: &Self,
+        impl_generics: ty::GenericArgsRef<'tcx>,
+    ) -> Option<(Self, ty::GenericArgsRef<'tcx>)> {
         let tcx = s.base().tcx;
         let trait_impl = trait_impl.as_real_def_id()?;
         match self.base {
             DefIdBase::Real(def_id) => def_id
-                .find_in_impl(&tcx, &trait_impl)
-                .map(|def_id| def_id.sinto(s)),
+                .find_in_impl(&tcx, typing_env, &trait_impl, impl_generics)
+                .map(|(item, generics)| (item.sinto(s), generics)),
             _ => None,
         }
     }

@@ -50,8 +50,14 @@ pub trait ItemId: Clone + Debug + Hash + PartialEq + Eq {
     fn takes_explicit_self_clause<'tcx>(&self, state: &Self::State<'tcx>) -> bool;
 
     /// If this item is an associated item definition, and the given impl implements it, returns
-    /// the implemented associated item.
-    fn find_in_impl<'tcx>(&self, state: &Self::State<'tcx>, trait_impl: &Self) -> Option<Self>;
+    /// the implemented associated item along with the generics of the impl that defines it.
+    fn find_in_impl<'tcx>(
+        &self,
+        state: &Self::State<'tcx>,
+        typing_env: ty::TypingEnv<'tcx>,
+        trait_impl: &Self,
+        impl_generics: GenericArgsRef<'tcx>,
+    ) -> Option<(Self, GenericArgsRef<'tcx>)>;
 }
 
 impl ItemId for DefId {
@@ -114,11 +120,43 @@ impl ItemId for DefId {
         matches!(tcx.def_kind(*self), DefKind::AssocFn | DefKind::AssocConst)
     }
 
-    fn find_in_impl<'tcx>(&self, tcx: &Self::State<'tcx>, trait_impl: &Self) -> Option<Self> {
-        tcx.associated_items(*trait_impl)
-            .in_definition_order()
-            .find(|item| item.trait_item_def_id() == Some(*self))
-            .map(|item| item.def_id)
+    fn find_in_impl<'tcx>(
+        &self,
+        tcx: &Self::State<'tcx>,
+        typing_env: ty::TypingEnv<'tcx>,
+        trait_impl: &Self,
+        impl_generics: GenericArgsRef<'tcx>,
+    ) -> Option<(Self, GenericArgsRef<'tcx>)> {
+        use rustc_infer::infer::TyCtxtInferExt;
+        use rustc_middle::traits::specialization_graph::{self, Node};
+        let trait_id = tcx.impl_trait_ref(*trait_impl).skip_binder().def_id;
+
+        // do like rustc: look for the most specialised implementation
+        let leaf_def = specialization_graph::ancestors(*tcx, trait_id, *trait_impl)
+            .ok()?
+            .leaf_def(*tcx, *self)?;
+        let Node::Impl(defining_impl) = leaf_def.defining_node else {
+            return None;
+        };
+
+        let impl_generics = if defining_impl == *trait_impl {
+            // the item is defined in this impl, so the generics are correct
+            impl_generics
+        } else {
+            // we need to unify the ancestor impl's trait ref with the specialised one
+            let (infcx, param_env) = tcx.infer_ctxt().build_with_typing_env(typing_env);
+            let generics = rustc_trait_selection::traits::translate_args(
+                &infcx,
+                param_env,
+                *trait_impl,
+                impl_generics,
+                leaf_def.defining_node,
+            );
+            // ...however the generics' regions may still contain inference variables,
+            // so we have to erase them here.
+            tcx.erase_and_anonymize_regions(generics)
+        };
+        Some((leaf_def.item.def_id, impl_generics))
     }
 }
 
@@ -243,9 +281,14 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         {
             // If the item is implemented, point to it; otherwise the item has a default and we're
             // already pointing to it.
-            if let Some(implemented_item) = def_id.find_in_impl(state, &impl_item_ref.def_id) {
+            if let Some((implemented_item, impl_generics)) = def_id.find_in_impl(
+                state,
+                typing_env,
+                &impl_item_ref.def_id,
+                impl_item_ref.generics(),
+            ) {
                 def_id = implemented_item;
-                generics = generics.rebase_onto(tcx, tinfo.pred.def_id(), impl_item_ref.generics());
+                generics = generics.rebase_onto(tcx, tinfo.pred.def_id(), impl_generics);
             }
             trait_info = None;
         }

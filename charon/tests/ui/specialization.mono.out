@@ -1,11 +1,233 @@
+# Final LLBC before serialization:
 
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_items.rs:410:17:
-assertion failed: assoc.has_value
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting item `test_crate::Tr::inherited`.
- --> tests/ui/specialization.rs:6:5
-  |
-6 |     fn inherited(&self) -> u8;
-  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+opaque type core::marker::MetaSized::{vtable}
 
-ERROR Charon failed to translate this code (1 errors)
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+struct () {}
+
+vtable core::marker::MetaSized::{vtable}::<u8>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
+
+struct test_crate::Tr::{vtable} {
+  size: usize,
+  align: usize,
+  drop: *const (),
+  method_inherited: *const (),
+  method_overridden: *const (),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: test_crate::Tr
+trait Tr<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: test_crate::Tr::{vtable}
+}
+
+// Full name: test_crate::{impl Tr for u8}::inherited::<u8>
+fn inherited::<u8><'_0>(self: &'_0 u8) -> u8
+{
+    let mut _0: u8; // return
+    let self: &'1 u8; // arg #1
+
+    storage_live(_0)
+    _0 = const 0u8
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::{impl Tr for u8}::inherited::{vtable_method}::<u8>
+fn {impl Tr for u8}::inherited::{vtable_method}::<u8><'_0>(_1: &'_0 (dyn Tr)) -> u8
+{
+    let mut _0: u8; // return
+    let mut _1: &'_0 (dyn Tr + '0); // arg #1
+    let mut _2: &'_0 u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = concretize<&'_0 u8>(move _1)
+    _0 = inherited::<u8><'_0>(move _2)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::{impl Tr for u8}::overridden
+fn overridden<'_0>(self: &'_0 u8) -> u8
+{
+    let mut _0: u8; // return
+    let self: &'1 u8; // arg #1
+
+    storage_live(_0)
+    _0 = copy (*self)
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::{impl Tr for u8}::overridden::{vtable_method}
+fn {impl Tr for u8}::overridden::{vtable_method}<'_0>(_1: &'_0 (dyn Tr)) -> u8
+{
+    let mut _0: u8; // return
+    let mut _1: &'_0 (dyn Tr + '0); // arg #1
+    let mut _2: &'_0 u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = concretize<&'_0 u8>(move _1)
+    _0 = overridden<'_0>(move _2)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::{impl Tr for u8}::{vtable_drop_shim}
+unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Tr))
+{
+    let mut ret: (); // return
+    let mut dyn_self: &'_0 mut (dyn Tr + '0); // arg #1
+    let mut target_self: &'_0 mut u8; // local
+
+    storage_live(ret)
+    ret = ()
+    storage_live(target_self)
+    target_self = concretize<&'_0 mut u8>(move dyn_self)
+    storage_dead(target_self)
+    storage_dead(dyn_self)
+    return
+}
+
+// Full name: test_crate::{impl Tr for u8}::{vtable}
+vtable {impl Tr for u8}::{vtable}: test_crate::Tr::{vtable} = test_crate::Tr::{vtable} { size: size_of::<u8>(), align: align_of::<u8>(), drop: cast<*const ()>(fnptr({vtable_drop_shim}<'_>)), method_inherited: cast<*const ()>(fnptr({impl Tr for u8}::inherited::{vtable_method}::<u8><'_>)), method_overridden: cast<*const ()>(fnptr({impl Tr for u8}::overridden::{vtable_method}<'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<u8> }
+
+// Full name: test_crate::{impl Tr for u8}
+impl Tr for u8 {
+    proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
+    vtable: {impl Tr for u8}::{vtable}
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let mut _0: (); // return
+    let _1: u8; // anonymous local
+    let mut _2: &'3 u8; // anonymous local
+    let _3: u8; // anonymous local
+    let mut _4: &'4 u8; // anonymous local
+    let mut _5: &'8 (dyn Tr + '9); // anonymous local
+        where _5 := &'0 (dyn Tr + '1);
+    let mut _6: &'10 u8; // anonymous local
+    let _7: &'11 u8; // anonymous local
+    let mut _8: &'12 u8; // anonymous local
+    let mut _9: &'13 u8; // anonymous local
+    let mut _10: &'14 u8; // anonymous local
+    let mut _11: &'15 u8; // anonymous local
+    let mut _12: &'20 u8; // anonymous local
+    let mut _13: &'25 u8; // anonymous local
+    let mut _14: &'28 u8; // anonymous local
+    let mut _15: u8; // anonymous local
+    let mut _16: &'29 u8; // anonymous local
+    let mut _17: u8; // anonymous local
+    let mut _18: &'30 u8; // anonymous local
+    let mut _19: u8; // anonymous local
+
+    storage_live(_11)
+    storage_live(_14)
+    storage_live(_15)
+    _15 = const 2u8
+    _14 = &_15
+    _11 = move _14
+    storage_live(_0)
+    storage_live(_8)
+    storage_live(_9)
+    storage_live(_10)
+    _0 = ()
+    set '1: '0
+    storage_live(_1)
+    storage_live(_2)
+    _10 = move _11
+    _2 = &(*_10)
+    _1 = inherited::<u8><'19>(move _2)
+    ↳⚡ storage_dead(_10)
+        storage_dead(_9)
+        storage_dead(_8)
+        storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_13)
+        storage_dead(_12)
+        storage_dead(_11)
+        unwind_continue
+    storage_live(_12)
+    storage_live(_16)
+    storage_live(_17)
+    _17 = const 2u8
+    _16 = &_17
+    _12 = move _16
+    storage_dead(_2)
+    storage_dead(_1)
+    storage_live(_3)
+    storage_live(_4)
+    _9 = move _12
+    _4 = &(*_9)
+    _3 = overridden<'24>(move _4)
+    ↳⚡ storage_dead(_10)
+        storage_dead(_9)
+        storage_dead(_8)
+        storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_13)
+        storage_dead(_12)
+        storage_dead(_11)
+        unwind_continue
+    storage_live(_13)
+    storage_live(_18)
+    storage_live(_19)
+    _19 = const 3u8
+    _18 = &_19
+    _13 = move _18
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    _8 = move _13
+    _7 = &(*_8)
+    _6 = &(*_7)
+    _5 = unsize_cast<&'26 (dyn Tr + '27), &{impl Tr for u8}::{vtable}>(move _6)
+    storage_dead(_6)
+    storage_dead(_7)
+    storage_dead(_5)
+    _0 = ()
+    storage_dead(_10)
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_dead(_19)
+    storage_dead(_18)
+    storage_dead(_17)
+    storage_dead(_16)
+    storage_dead(_15)
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_dead(_12)
+    storage_dead(_11)
+    return
+}
+
+
+

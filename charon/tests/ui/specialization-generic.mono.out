@@ -1,11 +1,147 @@
+# Final LLBC before serialization:
 
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_items.rs:410:17:
-assertion failed: assoc.has_value
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting item `test_crate::Tr::inherited`.
- --> tests/ui/specialization-generic.rs:8:5
-  |
-8 |     fn inherited(&self);
-  |     ^^^^^^^^^^^^^^^^^^^^
+struct () {}
 
-ERROR Charon failed to translate this code (1 errors)
+// Full name: test_crate::Pair::<&'_ u8, bool>
+struct Pair::<&'_ u8, bool> {
+  _0: &'_ u8,
+  _1: bool,
+}
+
+// Full name: test_crate::{impl Tr<u32> for Pair::<&'_ u8, bool>}::inherited::<u32, Pair::<&'_ u8, bool>>
+fn inherited::<u32, Pair::<&'_ u8, bool>><'_0>(self: &'_0 Pair::<&'_ u8, bool>)
+{
+    let mut _0: (); // return
+    let self: &'1 Pair::<&'_ u8, bool>; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::{impl Tr<u32> for Pair::<&'_ u8, bool>}::overridden::<'_, u8>
+fn overridden::<'_, u8><'_0>(self: &'_0 Pair::<&'_ u8, bool>)
+{
+    let mut _0: (); // return
+    let self: &'1 Pair::<&'_ u8, bool>; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let mut _0: (); // return
+    let _1: (); // anonymous local
+    let mut _2: &'5 Pair::<&'_ u8, bool>; // anonymous local
+    let _3: &'6 Pair::<&'_ u8, bool>; // anonymous local
+    let _4: (); // anonymous local
+    let mut _5: &'9 Pair::<&'_ u8, bool>; // anonymous local
+    let _6: &'10 Pair::<&'_ u8, bool>; // anonymous local
+    let mut _7: &'12 Pair::<&'_ u8, bool>; // anonymous local
+    let mut _8: &'13 Pair::<&'_ u8, bool>; // anonymous local
+    let mut _9: &'14 Pair::<&'_ u8, bool>; // anonymous local
+    let mut _10: &'19 Pair::<&'_ u8, bool>; // anonymous local
+    let mut _11: &'24 Pair::<&'_ u8, bool>; // anonymous local
+    let mut _12: Pair::<&'_ u8, bool>; // anonymous local
+    let mut _13: &'26 u8; // anonymous local
+    let mut _14: u8; // anonymous local
+    let mut _15: &'27 Pair::<&'_ u8, bool>; // anonymous local
+    let mut _16: Pair::<&'_ u8, bool>; // anonymous local
+    let mut _17: &'29 u8; // anonymous local
+    let mut _18: u8; // anonymous local
+
+    storage_live(_9)
+    storage_live(_11)
+    storage_live(_12)
+    storage_live(_13)
+    storage_live(_14)
+    _14 = const 0u8
+    _13 = &_14
+    _12 = Pair::<&'_ u8, bool> { _0: move _13, _1: const true }
+    _11 = &_12
+    _9 = move _11
+    storage_live(_0)
+    storage_live(_7)
+    storage_live(_8)
+    _0 = ()
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    _8 = move _9
+    _3 = &(*_8)
+    _2 = &(*_3)
+    _1 = inherited::<u32, Pair::<&'_ u8, bool>><'18>(move _2)
+    ↳⚡ storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_13)
+        storage_dead(_12)
+        storage_dead(_11)
+        storage_dead(_10)
+        storage_dead(_9)
+        unwind_continue
+    storage_live(_10)
+    storage_live(_15)
+    storage_live(_16)
+    storage_live(_17)
+    storage_live(_18)
+    _18 = const 0u8
+    _17 = &_18
+    _16 = Pair::<&'_ u8, bool> { _0: move _17, _1: const true }
+    _15 = &_16
+    _10 = move _15
+    storage_dead(_2)
+    storage_dead(_3)
+    storage_dead(_1)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    _7 = move _10
+    _6 = &(*_7)
+    _5 = &(*_6)
+    _4 = overridden::<'_, u8><'23>(move _5)
+    ↳⚡ storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_13)
+        storage_dead(_12)
+        storage_dead(_11)
+        storage_dead(_10)
+        storage_dead(_9)
+        unwind_continue
+    storage_dead(_5)
+    storage_dead(_6)
+    storage_dead(_4)
+    _0 = ()
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(_18)
+    storage_dead(_17)
+    storage_dead(_16)
+    storage_dead(_15)
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_dead(_12)
+    storage_dead(_11)
+    storage_dead(_10)
+    storage_dead(_9)
+    return
+}
+
+
+
