@@ -1,0 +1,16 @@
+error: failed to resolve item path `crate_b::entry`: path `crate_b` does not correspond to any item; did you mean `crate::crate_b`?
+  --> crate_a/src/lib.rs:13:3
+   |
+13 | }
+   |  ^
+
+error: failed to resolve item path `{impl crate_a::Describe for crate_b::Thing}`: path `crate_b` does not correspond to any item; did you mean `crate::crate_b`?
+  --> crate_a/src/lib.rs:13:3
+   |
+13 | }
+   |  ^
+
+ERROR Code failed to compile
+error: could not compile `crate_a` (lib)
+
+Caused by:
