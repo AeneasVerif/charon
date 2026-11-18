@@ -180,8 +180,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 self,
                 span,
                 "Called `translate_callable_bound_ref_with_late_bound` on a `{kind:?}`; \
-                use `translate_closure_ref_with_upvars` \
-                or `translate_callable_bound_ref_with_method_bound` instead"
+                use `translate_closure_ref_with_upvars` instead"
             )
         }
         let dref: DeclRef<ItemId> = self.translate_item(span, callable.item(), kind)?;
@@ -200,107 +199,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             }
             Ok(dref)
         })
-    }
-
-    /// Translate a reference to a callable item that takes late-bound lifetimes and method
-    /// lifetimes. The binder binds the late-bound lifetimes of the `call`/`call_mut` method
-    /// (specified by `target_kind`).
-    fn translate_callable_bound_ref_with_method_bound(
-        &mut self,
-        span: Span,
-        item: &hax::ItemRef<'tcx>,
-        kind: TransItemSourceKind,
-        target_kind: ClosureKind,
-    ) -> Result<RegionBinder<DeclRef<ItemId>>, Error> {
-        if !matches!(
-            kind,
-            TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(..))
-        ) {
-            raise_error!(
-                self,
-                span,
-                "Called `translate_callable_bound_ref_with_method_bound` on a `{kind:?}`; \
-                use `translate_closure_ref_with_upvars` \
-                or `translate_callable_bound_ref_with_late_bound` instead"
-            )
-        }
-        let dref: DeclRef<ItemId> = self.translate_item(span, item, kind)?;
-        let mut dref = dref.move_under_binder();
-        let mut regions = IndexVec::new();
-        match target_kind {
-            ClosureKind::FnOnce => {}
-            ClosureKind::FnMut | ClosureKind::Fn => {
-                let rid =
-                    regions.push_with(|index| RegionParam::new(index, None, Variance::Covariant));
-                *dref.generics.regions.iter_mut().last().unwrap() =
-                    Region::Var(DeBruijnVar::new_at_zero(rid));
-            }
-        }
-        Ok(RegionBinder {
-            regions,
-            outlives: Vec::new(),
-            skip_binder: dref,
-        })
-    }
-
-    /// If this trait proof is the built-in impl of a `Fn*` trait for a closure, function item or
-    /// function pointer, return the callable item and the kind of the implemented trait. The
-    /// returned item has its regions erased.
-    pub fn recognize_callable_impl_proof(
-        &self,
-        trait_proof: &hax::TraitProof<'tcx>,
-    ) -> Option<(hax::ItemRef<'tcx>, ClosureKind)> {
-        let hax::TraitProofKind::Builtin {
-            trait_data: hax::BuiltinTraitData::Other(lang_item),
-            ..
-        } = &trait_proof.kind
-        else {
-            return None;
-        };
-        let target_kind = match lang_item {
-            hax::SolverTraitLangItem::FnOnce => ClosureKind::FnOnce,
-            hax::SolverTraitLangItem::FnMut => ClosureKind::FnMut,
-            hax::SolverTraitLangItem::Fn => ClosureKind::Fn,
-            _ => return None,
-        };
-        // We skip the binder and erase regions to avoid bound vars escaping.
-        let hax::GenericArg::Type(callable_ty) = trait_proof
-            .pred
-            .hax_skip_binder_ref()
-            .generic_args
-            .first()?
-        else {
-            return None;
-        };
-        let item = callable_ty.callable_item()?;
-        Some((item.erase(self.hax_state_with_id()), target_kind))
-    }
-
-    pub(crate) fn translate_callable_method_fn_ptr(
-        &mut self,
-        span: Span,
-        item: &hax::ItemRef<'tcx>,
-    ) -> Result<Option<RegionBinder<FnPtr>>, Error> {
-        if !self.monomorphize() {
-            return Ok(None);
-        }
-        let Some(in_trait) = &item.in_trait else {
-            return Ok(None);
-        };
-        let Some((callable, target_kind)) = self.recognize_callable_impl_proof(in_trait) else {
-            return Ok(None);
-        };
-        let kind = TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(target_kind));
-        let bound_ref = self.translate_callable_bound_ref_with_method_bound(
-            span,
-            &callable,
-            kind,
-            target_kind,
-        )?;
-        Ok(Some(bound_ref.map(|dref| {
-            let fn_ref: FunDeclRef = dref.try_into().unwrap();
-            FnPtr::new(FnPtrKind::Fun(fn_ref.id), fn_ref.generics)
-        })))
     }
 }
 

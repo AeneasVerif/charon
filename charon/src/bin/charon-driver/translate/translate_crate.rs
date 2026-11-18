@@ -1097,6 +1097,44 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
+    /// In mono mode, trait impls have no methods. So a call to a method of an impl we generate
+    /// (e.g. `call` of a closure's `Fn` impl) points directly to the method we generate. Only
+    /// required methods are generated; provided ones use the trait default.
+    fn translate_generated_method_fn_ptr(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef<'tcx>,
+    ) -> Result<Option<RegionBinder<FnPtr>>, Error> {
+        if self.monomorphize()
+            && let Some(in_trait) = &item.in_trait
+            && let Some((impl_item, impl_kind)) = self.recognize_generated_impl_proof(in_trait)
+            && let def = self.hax_def(item)?
+            && let hax::FullDefKind::AssocFn(f) = def.kind()
+            && !f.associated_item().has_value
+        {
+            let method_kind = TransItemSourceKind::VirtualMethod(impl_kind);
+            let fn_ref: FunDeclRef = self.translate_item(span, &impl_item, method_kind)?;
+            self.translate_region_binder(span, &f.param_env().late_bound, |ctx, _| {
+                let mut generics = fn_ref.generics.move_under_binder();
+                // The method's late-bound regions are the last regions of the generated method.
+                for (a, b) in generics.regions.iter_mut().rev().zip(
+                    ctx.innermost_binder()
+                        .params
+                        .identity_args()
+                        .regions
+                        .into_iter()
+                        .rev(),
+                ) {
+                    *a = b;
+                }
+                Ok(FnPtr::new(FnPtrKind::Fun(fn_ref.id), generics))
+            })
+            .map(Some)
+        } else {
+            Ok(None)
+        }
+    }
+
     /// Translate a reference to a trait method declaration without registering the declaration as
     /// a `FunDecl`. `TraitDecl.methods` contains the declaration signature and metadata; only
     /// default implementations give rise to a real function item.
@@ -1178,7 +1216,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: TransItemSourceKind,
         enqueue: bool,
     ) -> Result<RegionBinder<FnPtr>, Error> {
-        if let Some(fn_ptr) = self.translate_callable_method_fn_ptr(span, item)? {
+        if let Some(fn_ptr) = self.translate_generated_method_fn_ptr(span, item)? {
             return Ok(fn_ptr);
         }
         if let Some(fn_ptr) = self.translate_method_decl_fn_ptr(span, item)? {
