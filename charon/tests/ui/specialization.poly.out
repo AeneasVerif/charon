@@ -1,0 +1,20 @@
+
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_items.rs:1360:42:
+default method should have a default
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting item `test_crate::{impl#1}`.
+  --> tests/ui/specialization.rs:17:1
+   |
+17 | impl Tr for u8 {
+   | ^^^^^^^^^^^^^^
+
+
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_items.rs:410:17:
+assertion failed: assoc.has_value
+error: Thread panicked when extracting item `test_crate::Tr::inherited`.
+ --> tests/ui/specialization.rs:6:5
+  |
+6 |     fn inherited(&self) -> u8;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (2 errors)
