@@ -1,5 +1,4 @@
 //@ revisions=poly,mono
-//@[poly] known-failure
 //@[mono] charon-args=--monomorphize
 #![feature(min_specialization)]
 struct Pair<X, Y>(X, Y);
