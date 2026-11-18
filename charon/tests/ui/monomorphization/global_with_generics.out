@@ -43,12 +43,16 @@ fn main()
 {
     let mut _0: (); // return
     let _b: bool; // local
+    let mut _2: &'1 Foo::<bool>; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_b)
-    _b = copy FooBool.value
+    storage_live(_2)
+    _2 = &FooBool
+    _b = copy (*_2).value
     fake_read(_b)
+    storage_dead(_2)
     _0 = ()
     storage_dead(_b)
     return

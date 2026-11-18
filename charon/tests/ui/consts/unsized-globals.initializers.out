@@ -230,10 +230,13 @@ pub fn INTERIOR() -> &'static Wrap<[u16]>[{built_in impl MetaSized for [u16]}]
 {
     let mut _0: &'1 Wrap<[u16]>[{built_in impl MetaSized for [u16]}]; // return
     let _1: &'2 Wrap<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
+    let _2: &'6 &'7 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
-    _1 = &(*STATIC).w with_metadata(read STATIC.metadata)
+    storage_live(_2)
+    _2 = &STATIC
+    _1 = &(*(*_2)).w with_metadata(read (*_2).metadata)
     _0 = &(*_1) with_metadata(read _1.metadata)
     storage_dead(_1)
     return
@@ -269,11 +272,14 @@ pub fn SIZED_INTERIOR() -> &'static Wrap<[u16]>[{built_in impl MetaSized for [u1
     let mut _0: &'1 Wrap<[u16]>[{built_in impl MetaSized for [u16]}]; // return
     let mut _1: &'3 Wrap<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}]; // anonymous local
     let _2: &'4 Wrap<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}]; // anonymous local
+    let _3: &'6 Outer<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}]; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
     storage_live(_2)
-    _2 = &SIZED.w
+    storage_live(_3)
+    _3 = &SIZED
+    _2 = &(*_3).w
     _1 = &(*_2)
     _0 = unsize_cast<&'8 Wrap<[u16]>[{built_in impl MetaSized for [u16]}], 2usize>(move _1)
     storage_dead(_2)

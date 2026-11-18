@@ -75,18 +75,54 @@ static INNER: &'static u64 = cast<&'_ u64>(&raw const test_crate::{promoted_cons
 fn main()
 {
     let mut _0: (); // return
+    let mut _1: &'3 &'4 u8; // anonymous local
+    let mut _2: &'8 &'9 u16; // anonymous local
+    let mut _3: &'13 &'14 u32; // anonymous local
+    let mut _4: &'18 &'19 u64; // anonymous local
+    let mut _5: &'23 &'24 u128; // anonymous local
+    let mut _6: &'28 &'29 [u32; 3usize]; // anonymous local
+    let mut _7: &'33 &'34 [u32]; // anonymous local
+    let mut _8: &'38 &'39 S; // anonymous local
+    let mut _9: &'40 &'41 u64; // anonymous local
 
     storage_live(_0)
     _0 = ()
-    _ = U8
-    _ = U16
-    _ = U32
-    _ = U64
-    _ = U128
-    _ = ARR
-    _ = SLICE
-    _ = STRUCT
-    _ = INNER
+    storage_live(_1)
+    _1 = &U8
+    _ = (*_1)
+    storage_dead(_1)
+    storage_live(_2)
+    _2 = &U16
+    _ = (*_2)
+    storage_dead(_2)
+    storage_live(_3)
+    _3 = &U32
+    _ = (*_3)
+    storage_dead(_3)
+    storage_live(_4)
+    _4 = &U64
+    _ = (*_4)
+    storage_dead(_4)
+    storage_live(_5)
+    _5 = &U128
+    _ = (*_5)
+    storage_dead(_5)
+    storage_live(_6)
+    _6 = &ARR
+    _ = (*_6)
+    storage_dead(_6)
+    storage_live(_7)
+    _7 = &SLICE
+    _ = (*_7)
+    storage_dead(_7)
+    storage_live(_8)
+    _8 = &STRUCT
+    _ = (*_8)
+    storage_dead(_8)
+    storage_live(_9)
+    _9 = &INNER
+    _ = (*_9)
+    storage_dead(_9)
     _0 = ()
     return
 }

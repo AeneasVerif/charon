@@ -1,0 +1,2 @@
+MiniRust UB: Tree Borrows: local write of Frozen reference
+ERROR MiniRust program encountered UB

@@ -81,21 +81,25 @@ pub fn use_consts() -> u32
     let mut _1: u32; // anonymous local
     let mut _2: u32; // anonymous local
     let mut _3: u32; // anonymous local
-    let mut _4: u32; // anonymous local
+    let mut _4: &'1 u32; // anonymous local
+    let mut _5: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
-    storage_live(_4)
+    storage_live(_5)
     storage_live(_1)
     _2 = read SIMPLE panic.+ read COMPUTED
     _1 = move _2
     storage_live(_3)
-    _3 = copy STATIC
-    _4 = copy _1 panic.+ copy _3
-    _0 = move _4
+    storage_live(_4)
+    _4 = &STATIC
+    _3 = copy (*_4)
+    _5 = copy _1 panic.+ copy _3
+    _0 = move _5
     storage_dead(_3)
     storage_dead(_1)
     storage_dead(_4)
+    storage_dead(_5)
     storage_dead(_2)
     return
 }

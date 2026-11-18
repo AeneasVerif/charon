@@ -125,25 +125,41 @@ fn main()
 {
     let mut _0: (); // return
     let mut _1: &'1 Sync<*const u32>[{built_in impl Sized for *const u32}]; // anonymous local
-    let mut _2: &'4 Sync<*const u16>[{built_in impl Sized for *const u16}]; // anonymous local
-    let mut _3: &'6 Sync<*const u32>[{built_in impl Sized for *const u32}]; // anonymous local
-    let mut _4: &'9 Sync<*const ()>[{built_in impl Sized for *const ()}]; // anonymous local
+    let _2: &'2 Sync<*const u32>[{built_in impl Sized for *const u32}]; // anonymous local
+    let mut _3: &'4 Sync<*const u16>[{built_in impl Sized for *const u16}]; // anonymous local
+    let _4: &'5 Sync<*const u16>[{built_in impl Sized for *const u16}]; // anonymous local
+    let mut _5: &'6 Sync<*const u32>[{built_in impl Sized for *const u32}]; // anonymous local
+    let _6: &'7 Sync<*const u32>[{built_in impl Sized for *const u32}]; // anonymous local
+    let mut _7: &'9 Sync<*const ()>[{built_in impl Sized for *const ()}]; // anonymous local
+    let _8: &'10 Sync<*const ()>[{built_in impl Sized for *const ()}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = &END
-    storage_dead(_1)
     storage_live(_2)
-    _2 = &BYTE
-    storage_dead(_2)
+    _2 = &END
+    _1 = &(*_2)
+    storage_dead(_1)
     storage_live(_3)
-    _3 = &OOB
-    storage_dead(_3)
     storage_live(_4)
-    _4 = &FN_RAW
-    storage_dead(_4)
+    _4 = &BYTE
+    _3 = &(*_4)
+    storage_dead(_3)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = &OOB
+    _5 = &(*_6)
+    storage_dead(_5)
+    storage_live(_7)
+    storage_live(_8)
+    _8 = &FN_RAW
+    _7 = &(*_8)
+    storage_dead(_7)
     _0 = ()
+    storage_dead(_8)
+    storage_dead(_6)
+    storage_dead(_4)
+    storage_dead(_2)
     return
 }
 
