@@ -1,0 +1,12 @@
+# Final LLBC before serialization:
+
+// Full name: alloc::alloc::__alloc_error_handler::__rdl_alloc_error_handler
+pub unsafe fn __rdl_alloc_error_handler(_1: usize, _2: usize) -> !
+= <opaque>
+
+// Full name: alloc::alloc::__rust_alloc_error_handler
+extern unsafe fn __rust_alloc_error_handler(_1: usize, _2: usize) -> !
+= <extern:_RNvCs<hash>_7___rustc26___rust_alloc_error_handler> linked(alloc) to __rdl_alloc_error_handler
+
+
+

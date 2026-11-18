@@ -1,6 +1,7 @@
 //@ aux-crate=link-extern-fns-aux.rs
 //@ charon-args=--link-extern-fns --start-from=crate::sys
 //@ charon-args=--start-from=alloc::alloc::__rust_alloc
+//@ charon-args=--start-from=alloc::alloc::__rust_alloc_error_handler
 //@ charon-args=--start-from=core::panicking::panic_fmt --include=core::panicking::panic_fmt
 //@ rustc-args=--crate-type=bin
 extern crate link_extern_fns_aux;

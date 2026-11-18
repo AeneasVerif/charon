@@ -455,11 +455,16 @@ impl<'tcx> TranslateCtx<'tcx> {
             }
 
             // Manually link the std allocator functions, which rustc willl generate.
-            for method in ALLOCATOR_METHODS {
-                let global_fn = mangle_internal_symbol(tcx, &global_fn_name(method.name));
-                let default_fn = mangle_internal_symbol(tcx, &default_fn_name(method.name));
-                // We only link them if no `#[global_allocator]` has already defined them! In which
-                // case rust gives them a custom shim that needs special-casing.
+            let shimmed_fns = ALLOCATOR_METHODS
+                .iter()
+                .map(|method| method.name)
+                .chain([ALLOC_ERROR_HANDLER]);
+            for name in shimmed_fns {
+                let global_fn = mangle_internal_symbol(tcx, &global_fn_name(name));
+                let default_fn = mangle_internal_symbol(tcx, &default_fn_name(name));
+                // We only link them if no `#[global_allocator]`/`#[alloc_error_handler]` has
+                // already defined them! In which case rust gives them a custom shim that needs
+                // special-casing.
                 if !exported_fns.contains_key(&global_fn)
                     && let Some(&ExportedFns::Strong(instance)) = exported_fns.get(&default_fn)
                 {
