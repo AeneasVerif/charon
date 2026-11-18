@@ -151,7 +151,7 @@ class ['self] map_crate =
     method visit_mixed_declaration_group env (g : mixed_declaration_group) =
       g_declaration_group_map (self#visit_item_id env) g
 
-    method visit_cli_options env (option : cli_options) : cli_options = option
+    method visit_preset env (preset : preset) : preset = preset
 
     method visit_target_info env (target_info : target_info) : target_info =
       target_info
@@ -159,7 +159,7 @@ class ['self] map_crate =
     method visit_crate env (crate : crate) : crate =
       let {
         name;
-        options;
+        preset;
         target_information;
         runtime_checks;
         item_names;
@@ -175,7 +175,7 @@ class ['self] map_crate =
         crate
       in
       let name = self#visit_string env name in
-      let options = self#visit_cli_options env options in
+      let preset = Option.map (self#visit_preset env) preset in
       let target_information =
         List.map
           (fun (name, info) -> (name, self#visit_target_info env info))
@@ -199,7 +199,7 @@ class ['self] map_crate =
       in
       {
         name;
-        options;
+        preset;
         target_information;
         runtime_checks;
         item_names;
@@ -296,12 +296,12 @@ class ['self] iter_crate =
       let ids = g_declaration_group_to_list g in
       List.iter (self#visit_item_id env) ids
 
-    method visit_cli_options env (option : cli_options) : unit = ()
+    method visit_preset env (preset : preset) : unit = ()
 
     method visit_crate env (crate : crate) : unit =
       let {
         name;
-        options;
+        preset;
         target_information;
         runtime_checks = _;
         item_names = _;
@@ -317,7 +317,7 @@ class ['self] iter_crate =
         crate
       in
       self#visit_string env name;
-      self#visit_cli_options env options;
+      Option.iter (self#visit_preset env) preset;
       Option.iter (List.iter (self#visit_declaration_group env)) declarations;
       TypeDeclId.Map.iter (fun _ -> self#visit_type_decl env) type_decls;
       FunDeclId.Map.iter (fun _ -> self#visit_fun_decl env) fun_decls;

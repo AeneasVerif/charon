@@ -30,7 +30,7 @@ let crate_of_postcard_file (file : string) : (GAst.crate, string) result =
     Ok
       ({
          name = crate.crate_name;
-         options = crate.options;
+         preset = crate.preset;
          target_information = crate.target_information;
          runtime_checks = crate.runtime_checks;
          item_names = Meta.AnyDeclIdHashMap.of_list crate.item_names;

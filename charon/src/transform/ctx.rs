@@ -227,7 +227,7 @@ impl<'a> IntoFormatter for &'a TransformCtx {
 
 impl fmt::Display for TransformCtx {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.translated.fmt(f)
+        self.translated.fmt_with_ctx(&self.into_fmt(), f)
     }
 }
 

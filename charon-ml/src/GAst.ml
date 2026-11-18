@@ -32,7 +32,7 @@ type mixed_declaration_group = item_id g_declaration_group [@@deriving show]
 (** A crate *)
 type crate = {
   name : string;
-  options : cli_options;
+  preset : preset option;
   target_information : (string * target_info) list;
   runtime_checks : runtime_checks;
   item_names : name AnyDeclIdHashMap.t;

@@ -2150,152 +2150,6 @@ and rustc_cfg_abi_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (RustcCfgAbiOther _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
-and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (cli_options, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* ullbc = bool_of_postcard ctx st in
-     let* no_code_duplication = bool_of_postcard ctx st in
-     let* precise_drops = bool_of_postcard ctx st in
-     let* mir = option_of_postcard mir_level_of_postcard ctx st in
-     let* rustc_args = list_of_postcard string_of_postcard ctx st in
-     let* targets = list_of_postcard string_of_postcard ctx st in
-     let* sysroot = option_of_postcard string_of_postcard ctx st in
-     let* monomorphize = bool_of_postcard ctx st in
-     let* monomorphize_mut =
-       option_of_postcard monomorphize_mut_of_postcard ctx st
-     in
-     let* collect_instantiated_layouts = bool_of_postcard ctx st in
-     let* start_from = list_of_postcard string_of_postcard ctx st in
-     let* start_from_if_exists = list_of_postcard string_of_postcard ctx st in
-     let* start_from_attribute = list_of_postcard string_of_postcard ctx st in
-     let* start_from_pub = bool_of_postcard ctx st in
-     let* start_from_global_ctors = bool_of_postcard ctx st in
-     let* included = list_of_postcard string_of_postcard ctx st in
-     let* opaque = list_of_postcard string_of_postcard ctx st in
-     let* exclude = list_of_postcard string_of_postcard ctx st in
-     let* extract_opaque_bodies = bool_of_postcard ctx st in
-     let* translate_all_methods = bool_of_postcard ctx st in
-     let* eager_vtables = bool_of_postcard ctx st in
-     let* link_extern_fns = bool_of_postcard ctx st in
-     let* duplicate_defaulted_methods = bool_of_postcard ctx st in
-     let* lift_associated_types = list_of_postcard string_of_postcard ctx st in
-     let* hide_marker_traits = bool_of_postcard ctx st in
-     let* hide_allocator = bool_of_postcard ctx st in
-     let* no_doc_comments = bool_of_postcard ctx st in
-     let* remove_unused_clauses = bool_of_postcard ctx st in
-     let* remove_unused_self_clauses = bool_of_postcard ctx st in
-     let* remove_adt_clauses = bool_of_postcard ctx st in
-     let* desugar_drops = bool_of_postcard ctx st in
-     let* resugar_drops = bool_of_postcard ctx st in
-     let* detect_drop_flags = bool_of_postcard ctx st in
-     let* ops_to_function_calls = bool_of_postcard ctx st in
-     let* index_to_function_calls = bool_of_postcard ctx st in
-     let* treat_box_as_builtin = bool_of_postcard ctx st in
-     let* no_gen_tuple_structs = bool_of_postcard ctx st in
-     let* raw_consts = bool_of_postcard ctx st in
-     let* inline_anon_consts = bool_of_postcard ctx st in
-     let* consts = option_of_postcard const_handling_of_postcard ctx st in
-     let* reconstruct_fallible_operations = bool_of_postcard ctx st in
-     let* reconstruct_panic_calls = bool_of_postcard ctx st in
-     let* reconstruct_asserts = bool_of_postcard ctx st in
-     let* reconstruct_matches = bool_of_postcard ctx st in
-     let* deallocate_all_locals = bool_of_postcard ctx st in
-     let* unbind_item_vars = bool_of_postcard ctx st in
-     let* print_original_ullbc = bool_of_postcard ctx st in
-     let* print_ullbc = bool_of_postcard ctx st in
-     let* print_built_llbc = bool_of_postcard ctx st in
-     let* print_llbc = bool_of_postcard ctx st in
-     let* print_layouts = bool_of_postcard ctx st in
-     let* print_safety = bool_of_postcard ctx st in
-     let* dest_dir = option_of_postcard path_buf_of_postcard ctx st in
-     let* dest_file = option_of_postcard path_buf_of_postcard ctx st in
-     let* no_dedup_serialized_ast = bool_of_postcard ctx st in
-     let* format =
-       option_of_postcard serialization_format_arg_of_postcard ctx st
-     in
-     let* run_with_minirust = bool_of_postcard ctx st in
-     let* no_serialize = bool_of_postcard ctx st in
-     let* skip_borrowck = bool_of_postcard ctx st in
-     let* erase_body_lifetimes = bool_of_postcard ctx st in
-     let* no_typecheck = bool_of_postcard ctx st in
-     let* no_normalize = bool_of_postcard ctx st in
-     let* no_reorder_decls = bool_of_postcard ctx st in
-     let* no_compute_layout_guarantees = bool_of_postcard ctx st in
-     let* abort_on_error = bool_of_postcard ctx st in
-     let* error_on_warnings = bool_of_postcard ctx st in
-     let* preset = option_of_postcard preset_of_postcard ctx st in
-     Ok
-       ({
-          ullbc;
-          no_code_duplication;
-          precise_drops;
-          mir;
-          rustc_args;
-          targets;
-          sysroot;
-          monomorphize;
-          monomorphize_mut;
-          collect_instantiated_layouts;
-          start_from;
-          start_from_if_exists;
-          start_from_attribute;
-          start_from_pub;
-          start_from_global_ctors;
-          included;
-          opaque;
-          exclude;
-          extract_opaque_bodies;
-          translate_all_methods;
-          eager_vtables;
-          link_extern_fns;
-          duplicate_defaulted_methods;
-          lift_associated_types;
-          hide_marker_traits;
-          hide_allocator;
-          no_doc_comments;
-          remove_unused_clauses;
-          remove_unused_self_clauses;
-          remove_adt_clauses;
-          desugar_drops;
-          resugar_drops;
-          detect_drop_flags;
-          ops_to_function_calls;
-          index_to_function_calls;
-          treat_box_as_builtin;
-          no_gen_tuple_structs;
-          raw_consts;
-          inline_anon_consts;
-          consts;
-          reconstruct_fallible_operations;
-          reconstruct_panic_calls;
-          reconstruct_asserts;
-          reconstruct_matches;
-          deallocate_all_locals;
-          unbind_item_vars;
-          print_original_ullbc;
-          print_ullbc;
-          print_built_llbc;
-          print_llbc;
-          print_layouts;
-          print_safety;
-          dest_dir;
-          dest_file;
-          no_dedup_serialized_ast;
-          format;
-          run_with_minirust;
-          no_serialize;
-          skip_borrowck;
-          erase_body_lifetimes;
-          no_typecheck;
-          no_normalize;
-          no_reorder_decls;
-          no_compute_layout_guarantees;
-          abort_on_error;
-          error_on_warnings;
-          preset;
-        }
-         : cli_options))
-
 and closure_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (closure_info, string) result =
   combine_error_msgs st __FUNCTION__
@@ -2327,16 +2181,6 @@ and closure_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 0 -> Ok Fn
      | 1 -> Ok FnMut
      | 2 -> Ok FnOnce
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
-and const_handling_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (const_handling, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 -> Ok Initializers
-     | 1 -> Ok Values
-     | 2 -> Ok Bytes
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and declaration_group_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
@@ -3165,26 +3009,6 @@ and metadata_value_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 2 -> Ok SliceLength
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
-and mir_level_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (mir_level, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 -> Ok Built
-     | 1 -> Ok Promoted
-     | 2 -> Ok Elaborated
-     | 3 -> Ok Optimized
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
-and monomorphize_mut_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (monomorphize_mut, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 -> Ok All
-     | 1 -> Ok ExceptTypes
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
 and name_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (name, string) result =
   combine_error_msgs st __FUNCTION__
@@ -3387,17 +3211,6 @@ and rustc_rustc_version_of_postcard (ctx : of_postcard_ctx)
      let* minor = u16_of_postcard ctx st in
      let* patch = u16_of_postcard ctx st in
      Ok ({ major; minor; patch } : rustc_rustc_version))
-
-and serialization_format_arg_of_postcard (ctx : of_postcard_ctx)
-    (st : postcard_state) : (serialization_format_arg, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 -> Ok Json
-     | 1 -> Ok Postcard
-     | 2 -> Ok MiniRust
-     | 3 -> Ok AllFormats
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and size_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (size, string) result =
@@ -3656,7 +3469,7 @@ and translated_crate_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (translated_crate, string) result =
   combine_error_msgs st __FUNCTION__
     (let* crate_name = string_of_postcard ctx st in
-     let* options = cli_options_of_postcard ctx st in
+     let* preset = option_of_postcard preset_of_postcard ctx st in
      let* target_information =
        index_map_of_postcard string_of_postcard target_info_of_postcard
          int_of_postcard ctx st
@@ -3723,7 +3536,7 @@ and translated_crate_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      Ok
        ({
           crate_name;
-          options;
+          preset;
           target_information;
           runtime_checks;
           files;

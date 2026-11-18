@@ -442,14 +442,8 @@ impl<'a> IntoFormatter for &'a ItemTransCtx<'_, '_> {
     type C = FmtCtx<'a>;
     fn into_fmt(self) -> Self::C {
         FmtCtx {
-            translated: Some(&self.t_ctx.translated),
-            include_layouts: false,
-            include_safety: false,
-            hide_storage_statements: false,
-            current_type: None,
             generics: self.binding_levels.map_ref(|bl| Cow::Borrowed(&bl.params)),
-            local_names: None,
-            indent_level: 0,
+            ..self.t_ctx.into_fmt()
         }
     }
 }

@@ -836,8 +836,6 @@ pub struct TranslateOptions {
     pub ops_to_function_calls: bool,
     /// Transform array/slice indexing into standard library function calls in LLBC.
     pub index_to_function_calls: bool,
-    /// Print the llbc just after control-flow reconstruction.
-    pub print_built_llbc: bool,
     /// Treat `Box<T>` as if it was a built-in type.
     pub treat_box_as_builtin: bool,
     /// Make all tuples refer to the single opaque `TypeDeclId::UNIT` declaration, and store their
@@ -1046,7 +1044,6 @@ impl TranslateOptions {
             no_code_duplication: options.no_code_duplication,
             ops_to_function_calls: options.ops_to_function_calls,
             index_to_function_calls: options.index_to_function_calls,
-            print_built_llbc: options.print_built_llbc,
             item_opacities,
             treat_box_as_builtin: options.treat_box_as_builtin,
             no_gen_tuple_structs: options.no_gen_tuple_structs,

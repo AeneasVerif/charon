@@ -38,10 +38,10 @@ pub struct TranslatedCrate {
     /// The name of the crate.
     pub crate_name: String,
 
-    /// The options used when calling Charon. Can be used to check that Charon was called with the
-    /// options that a given consumer requires.
+    /// The preset used when calling Charon. Can be used to check that Charon was called with the
+    /// preset that a given consumer requires.
     #[serde_state(stateless)]
-    pub options: crate::options::CliOpts,
+    pub preset: Option<crate::options::Preset>,
 
     /// Information about each target platform for which the crate was translated. When translating
     /// a crate normally this will have a single entry; when using `--targets` this will have one
@@ -348,8 +348,6 @@ impl<'a> IntoFormatter for &'a TranslatedCrate {
     fn into_fmt(self) -> Self::C {
         FmtCtx {
             translated: Some(self),
-            include_layouts: self.options.print_layouts,
-            include_safety: self.options.print_safety,
             ..Default::default()
         }
     }

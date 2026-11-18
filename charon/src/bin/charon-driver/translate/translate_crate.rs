@@ -1289,7 +1289,7 @@ pub fn translate<'tcx>(
         errors: RefCell::new(error_ctx),
         translated: TranslatedCrate {
             crate_name,
-            options: cli_options.clone(),
+            preset: cli_options.preset,
             runtime_checks: RuntimeChecks {
                 ub_checks: tcx.sess.ub_checks(),
                 overflow_checks: tcx.sess.overflow_checks(),

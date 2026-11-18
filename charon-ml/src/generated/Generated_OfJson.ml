@@ -2583,248 +2583,6 @@ and rustc_cfg_abi_of_json (ctx : of_json_ctx) (js : json) :
         Ok (RustcCfgAbiOther _0)
     | _ -> Error "")
 
-and cli_options_of_json (ctx : of_json_ctx) (js : json) :
-    (cli_options, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc
-        [
-          ("ullbc", ullbc);
-          ("no_code_duplication", no_code_duplication);
-          ("precise_drops", precise_drops);
-          ("mir", mir);
-          ("rustc_args", rustc_args);
-          ("targets", targets);
-          ("sysroot", sysroot);
-          ("monomorphize", monomorphize);
-          ("monomorphize_mut", monomorphize_mut);
-          ("collect_instantiated_layouts", collect_instantiated_layouts);
-          ("start_from", start_from);
-          ("start_from_if_exists", start_from_if_exists);
-          ("start_from_attribute", start_from_attribute);
-          ("start_from_pub", start_from_pub);
-          ("start_from_global_ctors", start_from_global_ctors);
-          ("include", include_);
-          ("opaque", opaque);
-          ("exclude", exclude);
-          ("extract_opaque_bodies", extract_opaque_bodies);
-          ("translate_all_methods", translate_all_methods);
-          ("eager_vtables", eager_vtables);
-          ("link_extern_fns", link_extern_fns);
-          ("duplicate_defaulted_methods", duplicate_defaulted_methods);
-          ("lift_associated_types", lift_associated_types);
-          ("hide_marker_traits", hide_marker_traits);
-          ("hide_allocator", hide_allocator);
-          ("no_doc_comments", no_doc_comments);
-          ("remove_unused_clauses", remove_unused_clauses);
-          ("remove_unused_self_clauses", remove_unused_self_clauses);
-          ("remove_adt_clauses", remove_adt_clauses);
-          ("desugar_drops", desugar_drops);
-          ("resugar_drops", resugar_drops);
-          ("detect_drop_flags", detect_drop_flags);
-          ("ops_to_function_calls", ops_to_function_calls);
-          ("index_to_function_calls", index_to_function_calls);
-          ("treat_box_as_builtin", treat_box_as_builtin);
-          ("no_gen_tuple_structs", no_gen_tuple_structs);
-          ("raw_consts", raw_consts);
-          ("inline_anon_consts", inline_anon_consts);
-          ("consts", consts);
-          ("reconstruct_fallible_operations", reconstruct_fallible_operations);
-          ("reconstruct_panic_calls", reconstruct_panic_calls);
-          ("reconstruct_asserts", reconstruct_asserts);
-          ("reconstruct_matches", reconstruct_matches);
-          ("deallocate_all_locals", deallocate_all_locals);
-          ("unbind_item_vars", unbind_item_vars);
-          ("print_original_ullbc", print_original_ullbc);
-          ("print_ullbc", print_ullbc);
-          ("print_built_llbc", print_built_llbc);
-          ("print_llbc", print_llbc);
-          ("print_layouts", print_layouts);
-          ("print_safety", print_safety);
-          ("dest_dir", dest_dir);
-          ("dest_file", dest_file);
-          ("no_dedup_serialized_ast", no_dedup_serialized_ast);
-          ("format", format);
-          ("run_with_minirust", run_with_minirust);
-          ("no_serialize", no_serialize);
-          ("skip_borrowck", skip_borrowck);
-          ("erase_body_lifetimes", erase_body_lifetimes);
-          ("no_typecheck", no_typecheck);
-          ("no_normalize", no_normalize);
-          ("no_reorder_decls", no_reorder_decls);
-          ("no_compute_layout_guarantees", no_compute_layout_guarantees);
-          ("abort_on_error", abort_on_error);
-          ("error_on_warnings", error_on_warnings);
-          ("preset", preset);
-        ] ->
-        let* ullbc = bool_of_json ctx ullbc in
-        let* no_code_duplication = bool_of_json ctx no_code_duplication in
-        let* precise_drops = bool_of_json ctx precise_drops in
-        let* mir = option_of_json mir_level_of_json ctx mir in
-        let* rustc_args = list_of_json string_of_json ctx rustc_args in
-        let* targets = list_of_json string_of_json ctx targets in
-        let* sysroot = option_of_json string_of_json ctx sysroot in
-        let* monomorphize = bool_of_json ctx monomorphize in
-        let* monomorphize_mut =
-          option_of_json monomorphize_mut_of_json ctx monomorphize_mut
-        in
-        let* collect_instantiated_layouts =
-          bool_of_json ctx collect_instantiated_layouts
-        in
-        let* start_from = list_of_json string_of_json ctx start_from in
-        let* start_from_if_exists =
-          list_of_json string_of_json ctx start_from_if_exists
-        in
-        let* start_from_attribute =
-          list_of_json string_of_json ctx start_from_attribute
-        in
-        let* start_from_pub = bool_of_json ctx start_from_pub in
-        let* start_from_global_ctors =
-          bool_of_json ctx start_from_global_ctors
-        in
-        let* included = list_of_json string_of_json ctx include_ in
-        let* opaque = list_of_json string_of_json ctx opaque in
-        let* exclude = list_of_json string_of_json ctx exclude in
-        let* extract_opaque_bodies = bool_of_json ctx extract_opaque_bodies in
-        let* translate_all_methods = bool_of_json ctx translate_all_methods in
-        let* eager_vtables = bool_of_json ctx eager_vtables in
-        let* link_extern_fns = bool_of_json ctx link_extern_fns in
-        let* duplicate_defaulted_methods =
-          bool_of_json ctx duplicate_defaulted_methods
-        in
-        let* lift_associated_types =
-          list_of_json string_of_json ctx lift_associated_types
-        in
-        let* hide_marker_traits = bool_of_json ctx hide_marker_traits in
-        let* hide_allocator = bool_of_json ctx hide_allocator in
-        let* no_doc_comments = bool_of_json ctx no_doc_comments in
-        let* remove_unused_clauses = bool_of_json ctx remove_unused_clauses in
-        let* remove_unused_self_clauses =
-          bool_of_json ctx remove_unused_self_clauses
-        in
-        let* remove_adt_clauses = bool_of_json ctx remove_adt_clauses in
-        let* desugar_drops = bool_of_json ctx desugar_drops in
-        let* resugar_drops = bool_of_json ctx resugar_drops in
-        let* detect_drop_flags = bool_of_json ctx detect_drop_flags in
-        let* ops_to_function_calls = bool_of_json ctx ops_to_function_calls in
-        let* index_to_function_calls =
-          bool_of_json ctx index_to_function_calls
-        in
-        let* treat_box_as_builtin = bool_of_json ctx treat_box_as_builtin in
-        let* no_gen_tuple_structs = bool_of_json ctx no_gen_tuple_structs in
-        let* raw_consts = bool_of_json ctx raw_consts in
-        let* inline_anon_consts = bool_of_json ctx inline_anon_consts in
-        let* consts = option_of_json const_handling_of_json ctx consts in
-        let* reconstruct_fallible_operations =
-          bool_of_json ctx reconstruct_fallible_operations
-        in
-        let* reconstruct_panic_calls =
-          bool_of_json ctx reconstruct_panic_calls
-        in
-        let* reconstruct_asserts = bool_of_json ctx reconstruct_asserts in
-        let* reconstruct_matches = bool_of_json ctx reconstruct_matches in
-        let* deallocate_all_locals = bool_of_json ctx deallocate_all_locals in
-        let* unbind_item_vars = bool_of_json ctx unbind_item_vars in
-        let* print_original_ullbc = bool_of_json ctx print_original_ullbc in
-        let* print_ullbc = bool_of_json ctx print_ullbc in
-        let* print_built_llbc = bool_of_json ctx print_built_llbc in
-        let* print_llbc = bool_of_json ctx print_llbc in
-        let* print_layouts = bool_of_json ctx print_layouts in
-        let* print_safety = bool_of_json ctx print_safety in
-        let* dest_dir = option_of_json path_buf_of_json ctx dest_dir in
-        let* dest_file = option_of_json path_buf_of_json ctx dest_file in
-        let* no_dedup_serialized_ast =
-          bool_of_json ctx no_dedup_serialized_ast
-        in
-        let* format =
-          option_of_json serialization_format_arg_of_json ctx format
-        in
-        let* run_with_minirust = bool_of_json ctx run_with_minirust in
-        let* no_serialize = bool_of_json ctx no_serialize in
-        let* skip_borrowck = bool_of_json ctx skip_borrowck in
-        let* erase_body_lifetimes = bool_of_json ctx erase_body_lifetimes in
-        let* no_typecheck = bool_of_json ctx no_typecheck in
-        let* no_normalize = bool_of_json ctx no_normalize in
-        let* no_reorder_decls = bool_of_json ctx no_reorder_decls in
-        let* no_compute_layout_guarantees =
-          bool_of_json ctx no_compute_layout_guarantees
-        in
-        let* abort_on_error = bool_of_json ctx abort_on_error in
-        let* error_on_warnings = bool_of_json ctx error_on_warnings in
-        let* preset = option_of_json preset_of_json ctx preset in
-        Ok
-          ({
-             ullbc;
-             no_code_duplication;
-             precise_drops;
-             mir;
-             rustc_args;
-             targets;
-             sysroot;
-             monomorphize;
-             monomorphize_mut;
-             collect_instantiated_layouts;
-             start_from;
-             start_from_if_exists;
-             start_from_attribute;
-             start_from_pub;
-             start_from_global_ctors;
-             included;
-             opaque;
-             exclude;
-             extract_opaque_bodies;
-             translate_all_methods;
-             eager_vtables;
-             link_extern_fns;
-             duplicate_defaulted_methods;
-             lift_associated_types;
-             hide_marker_traits;
-             hide_allocator;
-             no_doc_comments;
-             remove_unused_clauses;
-             remove_unused_self_clauses;
-             remove_adt_clauses;
-             desugar_drops;
-             resugar_drops;
-             detect_drop_flags;
-             ops_to_function_calls;
-             index_to_function_calls;
-             treat_box_as_builtin;
-             no_gen_tuple_structs;
-             raw_consts;
-             inline_anon_consts;
-             consts;
-             reconstruct_fallible_operations;
-             reconstruct_panic_calls;
-             reconstruct_asserts;
-             reconstruct_matches;
-             deallocate_all_locals;
-             unbind_item_vars;
-             print_original_ullbc;
-             print_ullbc;
-             print_built_llbc;
-             print_llbc;
-             print_layouts;
-             print_safety;
-             dest_dir;
-             dest_file;
-             no_dedup_serialized_ast;
-             format;
-             run_with_minirust;
-             no_serialize;
-             skip_borrowck;
-             erase_body_lifetimes;
-             no_typecheck;
-             no_normalize;
-             no_reorder_decls;
-             no_compute_layout_guarantees;
-             abort_on_error;
-             error_on_warnings;
-             preset;
-           }
-            : cli_options)
-    | _ -> Error "")
-
 and closure_info_of_json (ctx : of_json_ctx) (js : json) :
     (closure_info, string) result =
   combine_error_msgs js __FUNCTION__
@@ -2866,15 +2624,6 @@ and closure_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Fn" -> Ok Fn
     | `String "FnMut" -> Ok FnMut
     | `String "FnOnce" -> Ok FnOnce
-    | _ -> Error "")
-
-and const_handling_of_json (ctx : of_json_ctx) (js : json) :
-    (const_handling, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `String "Initializers" -> Ok Initializers
-    | `String "Values" -> Ok Values
-    | `String "Bytes" -> Ok Bytes
     | _ -> Error "")
 
 and declaration_group_of_json (ctx : of_json_ctx) (js : json) :
@@ -3860,24 +3609,6 @@ and metadata_value_of_json (ctx : of_json_ctx) (js : json) :
     | `String "SliceLength" -> Ok SliceLength
     | _ -> Error "")
 
-and mir_level_of_json (ctx : of_json_ctx) (js : json) :
-    (mir_level, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `String "Built" -> Ok Built
-    | `String "Promoted" -> Ok Promoted
-    | `String "Elaborated" -> Ok Elaborated
-    | `String "Optimized" -> Ok Optimized
-    | _ -> Error "")
-
-and monomorphize_mut_of_json (ctx : of_json_ctx) (js : json) :
-    (monomorphize_mut, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `String "All" -> Ok All
-    | `String "ExceptTypes" -> Ok ExceptTypes
-    | _ -> Error "")
-
 and name_of_json (ctx : of_json_ctx) (js : json) : (name, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -4098,16 +3829,6 @@ and rustc_rustc_version_of_json (ctx : of_json_ctx) (js : json) :
         let* minor = int_of_json ctx minor in
         let* patch = int_of_json ctx patch in
         Ok ({ major; minor; patch } : rustc_rustc_version)
-    | _ -> Error "")
-
-and serialization_format_arg_of_json (ctx : of_json_ctx) (js : json) :
-    (serialization_format_arg, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `String "Json" -> Ok Json
-    | `String "Postcard" -> Ok Postcard
-    | `String "MiniRust" -> Ok MiniRust
-    | `String "All" -> Ok AllFormats
     | _ -> Error "")
 
 and size_of_json (ctx : of_json_ctx) (js : json) : (size, string) result =
@@ -4462,7 +4183,7 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc
         [
           ("crate_name", crate_name);
-          ("options", options);
+          ("preset", preset);
           ("target_information", target_information);
           ("runtime_checks", runtime_checks);
           ("files", files);
@@ -4477,7 +4198,7 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
           ("ordered_decls", ordered_decls);
         ] ->
         let* crate_name = string_of_json ctx crate_name in
-        let* options = cli_options_of_json ctx options in
+        let* preset = option_of_json preset_of_json ctx preset in
         let* target_information =
           index_map_of_json string_of_json target_info_of_json int_of_json ctx
             target_information
@@ -4542,7 +4263,7 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
         Ok
           ({
              crate_name;
-             options;
+             preset;
              target_information;
              runtime_checks;
              files;

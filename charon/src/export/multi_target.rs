@@ -22,7 +22,7 @@ pub fn merge(options: CliOpts, krates: Vec<CrateData>) -> CrateData {
     let mut error_ctx = ErrorCtx::new();
     let tr_options = TranslateOptions::new(&mut error_ctx, &options);
 
-    let mut merged = CrateMerger::process(options, krates);
+    let mut merged = CrateMerger::process(krates);
 
     ItemDeduplicator::dedup(&mut merged.translated, &mut error_ctx);
 
@@ -33,6 +33,7 @@ pub fn merge(options: CliOpts, krates: Vec<CrateData>) -> CrateData {
     };
     cleanup_post_merge(&mut ctx);
     merged.translated = ctx.translated;
+    merged.translated.preset = options.preset;
 
     merged
 }
@@ -47,9 +48,8 @@ struct CrateMerger {
 }
 
 impl CrateMerger {
-    fn process(options: CliOpts, krates: Vec<CrateData>) -> CrateData {
-        let mut translated = TranslatedCrate::default();
-        translated.options = options;
+    fn process(krates: Vec<CrateData>) -> CrateData {
+        let translated = TranslatedCrate::default();
         let mut merger = CrateMerger {
             merged: CrateData {
                 charon_version: CharonVersion(crate::VERSION.to_owned()),
@@ -144,7 +144,7 @@ impl CrateMerger {
 
         let TranslatedCrate {
             crate_name,
-            options: _, // We discard the per-target options we made
+            preset: _, // The preset is shared by all targets
             target_information,
             runtime_checks,
             item_names,
