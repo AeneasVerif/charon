@@ -635,23 +635,25 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             if self.options.link_extern_fns
                 && let hax::FullDefKind::Fn(..) = def.kind()
             {
-                match self.t_ctx.exported_fns(&symbol) {
-                    ExportedFns::None => {}
-                    exported @ (ExportedFns::Strong(instance)
-                    | ExportedFns::Weak(instance)
-                    | ExportedFns::AllocatorShim(instance)) => {
-                        let item = hax::ItemRef::translate(
-                            self.hax_state_with_id(),
-                            instance.def_id(),
-                            instance.args,
-                        );
-                        let fun = self.translate_item(span, &item, TransItemSourceKind::Fun)?;
-                        definition = match exported {
-                            ExportedFns::Strong(_) => LinkedExtern::StronglyLinked(fun),
-                            ExportedFns::Weak(_) => LinkedExtern::WeaklyLinked(fun),
-                            ExportedFns::AllocatorShim(_) => LinkedExtern::AllocatorShim(fun),
-                            ExportedFns::Many | ExportedFns::None => unreachable!(),
-                        };
+                let exported = self.t_ctx.exported_fns(&symbol);
+                let mut translate_fn = |instance: ty::Instance<'tcx>| {
+                    let item = hax::ItemRef::translate(
+                        self.hax_state_with_id(),
+                        instance.def_id(),
+                        instance.args,
+                    );
+                    self.translate_item(span, &item, TransItemSourceKind::Fun)
+                };
+                definition = match exported {
+                    ExportedFns::None => LinkedExtern::Unlinked,
+                    ExportedFns::Strong(instance) => {
+                        LinkedExtern::StronglyLinked(translate_fn(instance)?)
+                    }
+                    ExportedFns::Weak(instances) => LinkedExtern::WeaklyLinked(
+                        instances.into_iter().map(translate_fn).try_collect()?,
+                    ),
+                    ExportedFns::AllocatorShim(instance) => {
+                        LinkedExtern::AllocatorShim(translate_fn(instance)?)
                     }
                     ExportedFns::Many => {
                         register_error!(
@@ -659,8 +661,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                             span,
                             "several functions are exported under the symbol `{symbol}`"
                         );
+                        LinkedExtern::Unlinked
                     }
-                }
+                };
             }
             Body::Extern { symbol, definition }
         } else if item_meta.diagnostic_item.as_deref()

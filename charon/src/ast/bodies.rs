@@ -98,9 +98,9 @@ pub enum Body {
 pub enum LinkedExtern {
     /// A strong definition, e.g. `#[no_mangle]` or `#[export_name]`.
     StronglyLinked(FunDeclRef),
-    /// A weak definition (`#[linkage = "weak"]`), which the linker only binds the symbol to if
-    /// there's no strong definition.
-    WeaklyLinked(FunDeclRef),
+    /// Weak definitions (`#[linkage = "weak"]`), which the linker only binds the symbol to if
+    /// there's no strong definition. If there are several, the linker may pick any of them.
+    WeaklyLinked(Vec<FunDeclRef>),
     /// Linked to the default allocator through rustc's allocator shim. This needs to be handled
     /// separately, as the signatures aren't ABI-compatible: the arguments need to be
     /// transmuted (e.g. `Alignment` -> `usize`).

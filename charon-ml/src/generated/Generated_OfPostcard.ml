@@ -3100,7 +3100,7 @@ and linked_extern_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _0 = fun_decl_ref_of_postcard ctx st in
          Ok (StronglyLinked _0)
      | 1 ->
-         let* _0 = fun_decl_ref_of_postcard ctx st in
+         let* _0 = list_of_postcard fun_decl_ref_of_postcard ctx st in
          Ok (WeaklyLinked _0)
      | 2 ->
          let* _0 = fun_decl_ref_of_postcard ctx st in

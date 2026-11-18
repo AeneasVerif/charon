@@ -4,6 +4,7 @@
 //@ charon-args=--start-from=alloc::alloc::__rust_alloc_error_handler
 //@ charon-args=--start-from=core::panicking::panic_fmt --include=core::panicking::panic_fmt
 //@ rustc-args=--crate-type=bin
+#![feature(linkage)]
 extern crate link_extern_fns_aux;
 
 mod sys {
@@ -19,6 +20,13 @@ mod sys {
 #[unsafe(no_mangle)]
 fn local_hook(x: u32) -> u32 {
     x + 1
+}
+
+// Also defined weakly in the aux crate.
+#[unsafe(no_mangle)]
+#[linkage = "weak"]
+extern "C" fn weak_hook() -> u8 {
+    9
 }
 
 fn main() {}

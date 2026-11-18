@@ -52,30 +52,34 @@ unsafe fn test_crate::_::__rust_alloc(size: usize, align: Alignment) -> *mut u8
     let align: Alignment; // arg #2
     let mut _3: &'1 Null; // anonymous local
     let _4: &'2 Null; // anonymous local
-    let mut _5: Layout; // anonymous local
-    let mut _6: usize; // anonymous local
-    let mut _7: Alignment; // anonymous local
+    let _5: &'3 Null; // anonymous local
+    let mut _6: Layout; // anonymous local
+    let mut _7: usize; // anonymous local
+    let mut _8: Alignment; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     storage_live(_4)
-    _4 = &A
-    _3 = &(*_4)
     storage_live(_5)
+    _5 = &A
+    _4 = &(*_5)
+    _3 = &(*_4)
     storage_live(_6)
-    _6 = copy size
     storage_live(_7)
-    _7 = copy align
-    _5 = from_size_alignment_unchecked(move _6, move _7)
+    _7 = copy size
+    storage_live(_8)
+    _8 = copy align
+    _6 = from_size_alignment_unchecked(move _7, move _8)
     ↳⚡ storage_dead(align)
         storage_dead(size)
         unwind_continue
+    storage_dead(_8)
     storage_dead(_7)
-    storage_dead(_6)
-    _0 = alloc<'8>(move _3, move _5)
+    _0 = alloc<'8>(move _3, move _6)
     ↳⚡ storage_dead(align)
         storage_dead(size)
         unwind_continue
+    storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)

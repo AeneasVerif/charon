@@ -155,12 +155,12 @@ pub struct TranslateCtx<'tcx> {
 }
 
 /// The functions exported under a given symbol.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone)]
 pub enum ExportedFns<'tcx> {
     #[default]
     None,
     Strong(rustc_middle::ty::Instance<'tcx>),
-    Weak(rustc_middle::ty::Instance<'tcx>),
+    Weak(Vec<rustc_middle::ty::Instance<'tcx>>),
     AllocatorShim(rustc_middle::ty::Instance<'tcx>),
     /// More than one function was strongly exported under this name; this would be a linker
     /// error so we don't specify them.
@@ -170,13 +170,17 @@ pub enum ExportedFns<'tcx> {
 impl<'tcx> ExportedFns<'tcx> {
     pub(crate) fn merge(&mut self, other: ExportedFns<'tcx>) {
         use ExportedFns::*;
-        *self = match (*self, other) {
+        *self = match (std::mem::take(self), other) {
             // this would be a link error
             (Many, _) | (_, Many) | (Strong(_), Strong(_)) => Many,
             // strong takes precedence
             (strong @ Strong(_), _) | (_, strong @ Strong(_)) => strong,
-            // this is arbitrary -- the linker technically could pick either
-            (weak @ Weak(_), _) | (_, weak @ Weak(_)) => weak,
+            // the linker could pick any of them, so we keep them all
+            (Weak(mut weak), Weak(other)) => {
+                weak.extend(other);
+                Weak(weak)
+            }
+            (weak @ Weak(_), None) | (None, weak @ Weak(_)) => weak,
             (None, None) => None,
             // impossible
             (AllocatorShim(_), _) | (_, AllocatorShim(_)) => {

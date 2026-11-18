@@ -117,7 +117,8 @@ class ['self] map_crate =
         =
       match definition with
       | StronglyLinked f -> StronglyLinked (self#visit_fun_decl_ref env f)
-      | WeaklyLinked f -> WeaklyLinked (self#visit_fun_decl_ref env f)
+      | WeaklyLinked fs ->
+          WeaklyLinked (self#visit_list self#visit_fun_decl_ref env fs)
       | AllocatorShim f -> AllocatorShim (self#visit_fun_decl_ref env f)
       | Unlinked -> Unlinked
 
@@ -254,8 +255,8 @@ class ['self] iter_crate =
 
     method visit_linked_extern env (definition : linked_extern) : unit =
       match definition with
-      | StronglyLinked f | WeaklyLinked f | AllocatorShim f ->
-          self#visit_fun_decl_ref env f
+      | StronglyLinked f | AllocatorShim f -> self#visit_fun_decl_ref env f
+      | WeaklyLinked fs -> self#visit_list self#visit_fun_decl_ref env fs
       | Unlinked -> ()
 
     method visit_declaration_group env (g : declaration_group) : unit =

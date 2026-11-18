@@ -447,7 +447,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                 let instance = rustc_middle::ty::Instance::mono(tcx, def_id);
                 let new = match tcx.codegen_fn_attrs(def_id).linkage {
                     None | Some(Linkage::External) => ExportedFns::Strong(instance),
-                    Some(Linkage::WeakAny | Linkage::WeakODR) => ExportedFns::Weak(instance),
+                    Some(Linkage::WeakAny | Linkage::WeakODR) => ExportedFns::Weak(vec![instance]),
                     _ => continue,
                 };
                 let symbol = tcx.symbol_name(instance).name.to_string();
@@ -474,7 +474,7 @@ impl<'tcx> TranslateCtx<'tcx> {
 
             exported_fns
         });
-        exported_fns.get(symbol).copied().unwrap_or_default()
+        exported_fns.get(symbol).cloned().unwrap_or_default()
     }
 
     /// Add this item to the queue of items to translate. Each translated item will then

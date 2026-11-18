@@ -157,8 +157,19 @@ pub extern unsafe fn test_crate::sys::local_hook(_1: u32) -> u32
 pub extern unsafe fn dep_hook() -> u8
 = <extern:dep_hook> linked(strong) to renamed
 
+#[no_mangle]
+#[linkage = "weak"]
+extern "C" fn test_crate::weak_hook() -> u8
+{
+    let mut _0: u8; // return
+
+    storage_live(_0)
+    _0 = const 9u8
+    return
+}
+
 pub extern unsafe extern "C" fn test_crate::sys::weak_hook() -> u8
-= <extern:weak_hook> linked(weak) to link_extern_fns_aux::weak_hook
+= <extern:weak_hook> linked(weak) to test_crate::weak_hook, link_extern_fns_aux::weak_hook
 
 
 

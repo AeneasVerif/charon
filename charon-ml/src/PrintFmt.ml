@@ -2661,9 +2661,12 @@ let pp_fun_decl (env : fmt_env) (indent : string) (indent_incr : string)
       | StronglyLinked definition ->
           Format.fprintf fmt " linked(strong) to %a" (pp_fun_decl_ref env)
             definition
-      | WeaklyLinked definition ->
-          Format.fprintf fmt " linked(weak) to %a" (pp_fun_decl_ref env)
-            definition
+      | WeaklyLinked definitions ->
+          Format.fprintf fmt " linked(weak) to %a"
+            (Format.pp_print_list
+               ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ", ")
+               (pp_fun_decl_ref env))
+            definitions
       | AllocatorShim definition ->
           Format.fprintf fmt " linked(alloc) to %a" (pp_fun_decl_ref env)
             definition
