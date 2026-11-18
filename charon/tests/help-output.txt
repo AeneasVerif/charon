@@ -33,6 +33,12 @@ Options:
       --targets <TARGETS>
           A list of target architectures to translate for. Charon will run the compiler once for each target and aggregate the results, which is useful if the code includes `#[cfg(..)]` filters. Warning: this is an initial implementation which is extremely slow
 
+      --merge-crates
+          When cargo builds several crates (e.g. with `charon cargo -- --workspace`), translate each of them as the local crate and merge the results into a single output, as if they were one crate. Only supported with `charon cargo`
+
+      --merged-crate-name <MERGED_CRATE_NAME>
+          The crate name to give the merged crate when using `--merge-crates`. Defaults to the first crate selected by cargo
+
       --sysroot <SYSROOT>
           Sysroot to use for rustc invocations. By default Charon builds a sysroot that has full MIR for the standard library. You can pass a custom sysroot to use instead, or pass "default" to use the normal distributed sysroot, which lacks MIR bodies for many standard library functions
 

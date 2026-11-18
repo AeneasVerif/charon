@@ -31,7 +31,7 @@
 //! callbacks.
 use anyhow::{Context, Result};
 use charon_lib::{
-    export::{CrateData, multi_target},
+    export::{CrateData, multi_crate, multi_target},
     formatter::IntoFormatter,
     logger,
     options::{CHARON_ARGS, CliOpts, SerializationFormat, selected_crate_var},
@@ -77,14 +77,19 @@ pub fn main() -> Result<()> {
             }
             options.apply_preset();
             options.validate()?;
+            let translate = if options.merge_crates {
+                translate_merged_crates
+            } else {
+                translate_with_cargo
+            };
             let targets = std::mem::take(&mut options.targets);
             if targets.is_empty() {
-                translate_with_cargo(options, subcmd_cargo.cargo)?
+                translate(options, subcmd_cargo.cargo)?
             } else {
                 translate_multi_target(targets, options, |opts: CliOpts, target: &str| {
                     let mut cargo_args = subcmd_cargo.cargo.clone();
                     cargo_args.extend(["--target".to_owned(), target.to_owned()]);
-                    translate_with_cargo(opts, cargo_args)
+                    translate(opts, cargo_args)
                 })?
             }
         }
@@ -93,6 +98,9 @@ pub fn main() -> Result<()> {
             options.rustc_args.append(&mut subcmd_rustc.rustc);
             options.apply_preset();
             options.validate()?;
+            if options.merge_crates {
+                anyhow::bail!("`--merge-crates` is only supported with `charon cargo`");
+            }
             let targets = std::mem::take(&mut options.targets);
             if targets.is_empty() {
                 translate_without_cargo(options)?
@@ -185,6 +193,47 @@ fn translate_multi_target(
 
     // Merge all crates.
     let merged = multi_target::merge(options.clone(), krates);
+    output_merged_crate(&options, merged)
+}
+
+/// Run cargo once, translating each selected crate as a local crate, then merge the results.
+fn translate_merged_crates(
+    options: CliOpts,
+    cargo_args: Vec<String>,
+) -> anyhow::Result<ExitStatus> {
+    let temp_dir = tempfile::tempdir().context("failed to create temp dir")?;
+    let (mut opts, format) = options_for_merging(&options);
+    // Each crate is written to `<temp_dir>/<crate_name>.<extension>`.
+    opts.dest_dir = Some(temp_dir.path().to_owned());
+    opts.dest_file = None;
+    let status = translate_with_cargo(opts, cargo_args.clone())?;
+    if !status.success() {
+        return Ok(status);
+    }
+
+    // TODO: a lib and a bin of the same package have the same crate name and overwrite each
+    // other's output.
+    let crate_names = cargo_targets(&cargo_args)?
+        .into_iter()
+        .unique()
+        .collect_vec();
+    let krates: Vec<_> = crate_names
+        .iter()
+        .map(|crate_name| {
+            let file = temp_dir
+                .path()
+                .join(crate_name)
+                .with_added_extension(format.output_extension(options.ullbc));
+            CrateData::deserialize_from_file(&file, format)
+                .with_context(|| format!("failed to load translation result for {crate_name}"))
+        })
+        .try_collect()?;
+
+    let crate_name = match &options.merged_crate_name {
+        Some(name) => name.clone(),
+        None => crate_names[0].clone(),
+    };
+    let merged = multi_crate::merge(options.clone(), krates, crate_name);
     output_merged_crate(&options, merged)
 }
 

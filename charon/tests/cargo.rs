@@ -327,7 +327,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         mktest(
             "merge-crates",
             root.join("merge-crates"),
-            &["--preset=aeneas".to_owned(), "--include=crate_a".to_owned()],
+            &[
+                "--preset=aeneas".to_owned(),
+                "--merge-crates".to_owned(),
+                "--include=crate_a".to_owned(),
+            ],
             &["--workspace".to_owned()],
             Success,
         ),
@@ -336,6 +340,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             root.join("merge-crates-start-from"),
             &[
                 "--preset=aeneas".to_owned(),
+                "--merge-crates".to_owned(),
                 "--start-from=crate_b::entry".to_owned(),
                 "--start-from={impl crate_a::Describe for crate_b::Thing}".to_owned(),
             ],
