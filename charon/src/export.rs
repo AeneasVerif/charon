@@ -26,20 +26,6 @@ pub struct CrateData {
     pub has_errors: bool,
 }
 
-impl Serialize for CrateData {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        if self.translated.options.no_dedup_serialized_ast {
-            self.serialize_state(&(), serializer)
-        } else {
-            let state = DedupSerializer::default();
-            self.serialize_state(&state, serializer)
-        }
-    }
-}
-
 impl<'de> Deserialize<'de> for CrateData {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -87,19 +73,26 @@ impl CrateData {
     pub fn serialize_to_files(
         &self,
         targets: Vec<(PathBuf, SerializationFormat)>,
+        deduplicate: bool,
     ) -> Result<(), ()> {
         for (target_filename, format) in targets {
-            self.serialize_to_file(&target_filename, format)?;
+            if deduplicate {
+                self.serialize_to_file(&target_filename, format, &DedupSerializer::default())?;
+            } else {
+                self.serialize_to_file(&target_filename, format, &())?;
+            }
         }
         Ok(())
     }
 
     /// Export the translated definitions to a file.
+    /// Use a fresh [`DedupSerializer`] for each file, or `()` to disable deduplication.
     #[allow(clippy::result_unit_err)]
     pub fn serialize_to_file(
         &self,
         target_filename: &Path,
         format: SerializationFormat,
+        state: &impl DedupSerializerState,
     ) -> Result<(), ()> {
         // Create the directory, if necessary (note that if the target directory
         // is not specified, there is no need to create it: otherwise we
@@ -120,15 +113,16 @@ impl CrateData {
         };
         // Write to the file.
         let mut writer = BufWriter::with_capacity(4 * 1024 * 1024, outfile);
+        let with_state = serde_state::WithState::new(self, state);
         match format {
             SerializationFormat::Json => {
-                if let Err(err) = serde_json::to_writer(&mut writer, self) {
+                if let Err(err) = serde_json::to_writer(&mut writer, &with_state) {
                     error!("Could not serialize to `{target_filename:?}`: {err:?}");
                     return Err(());
                 }
             }
             SerializationFormat::Postcard => {
-                if let Err(err) = postcard::to_io(self, &mut writer) {
+                if let Err(err) = postcard::to_io(&with_state, &mut writer) {
                     error!("Could not serialize to `{target_filename:?}`: {err:?}");
                     return Err(());
                 }

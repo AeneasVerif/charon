@@ -1395,11 +1395,5 @@ impl TransformPass for Transform {
         ctx.for_each_body(|ctx, body| {
             translate_body(ctx, body);
         });
-
-        if ctx.options.print_built_llbc {
-            eprintln!("# LLBC resulting from control-flow reconstruction:\n\n{ctx}\n",);
-        } else {
-            trace!("# LLBC resulting from control-flow reconstruction:\n\n{ctx}\n",);
-        }
     }
 }

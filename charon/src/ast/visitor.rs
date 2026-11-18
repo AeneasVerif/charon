@@ -78,7 +78,7 @@ use derive_generic_visitor::*;
         WithRetag,
         bool,
         char,
-        crate::options::CliOpts,
+        crate::options::Preset,
         from_rustc::Linkage,
         i128,
         std::ops::RangeInclusive<IntegerValue>,

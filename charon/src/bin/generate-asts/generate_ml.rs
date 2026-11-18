@@ -389,7 +389,6 @@ pub(crate) fn generate(
                 (GenerationKind::TypeDecl(None), &[
                     "FunDecl",
                     "Body",
-                    "CliOpts",
                     "DeclarationGroup",
                     "TranslatedCrate",
                 ]),

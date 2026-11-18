@@ -98,19 +98,17 @@ let unified_diff ~(expected : string) ~(ocaml : string) : string =
   diff
 
 let assert_pretty_matches_rust (file : string) (crate : GAst.crate) : unit =
-  (* the OCaml printer doesn't support printing safety yet *)
-  if not crate.options.print_safety then
-    let expected =
-      command_output charon_bin [ "pretty-print"; "--format"; "postcard"; file ]
-      |> normalize_trailing_newlines
-    in
-    let printed = Print.crate_to_string crate in
-    let ocaml = normalize_trailing_newlines printed in
-    if expected <> ocaml then
-      let diff = unified_diff ~expected ~ocaml in
-      Format.kasprintf failwith
-        "OCaml pretty-printer output differs from %s pretty-print for %s:\n%s"
-        charon_bin file diff
+  let expected =
+    command_output charon_bin [ "pretty-print"; "--format"; "postcard"; file ]
+    |> normalize_trailing_newlines
+  in
+  let printed = Print.crate_to_string crate in
+  let ocaml = normalize_trailing_newlines printed in
+  if expected <> ocaml then
+    let diff = unified_diff ~expected ~ocaml in
+    Format.kasprintf failwith
+      "OCaml pretty-printer output differs from %s pretty-print for %s:\n%s"
+      charon_bin file diff
 
 let test_cross_format_errors json postcard =
   (match OfPostcard.crate_of_postcard_file json with

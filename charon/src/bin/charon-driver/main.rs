@@ -101,8 +101,10 @@ fn run_charon() -> Result<usize, CharonFailure> {
     trace!("Targets: {:?}", targets);
     let crate_name = ctx.translated.crate_name.clone();
     let crate_data = export::CrateData::new(ctx);
-    charon_lib::timing::time("serialize", || crate_data.serialize_to_files(targets))
-        .map_err(|()| CharonFailure::Serialize)?;
+    charon_lib::timing::time("serialize", || {
+        crate_data.serialize_to_files(targets, !options.no_dedup_serialized_ast)
+    })
+    .map_err(|()| CharonFailure::Serialize)?;
     #[cfg(feature = "minirust")]
     if options.run_with_minirust {
         charon_lib::timing::time("run-with-minirust", || {

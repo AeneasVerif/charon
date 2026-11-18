@@ -154,7 +154,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             self.recording_mono_layouts = true;
             // Drop the lifetime freshener, so regions are erased and can be used as keys.
             let lifetime_freshener = self.lifetime_freshener.take();
-            self.record_monomorphic_layout(span, hax_ty);
+            self.record_monomorphic_layout(span, hax_ty, &ty);
             self.lifetime_freshener = lifetime_freshener;
             self.recording_mono_layouts = false;
         }
@@ -359,25 +359,23 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// If `ty` is monomorphic, record its computed layout for `TypeDecl::monomorphic_layouts`.
-    fn record_monomorphic_layout(&mut self, span: Span, ty: &hax::Ty<'tcx>) {
+    fn record_monomorphic_layout(&mut self, span: Span, hax_ty: &hax::Ty<'tcx>, ty: &Ty) {
         if
-        // We only care about types that have a `TypeDecl`...
-        let hax::TyKind::Adt(hax::AdtTy { item })
-        | hax::TyKind::Tuple(hax::TupleTy { item })
-        | hax::TyKind::Closure(hax::ClosureTy { item }) = ty.kind()
-            // ...which is instantiated
+        // Select types that have a `TypeDecl`...
+        let TyKind::Adt(tref) = ty.kind()
+            // ...where the decl does take generics
+            && tref.generics.has_non_lt_explicits()
+            && let hax::TyKind::Adt(hax::AdtTy { item })
+            | hax::TyKind::Tuple(hax::TupleTy { item })
+            | hax::TyKind::Closure(hax::ClosureTy { item }) = hax_ty.kind()
+            // ...instantiated with monomorphic arguments
             && !item.has_non_lt_param
-            && let item = item.erase(self.hax_state_with_id())
-            // ...but is otherwise polymorphic
-            // FIXME: do that check on `item` directly
-            && let Ok(generics) = self.translate_generic_args_without_trait_refs(span, &item)
-            && generics.has_non_lt_explicits()
-            && let Ok(tref) = self.translate_type_decl_ref(span, &item)
-            // ...and doesn't depend on the current scope
+            && let tref = tref.clone().replace_regions(|| Region::Erased)
+            // ...where the type doesn't mention any in-scope clauses
             && tref.type_info().is_closed()
             // ...and hasn't been seen yet
             && !self.monomorphic_layouts.contains_key(&tref)
-            && let Some(layout) = self.translate_layout(span, &item, None)
+            && let Some(layout) = self.translate_layout(span, item, None)
         {
             self.monomorphic_layouts.insert(tref, layout);
         }
@@ -844,8 +842,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             if this.recording_mono_layouts {
                 for i in 0..variant.fields.count() {
                     let field_ty = variant.field(&layout_cx, i).ty;
-                    if let Ok(field_ty) = this.catch_sinto::<_, hax::Ty<'tcx>>(span, &field_ty) {
-                        this.record_monomorphic_layout(span, &field_ty);
+                    if let Ok(hax_ty) = this.catch_sinto(span, &field_ty)
+                        && let Ok(ty) = this.translate_ty(span, &hax_ty)
+                    {
+                        this.record_monomorphic_layout(span, &hax_ty, &ty);
                     }
                 }
             }

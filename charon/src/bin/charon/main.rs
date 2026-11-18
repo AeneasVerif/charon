@@ -200,13 +200,16 @@ fn translate_multi_target(
     let merged = multi_target::merge(options.clone(), krates);
 
     if options.print_llbc || options.print_ullbc {
-        println!("{}", merged.translated);
+        let mut fmt = merged.translated.into_fmt();
+        fmt.include_layouts = options.print_layouts;
+        fmt.include_safety = options.print_safety;
+        println!("{}", merged.translated.with_ctx(&fmt));
     }
 
     // Serialize the merged result
     let targets = options.targets(&merged.translated.crate_name);
     merged
-        .serialize_to_files(targets)
+        .serialize_to_files(targets, !options.no_dedup_serialized_ast)
         .map_err(|()| anyhow::anyhow!("failed to serialize merged crate"))?;
 
     Ok(ExitStatus::default())

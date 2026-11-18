@@ -81,7 +81,9 @@ pub mod control_flow {
 pub use ctx::TransformCtx;
 use ctx::{LlbcPass, TransformPass, UllbcPass};
 
+use crate::formatter::IntoFormatter;
 use crate::options::CliOpts;
+use crate::pretty::FmtWithCtx;
 
 /// Shorten a pass name for display: `charon_lib::transform::foo::bar::Transform` -> `foo::bar`.
 fn short_pass_name(name: &str) -> String {
@@ -97,10 +99,21 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
     // Passes that apply to bodies but work on either kind.
     let mixed_body = |x| Pass::NonBody(CowBox::Borrowed(x));
 
-    ctx.run_pass(Pass::NonBody(PrintCtxPass::new(
+    let print = |enabled, output, message: &str| {
+        let pass = PrintCtxPass {
+            message: message.to_owned(),
+            output: if enabled { output } else { PrintOutput::Trace },
+            include_layouts: options.print_layouts,
+            include_safety: options.print_safety,
+        };
+        Pass::NonBody(CowBox::Owned(Box::new(pass)))
+    };
+
+    ctx.run_pass(print(
         options.print_original_ullbc,
-        "# ULLBC after translation from MIR".to_string(),
-    )));
+        PrintOutput::Stdout,
+        "# ULLBC after translation from MIR",
+    ));
 
     // Item and type cleanup passes.
     ctx.run_passes([
@@ -218,15 +231,21 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
 
     if !options.ullbc {
         // If we're reconstructing control-flow, print the ullbc here.
-        ctx.run_pass(Pass::NonBody(PrintCtxPass::new(
+        ctx.run_pass(print(
             options.print_ullbc,
-            "# Final ULLBC before control-flow reconstruction".to_string(),
-        )));
+            PrintOutput::Stdout,
+            "# Final ULLBC before control-flow reconstruction",
+        ));
     }
 
     if !options.ullbc {
         // Go from ULLBC to LLBC (Low-Level Borrow Calculus) by reconstructing the control flow.
         ctx.run_pass(mixed_body(&control_flow::ullbc_to_llbc::Transform));
+        ctx.run_pass(print(
+            options.print_built_llbc,
+            PrintOutput::Stderr,
+            "# LLBC resulting from control-flow reconstruction",
+        ));
         // Body cleanup passes after control flow reconstruction.
         let pass = Pass::FusedStructuredBody(Box::new([
             // Cleanup the cfg.
@@ -279,15 +298,17 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
 
     if options.ullbc {
         // If we're not reconstructing control-flow, print the ullbc after finalizing passes.
-        ctx.run_pass(Pass::NonBody(PrintCtxPass::new(
+        ctx.run_pass(print(
             options.print_ullbc,
-            "# Final ULLBC before serialization".to_string(),
-        )));
+            PrintOutput::Stdout,
+            "# Final ULLBC before serialization",
+        ));
     } else {
-        ctx.run_pass(Pass::NonBody(PrintCtxPass::new(
+        ctx.run_pass(print(
             options.print_llbc,
-            "# Final LLBC before serialization".to_string(),
-        )));
+            PrintOutput::Stdout,
+            "# Final LLBC before serialization",
+        ));
     }
 }
 
@@ -372,26 +393,30 @@ impl TransformCtx {
     }
 }
 
-pub struct PrintCtxPass {
-    pub message: String,
-    /// Whether we're printing to stdout or only logging.
-    pub to_stdout: bool,
+pub enum PrintOutput {
+    Stdout,
+    Stderr,
+    Trace,
 }
 
-impl PrintCtxPass {
-    pub fn new(to_stdout: bool, message: String) -> CowBox<dyn TransformPass> {
-        let ret = Self { message, to_stdout };
-        CowBox::Owned(Box::new(ret))
-    }
+pub struct PrintCtxPass {
+    pub message: String,
+    pub output: PrintOutput,
+    pub include_layouts: bool,
+    pub include_safety: bool,
 }
 
 impl TransformPass for PrintCtxPass {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         let message = &self.message;
-        if self.to_stdout {
-            println!("{message}:\n\n{ctx}\n");
-        } else {
-            trace!("{message}:\n\n{ctx}\n");
+        let mut fmt = ctx.into_fmt();
+        fmt.include_layouts = self.include_layouts;
+        fmt.include_safety = self.include_safety;
+        let printed = ctx.translated.with_ctx(&fmt);
+        match self.output {
+            PrintOutput::Stdout => println!("{message}:\n\n{printed}\n"),
+            PrintOutput::Stderr => eprintln!("{message}:\n\n{printed}\n"),
+            PrintOutput::Trace => trace!("{message}:\n\n{printed}\n"),
         }
     }
 }
