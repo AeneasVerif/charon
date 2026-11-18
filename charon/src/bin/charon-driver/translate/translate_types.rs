@@ -375,7 +375,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             && tref.type_info().is_closed()
             // ...and hasn't been seen yet
             && !self.monomorphic_layouts.contains_key(&tref)
-            && let Some(layout) = self.translate_layout(span, &item, None)
+            && let Some(layout) = self.translate_layout(span, item, None)
         {
             self.monomorphic_layouts.insert(tref, layout);
         }
