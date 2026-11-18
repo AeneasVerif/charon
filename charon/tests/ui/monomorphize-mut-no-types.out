@@ -89,6 +89,11 @@ pub trait core::marker::Destruct::<Option<Option<&_ mut _>>><'_0, T0>
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: test_crate::identity
 fn identity<T>(x: T) -> T
 where
@@ -200,9 +205,12 @@ where
             storage_dead(_18)
             storage_dead(_17)
             storage_dead(_16)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_15)
         storage_dead(x)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_3)
     storage_dead(_2)
@@ -218,9 +226,12 @@ where
             storage_dead(_18)
             storage_dead(_17)
             storage_dead(_16)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_15)
         storage_dead(x)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_5)
     storage_dead(_6)
@@ -240,9 +251,12 @@ where
             storage_dead(_18)
             storage_dead(_17)
             storage_dead(_16)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_15)
         storage_dead(x)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_8)
     storage_dead(_10)
@@ -263,9 +277,12 @@ where
             storage_dead(_18)
             storage_dead(_17)
             storage_dead(_16)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_15)
         storage_dead(x)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_12)
     storage_dead(_11)
@@ -273,6 +290,9 @@ where
     conditional_drop[{built_in impl Destruct for A}::drop_glue<'892>] x
     ↳⚡ storage_dead(_15)
         storage_dead(x)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
         unwind_continue
     storage_dead(_15)
     storage_dead(x)

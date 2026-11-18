@@ -78,6 +78,21 @@ where
   Some { _0: T },
 }
 
+struct str {
+  _0: [u8],
+}
+
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(_1: &'static str) -> !
+= <opaque>
+
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: core::slice::index::SliceIndex
 #[diagnostic_item("SliceIndex")]
 pub unsafe trait SliceIndex<Self, T>
@@ -242,7 +257,7 @@ where
     drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
     ↳⚡ drop[{built_in impl Destruct for B}::drop_glue<'4>] (*_1)._1
         ↳⚡ storage_dead(_1)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_1)
         unwind_continue
     drop[{built_in impl Destruct for B}::drop_glue<'3>] (*_1)._1
@@ -261,6 +276,8 @@ where
   Right,
 }
 
+pub const test_crate::destructure::{promoted_const}: str = "explicit panic" with_metadata(14usize)
+
 // Full name: test_crate::destructure
 pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]) -> &'a u32
 {
@@ -270,6 +287,7 @@ pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u
         where x :< &'5 u32;
     let mut _3: &'6 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // anonymous local
         where _3 :< &'0 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}];
+    let mut _4: &'8 str; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -279,8 +297,11 @@ pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u
         },
         _ => {
             storage_dead(_3)
-            panic(core::panicking::panic)
+            storage_live(_4)
+            _4 = &test_crate::destructure::{promoted_const} with_metadata(const 14usize)
+            panic(panic(move _4))
             ↳⚡ storage_dead(input)
+                storage_dead(_4)
                 unwind_continue
         },
     }
@@ -290,6 +311,7 @@ pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u
     _0 = &(*x)
     storage_dead(x)
     storage_dead(input)
+    storage_dead(_4)
     return
 }
 
@@ -347,7 +369,7 @@ where
     conditional_drop[{built_in impl Destruct for Self}::drop_glue<'0>] value_2
     ↳⚡ conditional_drop[{built_in impl Destruct for Self}::drop_glue<'2>] value_1
         ↳⚡ storage_dead(value_1)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(value_1)
         unwind_continue
     storage_dead(value_2)
@@ -395,7 +417,7 @@ pub fn nested_impl_trait(value_1: Box<u32>[{built_in impl MetaSized for u32}, {b
     conditional_drop[impl_Destruct_for_Box::drop_glue<'0, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}]] value_2
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'2, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}]] value_1
         ↳⚡ storage_dead(value_1)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(value_1)
         unwind_continue
     storage_dead(value_2)
@@ -424,7 +446,7 @@ pub fn multiple_impl_traits(value_1: (u32, String))
     conditional_drop[impl_Destruct_for_tuple::drop_glue<'0, u32, String>[{built_in impl Sized for u32}]] value_2
     ↳⚡ conditional_drop[impl_Destruct_for_tuple::drop_glue<'2, u32, String>[{built_in impl Sized for u32}]] value_1
         ↳⚡ storage_dead(value_1)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(value_1)
         unwind_continue
     storage_dead(value_2)
@@ -601,7 +623,7 @@ where
     conditional_drop[impl_Destruct_for_Box::drop_glue<'28, StaticCopy<'23>, Global>[{built_in impl MetaSized for StaticCopy<'23>}, {built_in impl Sized for Global}]] x
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'58, StaticCopy<'53>, Global>[{built_in impl MetaSized for StaticCopy<'53>}, {built_in impl Sized for Global}]] value
         ↳⚡ storage_dead(value)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(value)
         unwind_continue
     storage_dead(x)

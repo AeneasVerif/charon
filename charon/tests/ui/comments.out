@@ -106,6 +106,18 @@ pub enum AssertKind {
   Match,
 }
 
+// Full name: core::panicking::assert_failed
+#[track_caller]
+pub fn assert_failed<'_0, '_1, '_2, T, U>(_1: AssertKind, _2: &'_0 T, _3: &'_1 U, _4: Option<Arguments<'_2>>[{built_in impl Sized for Arguments<'_2>}]) -> !
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (U: MetaSized),
+    TraitClause2: (T: Debug),
+    TraitClause3: (U: Debug),
+    Outlives0: (T: '_0),
+    Outlives1: (U: '_1),
+= <opaque>
+
 // Full name: core::slice::index::SliceIndex
 #[diagnostic_item("SliceIndex")]
 pub unsafe trait SliceIndex<Self, T>
@@ -307,6 +319,8 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
         storage_dead(_14)
         storage_dead(_7)
         storage_dead(s)
+        storage_dead(_26)
+        storage_dead(_25)
         unwind_continue
     storage_dead(_5)
     storage_dead(_4)
@@ -325,6 +339,8 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
             storage_dead(_14)
             storage_dead(_7)
             storage_dead(s)
+            storage_dead(_26)
+            storage_dead(_25)
             unwind_continue
         storage_dead(_11)
         _8 = move _9 < move _10
@@ -395,6 +411,8 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
         storage_dead(_14)
         storage_dead(_7)
         storage_dead(s)
+        storage_dead(_26)
+        storage_dead(_25)
         unwind_continue
     storage_dead(_22)
     storage_dead(_21)
@@ -555,6 +573,11 @@ fn foo()
         storage_dead(_27)
         storage_dead(_26)
         storage_dead(kind)
+        storage_dead(_37)
+        storage_dead(_36)
+        storage_dead(_35)
+        storage_dead(_34)
+        storage_dead(_33)
         unwind_continue
     storage_live(x_1)
     x_1 = copy _3.x
@@ -580,6 +603,11 @@ fn foo()
         storage_dead(_27)
         storage_dead(_26)
         storage_dead(kind)
+        storage_dead(_37)
+        storage_dead(_36)
+        storage_dead(_35)
+        storage_dead(_34)
+        storage_dead(_33)
         unwind_continue
     storage_dead(_5)
     storage_dead(_4)
@@ -595,6 +623,11 @@ fn foo()
         storage_dead(_27)
         storage_dead(_26)
         storage_dead(kind)
+        storage_dead(_37)
+        storage_dead(_36)
+        storage_dead(_35)
+        storage_dead(_34)
+        storage_dead(_33)
         unwind_continue
     storage_live(x_8)
     x_8 = copy _10.x
@@ -621,6 +654,11 @@ fn foo()
         storage_dead(_27)
         storage_dead(_26)
         storage_dead(kind)
+        storage_dead(_37)
+        storage_dead(_36)
+        storage_dead(_35)
+        storage_dead(_34)
+        storage_dead(_33)
         unwind_continue
     storage_dead(_12)
     storage_dead(_11)
@@ -682,12 +720,7 @@ fn foo()
         _29 = &(*_30)
         storage_live(_31)
         _31 = Option::None {  }
-        storage_dead(_37)
-        storage_dead(_36)
-        storage_dead(_35)
-        storage_dead(_34)
-        storage_dead(_33)
-        panic(core::panicking::assert_failed)
+        panic(assert_failed<'65, '66, '67, u32, u32>[{built_in impl MetaSized for u32}, {built_in impl MetaSized for u32}, {impl#11}, {impl#11}](move _26, move _27, move _29, move _31))
         ↳⚡ storage_dead(_32)
             storage_dead(_31)
             storage_dead(_30)
@@ -696,6 +729,11 @@ fn foo()
             storage_dead(_27)
             storage_dead(_26)
             storage_dead(kind)
+            storage_dead(_37)
+            storage_dead(_36)
+            storage_dead(_35)
+            storage_dead(_34)
+            storage_dead(_33)
             unwind_continue
     }
     storage_dead(_24)

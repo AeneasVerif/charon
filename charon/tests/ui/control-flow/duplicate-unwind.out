@@ -22,6 +22,11 @@ where
     Outlives0: (Self: '_0),
 = <opaque>
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: test_crate::Guard
 struct Guard {}
 
@@ -149,11 +154,11 @@ fn shared_cleanup()
     }
 
     bb8 (terminate): {
-        unwind_terminate;
+        unwind_terminate(in_cleanup);
     }
 
     bb9 (terminate): {
-        unwind_terminate;
+        unwind_terminate(in_cleanup);
     }
 }
 

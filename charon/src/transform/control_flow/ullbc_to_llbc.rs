@@ -988,12 +988,12 @@ impl<'a> ReconstructCtx<'a> {
         let src_span = terminator.span;
 
         match &terminator.kind {
-            src::TerminatorKind::Panic { name, on_unwind } => {
+            src::TerminatorKind::Panic { call, on_unwind } => {
                 let on_unwind = self.translate_block(*on_unwind);
                 tgt::Statement::new(
                     src_span,
                     tgt::StatementKind::Panic {
-                        name: name.clone(),
+                        call: call.clone(),
                         on_unwind,
                     },
                 )
@@ -1002,9 +1002,11 @@ impl<'a> ReconstructCtx<'a> {
             src::TerminatorKind::UndefinedBehavior => {
                 tgt::Statement::new(src_span, tgt::StatementKind::UndefinedBehavior).into_block()
             }
-            src::TerminatorKind::UnwindTerminate => {
-                tgt::Statement::new(src_span, tgt::StatementKind::UnwindTerminate).into_block()
-            }
+            src::TerminatorKind::UnwindTerminate(reason, fun_ref) => tgt::Statement::new(
+                src_span,
+                tgt::StatementKind::UnwindTerminate(*reason, fun_ref.clone()),
+            )
+            .into_block(),
             src::TerminatorKind::Return => {
                 tgt::Statement::new(src_span, tgt::StatementKind::Return).into_block()
             }
@@ -1076,7 +1078,7 @@ impl<'a> ReconstructCtx<'a> {
                 let on_unwind = self.translate_block(*on_unwind);
                 let st = tgt::StatementKind::Assert {
                     assert: assert.clone(),
-                    on_failure: AbortKind::Panic(None),
+                    on_failure: AbortKind::Panic,
                     on_unwind,
                 };
                 let target = self.translate_jump(terminator.span, *target);

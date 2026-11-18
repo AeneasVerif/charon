@@ -248,12 +248,23 @@ pub enum BorrowckStatement {
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Abort"))]
 pub enum AbortKind {
-    /// A built-in panicking function, or a panic due to a failed built-in check (e.g. for out-of-bounds accesses).
-    Panic(Option<Name>),
+    /// A built-in panicking function, or a panic due to a failed built-in check (e.g. for
+    /// out-of-bounds accesses).
+    Panic,
     /// Undefined behavior in the rust abstract machine.
     UndefinedBehavior,
     /// Unwind had to stop for ABI reasons or because cleanup code panicked again.
-    UnwindTerminate,
+    UnwindTerminate(UnwindTerminateReason),
+}
+
+/// Why unwinding had to stop.
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+pub enum UnwindTerminateReason {
+    /// Unwinding out of a function that cannot unwind (e.g. an `extern "C"` function).
+    Abi,
+    /// Cleanup code panicked again.
+    InCleanup,
 }
 
 /// A `Drop` statement/terminator can mean two things, depending on what MIR phase we retrieved
@@ -303,6 +314,8 @@ pub struct Assert {
     /// The kind of check performed by this assert. This is only used for error reporting, as the check
     /// is actually performed by the instructions preceding the assert.
     pub check_kind: Option<BuiltinAssertKind>,
+    /// The call to a panicking function that happens when the check fails
+    pub call: Box<Call>,
 }
 
 /// The kind of a built-in assertion, which may panic and unwind. These are removed

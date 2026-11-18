@@ -125,16 +125,16 @@ and terminator_kind =
           - [assert]
           - [target]
           - [on_unwind] *)
-  | Panic of name * block_id
+  | Panic of call * block_id
       (** Call to a built-in panicking function. Only if
           [--reconstruct-panic-calls] is passed.
 
           Fields:
-          - [name]: The name of the function that was called.
+          - [call]
           - [on_unwind] *)
-  | UnwindTerminate
+  | UnwindTerminate of unwind_terminate_reason * fun_decl_ref
       (** Unwinding must stop for ABI reasons or because cleanup code panicked
-          again. *)
+          again. The function is the lang item that rustc calls in that case. *)
   | UnwindResume  (** Unwind out of the current function into its caller. *)
   | Return
   | UndefinedBehavior

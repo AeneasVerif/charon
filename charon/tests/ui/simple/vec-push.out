@@ -138,6 +138,11 @@ where
 // Full name: core::num::niche_types::UsizeNoHighBit
 pub opaque type UsizeNoHighBit
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: core::ptr::non_null::NonNull
 #[lang_item(NonNull)]
 pub opaque type NonNull<T>
@@ -235,7 +240,7 @@ where
                 storage_dead(_6)
                 storage_dead(value)
                 storage_dead(self_1)
-                unwind_terminate
+                unwind_terminate(in_cleanup)
             storage_dead(_13)
             storage_dead(end)
             storage_dead(_6)

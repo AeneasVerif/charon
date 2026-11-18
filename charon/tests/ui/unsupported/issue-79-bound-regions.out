@@ -104,11 +104,17 @@ fn main()
     _7 = &(*slice) with_metadata(read slice.metadata)
     _6 = iter<'32, i32>[{built_in impl Sized for i32}](move _7)
     ↳⚡ storage_dead(_8)
+        storage_dead(_11)
+        storage_dead(_10)
+        storage_dead(_9)
         unwind_continue
     _5 = &two-phase-mut _6
     storage_dead(_7)
     _4 = next<'35, '39, i32>[{built_in impl Sized for i32}](move _5)
     ↳⚡ storage_dead(_8)
+        storage_dead(_11)
+        storage_dead(_10)
+        storage_dead(_9)
         unwind_continue
     storage_dead(_5)
     storage_dead(_6)

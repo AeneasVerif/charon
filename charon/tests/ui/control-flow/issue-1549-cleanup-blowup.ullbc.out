@@ -22,6 +22,11 @@ where
     Outlives0: (Self: '_0),
 = <opaque>
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: test_crate::Ticket
 pub struct Ticket {
   _0: u8,
@@ -214,25 +219,25 @@ pub fn cleanup_dag(fail: bool, tag: u8) -> u8
     bb14 (terminate): {
         storage_dead(tag);
         storage_dead(fail);
-        unwind_terminate;
+        unwind_terminate(in_cleanup);
     }
 
     bb15 (terminate): {
         storage_dead(tag);
         storage_dead(fail);
-        unwind_terminate;
+        unwind_terminate(in_cleanup);
     }
 
     bb16 (terminate): {
         storage_dead(tag);
         storage_dead(fail);
-        unwind_terminate;
+        unwind_terminate(in_cleanup);
     }
 
     bb17 (terminate): {
         storage_dead(tag);
         storage_dead(fail);
-        unwind_terminate;
+        unwind_terminate(in_cleanup);
     }
 }
 

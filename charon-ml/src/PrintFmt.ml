@@ -1755,27 +1755,28 @@ let pp_call (env : fmt_env) (indent : string) (fmt : Format.formatter)
 
 let pp_assertion (env : fmt_env) (fmt : Format.formatter) (a : assertion) : unit
     =
-  let check_kind =
-    match a.check_kind with
-    | None -> ""
-    | Some (BoundsCheck _) -> " (bounds_check)"
-    | Some (Overflow _) -> " (overflow)"
-    | Some (OverflowNeg _) -> " (overflow_neg)"
-    | Some (DivisionByZero _) -> " (division_by_zero)"
-    | Some (RemainderByZero _) -> " (remainder_by_zero)"
-    | Some (MisalignedPointerDereference _) ->
-        " (misaligned_pointer_dereference)"
-    | Some NullPointerDereference -> " (null_pointer_dereference)"
-    | Some NullReferenceCreated -> " (null_reference_created)"
-    | Some (InvalidEnumConstruction _) -> " (invalid_enum_construction)"
-    | Some ResumedAfterReturn -> " (resumed_after_return)"
-    | Some ResumedAfterPanic -> " (resumed_after_panic)"
-    | Some ResumedAfterDrop -> " (resumed_after_drop)"
-  in
-  Format.fprintf fmt "assert(%s == %s)%s"
+  Format.fprintf fmt "assert(%s == %s)"
     (operand_to_string env a.cond)
-    (Bool.to_string a.expected)
-    check_kind
+    (Bool.to_string a.expected);
+  Option.iter
+    (fun (kind : builtin_assert_kind) ->
+      let kind =
+        match kind with
+        | BoundsCheck _ -> "bounds_check"
+        | Overflow _ -> "overflow"
+        | OverflowNeg _ -> "overflow_neg"
+        | DivisionByZero _ -> "division_by_zero"
+        | RemainderByZero _ -> "remainder_by_zero"
+        | MisalignedPointerDereference _ -> "misaligned_pointer_dereference"
+        | NullPointerDereference -> "null_pointer_dereference"
+        | NullReferenceCreated -> "null_reference_created"
+        | InvalidEnumConstruction _ -> "invalid_enum_construction"
+        | ResumedAfterReturn -> "resumed_after_return"
+        | ResumedAfterPanic -> "resumed_after_panic"
+        | ResumedAfterDrop -> "resumed_after_drop"
+      in
+      Format.fprintf fmt " (%s)" kind)
+    a.check_kind
 
 let pp_place_type_constraint (env : fmt_env) (fmt : Format.formatter)
     (constraint_ : place_type_constraint) : unit =
@@ -1803,11 +1804,19 @@ let pp_borrowck_statement (env : fmt_env) (fmt : Format.formatter)
 let pp_abort_kind (env : fmt_env) (fmt : Format.formatter) (a : abort_kind) :
     unit =
   match a with
-  | AbortPanic None -> pp_string fmt "panic"
-  | AbortPanic (Some name) ->
-      Format.fprintf fmt "panic(%s)" (name_to_string env name)
+  | AbortPanic -> pp_string fmt "panic"
   | AbortUndefinedBehavior -> pp_string fmt "undefined_behavior"
-  | AbortUnwindTerminate -> pp_string fmt "unwind_terminate"
+  | AbortUnwindTerminate Abi -> pp_string fmt "unwind_terminate(abi)"
+  | AbortUnwindTerminate InCleanup ->
+      pp_string fmt "unwind_terminate(in_cleanup)"
+
+(** Print what happens when an assert statement fails. A panic calls the
+    assert's [call]. *)
+let pp_assert_on_failure (env : fmt_env) (asrt : assertion)
+    (fmt : Format.formatter) (on_failure : abort_kind) : unit =
+  match on_failure with
+  | AbortPanic -> Format.fprintf fmt "panic(%a)" (pp_call env "") asrt.call
+  | _ -> pp_abort_kind env fmt on_failure
 
 (** Small helper *)
 let pp_fun_sig_with_name (env : fmt_env) (indent : string)
@@ -2282,7 +2291,8 @@ module Llbc = struct
           on_unwind
     | Assert (asrt, on_failure, on_unwind) ->
         Format.fprintf fmt "%s%a else %a%a" indent (pp_print_assertion env) asrt
-          (pp_print_abort_kind env) on_failure
+          (pp_assert_on_failure env asrt)
+          on_failure
           (pp_unwind_block env indent indent_incr)
           on_unwind
     | InlineAsm (asm, fallthrough, labels, on_unwind) ->
@@ -2309,17 +2319,16 @@ module Llbc = struct
           (pp_print_call env "") call
           (pp_unwind_block env indent indent_incr)
           on_unwind
-    | Panic (name, on_unwind) ->
-        Format.fprintf fmt "%s%a%a" indent (pp_print_abort_kind env)
-          (AbortPanic (Some name))
+    | Panic (call, on_unwind) ->
+        Format.fprintf fmt "%spanic(%a)%a" indent (pp_print_call env "") call
           (pp_unwind_block env indent indent_incr)
           on_unwind
     | UndefinedBehavior ->
         Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env)
           AbortUndefinedBehavior
-    | UnwindTerminate ->
+    | UnwindTerminate (reason, _) ->
         Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env)
-          AbortUnwindTerminate
+          (AbortUnwindTerminate reason)
     | Return -> Format.fprintf fmt "%sreturn" indent
     | UnwindResume -> Format.fprintf fmt "%sunwind_continue" indent
     | Break i -> Format.fprintf fmt "%sbreak %d" indent i
@@ -2419,7 +2428,8 @@ module Ullbc = struct
           (variant_id_to_pretty_string variant_id)
     | Assert (asrt, abort_kind) ->
         Format.fprintf fmt "%s%a else %a" indent (pp_print_assertion env) asrt
-          (pp_print_abort_kind env) abort_kind
+          (pp_assert_on_failure env asrt)
+          abort_kind
     | StorageLive var_id ->
         Format.fprintf fmt "%sstorage_live(%s)" indent
           (local_id_to_string env var_id)
@@ -2514,16 +2524,16 @@ module Ullbc = struct
         let targets = targets @ [ "unwind: " ^ block_id_to_string on_unwind ] in
         Format.fprintf fmt "%s%a -> %s" indent (pp_print_inline_asm env) asm
           (String.concat ", " targets)
-    | Panic (name, on_unwind) ->
-        Format.fprintf fmt "%s%a -> (unwind: %s)" indent
-          (pp_print_abort_kind env) (AbortPanic (Some name))
+    | Panic (call, on_unwind) ->
+        Format.fprintf fmt "%spanic(%a) -> (unwind: %s)" indent
+          (pp_print_call env "") call
           (block_id_to_string on_unwind)
     | UndefinedBehavior ->
         Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env)
           AbortUndefinedBehavior
-    | UnwindTerminate ->
+    | UnwindTerminate (reason, _) ->
         Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env)
-          AbortUnwindTerminate
+          (AbortUnwindTerminate reason)
     | Return -> Format.fprintf fmt "%sreturn" indent
     | UnwindResume -> Format.fprintf fmt "%sunwind_continue" indent
 

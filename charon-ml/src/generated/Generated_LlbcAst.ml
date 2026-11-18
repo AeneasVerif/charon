@@ -110,16 +110,16 @@ and statement_kind =
           loop to continue to, counting inside-out: * 0: continue to the start
           of the innermost loop (the current loop) * 1: continue to the start of
           the second innermost loop * ... *)
-  | Panic of name * block
+  | Panic of call * block
       (** Call to a built-in panicking function. Only if
           [--reconstruct-panic-calls] is passed.
 
           Fields:
-          - [name]: The name of the function that was called.
+          - [call]
           - [on_unwind] *)
-  | UnwindTerminate
+  | UnwindTerminate of unwind_terminate_reason * fun_decl_ref
       (** Unwinding must stop for ABI reasons or because cleanup code panicked
-          again. *)
+          again. The function is the lang item that rustc calls in that case. *)
   | UnwindResume  (** Unwind out of the current function into its caller. *)
   | Return
   | UndefinedBehavior

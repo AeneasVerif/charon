@@ -68,6 +68,12 @@ impl "impl_Copy_for_u32" Copy for u32 {
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_const::panic_const_add_overflow
+#[track_caller]
+#[lang_item(PanicAddOverflow)]
+pub fn panic_const_add_overflow() -> !
+= <opaque>
+
 struct () {}
 
 // Full name: test_crate::sum

@@ -129,12 +129,12 @@ pub enum StatementKind {
 
     /// Call to a built-in panicking function. Only if `--reconstruct-panic-calls` is passed.
     Panic {
-        /// The name of the function that was called.
-        name: Name,
+        call: Call,
         on_unwind: Block,
     },
-    /// Unwinding must stop for ABI reasons or because cleanup code panicked again.
-    UnwindTerminate,
+    /// Unwinding must stop for ABI reasons or because cleanup code panicked again. The function is
+    /// the lang item that rustc calls in that case.
+    UnwindTerminate(UnwindTerminateReason, FunDeclRef),
     /// Unwind out of the current function into its caller.
     UnwindResume,
 

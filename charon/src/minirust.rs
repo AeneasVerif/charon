@@ -566,7 +566,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 }
             }
             T::UndefinedBehavior => mini::Terminator::Unreachable,
-            T::UnwindTerminate => mini::Terminator::Intrinsic {
+            T::UnwindTerminate(..) => mini::Terminator::Intrinsic {
                 intrinsic: mini::IntrinsicOp::Abort,
                 arguments: Default::default(),
                 ret: mini::PlaceExpr::Local(self.local_name(LocalId::ZERO)),

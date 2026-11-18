@@ -118,6 +118,12 @@ impl "impl_Copy_for_u32" Copy for u32 {
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_const::panic_const_add_overflow
+#[track_caller]
+#[lang_item(PanicAddOverflow)]
+pub fn panic_const_add_overflow() -> !
+= <opaque>
+
 // Full name: crate1::random_number
 pub fn random_number() -> u32
 {
@@ -143,7 +149,7 @@ pub fn extra_random_number() -> u32
     ↳⚡ unwind_continue
     _2 = add_with_overflow<u32>[{built_in impl Sized for u32}, impl_Copy_for_u32](copy _1, const 1u32)
     ↳⚡ undefined_behavior
-    assert(move _2._1 == false) (overflow) else panic
+    assert(move _2._1 == false) (overflow) else panic(panic_const_add_overflow())
     ↳⚡ unwind_continue
     _0 = move _2._0
     storage_dead(_1)

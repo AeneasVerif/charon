@@ -311,6 +311,11 @@ where
     TypeConstraint0: TraitClause3::Output = U,
 = <opaque>
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: alloc::alloc::Global
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
@@ -610,10 +615,16 @@ where
             storage_dead(_22)
             storage_dead(_21)
             storage_dead(_20)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_19)
         storage_dead(_18)
         storage_dead(x)
+        storage_dead(_25)
+        storage_dead(_24)
+        storage_dead(_23)
+        storage_dead(_22)
+        storage_dead(_21)
+        storage_dead(_20)
         unwind_continue
     storage_dead(_3)
     storage_dead(_2)
@@ -633,10 +644,16 @@ where
             storage_dead(_22)
             storage_dead(_21)
             storage_dead(_20)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_19)
         storage_dead(_18)
         storage_dead(x)
+        storage_dead(_25)
+        storage_dead(_24)
+        storage_dead(_23)
+        storage_dead(_22)
+        storage_dead(_21)
+        storage_dead(_20)
         unwind_continue
     storage_dead(_5)
     storage_dead(_6)
@@ -660,10 +677,16 @@ where
             storage_dead(_22)
             storage_dead(_21)
             storage_dead(_20)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_19)
         storage_dead(_18)
         storage_dead(x)
+        storage_dead(_25)
+        storage_dead(_24)
+        storage_dead(_23)
+        storage_dead(_22)
+        storage_dead(_21)
+        storage_dead(_20)
         unwind_continue
     storage_dead(_8)
     storage_dead(_10)
@@ -688,10 +711,16 @@ where
             storage_dead(_22)
             storage_dead(_21)
             storage_dead(_20)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_19)
         storage_dead(_18)
         storage_dead(x)
+        storage_dead(_25)
+        storage_dead(_24)
+        storage_dead(_23)
+        storage_dead(_22)
+        storage_dead(_21)
+        storage_dead(_20)
         unwind_continue
     storage_live(_21)
     storage_live(_24)
@@ -719,10 +748,16 @@ where
             storage_dead(_22)
             storage_dead(_21)
             storage_dead(_20)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_19)
         storage_dead(_18)
         storage_dead(x)
+        storage_dead(_25)
+        storage_dead(_24)
+        storage_dead(_23)
+        storage_dead(_22)
+        storage_dead(_21)
+        storage_dead(_20)
         unwind_continue
     storage_dead(_16)
     storage_dead(_15)
@@ -731,6 +766,12 @@ where
     ↳⚡ storage_dead(_19)
         storage_dead(_18)
         storage_dead(x)
+        storage_dead(_25)
+        storage_dead(_24)
+        storage_dead(_23)
+        storage_dead(_22)
+        storage_dead(_21)
+        storage_dead(_20)
         unwind_continue
     storage_dead(_19)
     storage_dead(_18)

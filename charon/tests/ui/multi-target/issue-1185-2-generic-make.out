@@ -7,6 +7,10 @@ pub trait core::marker::Destruct<Self>
     non-dyn-compatible
 }
 
+#[lang_item(PanicInCleanup)]
+fn core::panicking::panic_in_cleanup() -> !
+= <opaque>
+
 pub struct test_crate::State<H> {
   _h: H,
 }
@@ -43,17 +47,17 @@ pub fn test_crate::caller<H>(h: H)
     conditional_drop[{built_in impl core::marker::Destruct for H}::drop_glue<'0>] _3
     ↳⚡ conditional_drop[test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}::drop_glue<'2, H>] _2
         ↳⚡ storage_dead(h)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[{built_in impl core::marker::Destruct for H}::drop_glue<'4>] h
         ↳⚡ storage_dead(h)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(h)
         unwind_continue
     storage_dead(_3)
     conditional_drop[test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}::drop_glue<'1, H>] _2
     ↳⚡ conditional_drop[{built_in impl core::marker::Destruct for H}::drop_glue<'4>] h
         ↳⚡ storage_dead(h)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(h)
         unwind_continue
     storage_dead(_2)

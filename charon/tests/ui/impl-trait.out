@@ -63,6 +63,11 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 struct (_,)<A> {
   _0: A,
 }
@@ -236,18 +241,18 @@ where
     _5 = &foo
     _4 = TraitClause1::ImpliedClause2::get_ty<'6>(move _5)
     ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'7>] foo
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     _3 = &(*_4) with_metadata(read _4.metadata)
     storage_dead(_5)
     _2 = TraitClause1::ImpliedClause2::ImpliedClause2::clone<'9>(move _3)
     ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'7>] foo
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_3)
     conditional_drop[{built_in impl Destruct for TraitClause1::ImpliedClause2::Type}::drop_glue<'10>] _2
     ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'7>] foo
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_4)
     storage_dead(_2)
@@ -332,6 +337,9 @@ pub fn use_wrap()
     storage_live(f)
     f = wrap<u32>[{built_in impl Sized for u32}]()
     ↳⚡ storage_dead(_7)
+        storage_dead(_10)
+        storage_dead(_9)
+        storage_dead(_8)
         unwind_continue
     storage_live(_8)
     storage_live(_9)
@@ -352,6 +360,9 @@ pub fn use_wrap()
     _4 = (move _5,)
     _2 = call_once<'31, u32>[{built_in impl Sized for u32}](move _3, move _4)
     ↳⚡ storage_dead(_7)
+        storage_dead(_10)
+        storage_dead(_9)
+        storage_dead(_8)
         unwind_continue
     storage_dead(_5)
     storage_dead(_4)

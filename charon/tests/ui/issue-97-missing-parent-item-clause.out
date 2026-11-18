@@ -14,6 +14,16 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct str {
+  _0: [u8],
+}
+
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(_1: &'static str) -> !
+= <opaque>
+
 struct () {}
 
 // Full name: test_crate::Ord
@@ -31,6 +41,8 @@ where
   x: T,
 }
 
+pub const test_crate::{AVLTree<T>[TraitClause0]}::insert::{promoted_const}: str = "not implemented" with_metadata(15usize)
+
 // Full name: test_crate::{AVLTree<T>[TraitClause0]}::insert
 pub fn insert<'_0, T>(self: &'_0 mut AVLTree<T>[TraitClause0])
 where
@@ -40,11 +52,15 @@ where
 {
     let mut _0: (); // return
     let self: &'1 mut AVLTree<T>[TraitClause0]; // arg #1
+    let mut _2: &'3 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
-    panic(core::panicking::panic)
+    storage_live(_2)
+    _2 = &test_crate::{AVLTree<T>[TraitClause0]}::insert::{promoted_const} with_metadata(const 15usize)
+    panic(panic(move _2))
     ↳⚡ storage_dead(self)
+        storage_dead(_2)
         unwind_continue
 }
 

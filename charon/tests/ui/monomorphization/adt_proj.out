@@ -1,5 +1,29 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct str {
+  _0: [u8],
+}
+
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(_1: &'static str) -> !
+= <opaque>
+
 // Full name: core::result::Result::<u32, u32>
 #[diagnostic_item("Result")]
 pub enum Result::<u32, u32> {
@@ -9,6 +33,8 @@ pub enum Result::<u32, u32> {
 
 struct () {}
 
+pub const test_crate::main::{promoted_const}: str = "explicit panic" with_metadata(14usize)
+
 // Full name: test_crate::main
 fn main()
 {
@@ -17,6 +43,7 @@ fn main()
         where res :< Result::<u32, u32>;
         where res := Result::<u32, u32>;
     let n: u32; // local
+    let mut _3: &'1 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -27,8 +54,11 @@ fn main()
         Result::<u32, u32>::Ok => {
         },
         _ => {
-            panic(core::panicking::panic)
-            ↳⚡ unwind_continue
+            storage_live(_3)
+            _3 = &test_crate::main::{promoted_const} with_metadata(const 14usize)
+            panic(panic(move _3))
+            ↳⚡ storage_dead(_3)
+                unwind_continue
         },
     }
     storage_live(n)
@@ -36,6 +66,7 @@ fn main()
     _0 = ()
     storage_dead(n)
     storage_dead(res)
+    storage_dead(_3)
     return
 }
 

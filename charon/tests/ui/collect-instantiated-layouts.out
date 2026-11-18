@@ -138,6 +138,29 @@ where
     Outlives0: (T: '_0),
 = <opaque>
 
+struct str {
+  _0: [u8],
+}
+// layout:
+//     size: slice_length (guaranteed: at_least(align_to((offset_of(str._0) + size_of::<[u8]>()), align_of::<[u8]>()))),
+//     align: 1usize (guaranteed: at_least(align_of::<[u8]>())),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             offset of _0: 0 (guaranteed: aligned(align_of::<[u8]>())),
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(_1: &'static str) -> !
+= <opaque>
+
 struct (_, _)<A, B>
 where
     TraitClause0: (A: Sized),
@@ -407,6 +430,9 @@ fn doc_example()
     return
 }
 
+pub const test_crate::check_equal::{promoted_const}: str = "assertion failed: size == const { size_of::<T>() }" with_metadata(50usize)
+// size: size_of::<str>(), align: align_of::<str>()
+
 // Full name: test_crate::check_equal
 fn check_equal<T>(size: usize)
 where
@@ -418,6 +444,7 @@ where
     let mut _3: usize; // anonymous local
     let mut _4: usize; // anonymous local
     let mut _5: usize; // anonymous local
+    let mut _6: &'1 str; // anonymous local
 
     storage_live(_4)
     storage_live(_5)
@@ -430,12 +457,18 @@ where
     storage_live(_3)
     _3 = copy size
     _2 = move _3 == move _4
-    assert(move _2 == true) else panic(core::panicking::panic)
-    ↳⚡ unwind_continue
+    storage_live(_6)
+    _6 = &test_crate::check_equal::{promoted_const} with_metadata(const 50usize)
+    assert(move _2 == true) else panic(panic(move _6))
+    ↳⚡ storage_dead(_6)
+        storage_dead(_5)
+        storage_dead(_4)
+        unwind_continue
     storage_dead(_3)
     _0 = ()
     storage_dead(_2)
     storage_dead(size)
+    storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
     return

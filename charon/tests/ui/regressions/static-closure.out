@@ -237,6 +237,9 @@ extern "rust-call" fn impl_Fn_for_closure::call<'_0>(_1: &'_0 test_crate::BAR::{
         storage_dead(a)
         storage_dead(tupled_args)
         storage_dead(_1)
+        storage_dead(_23)
+        storage_dead(_22)
+        storage_dead(_21)
         unwind_continue
 }
 
@@ -445,6 +448,9 @@ extern "rust-call" fn {impl Fn<(i32,)> for test_crate::foo::{closure}::<u8>}::ca
         storage_dead(a)
         storage_dead(tupled_args)
         storage_dead(_1)
+        storage_dead(_23)
+        storage_dead(_22)
+        storage_dead(_21)
         unwind_continue
 }
 

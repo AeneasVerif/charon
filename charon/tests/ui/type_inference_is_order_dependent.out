@@ -44,6 +44,11 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: std::io::stdio::_print
 pub fn _print<'_0>(_1: Arguments<'_0>)
 = <opaque>
@@ -110,7 +115,8 @@ where
     storage_live(_4)
     storage_live(_5)
     _5 = TraitClause4::default()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_13)
+        unwind_continue
     _4 = &_5
     args_3 = (move _4,)
     storage_dead(_4)
@@ -122,7 +128,8 @@ where
     _7 = new_debug<'1, '50, U>[TraitClause1, TraitClause5](move _8)
     ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'51>] _5
         ↳⚡ storage_dead(_13)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
+        storage_dead(_13)
         unwind_continue
     storage_dead(_8)
     args_6 = [move _7]
@@ -141,7 +148,8 @@ where
     _2 = new<'2, 4usize, 1usize>(move _9, move _11)
     ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'51>] _5
         ↳⚡ storage_dead(_13)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
+        storage_dead(_13)
         unwind_continue
     storage_dead(_12)
     storage_dead(_11)
@@ -150,12 +158,14 @@ where
     _1 = _print<'64>(move _2)
     ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'51>] _5
         ↳⚡ storage_dead(_13)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
+        storage_dead(_13)
         unwind_continue
     storage_dead(_2)
     storage_dead(args_6)
     conditional_drop[{built_in impl Destruct for U}::drop_glue<'65>] _5
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_13)
+        unwind_continue
     storage_dead(_5)
     storage_dead(args_3)
     storage_dead(_1)

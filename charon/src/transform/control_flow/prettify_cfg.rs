@@ -14,14 +14,14 @@ impl Transform {
                 kind:
                     StatementKind::Panic { .. }
                     | StatementKind::UndefinedBehavior
-                    | StatementKind::UnwindTerminate,
+                    | StatementKind::UnwindTerminate(..),
                 ..
             },
             Statement {
                 kind:
                     second_abort @ (StatementKind::Panic { .. }
                     | StatementKind::UndefinedBehavior
-                    | StatementKind::UnwindTerminate),
+                    | StatementKind::UnwindTerminate(..)),
                 ..
             },
             ..,
@@ -39,7 +39,7 @@ impl Transform {
                 kind:
                     second_abort @ (StatementKind::Panic { .. }
                     | StatementKind::UndefinedBehavior
-                    | StatementKind::UnwindTerminate),
+                    | StatementKind::UnwindTerminate(..)),
                 ..
             },
             ..,

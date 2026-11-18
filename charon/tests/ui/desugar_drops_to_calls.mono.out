@@ -33,6 +33,11 @@ pub trait Drop<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: std::io::stdio::_print
 pub fn _print<'_0>(_1: Arguments::<'_>)
 = <opaque>
@@ -88,6 +93,8 @@ fn use_string(_1: String)
     storage_live(drop_ret)
     drop_ret = impl_Destruct_for_String::drop_glue<'0>(move drop_arg)
     ↳⚡ storage_dead(_1)
+        storage_dead(drop_ret)
+        storage_dead(drop_arg)
         unwind_continue
     storage_dead(_1)
     storage_dead(drop_ret)
@@ -111,6 +118,8 @@ fn use_vec(_1: Vec::<i32, Global>)
     storage_live(drop_ret)
     drop_ret = {impl Destruct for Vec::<i32, Global>}::drop_glue::<i32, Global><'0>(move drop_arg)
     ↳⚡ storage_dead(_1)
+        storage_dead(drop_ret)
+        storage_dead(drop_arg)
         unwind_continue
     storage_dead(_1)
     storage_dead(drop_ret)
@@ -157,9 +166,11 @@ pub fn drop<'_0>(self: &'_0 mut Point)
     _4 = &test_crate::impl_Drop_for_Point::drop::{promoted_const} with_metadata(const 15usize)
     _3 = from_str::<'_>(move _4)
     ↳⚡ storage_dead(self)
+        storage_dead(_4)
         unwind_continue
     _2 = _print<'7>(move _3)
     ↳⚡ storage_dead(self)
+        storage_dead(_4)
         unwind_continue
     storage_dead(_3)
     storage_dead(_2)
@@ -206,7 +217,7 @@ unsafe fn impl_Destruct_for_Point::drop_glue<'_0>(_1: &'_0 mut Point)
             storage_dead(drop_arg_6)
             storage_dead(drop_ret_5)
             storage_dead(drop_arg_4)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_live(drop_arg_8)
         drop_arg_8 = &mut (*_1).y
         storage_live(drop_ret_9)
@@ -222,10 +233,18 @@ unsafe fn impl_Destruct_for_Point::drop_glue<'_0>(_1: &'_0 mut Point)
             storage_dead(drop_arg_6)
             storage_dead(drop_ret_5)
             storage_dead(drop_arg_4)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
+        storage_dead(drop_ret_11)
+        storage_dead(drop_arg_10)
+        storage_dead(drop_ret_9)
+        storage_dead(drop_arg_8)
+        storage_dead(drop_ret_7)
+        storage_dead(drop_arg_6)
+        storage_dead(drop_ret_5)
+        storage_dead(drop_arg_4)
         unwind_continue
     storage_live(drop_arg_6)
     drop_arg_6 = &mut (*_1).x
@@ -246,10 +265,18 @@ unsafe fn impl_Destruct_for_Point::drop_glue<'_0>(_1: &'_0 mut Point)
             storage_dead(drop_arg_6)
             storage_dead(drop_ret_5)
             storage_dead(drop_arg_4)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
+        storage_dead(drop_ret_11)
+        storage_dead(drop_arg_10)
+        storage_dead(drop_ret_9)
+        storage_dead(drop_arg_8)
+        storage_dead(drop_ret_7)
+        storage_dead(drop_arg_6)
+        storage_dead(drop_ret_5)
+        storage_dead(drop_arg_4)
         unwind_continue
     storage_live(drop_arg_10)
     drop_arg_10 = &mut (*_1).y
@@ -258,6 +285,14 @@ unsafe fn impl_Destruct_for_Point::drop_glue<'_0>(_1: &'_0 mut Point)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
+        storage_dead(drop_ret_11)
+        storage_dead(drop_arg_10)
+        storage_dead(drop_ret_9)
+        storage_dead(drop_arg_8)
+        storage_dead(drop_ret_7)
+        storage_dead(drop_arg_6)
+        storage_dead(drop_ret_5)
+        storage_dead(drop_arg_4)
         unwind_continue
     storage_dead(_3)
     storage_dead(_2)
@@ -303,7 +338,11 @@ fn main()
     storage_live(p)
     storage_live(_2)
     _2 = new::<i32>(const 1i32)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(drop_ret_7)
+        storage_dead(drop_arg_6)
+        storage_dead(drop_ret_5)
+        storage_dead(drop_arg_4)
+        unwind_continue
     storage_live(_3)
     _3 = new::<i32>(const 2i32)
     ↳⚡ storage_live(drop_arg_4)
@@ -314,7 +353,11 @@ fn main()
             storage_dead(drop_arg_6)
             storage_dead(drop_ret_5)
             storage_dead(drop_arg_4)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
+        storage_dead(drop_ret_7)
+        storage_dead(drop_arg_6)
+        storage_dead(drop_ret_5)
+        storage_dead(drop_arg_4)
         unwind_continue
     p = Point { x: move _2, y: move _3 }
     storage_dead(_3)
@@ -324,7 +367,11 @@ fn main()
     drop_arg_6 = &mut p
     storage_live(drop_ret_7)
     drop_ret_7 = impl_Destruct_for_Point::drop_glue<'1>(move drop_arg_6)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(drop_ret_7)
+        storage_dead(drop_arg_6)
+        storage_dead(drop_ret_5)
+        storage_dead(drop_arg_4)
+        unwind_continue
     storage_dead(p)
     storage_dead(drop_ret_7)
     storage_dead(drop_arg_6)

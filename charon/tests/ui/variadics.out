@@ -49,6 +49,11 @@ where
     Outlives0: ('f: '_1),
 = <opaque>
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: test_crate::sum
 pub unsafe extern "C" fn sum(...) -> i32
 {
@@ -75,7 +80,7 @@ pub unsafe extern "C" fn sum(...) -> i32
     ↳⚡ conditional_drop[drop_glue<'17, '18>] ap
         ↳⚡ storage_dead(_8)
             storage_dead(ap)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_8)
         storage_dead(ap)
         unwind_continue
@@ -88,7 +93,7 @@ pub unsafe extern "C" fn sum(...) -> i32
     ↳⚡ conditional_drop[drop_glue<'17, '18>] ap
         ↳⚡ storage_dead(_8)
             storage_dead(ap)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_8)
         storage_dead(ap)
         unwind_continue

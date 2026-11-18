@@ -207,6 +207,11 @@ pub trait FnOnce<Self, Args>
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: core::ptr::non_null::{NonNull<[T]>}::as_mut_ptr
 pub fn as_mut_ptr<T>(_1: NonNull<[T]>) -> *mut T
 where
@@ -386,14 +391,14 @@ where
     drop[{built_in impl Destruct for T}::drop_glue<'4>] (*_6)
     ↳⚡ _4 = &mut (*_1)
         _5 = impl_Drop_for_Box::drop<'11, T, A>[TraitClause0, TraitClause1, TraitClause2](move _4)
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         drop[{built_in impl Destruct for A}::drop_glue<'12>] (*_1)._1
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     _2 = &mut (*_1)
     _3 = impl_Drop_for_Box::drop<'8, T, A>[TraitClause0, TraitClause1, TraitClause2](move _2)
     ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'12>] (*_1)._1
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     drop[{built_in impl Destruct for A}::drop_glue<'13>] (*_1)._1
     ↳⚡ unwind_continue
@@ -498,7 +503,7 @@ where
     _4 = box_new_uninit(read LAYOUT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]])
     ↳⚡ if copy _7 {
             drop[{built_in impl Destruct for T}::drop_glue<'0>] x
-            ↳⚡ unwind_terminate
+            ↳⚡ unwind_terminate(in_cleanup)
         } else {
         }
         unwind_continue
@@ -559,16 +564,16 @@ where
     ↳⚡ _10 = transmute<*const F>(copy _3._0.0)
         _8 = &mut _3
         _9 = impl_Drop_for_Box::drop<'7, F, A>[TraitClause1, TraitClause2, TraitClause5](move _8)
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         drop[{built_in impl Destruct for A}::drop_glue<'11>] _3._1
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_4)
     _7 = transmute<*const F>(copy _3._0.0)
     _5 = &mut _3
     _6 = impl_Drop_for_Box::drop<'10, F, A>[TraitClause1, TraitClause2, TraitClause5](move _5)
     ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'12>] _3._1
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     drop[{built_in impl Destruct for A}::drop_glue<'13>] _3._1
     ↳⚡ unwind_continue
@@ -670,23 +675,23 @@ pub fn box_box(f: Box<(dyn FnOnce<(), Output = ()> + 'static), Global>[{built_in
     _4 = move f
     _3 = new<Box<(dyn FnOnce<(), Output = ()> + '0), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '0)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn FnOnce<(), Output = ()> + '0), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '0)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}](move _4)
     ↳⚡ conditional_drop[drop_glue<'147, (dyn FnOnce<(), Output = ()> + '142), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '142)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] _4
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         conditional_drop[drop_glue<'256, (dyn FnOnce<(), Output = ()> + '251), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '251)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] f
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     _2 = unsize_cast<Box<(dyn FnOnce<(), Output = ()> + '148), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '150)}, {built_in impl Sized for Global}, impl_Allocator_for_Global], &impl_FnOnce_for_Box::{vtable}<(), (dyn FnOnce<(), Output = ()> + '177), Global>[{built_in impl Sized for ()}, {built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '179)}, {built_in impl Sized for Global}, {built_in impl Tuple for ()}, FnOnce<(dyn FnOnce<(), Output = ()> + '183), ()>, impl_Allocator_for_Global]>(move _3)
     conditional_drop[drop_glue<'241, Box<(dyn FnOnce<(), Output = ()> + '220), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '222)}, {built_in impl Sized for Global}, impl_Allocator_for_Global], Global>[{built_in impl MetaSized for Box<(dyn FnOnce<(), Output = ()> + '220), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '222)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] _3
     ↳⚡ conditional_drop[drop_glue<'147, (dyn FnOnce<(), Output = ()> + '142), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '142)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] _4
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         conditional_drop[drop_glue<'256, (dyn FnOnce<(), Output = ()> + '251), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '251)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] f
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     _0 = unsize_cast<Box<(dyn FnOnce<(), Output = ()> + '257), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '259)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],  at []>(move _2)
     conditional_drop[drop_glue<'274, (dyn FnOnce<(), Output = ()> + '269), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '269)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] _2
     ↳⚡ conditional_drop[drop_glue<'256, (dyn FnOnce<(), Output = ()> + '251), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '251)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] f
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_2)
     conditional_drop[drop_glue<'289, (dyn FnOnce<(), Output = ()> + '284), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '284)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] f

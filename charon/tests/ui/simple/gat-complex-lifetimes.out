@@ -24,6 +24,11 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: test_crate::Foo
 pub trait Foo<Self, T>
 {
@@ -64,10 +69,10 @@ where
     _2 = TraitClause1::Type<'35>::ImpliedClause1<'36>::foo(move _3)
     ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::Type<'61>}::drop_glue<'62>] _3
         ↳⚡ storage_dead(x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[{built_in impl Destruct for TraitClause1::Type<'73>}::drop_glue<'74>] x
         ↳⚡ storage_dead(x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(x)
         unwind_continue
     _0 = &(*_2)

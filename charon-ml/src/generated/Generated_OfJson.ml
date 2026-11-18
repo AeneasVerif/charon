@@ -84,11 +84,11 @@ and abort_kind_of_json (ctx : of_json_ctx) (js : json) :
     (abort_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Panic", _0) ] ->
-        let* _0 = option_of_json name_of_json ctx _0 in
-        Ok (AbortPanic _0)
+    | `String "Panic" -> Ok AbortPanic
     | `String "UndefinedBehavior" -> Ok AbortUndefinedBehavior
-    | `String "UnwindTerminate" -> Ok AbortUnwindTerminate
+    | `Assoc [ ("UnwindTerminate", _0) ] ->
+        let* _0 = unwind_terminate_reason_of_json ctx _0 in
+        Ok (AbortUnwindTerminate _0)
     | _ -> Error "")
 
 and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
@@ -248,14 +248,19 @@ and assertion_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
-        [ ("cond", cond); ("expected", expected); ("check_kind", check_kind) ]
-      ->
+        [
+          ("cond", cond);
+          ("expected", expected);
+          ("check_kind", check_kind);
+          ("call", call);
+        ] ->
         let* cond = operand_of_json ctx cond in
         let* expected = bool_of_json ctx expected in
         let* check_kind =
           option_of_json builtin_assert_kind_of_json ctx check_kind
         in
-        Ok ({ cond; expected; check_kind } : assertion)
+        let* call = box_of_json call_of_json ctx call in
+        Ok ({ cond; expected; check_kind; call } : assertion)
     | _ -> Error "")
 
 and assoc_const_id_of_json (ctx : of_json_ctx) (js : json) :
@@ -451,26 +456,6 @@ and builtin_impl_data_of_json (ctx : of_json_ctx) (js : json) :
     | `String "NoopDestruct" -> Ok BuiltinNoopDestruct
     | `String "UntrackedDestruct" -> Ok BuiltinUntrackedDestruct
     | `String "RemovedAdtClause" -> Ok BuiltinRemovedAdtClause
-    | _ -> Error "")
-
-and builtin_path_elem_of_json (ctx : of_json_ctx) (js : json) :
-    (builtin_path_elem, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Tuple", _0) ] ->
-        let* _0 = int_of_json ctx _0 in
-        Ok (PeTuple _0)
-    | `String "Str" -> Ok PeStr
-    | `String "Closure" -> Ok PeClosure
-    | `String "Use" -> Ok PeUse
-    | `String "AnonConst" -> Ok PeAnonConst
-    | `String "PromotedConst" -> Ok PePromotedConst
-    | `String "ClosureAsFn" -> Ok PeClosureAsFn
-    | `String "DropGlue" -> Ok PeDropGlue
-    | `String "VTable" -> Ok PeVTable
-    | `String "VTableMethod" -> Ok PeVTableMethod
-    | `String "VTableDropShim" -> Ok PeVTableDropShim
-    | `String "IntrinsicFallback" -> Ok PeIntrinsicFallback
     | _ -> Error "")
 
 and byte_of_json (ctx : of_json_ctx) (js : json) : (byte, string) result =
@@ -749,13 +734,6 @@ and de_bruijn_var_of_json :
         Ok (Free _0)
     | _ -> Error "")
 
-and disambiguator_of_json (ctx : of_json_ctx) (js : json) :
-    (disambiguator, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | x -> Disambiguator.id_of_json ctx x
-    | _ -> Error "")
-
 and drop_kind_of_json (ctx : of_json_ctx) (js : json) :
     (drop_kind, string) result =
   combine_error_msgs js __FUNCTION__
@@ -850,6 +828,16 @@ and fun_decl_id_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | x -> FunDeclId.id_of_json ctx x
+    | _ -> Error "")
+
+and fun_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
+    (fun_decl_ref, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("id", id); ("generics", generics) ] ->
+        let* id = fun_decl_id_of_json ctx id in
+        let* generics = box_of_json generic_args_of_json ctx generics in
+        Ok ({ id; generics } : fun_decl_ref)
     | _ -> Error "")
 
 and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =
@@ -1019,18 +1007,6 @@ and hash_consed_of_json :
     | json -> Error "use `dedup_val_of_json` instead"
     | _ -> Error "")
 
-and impl_elem_of_json (ctx : of_json_ctx) (js : json) :
-    (impl_elem, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Ty", _0) ] ->
-        let* _0 = box_of_json (binder_of_json ty_of_json) ctx _0 in
-        Ok (ImplElemTy _0)
-    | `Assoc [ ("Trait", _0) ] ->
-        let* _0 = trait_impl_id_of_json ctx _0 in
-        Ok (ImplElemTrait _0)
-    | _ -> Error "")
-
 and index_vec_of_json :
     'a0 'a1.
     (of_json_ctx -> json -> ('a0, string) result) ->
@@ -1127,12 +1103,6 @@ and local_id_of_json (ctx : of_json_ctx) (js : json) : (local_id, string) result
     | x -> LocalId.id_of_json ctx x
     | _ -> Error "")
 
-and name_of_json (ctx : of_json_ctx) (js : json) : (name, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | x -> list_of_json path_elem_of_json ctx x
-    | _ -> Error "")
-
 and nullop_of_json (ctx : of_json_ctx) (js : json) : (nullop, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -1176,29 +1146,6 @@ and overflow_mode_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Panic" -> Ok OPanic
     | `String "UB" -> Ok OUB
     | `String "Wrap" -> Ok OWrap
-    | _ -> Error "")
-
-and path_elem_of_json (ctx : of_json_ctx) (js : json) :
-    (path_elem, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Ident", `List [ _0; _1 ]) ] ->
-        let* _0 = string_of_json ctx _0 in
-        let* _1 = disambiguator_of_json ctx _1 in
-        Ok (PeIdent (_0, _1))
-    | `Assoc [ ("Impl", _0) ] ->
-        let* _0 = impl_elem_of_json ctx _0 in
-        Ok (PeImpl _0)
-    | `Assoc [ ("Instantiated", _0) ] ->
-        let* _0 = box_of_json (binder_of_json generic_args_of_json) ctx _0 in
-        Ok (PeInstantiated _0)
-    | `Assoc [ ("Target", _0) ] ->
-        let* _0 = string_of_json ctx _0 in
-        Ok (PeTarget _0)
-    | `Assoc [ ("Builtin", `List [ _0; _1 ]) ] ->
-        let* _0 = builtin_path_elem_of_json ctx _0 in
-        let* _1 = disambiguator_of_json ctx _1 in
-        Ok (PeBuiltin (_0, _1))
     | _ -> Error "")
 
 and place_of_json (ctx : of_json_ctx) (js : json) : (place, string) result =
@@ -1871,6 +1818,14 @@ and unsizing_metadata_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Unknown" -> Ok MetaUnknown
     | _ -> Error "")
 
+and unwind_terminate_reason_of_json (ctx : of_json_ctx) (js : json) :
+    (unwind_terminate_reason, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Abi" -> Ok Abi
+    | `String "InCleanup" -> Ok InCleanup
+    | _ -> Error "")
+
 and variance_of_json (ctx : of_json_ctx) (js : json) : (variance, string) result
     =
   combine_error_msgs js __FUNCTION__
@@ -2085,11 +2040,14 @@ module Ullbc = struct
           let* on_unwind = block_id_of_json ctx on_unwind in
           Ok (TAssert (assert_, target, on_unwind))
       | `Assoc
-          [ ("Panic", `Assoc [ ("name", name); ("on_unwind", on_unwind) ]) ] ->
-          let* name = name_of_json ctx name in
+          [ ("Panic", `Assoc [ ("call", call); ("on_unwind", on_unwind) ]) ] ->
+          let* call = call_of_json ctx call in
           let* on_unwind = block_id_of_json ctx on_unwind in
-          Ok (Panic (name, on_unwind))
-      | `String "UnwindTerminate" -> Ok UnwindTerminate
+          Ok (Panic (call, on_unwind))
+      | `Assoc [ ("UnwindTerminate", `List [ _0; _1 ]) ] ->
+          let* _0 = unwind_terminate_reason_of_json ctx _0 in
+          let* _1 = fun_decl_ref_of_json ctx _1 in
+          Ok (UnwindTerminate (_0, _1))
       | `String "UnwindResume" -> Ok UnwindResume
       | `String "Return" -> Ok Return
       | `String "UndefinedBehavior" -> Ok UndefinedBehavior
@@ -2264,11 +2222,14 @@ module Llbc = struct
           let* _0 = int_of_json ctx _0 in
           Ok (Continue _0)
       | `Assoc
-          [ ("Panic", `Assoc [ ("name", name); ("on_unwind", on_unwind) ]) ] ->
-          let* name = name_of_json ctx name in
+          [ ("Panic", `Assoc [ ("call", call); ("on_unwind", on_unwind) ]) ] ->
+          let* call = call_of_json ctx call in
           let* on_unwind = block_of_json ctx on_unwind in
-          Ok (Panic (name, on_unwind))
-      | `String "UnwindTerminate" -> Ok UnwindTerminate
+          Ok (Panic (call, on_unwind))
+      | `Assoc [ ("UnwindTerminate", `List [ _0; _1 ]) ] ->
+          let* _0 = unwind_terminate_reason_of_json ctx _0 in
+          let* _1 = fun_decl_ref_of_json ctx _1 in
+          Ok (UnwindTerminate (_0, _1))
       | `String "UnwindResume" -> Ok UnwindResume
       | `String "Return" -> Ok Return
       | `String "UndefinedBehavior" -> Ok UndefinedBehavior
@@ -2557,6 +2518,26 @@ and body_of_json (ctx : of_json_ctx) (js : json) : (body, string) result =
     | `Assoc [ ("Error", _0) ] ->
         let* _0 = error_of_json ctx _0 in
         Ok (ErrorBody _0)
+    | _ -> Error "")
+
+and builtin_path_elem_of_json (ctx : of_json_ctx) (js : json) :
+    (builtin_path_elem, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Tuple", _0) ] ->
+        let* _0 = int_of_json ctx _0 in
+        Ok (PeTuple _0)
+    | `String "Str" -> Ok PeStr
+    | `String "Closure" -> Ok PeClosure
+    | `String "Use" -> Ok PeUse
+    | `String "AnonConst" -> Ok PeAnonConst
+    | `String "PromotedConst" -> Ok PePromotedConst
+    | `String "ClosureAsFn" -> Ok PeClosureAsFn
+    | `String "DropGlue" -> Ok PeDropGlue
+    | `String "VTable" -> Ok PeVTable
+    | `String "VTableMethod" -> Ok PeVTableMethod
+    | `String "VTableDropShim" -> Ok PeVTableDropShim
+    | `String "IntrinsicFallback" -> Ok PeIntrinsicFallback
     | _ -> Error "")
 
 and rustc_cfg_abi_of_json (ctx : of_json_ctx) (js : json) :
@@ -2931,6 +2912,13 @@ and rustc_deprecation_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ since; note; suggestion } : rustc_deprecation)
     | _ -> Error "")
 
+and disambiguator_of_json (ctx : of_json_ctx) (js : json) :
+    (disambiguator, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | x -> Disambiguator.id_of_json ctx x
+    | _ -> Error "")
+
 and discriminator_of_json (ctx : of_json_ctx) (js : json) :
     (discriminator, string) result =
   combine_error_msgs js __FUNCTION__
@@ -3086,16 +3074,6 @@ and fun_decl_of_json (ctx : of_json_ctx) (js : json) : (fun_decl, string) result
         let* src = fun_source_of_json ctx src in
         let* body = body_of_json ctx body in
         Ok ({ def_id; item_meta; generics; signature; src; body } : fun_decl)
-    | _ -> Error "")
-
-and fun_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
-    (fun_decl_ref, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("id", id); ("generics", generics) ] ->
-        let* id = fun_decl_id_of_json ctx id in
-        let* generics = box_of_json generic_args_of_json ctx generics in
-        Ok ({ id; generics } : fun_decl_ref)
     | _ -> Error "")
 
 and fun_source_of_json (ctx : of_json_ctx) (js : json) :
@@ -3300,6 +3278,18 @@ and rustc_ident_of_json (ctx : of_json_ctx) (js : json) :
         let* name = string_of_json ctx name in
         let* span = span_of_json ctx span in
         Ok ({ name; span } : rustc_ident)
+    | _ -> Error "")
+
+and impl_elem_of_json (ctx : of_json_ctx) (js : json) :
+    (impl_elem, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Ty", _0) ] ->
+        let* _0 = box_of_json (binder_of_json ty_of_json) ctx _0 in
+        Ok (ImplElemTy _0)
+    | `Assoc [ ("Trait", _0) ] ->
+        let* _0 = trait_impl_id_of_json ctx _0 in
+        Ok (ImplElemTrait _0)
     | _ -> Error "")
 
 and implements_marker_traits_of_json (ctx : of_json_ctx) (js : json) :
@@ -3857,6 +3847,12 @@ and monomorphize_mut_of_json (ctx : of_json_ctx) (js : json) :
     | `String "ExceptTypes" -> Ok ExceptTypes
     | _ -> Error "")
 
+and name_of_json (ctx : of_json_ctx) (js : json) : (name, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | x -> list_of_json path_elem_of_json ctx x
+    | _ -> Error "")
+
 and offset_expr_of_json (ctx : of_json_ctx) (js : json) :
     (offset_expr, string) result =
   combine_error_msgs js __FUNCTION__
@@ -3952,6 +3948,29 @@ and rustc_os_of_json (ctx : of_json_ctx) (js : json) : (rustc_os, string) result
     | `Assoc [ ("Other", _0) ] ->
         let* _0 = string_of_json ctx _0 in
         Ok (RustcOsOther _0)
+    | _ -> Error "")
+
+and path_elem_of_json (ctx : of_json_ctx) (js : json) :
+    (path_elem, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Ident", `List [ _0; _1 ]) ] ->
+        let* _0 = string_of_json ctx _0 in
+        let* _1 = disambiguator_of_json ctx _1 in
+        Ok (PeIdent (_0, _1))
+    | `Assoc [ ("Impl", _0) ] ->
+        let* _0 = impl_elem_of_json ctx _0 in
+        Ok (PeImpl _0)
+    | `Assoc [ ("Instantiated", _0) ] ->
+        let* _0 = box_of_json (binder_of_json generic_args_of_json) ctx _0 in
+        Ok (PeInstantiated _0)
+    | `Assoc [ ("Target", _0) ] ->
+        let* _0 = string_of_json ctx _0 in
+        Ok (PeTarget _0)
+    | `Assoc [ ("Builtin", `List [ _0; _1 ]) ] ->
+        let* _0 = builtin_path_elem_of_json ctx _0 in
+        let* _1 = disambiguator_of_json ctx _1 in
+        Ok (PeBuiltin (_0, _1))
     | _ -> Error "")
 
 and preset_of_json (ctx : of_json_ctx) (js : json) : (preset, string) result =

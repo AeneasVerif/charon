@@ -131,6 +131,21 @@ where
   Some { _0: T },
 }
 
+struct str {
+  _0: [u8],
+}
+
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(_1: &'static str) -> !
+= <opaque>
+
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: core::ptr::drop_glue
 #[lang_item(DropGlue)]
 unsafe fn drop_glue<'_0, T>(_1: &'_0 mut T)
@@ -413,7 +428,7 @@ where
                             storage_dead(_10)
                             storage_dead(_9)
                             storage_dead(_8)
-                            unwind_terminate
+                            unwind_terminate(in_cleanup)
                         continue 0
                     }
                 }
@@ -424,6 +439,10 @@ where
                 storage_dead(_3)
                 storage_dead(_2)
                 storage_dead(_1)
+                storage_dead(_11)
+                storage_dead(_10)
+                storage_dead(_9)
+                storage_dead(_8)
                 unwind_continue
             continue 0
         }
@@ -563,7 +582,7 @@ where
     _0 = len<'8, T>[TraitClause0](move _2)
     ↳⚡ conditional_drop[impl_Destruct_for_array::drop_glue<'9, T, 32usize>[TraitClause0]] s
         ↳⚡ storage_dead(s)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(s)
         unwind_continue
     storage_dead(_2)
@@ -2121,6 +2140,8 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
             storage_dead(s)
+            storage_dead(_13)
+            storage_dead(_12)
             unwind_continue
         storage_dead(_7)
         _4 = move _5 < move _6
@@ -2162,6 +2183,8 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
     return
 }
 
+pub const test_crate::sum2::{promoted_const}: str = "assertion failed: s.len() == s2.len()" with_metadata(37usize)
+
 // Full name: test_crate::sum2
 pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
 {
@@ -2187,10 +2210,11 @@ pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
     let mut _19: u32; // anonymous local
     let mut _20: u32; // anonymous local
     let mut _21: usize; // anonymous local
-    let mut _22: &'_ [u32]; // anonymous local
-    let mut _23: &'_ u32; // anonymous local
-    let mut _24: &'_ [u32]; // anonymous local
-    let mut _25: &'_ u32; // anonymous local
+    let mut _22: &'14 str; // anonymous local
+    let mut _23: &'_ [u32]; // anonymous local
+    let mut _24: &'_ u32; // anonymous local
+    let mut _25: &'_ [u32]; // anonymous local
+    let mut _26: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_19)
@@ -2209,6 +2233,11 @@ pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
         storage_dead(_19)
         storage_dead(s2)
         storage_dead(s)
+        storage_dead(_26)
+        storage_dead(_25)
+        storage_dead(_24)
+        storage_dead(_23)
+        storage_dead(_22)
         unwind_continue
     storage_dead(_6)
     storage_live(_7)
@@ -2220,11 +2249,23 @@ pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
         storage_dead(_19)
         storage_dead(s2)
         storage_dead(s)
+        storage_dead(_26)
+        storage_dead(_25)
+        storage_dead(_24)
+        storage_dead(_23)
+        storage_dead(_22)
         unwind_continue
     storage_dead(_8)
     _4 = move _5 == move _7
-    assert(move _4 == true) else panic(core::panicking::panic)
-    ↳⚡ unwind_continue
+    storage_live(_22)
+    _22 = &test_crate::sum2::{promoted_const} with_metadata(const 37usize)
+    assert(move _4 == true) else panic(panic(move _22))
+    ↳⚡ storage_dead(_26)
+        storage_dead(_25)
+        storage_dead(_24)
+        storage_dead(_23)
+        storage_dead(_22)
+        unwind_continue
     storage_dead(_7)
     storage_dead(_5)
     storage_dead(_4)
@@ -2244,6 +2285,11 @@ pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
             storage_dead(_19)
             storage_dead(s2)
             storage_dead(s)
+            storage_dead(_26)
+            storage_dead(_25)
+            storage_dead(_24)
+            storage_dead(_23)
+            storage_dead(_22)
             unwind_continue
         storage_dead(_13)
         _10 = move _11 < move _12
@@ -2257,21 +2303,21 @@ pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
         storage_live(_15)
         storage_live(_16)
         _16 = copy i
-        storage_live(_22)
-        _22 = &(*s) with_metadata(read s.metadata)
         storage_live(_23)
-        _23 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _16, move _22)
+        _23 = &(*s) with_metadata(read s.metadata)
+        storage_live(_24)
+        _24 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _16, move _23)
         ↳⚡ undefined_behavior
-        _15 = copy (*_23)
+        _15 = copy (*_24)
         storage_live(_17)
         storage_live(_18)
         _18 = copy i
-        storage_live(_24)
-        _24 = &(*s2) with_metadata(read s2.metadata)
         storage_live(_25)
-        _25 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _18, move _24)
+        _25 = &(*s2) with_metadata(read s2.metadata)
+        storage_live(_26)
+        _26 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _18, move _25)
         ↳⚡ undefined_behavior
-        _17 = copy (*_25)
+        _17 = copy (*_26)
         _19 = copy _15 panic.+ copy _17
         _14 = move _19
         storage_dead(_17)
@@ -2297,6 +2343,7 @@ pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
     storage_dead(_19)
     storage_dead(s2)
     storage_dead(s)
+    storage_dead(_26)
     storage_dead(_25)
     storage_dead(_24)
     storage_dead(_23)
@@ -2476,7 +2523,9 @@ pub fn f3() -> u32
     ↳⚡ undefined_behavior
     _3 = copy (*_14)
     _2 = f2(move _3)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_14)
+        storage_dead(_13)
+        unwind_continue
     storage_dead(_3)
     storage_dead(_4)
     storage_dead(_2)
@@ -2499,11 +2548,15 @@ pub fn f3() -> u32
     _12 = &b
     _11 = &(*_12)
     _10 = f4<'14>(move _11, const 16usize, const 18usize)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_14)
+        storage_dead(_13)
+        unwind_continue
     _9 = &(*_10) with_metadata(read _10.metadata)
     storage_dead(_11)
     _0 = sum2<'21, '22>(move _6, move _9)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_14)
+        storage_dead(_13)
+        unwind_continue
     storage_dead(_9)
     storage_dead(_6)
     storage_dead(b)
@@ -2659,6 +2712,8 @@ pub fn zero_slice<'_0>(a: &'_0 mut [u8])
     len = len<'7, u8>[{built_in impl Sized for u8}](move _4)
     ↳⚡ storage_dead(_9)
         storage_dead(a)
+        storage_dead(_11)
+        storage_dead(_10)
         unwind_continue
     storage_dead(_4)
     fake_read(len)
@@ -2797,6 +2852,8 @@ pub fn sum_mut_slice<'_0>(a: &'_0 mut [u32]) -> u32
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
             storage_dead(a)
+            storage_dead(_13)
+            storage_dead(_12)
             unwind_continue
         storage_dead(_7)
         _4 = move _5 < move _6

@@ -20,6 +20,11 @@ pub opaque type MaybeUninit<T>
 where
     TraitClause0: (T: Sized),
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: alloc::alloc::Global
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
@@ -122,8 +127,10 @@ fn move_values(flag: bool)
         ↳⚡ storage_dead(flag)
             storage_dead(ret_14)
             storage_dead(ret_11)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(flag)
+        storage_dead(ret_14)
+        storage_dead(ret_11)
         unwind_continue
     storage_live(ret_11)
     storage_live(x_12)
@@ -139,8 +146,10 @@ fn move_values(flag: bool)
         ↳⚡ storage_dead(flag)
             storage_dead(ret_14)
             storage_dead(ret_11)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(flag)
+        storage_dead(ret_14)
+        storage_dead(ret_11)
         unwind_continue
     storage_dead(y_13)
     storage_dead(x_12)
@@ -166,13 +175,15 @@ fn move_values(flag: bool)
             ↳⚡ storage_dead(flag)
                 storage_dead(ret_14)
                 storage_dead(ret_11)
-                unwind_terminate
+                unwind_terminate(in_cleanup)
             conditional_drop[impl_Destruct_for_Vec::drop_glue<'2, NoCopy, Global>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}]] _v
             ↳⚡ storage_dead(flag)
                 storage_dead(ret_14)
                 storage_dead(ret_11)
-                unwind_terminate
+                unwind_terminate(in_cleanup)
             storage_dead(flag)
+            storage_dead(ret_14)
+            storage_dead(ret_11)
             unwind_continue
         storage_live(ret_14)
         storage_live(x_15)
@@ -188,13 +199,15 @@ fn move_values(flag: bool)
             ↳⚡ storage_dead(flag)
                 storage_dead(ret_14)
                 storage_dead(ret_11)
-                unwind_terminate
+                unwind_terminate(in_cleanup)
             conditional_drop[impl_Destruct_for_Vec::drop_glue<'2, NoCopy, Global>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}]] _v
             ↳⚡ storage_dead(flag)
                 storage_dead(ret_14)
                 storage_dead(ret_11)
-                unwind_terminate
+                unwind_terminate(in_cleanup)
             storage_dead(flag)
+            storage_dead(ret_14)
+            storage_dead(ret_11)
             unwind_continue
         storage_dead(y_16)
         storage_dead(x_15)
@@ -207,8 +220,10 @@ fn move_values(flag: bool)
             ↳⚡ storage_dead(flag)
                 storage_dead(ret_14)
                 storage_dead(ret_11)
-                unwind_terminate
+                unwind_terminate(in_cleanup)
             storage_dead(flag)
+            storage_dead(ret_14)
+            storage_dead(ret_11)
             unwind_continue
         storage_dead(_w)
         storage_dead(y_7)
@@ -218,6 +233,8 @@ fn move_values(flag: bool)
     storage_dead(_6)
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'4, NoCopy, Global>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}]] _v
     ↳⚡ storage_dead(flag)
+        storage_dead(ret_14)
+        storage_dead(ret_11)
         unwind_continue
     storage_dead(_v)
     storage_dead(x_2)

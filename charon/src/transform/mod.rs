@@ -194,7 +194,7 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         // corresponding constant expression.
         CowBox::Borrowed(&resugar::reconstruct_intrinsics::Transform),
         // Reconstruct the asserts
-        CowBox::Borrowed(&resugar::reconstruct_asserts::Transform),
+        resugar::reconstruct_asserts::Transform::new(ctx),
         // Access statics directly instead of through a temporary holding their address.
         // This must happen before [simplify_constants], which splits these temporaries.
         CowBox::Borrowed(&resugar::reconstruct_static_accesses::Transform),

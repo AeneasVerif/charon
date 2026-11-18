@@ -24,6 +24,11 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: test_crate::OtherTrait
 trait OtherTrait<Self>
 {
@@ -94,7 +99,7 @@ where
     _2 = method<'5, T>[TraitClause0, TraitClause1::ImpliedClause1](move _3)
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'6>] x
         ↳⚡ storage_dead(x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(x)
         unwind_continue
     storage_dead(_3)

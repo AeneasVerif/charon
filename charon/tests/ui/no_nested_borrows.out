@@ -24,6 +24,21 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+struct str {
+  _0: [u8],
+}
+
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(_1: &'static str) -> !
+= <opaque>
+
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: alloc::alloc::Global
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
@@ -120,7 +135,7 @@ where
     drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1) as variant List::Cons)._0
     ↳⚡ drop[impl_Destruct_for_Box::drop_glue<'4, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] ((*_1) as variant List::Cons)._1
         ↳⚡ storage_dead(_1)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_1)
         unwind_continue
     drop[impl_Destruct_for_Box::drop_glue<'3, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] ((*_1) as variant List::Cons)._1
@@ -289,7 +304,7 @@ where
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _2
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'2>] x
         ↳⚡ storage_dead(x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(x)
         unwind_continue
     storage_dead(_2)
@@ -486,7 +501,7 @@ pub fn test_list1()
     _3 = List::Nil {  }
     _2 = new<List<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for List<i32>[{built_in impl Sized for i32}]}](move _3)
     ↳⚡ conditional_drop[impl_Destruct_for_List::drop_glue<'0, i32>[{built_in impl Sized for i32}]] _3
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_3)
     l = List::Cons { _0: const 0i32, _1: move _2 }
@@ -501,6 +516,8 @@ pub fn test_list1()
     return
 }
 
+pub const test_crate::test_box1::{promoted_const}: str = "assertion failed: *x == 1" with_metadata(25usize)
+
 // Full name: test_crate::test_box1
 pub fn test_box1()
 {
@@ -514,19 +531,23 @@ pub fn test_box1()
     let mut _5: &'7 Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]; // anonymous local
     let mut _6: bool; // anonymous local
     let mut _7: i32; // anonymous local
+    let mut _8: &'19 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(b)
     b = new<i32>[{built_in impl Sized for i32}](const 0i32)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_8)
+        unwind_continue
     fake_read(b)
     storage_live(x_2)
     storage_live(_3)
     _3 = &two-phase-mut b
     x_2 = deref_mut<'11, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _3)
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'12, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_8)
+            unwind_terminate(in_cleanup)
+        storage_dead(_8)
         unwind_continue
     storage_dead(_3)
     fake_read(x_2)
@@ -536,7 +557,9 @@ pub fn test_box1()
     _5 = &b
     x_4 = deref<'16, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _5)
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'12, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_8)
+            unwind_terminate(in_cleanup)
+        storage_dead(_8)
         unwind_continue
     storage_dead(_5)
     fake_read(x_4)
@@ -544,16 +567,21 @@ pub fn test_box1()
     storage_live(_7)
     _7 = copy (*x_4)
     _6 = move _7 == const 1i32
-    assert(move _6 == true) else panic(core::panicking::panic)
-    ↳⚡ unwind_continue
+    storage_live(_8)
+    _8 = &test_crate::test_box1::{promoted_const} with_metadata(const 25usize)
+    assert(move _6 == true) else panic(panic(move _8))
+    ↳⚡ storage_dead(_8)
+        unwind_continue
     storage_dead(_7)
     storage_dead(_6)
     _0 = ()
     storage_dead(x_4)
     storage_dead(x_2)
     conditional_drop[impl_Destruct_for_Box::drop_glue<'17, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_8)
+        unwind_continue
     storage_dead(b)
+    storage_dead(_8)
     return
 }
 
@@ -569,22 +597,29 @@ pub fn copy_int(x: i32) -> i32
     return
 }
 
+pub const test_crate::test_unreachable::{promoted_const}: str = "internal error: entered unreachable code" with_metadata(40usize)
+
 // Full name: test_crate::test_unreachable
 pub fn test_unreachable(b: bool)
 {
     let mut _0: (); // return
     let b: bool; // arg #1
     let mut _2: bool; // anonymous local
+    let mut _3: &'1 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = copy b
-    assert(move _2 == false) else panic(core::panicking::panic)
-    ↳⚡ unwind_continue
+    storage_live(_3)
+    _3 = &test_crate::test_unreachable::{promoted_const} with_metadata(const 40usize)
+    assert(move _2 == false) else panic(panic(move _3))
+    ↳⚡ storage_dead(_3)
+        unwind_continue
     _0 = ()
     storage_dead(_2)
     storage_dead(b)
+    storage_dead(_3)
     return
 }
 
@@ -612,6 +647,8 @@ where
     return
 }
 
+pub const test_crate::split_list::{promoted_const}: str = "explicit panic" with_metadata(14usize)
+
 // Full name: test_crate::split_list
 pub fn split_list<T>(l: List<T>[TraitClause0]) -> (T, List<T>[TraitClause0])
 where
@@ -623,17 +660,22 @@ where
     let tl: Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]; // local
     let mut _4: T; // anonymous local
     let mut _5: List<T>[TraitClause0]; // anonymous local
+    let mut _6: &'1 str; // anonymous local
 
     storage_live(_0)
     match l {
         List::Cons => {
         },
         _ => {
-            panic(core::panicking::panic)
+            storage_live(_6)
+            _6 = &test_crate::split_list::{promoted_const} with_metadata(const 14usize)
+            panic(panic(move _6))
             ↳⚡ conditional_drop[impl_Destruct_for_List::drop_glue<'3, T>[TraitClause0]] l
                 ↳⚡ storage_dead(l)
-                    unwind_terminate
+                    storage_dead(_6)
+                    unwind_terminate(in_cleanup)
                 storage_dead(l)
+                storage_dead(_6)
                 unwind_continue
         },
     }
@@ -649,53 +691,69 @@ where
     conditional_drop[impl_Destruct_for_List::drop_glue<'2, T>[TraitClause0]] _5
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] _4
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            storage_dead(_6)
+            unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_Box::drop_glue<'7, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] tl
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            storage_dead(_6)
+            unwind_terminate(in_cleanup)
         conditional_drop[{built_in impl Destruct for T}::drop_glue<'9>] hd
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            storage_dead(_6)
+            unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_List::drop_glue<'3, T>[TraitClause0]] l
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            storage_dead(_6)
+            unwind_terminate(in_cleanup)
         storage_dead(l)
+        storage_dead(_6)
         unwind_continue
     storage_dead(_5)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] _4
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'7, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] tl
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            storage_dead(_6)
+            unwind_terminate(in_cleanup)
         conditional_drop[{built_in impl Destruct for T}::drop_glue<'9>] hd
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            storage_dead(_6)
+            unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_List::drop_glue<'3, T>[TraitClause0]] l
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            storage_dead(_6)
+            unwind_terminate(in_cleanup)
         storage_dead(l)
+        storage_dead(_6)
         unwind_continue
     storage_dead(_4)
     conditional_drop[impl_Destruct_for_Box::drop_glue<'6, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] tl
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'9>] hd
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            storage_dead(_6)
+            unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_List::drop_glue<'3, T>[TraitClause0]] l
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            storage_dead(_6)
+            unwind_terminate(in_cleanup)
         storage_dead(l)
+        storage_dead(_6)
         unwind_continue
     storage_dead(tl)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'8>] hd
     ↳⚡ conditional_drop[impl_Destruct_for_List::drop_glue<'3, T>[TraitClause0]] l
         ↳⚡ storage_dead(l)
-            unwind_terminate
+            storage_dead(_6)
+            unwind_terminate(in_cleanup)
         storage_dead(l)
+        storage_dead(_6)
         unwind_continue
     storage_dead(hd)
     conditional_drop[impl_Destruct_for_List::drop_glue<'10, T>[TraitClause0]] l
     ↳⚡ storage_dead(l)
+        storage_dead(_6)
         unwind_continue
     storage_dead(l)
+    storage_dead(_6)
     return
 }
 
@@ -815,6 +873,14 @@ pub fn odd(x: u32) -> bool
     return
 }
 
+pub const test_crate::test_even_odd::{promoted_const#3}: str = "assertion failed: odd(5)" with_metadata(24usize)
+
+pub const test_crate::test_even_odd::{promoted_const#2}: str = "assertion failed: odd(1)" with_metadata(24usize)
+
+pub const test_crate::test_even_odd::{promoted_const#1}: str = "assertion failed: even(4)" with_metadata(25usize)
+
+pub const test_crate::test_even_odd::{promoted_const}: str = "assertion failed: even(0)" with_metadata(25usize)
+
 // Full name: test_crate::test_even_odd
 pub fn test_even_odd()
 {
@@ -823,34 +889,82 @@ pub fn test_even_odd()
     let mut _2: bool; // anonymous local
     let mut _3: bool; // anonymous local
     let mut _4: bool; // anonymous local
+    let mut _5: &'1 str; // anonymous local
+    let mut _6: &'2 str; // anonymous local
+    let mut _7: &'3 str; // anonymous local
+    let mut _8: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = even(const 0u32)
-    ↳⚡ unwind_continue
-    assert(move _1 == true) else panic(core::panicking::panic)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_6)
+        storage_dead(_5)
+        unwind_continue
+    storage_live(_5)
+    _5 = &test_crate::test_even_odd::{promoted_const} with_metadata(const 25usize)
+    assert(move _1 == true) else panic(panic(move _5))
+    ↳⚡ storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_6)
+        storage_dead(_5)
+        unwind_continue
     storage_dead(_1)
     storage_live(_2)
     _2 = even(const 4u32)
-    ↳⚡ unwind_continue
-    assert(move _2 == true) else panic(core::panicking::panic)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_6)
+        storage_dead(_5)
+        unwind_continue
+    storage_live(_6)
+    _6 = &test_crate::test_even_odd::{promoted_const#1} with_metadata(const 25usize)
+    assert(move _2 == true) else panic(panic(move _6))
+    ↳⚡ storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_6)
+        storage_dead(_5)
+        unwind_continue
     storage_dead(_2)
     storage_live(_3)
     _3 = odd(const 1u32)
-    ↳⚡ unwind_continue
-    assert(move _3 == true) else panic(core::panicking::panic)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_6)
+        storage_dead(_5)
+        unwind_continue
+    storage_live(_7)
+    _7 = &test_crate::test_even_odd::{promoted_const#2} with_metadata(const 24usize)
+    assert(move _3 == true) else panic(panic(move _7))
+    ↳⚡ storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_6)
+        storage_dead(_5)
+        unwind_continue
     storage_dead(_3)
     storage_live(_4)
     _4 = odd(const 5u32)
-    ↳⚡ unwind_continue
-    assert(move _4 == true) else panic(core::panicking::panic)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_6)
+        storage_dead(_5)
+        unwind_continue
+    storage_live(_8)
+    _8 = &test_crate::test_even_odd::{promoted_const#3} with_metadata(const 24usize)
+    assert(move _4 == true) else panic(panic(move _8))
+    ↳⚡ storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_6)
+        storage_dead(_5)
+        unwind_continue
     storage_dead(_4)
     _0 = ()
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
     return
 }
 

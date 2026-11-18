@@ -29,6 +29,11 @@ impl "impl_Debug_for_Error" Debug for Error {
     vtable: unknown // the vtable struct of the trait is excluded
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: core::result::Result
 #[diagnostic_item("Result")]
 pub enum Result<T, E>
@@ -113,7 +118,8 @@ fn main()
     _0 = ()
     storage_live(buf)
     buf = new<u8>[{built_in impl Sized for u8}]()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_8)
+        unwind_continue
     fake_read(buf)
     storage_live(_2)
     storage_live(_3)
@@ -132,24 +138,27 @@ fn main()
     _3 = impl_Write_for_Vec_u8::write_all<'15, '16, Global>[{built_in impl Sized for Global}](move _4, move _5)
     ↳⚡ conditional_drop[impl_Destruct_for_Vec::drop_glue<'17, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf
         ↳⚡ storage_dead(_8)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
+        storage_dead(_8)
         unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     _2 = unwrap<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}, impl_Debug_for_Error](move _3)
     ↳⚡ conditional_drop[impl_Destruct_for_Result::drop_glue<'18, (), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]] _3
         ↳⚡ storage_dead(_8)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_Vec::drop_glue<'17, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf
         ↳⚡ storage_dead(_8)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
+        storage_dead(_8)
         unwind_continue
     storage_dead(_3)
     storage_dead(_7)
     storage_dead(_2)
     _0 = ()
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'19, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_8)
+        unwind_continue
     storage_dead(buf)
     storage_dead(_8)
     return

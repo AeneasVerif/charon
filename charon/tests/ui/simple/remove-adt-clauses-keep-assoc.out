@@ -24,6 +24,11 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: test_crate::HasAssoc
 trait HasAssoc<Self>
 {
@@ -168,12 +173,12 @@ where
         ↳⚡ storage_dead(_z)
             storage_dead(_y)
             storage_dead(_x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_Direct::drop_glue<'4, T>[TraitClause0, TraitClause3]] _x
         ↳⚡ storage_dead(_z)
             storage_dead(_y)
             storage_dead(_x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_z)
         storage_dead(_y)
         storage_dead(_x)
@@ -183,7 +188,7 @@ where
         ↳⚡ storage_dead(_z)
             storage_dead(_y)
             storage_dead(_x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_z)
         storage_dead(_y)
         storage_dead(_x)

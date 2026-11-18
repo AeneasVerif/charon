@@ -1703,7 +1703,9 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 ullbc_ast::TerminatorKind::Switch { data, branches }
             }
             TerminatorKind::UnwindResume => ullbc_ast::TerminatorKind::UnwindResume,
-            TerminatorKind::UnwindTerminate { .. } => ullbc_ast::TerminatorKind::UnwindTerminate,
+            TerminatorKind::UnwindTerminate(reason) => {
+                self.translate_unwind_terminate(span, *reason)?
+            }
             TerminatorKind::Return => ullbc_ast::TerminatorKind::Return,
             // A MIR `Unreachable` terminator indicates undefined behavior of the rust abstract
             // machine.
@@ -1729,12 +1731,36 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 target,
                 unwind,
             } => {
-                let on_unwind = self.translate_unwind_action(span, unwind);
+                let on_unwind = self.translate_unwind_action(span, unwind)?;
                 let kind = self.translate_assert_kind(span, msg)?;
+                let (lang_item, args) = match &kind {
+                    BuiltinAssertKind::BoundsCheck { len, index } => {
+                        (LangItem::PanicBoundsCheck, vec![index.clone(), len.clone()])
+                    }
+                    BuiltinAssertKind::MisalignedPointerDereference { required, found } => (
+                        LangItem::PanicMisalignedPointerDereference,
+                        vec![required.clone(), found.clone()],
+                    ),
+                    BuiltinAssertKind::InvalidEnumConstruction(source) => {
+                        (msg.panic_function(), vec![source.clone()])
+                    }
+                    _ => (msg.panic_function(), vec![]),
+                };
+                let def_id = self
+                    .tcx
+                    .require_lang_item(lang_item, terminator.source_info.span);
+                let item =
+                    hax::translate_item_ref(&self.hax_state, def_id, ty::GenericArgs::empty());
+                let func = self.translate_fn_ptr(span, &item, TransItemSourceKind::Fun)?;
                 let assert = Assert {
                     cond: self.translate_operand(span, cond)?,
                     expected: *expected,
                     check_kind: Some(kind),
+                    call: Box::new(Call {
+                        func: FnOperand::Regular(func),
+                        args,
+                        safety: CallSafety::Inherit,
+                    }),
                 };
                 let target = self.translate_basic_block_id(*target);
                 ullbc_ast::TerminatorKind::Assert {
@@ -1886,7 +1912,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     .skip(usize::from(has_fallthrough))
                     .map(|target| self.translate_basic_block_id(*target))
                     .collect();
-                let on_unwind = self.translate_unwind_action(span, unwind);
+                let on_unwind = self.translate_unwind_action(span, unwind)?;
                 let asm = InlineAsm {
                     kind,
                     template,
@@ -1980,7 +2006,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         // call to a top-level function identified by its id, or if we
         // are using a local function pointer (i.e., the operand is a "move").
         let lval = self.translate_place(span, destination)?;
-        let on_unwind = self.translate_unwind_action(span, unwind);
+        let on_unwind = self.translate_unwind_action(span, unwind)?;
         // Translate the function operand.
         let op = self.translate_operand(span, func)?;
         let fn_operand = match op.ty().kind() {
@@ -2092,7 +2118,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         let fn_ptr = self.translate_drop_glue_method_call(span, place_ty)?;
         let place = self.translate_place(span, place)?;
         let target = self.translate_basic_block_id(*target);
-        let on_unwind = self.translate_unwind_action(span, unwind);
+        let on_unwind = self.translate_unwind_action(span, unwind)?;
 
         Ok(TerminatorKind::Drop {
             kind: self.drop_kind,
@@ -2104,9 +2130,13 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
     }
 
     // construct unwind block for the terminators
-    fn translate_unwind_action(&mut self, span: Span, unwind: &mir::UnwindAction) -> BlockId {
+    fn translate_unwind_action(
+        &mut self,
+        span: Span,
+        unwind: &mir::UnwindAction,
+    ) -> Result<BlockId, Error> {
         let unwind_kind = self.kind.further_unwind_kind();
-        match unwind {
+        Ok(match unwind {
             mir::UnwindAction::Continue => {
                 assert_eq!(unwind_kind, UnwindKind::Cleanup);
                 let unwind_continue = Terminator::new(span, TerminatorKind::UnwindResume);
@@ -2116,12 +2146,13 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 let abort = Terminator::new(span, TerminatorKind::UndefinedBehavior);
                 self.blocks.push(abort.into_block(unwind_kind))
             }
-            mir::UnwindAction::Terminate(..) => {
-                let abort = Terminator::new(span, TerminatorKind::UnwindTerminate);
+            mir::UnwindAction::Terminate(reason) => {
+                let kind = self.translate_unwind_terminate(span, *reason)?;
+                let abort = Terminator::new(span, kind);
                 self.blocks.push(abort.into_block(unwind_kind))
             }
             mir::UnwindAction::Cleanup(bb) => self.translate_basic_block_id(*bb),
-        }
+        })
     }
 
     fn translate_assert_kind(
@@ -2174,6 +2205,23 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 raise_error!(self, span, "Coroutines are not supported");
             }
         }
+    }
+
+    fn translate_unwind_terminate(
+        &mut self,
+        span: Span,
+        reason: mir::UnwindTerminateReason,
+    ) -> Result<TerminatorKind, Error> {
+        let def_id = self
+            .tcx
+            .require_lang_item(reason.lang_item(), rustc_span::DUMMY_SP);
+        let item = hax::translate_item_ref(&self.hax_state, def_id, ty::GenericArgs::empty());
+        let fun_ref = self.translate_item(span, &item, TransItemSourceKind::Fun)?;
+        let reason = match reason {
+            mir::UnwindTerminateReason::Abi => UnwindTerminateReason::Abi,
+            mir::UnwindTerminateReason::InCleanup => UnwindTerminateReason::InCleanup,
+        };
+        Ok(TerminatorKind::UnwindTerminate(reason, fun_ref))
     }
 
     /// Evaluate function arguments in a context, and return the list of computed

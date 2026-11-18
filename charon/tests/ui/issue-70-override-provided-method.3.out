@@ -85,6 +85,11 @@ where
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: test_crate::GenericTrait
 trait GenericTrait<Self, T>
 {
@@ -120,11 +125,11 @@ where
     ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'8>] y
         ↳⚡ storage_dead(y)
             storage_dead(x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[{built_in impl Destruct for T}::drop_glue<'9>] x
         ↳⚡ storage_dead(y)
             storage_dead(x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(y)
         storage_dead(x)
         unwind_continue
@@ -135,11 +140,11 @@ where
         ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'8>] y
             ↳⚡ storage_dead(y)
                 storage_dead(x)
-                unwind_terminate
+                unwind_terminate(in_cleanup)
             conditional_drop[{built_in impl Destruct for T}::drop_glue<'9>] x
             ↳⚡ storage_dead(y)
                 storage_dead(x)
-                unwind_terminate
+                unwind_terminate(in_cleanup)
             storage_dead(y)
             storage_dead(x)
             unwind_continue
@@ -153,7 +158,7 @@ where
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'9>] x
         ↳⚡ storage_dead(y)
             storage_dead(x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(y)
         storage_dead(x)
         unwind_continue
@@ -214,7 +219,7 @@ where
     ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'8>] y
         ↳⚡ storage_dead(y)
             storage_dead(x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(y)
         storage_dead(x)
         unwind_continue
@@ -225,7 +230,7 @@ where
         ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'8>] y
             ↳⚡ storage_dead(y)
                 storage_dead(x)
-                unwind_terminate
+                unwind_terminate(in_cleanup)
             storage_dead(y)
             storage_dead(x)
             unwind_continue
@@ -306,11 +311,11 @@ where
     ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'8>] y
         ↳⚡ storage_dead(y)
             storage_dead(x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[{built_in impl Destruct for Option<T>[TraitClause0]}::drop_glue<'9>] x
         ↳⚡ storage_dead(y)
             storage_dead(x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(y)
         storage_dead(x)
         unwind_continue
@@ -321,11 +326,11 @@ where
         ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'8>] y
             ↳⚡ storage_dead(y)
                 storage_dead(x)
-                unwind_terminate
+                unwind_terminate(in_cleanup)
             conditional_drop[{built_in impl Destruct for Option<T>[TraitClause0]}::drop_glue<'9>] x
             ↳⚡ storage_dead(y)
                 storage_dead(x)
-                unwind_terminate
+                unwind_terminate(in_cleanup)
             storage_dead(y)
             storage_dead(x)
             unwind_continue
@@ -339,7 +344,7 @@ where
     ↳⚡ conditional_drop[{built_in impl Destruct for Option<T>[TraitClause0]}::drop_glue<'9>] x
         ↳⚡ storage_dead(y)
             storage_dead(x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(y)
         storage_dead(x)
         unwind_continue

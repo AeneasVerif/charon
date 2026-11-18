@@ -24,6 +24,11 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: alloc::alloc::Global
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
@@ -105,12 +110,12 @@ fn main()
     storage_live(_2)
     _2 = new()
     ↳⚡ drop[impl_Destruct_for_String::drop_glue<'0>] s
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     drop[impl_Destruct_for_String::drop_glue<'1>] s
     ↳⚡ s = move _2
         drop[impl_Destruct_for_String::drop_glue<'0>] s
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     s = move _2
     storage_dead(_2)

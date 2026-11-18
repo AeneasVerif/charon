@@ -24,6 +24,11 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: test_crate::Trait
 pub trait Trait<Self, Self_Type>
 {
@@ -82,7 +87,7 @@ where
     ↳⚡ conditional_drop[drop_glue<'2, S>[TraitClause0]] _x
         ↳⚡ storage_dead(_k)
             storage_dead(_x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_k)
         storage_dead(_x)
         unwind_continue
@@ -113,7 +118,7 @@ where
     ↳⚡ conditional_drop[drop_glue<'2, S>[TraitClause0]] _x
         ↳⚡ storage_dead(_k)
             storage_dead(_x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_k)
         storage_dead(_x)
         unwind_continue

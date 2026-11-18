@@ -153,12 +153,12 @@ pub enum TerminatorKind {
     },
     /// Call to a built-in panicking function. Only if `--reconstruct-panic-calls` is passed.
     Panic {
-        /// The name of the function that was called.
-        name: Name,
+        call: Call,
         on_unwind: BlockId,
     },
-    /// Unwinding must stop for ABI reasons or because cleanup code panicked again.
-    UnwindTerminate,
+    /// Unwinding must stop for ABI reasons or because cleanup code panicked again. The function is
+    /// the lang item that rustc calls in that case.
+    UnwindTerminate(UnwindTerminateReason, FunDeclRef),
     /// Unwind out of the current function into its caller.
     UnwindResume,
 
@@ -181,7 +181,8 @@ pub struct Terminator {
 impl ExprBody {
     /// Returns a map from blocks in this body to their abort kind, if they correspond to an abort
     /// block (ie. a block with only bookkeeping statements and an unconditional error terminator).
-    pub fn as_abort_map(&self) -> HashMap<BlockId, AbortKind> {
+    /// We include the `Call` when there is one.
+    pub fn as_abort_map(&self) -> HashMap<BlockId, (AbortKind, Option<Call>)> {
         self.body
             .iter_enumerated()
             .filter_map(|(bid, block)| block.as_abort().map(|abort| (bid, abort)))
@@ -254,7 +255,7 @@ impl BlockData {
                 .all(|st| st.kind.is_storage_dead() || st.kind.is_nop())
     }
 
-    pub fn as_abort(&self) -> Option<AbortKind> {
+    pub fn as_abort(&self) -> Option<(AbortKind, Option<Call>)> {
         if self.statements.iter().all(|st| {
             matches!(
                 st.kind,
@@ -262,9 +263,16 @@ impl BlockData {
             )
         }) {
             match &self.terminator.kind {
-                TerminatorKind::Panic { name, .. } => Some(AbortKind::Panic(Some(name.clone()))),
-                TerminatorKind::UndefinedBehavior => Some(AbortKind::UndefinedBehavior),
-                TerminatorKind::UnwindTerminate => Some(AbortKind::UnwindTerminate),
+                TerminatorKind::Panic { call, .. } => Some((AbortKind::Panic, Some(call.clone()))),
+                TerminatorKind::UndefinedBehavior => Some((AbortKind::UndefinedBehavior, None)),
+                TerminatorKind::UnwindTerminate(reason, fun_ref) => {
+                    let call = Call {
+                        func: FnOperand::Regular(fun_ref.clone().into()),
+                        args: vec![],
+                        safety: CallSafety::Inherit,
+                    };
+                    Some((AbortKind::UnwindTerminate(*reason), Some(call)))
+                }
                 _ => None,
             }
         } else {
@@ -407,7 +415,7 @@ impl Terminator {
     pub fn is_error(&self) -> bool {
         use TerminatorKind::*;
         match &self.kind {
-            Panic { .. } | UndefinedBehavior | UnwindTerminate => true,
+            Panic { .. } | UndefinedBehavior | UnwindTerminate(..) => true,
             Goto { .. }
             | Switch { .. }
             | InlineAsm { .. }
@@ -459,7 +467,7 @@ impl Terminator {
             } => smallvec![*target, *on_unwind],
             TerminatorKind::Panic { on_unwind, .. } => smallvec![*on_unwind],
             TerminatorKind::UndefinedBehavior
-            | TerminatorKind::UnwindTerminate
+            | TerminatorKind::UnwindTerminate(..)
             | TerminatorKind::Return
             | TerminatorKind::UnwindResume => {
                 smallvec![]
@@ -496,7 +504,7 @@ impl Terminator {
             } => smallvec![target, on_unwind],
             TerminatorKind::Panic { on_unwind, .. } => smallvec![on_unwind],
             TerminatorKind::UndefinedBehavior
-            | TerminatorKind::UnwindTerminate
+            | TerminatorKind::UnwindTerminate(..)
             | TerminatorKind::Return
             | TerminatorKind::UnwindResume => {
                 smallvec![]
@@ -527,7 +535,7 @@ impl Terminator {
             }
             TerminatorKind::Panic { .. }
             | TerminatorKind::UndefinedBehavior
-            | TerminatorKind::UnwindTerminate
+            | TerminatorKind::UnwindTerminate(..)
             | TerminatorKind::Return
             | TerminatorKind::UnwindResume => {
                 smallvec![]

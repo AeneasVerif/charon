@@ -979,8 +979,21 @@ impl TranslateOptions {
                 // it opaque because we replace the function bodies so we don't need to translate
                 // them.
                 opacities.push(("intrinsics".to_owned(), Opaque));
-                // The MiniRust translation models this as a plain unwind.
-                opacities.push(("core::panicking::panic_fmt".to_owned(), Opaque));
+                // The MiniRust translation models these as a plain unwind.
+                for panic_fn in [
+                    "core::panicking::panic",
+                    "core::panicking::panic_fmt",
+                    "core::panicking::panic_bounds_check",
+                    "core::panicking::panic_misaligned_pointer_dereference",
+                    "core::panicking::panic_null_pointer_dereference",
+                    "core::panicking::panic_null_reference_constructed",
+                    "core::panicking::panic_invalid_enum_construction",
+                    "core::panicking::panic_cannot_unwind",
+                    "core::panicking::panic_in_cleanup",
+                    "core::panic::panic_const",
+                ] {
+                    opacities.push((panic_fn.to_owned(), Opaque));
+                }
             }
             for pat in options.exclude.iter() {
                 opacities.push((pat.to_string(), Invisible));

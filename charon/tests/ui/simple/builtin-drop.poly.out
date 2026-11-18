@@ -32,6 +32,11 @@ where
     Outlives0: (T: '_0),
 = <opaque>
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: core::ptr::drop_glue
 #[lang_item(DropGlue)]
 unsafe fn drop_glue<'_0, T>(_1: &'_0 mut T)
@@ -177,7 +182,7 @@ where
                             storage_dead(_10)
                             storage_dead(_9)
                             storage_dead(_8)
-                            unwind_terminate
+                            unwind_terminate(in_cleanup)
                         continue 0
                     }
                 }
@@ -188,6 +193,10 @@ where
                 storage_dead(_3)
                 storage_dead(_2)
                 storage_dead(_1)
+                storage_dead(_11)
+                storage_dead(_10)
+                storage_dead(_9)
+                storage_dead(_8)
                 unwind_continue
             continue 0
         }
@@ -258,7 +267,7 @@ where
     drop[TraitClause1::drop_glue<'2>] (*_1)._0
     ↳⚡ drop[TraitClause2::drop_glue<'4>] (*_1)._1
         ↳⚡ storage_dead(_1)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_1)
         unwind_continue
     drop[TraitClause2::drop_glue<'3>] (*_1)._1

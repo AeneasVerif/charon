@@ -277,6 +277,18 @@ where
     TraitClause1: (I: Iterator),
 = <opaque>
 
+struct str {
+  _0: [u8],
+}
+
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(_1: &'static str) -> !
+= <opaque>
+
+pub const test_crate::nested_loops_enum::{promoted_const}: str = "assertion failed: s >= 1" with_metadata(24usize)
+
 // Full name: test_crate::nested_loops_enum
 pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
 {
@@ -308,6 +320,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     let mut _25: usize; // anonymous local
     let mut _26: bool; // anonymous local
     let mut _27: usize; // anonymous local
+    let mut _28: &'20 str; // anonymous local
 
     bb0: {
         storage_live(_0);
@@ -390,6 +403,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         storage_dead(_10);
         storage_dead(step_in);
         storage_dead(step_out);
+        storage_dead(_28);
         return;
     }
 
@@ -441,7 +455,9 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         storage_live(_27);
         _27 = copy s;
         _26 = move _27 >= const 1usize;
-        assert(move _26 == true) else panic(core::panicking::panic);
+        storage_live(_28);
+        _28 = &test_crate::nested_loops_enum::{promoted_const} with_metadata(const 24usize);
+        assert(move _26 == true) else panic(panic(move _28));
         storage_dead(_27);
         storage_dead(_26);
         storage_dead(_24);
@@ -462,6 +478,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         storage_dead(_10);
         storage_dead(step_in);
         storage_dead(step_out);
+        storage_dead(_28);
         unwind_continue;
     }
 }

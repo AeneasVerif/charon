@@ -371,6 +371,8 @@ fn check_language_ub() -> bool
 
 pub const core::mem::alignment::{Alignment}::new_unchecked::precondition_check::{promoted_const}: str = "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety." with_metadata(198usize)
 
+pub const core::panicking::panic_cannot_unwind::{promoted_const}: str = "panic in a function that cannot unwind" with_metadata(38usize)
+
 struct (_, _)<A, B>
 where
     TraitClause0: (A: Sized),
@@ -534,7 +536,46 @@ pub fn panic_nounwind_fmt<'_0>(fmt: Arguments<'_0>, force_no_backtrace: bool) ->
     ↳⚡ storage_dead(_3)
         storage_dead(force_no_backtrace)
         storage_dead(fmt)
-        unwind_terminate
+        unwind_terminate(abi)
+}
+
+// Full name: core::panicking::panic_nounwind
+#[lang_item(PanicNounwind)]
+pub fn panic_nounwind(expr: &'static str) -> !
+{
+    let mut _0: !; // return
+    let expr: &'1 str; // arg #1
+    let _2: !; // anonymous local
+    let mut _3: Arguments<'3>; // anonymous local
+    let mut _4: &'4 str; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = copy expr
+    _3 = from_str<'9>(move _4)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(expr)
+        unwind_terminate(abi)
+    storage_dead(_4)
+    _2 = panic_nounwind_fmt<'14>(move _3, const false)
+    ↳⚡ undefined_behavior
+}
+
+// Full name: core::panicking::panic_cannot_unwind
+#[lang_item(PanicCannotUnwind)]
+fn panic_cannot_unwind() -> !
+{
+    let mut _0: !; // return
+    let mut _1: &'1 str; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = &core::panicking::panic_cannot_unwind::{promoted_const} with_metadata(const 38usize)
+    _0 = panic_nounwind(move _1)
+    ↳⚡ undefined_behavior
 }
 
 #[track_caller]
@@ -559,7 +600,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
         storage_dead(_5)
         storage_dead(msg)
         storage_dead(align)
-        unwind_terminate
+        unwind_terminate(abi)
     if move _2 {
     } else {
         storage_dead(_3)
@@ -574,7 +615,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
             storage_dead(_5)
             storage_dead(msg)
             storage_dead(align)
-            unwind_terminate
+            unwind_terminate(abi)
         storage_dead(_7)
         _5 = panic_nounwind_fmt<'12>(move _6, const false)
         ↳⚡ undefined_behavior
@@ -782,15 +823,114 @@ where
     TraitClause0: (Self: SizedTypeProperties),
  = IS_ZST<Self>[TraitClause0]()
 
+pub const core::option::unwrap_failed::{promoted_const}: str = "called `Option::unwrap()` on a `None` value" with_metadata(43usize)
+
+#[lang_item(PanicImpl)]
+extern unsafe fn core::panicking::panic_fmt::panic_impl<'_0, '_1>(_1: &'_0 PanicInfo<'_1>) -> !
+where
+    Outlives0: ('_1: '_0),
+= <extern:_RNvCs<hash>_7___rustc17rust_begin_unwind>
+
+// Full name: core::panicking::panic_fmt
+#[track_caller]
+#[lang_item(PanicFmt)]
+pub fn panic_fmt<'_0>(fmt: Arguments<'_0>) -> !
+{
+    let mut _0: !; // return
+    let fmt: Arguments<'1>; // arg #1
+    let mut _2: bool; // anonymous local
+    let mut _3: !; // anonymous local
+    let pi: PanicInfo<'3>; // local
+    let mut _5: &'6 Arguments<'7>; // anonymous local
+    let _6: &'8 Arguments<'9>; // anonymous local
+    let mut _7: &'13 Location<'14>; // anonymous local
+    let mut _8: &'17 PanicInfo<'18>; // anonymous local
+    let _9: &'19 PanicInfo<'20>; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = const false
+    if move _2 {
+    } else {
+        storage_dead(_2)
+        storage_live(pi)
+        storage_live(_5)
+        storage_live(_6)
+        _6 = &fmt
+        _5 = &(*_6) with_metadata(read _6.metadata)
+        storage_live(_7)
+        _7 = caller<'23>()
+        ↳⚡ storage_dead(_9)
+            storage_dead(_8)
+            storage_dead(pi)
+            storage_dead(_3)
+            storage_dead(fmt)
+            unwind_continue
+        pi = core::panic::panic_info::{PanicInfo<'a>}::new<'26>(move _5, move _7, const true, const false)
+        ↳⚡ storage_dead(_9)
+            storage_dead(_8)
+            storage_dead(pi)
+            storage_dead(_3)
+            storage_dead(fmt)
+            unwind_continue
+        storage_dead(_7)
+        storage_dead(_5)
+        storage_dead(_6)
+        storage_live(_8)
+        storage_live(_9)
+        _9 = &pi
+        _8 = &(*_9)
+        _0 = core::panicking::panic_fmt::panic_impl<'35, '36>(move _8)
+        ↳⚡ storage_dead(_9)
+            storage_dead(_8)
+            storage_dead(pi)
+            storage_dead(_3)
+            storage_dead(fmt)
+            unwind_continue
+    }
+    storage_live(_3)
+    _3 = abort()
+    ↳⚡ undefined_behavior
+}
+
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(expr: &'static str) -> !
+{
+    let mut _0: !; // return
+    let expr: &'1 str; // arg #1
+    let mut _2: Arguments<'3>; // anonymous local
+    let mut _3: &'4 str; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy expr
+    _2 = from_str<'9>(move _3)
+    ↳⚡ storage_dead(_2)
+        storage_dead(expr)
+        unwind_continue
+    storage_dead(_3)
+    panic(panic_fmt<'14>(move _2))
+    ↳⚡ storage_dead(_2)
+        storage_dead(expr)
+        unwind_continue
+}
+
 // Full name: core::option::unwrap_failed
 #[track_caller]
 fn unwrap_failed() -> !
 {
     let mut _0: !; // return
+    let mut _1: &'1 str; // anonymous local
 
     storage_live(_0)
-    panic(core::panicking::panic)
-    ↳⚡ unwind_continue
+    storage_live(_1)
+    _1 = &core::option::unwrap_failed::{promoted_const} with_metadata(const 43usize)
+    panic(panic(move _1))
+    ↳⚡ storage_dead(_1)
+        unwind_continue
 }
 
 // Full name: core::option::{Option<T>[TraitClause0]}::unwrap

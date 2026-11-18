@@ -19,6 +19,11 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: alloc::boxed::Box::<(), Global>
 #[fundamental]
 #[lang_item(OwnedBox)]
@@ -221,7 +226,7 @@ fn main()
     _16 = cast<fn(&'7 (dyn T + '8))>(read (*_5.metadata).method_by_ref)
     _4 = (read _16)(move _5)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'21>] b
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_5)
     storage_dead(_4)
@@ -234,13 +239,13 @@ fn main()
     _18 = cast<fn(*mut (dyn T + '27))>(read (*_17.metadata).method_by_val)
     _6 = (read _18)(move _17)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'28>] _7
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'21>] b
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'29>] _7
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'21>] b
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_7)
     storage_dead(_6)
@@ -253,12 +258,12 @@ fn main()
     storage_dead(_11)
     _9 = alloc::boxed::{Box::<Foo::<()>, Global>}::new::<Foo::<()>>(move _10)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'21>] b
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     f = unsize_cast<Box::<Foo::<(dyn T)>, Global>, &impl_T_for_unit::{vtable}>(move _9)
     conditional_drop[{impl Destruct for Box::<Foo::<()>, Global>}::drop_glue::<Foo::<()>, Global><'30>] _9
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'21>] b
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_10)
     storage_dead(_9)
@@ -270,9 +275,9 @@ fn main()
     _19 = cast<fn(&'9 (dyn T + '10))>(read (*_13.metadata).method_by_ref)
     _12 = (read _19)(move _13)
     ↳⚡ conditional_drop[{impl Destruct for Box::<Foo::<(dyn T)>, Global>}::drop_glue::<Foo::<(dyn T)>, Global><'37>] f
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'21>] b
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_13)
     storage_dead(_12)
@@ -284,18 +289,18 @@ fn main()
     _21 = cast<fn(*mut (dyn T + '38))>(read (*_20.metadata).method_by_val)
     _14 = (read _21)(move _20)
     ↳⚡ conditional_drop[{built_in impl Destruct for (dyn T + '43)}::drop_glue<'44>] _15
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         conditional_drop[{impl Destruct for Box::<Foo::<(dyn T)>, Global>}::drop_glue::<Foo::<(dyn T)>, Global><'37>] f
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'21>] b
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_15)
     storage_dead(_14)
     _0 = ()
     conditional_drop[{impl Destruct for Box::<Foo::<(dyn T)>, Global>}::drop_glue::<Foo::<(dyn T)>, Global><'45>] f
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'21>] b
-        ↳⚡ unwind_terminate
+        ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(f)
     conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'46>] b

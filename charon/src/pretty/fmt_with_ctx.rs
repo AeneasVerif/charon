@@ -89,17 +89,16 @@ where
 //------- Impls, sorted by name --------
 
 impl<C: AstFormatter> FmtWithCtx<C> for AbortKind {
-    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            AbortKind::Panic(name) => {
-                write!(f, "panic")?;
-                if let Some(name) = name {
-                    write!(f, "({})", name.with_ctx(ctx))?;
-                }
-                Ok(())
-            }
+            AbortKind::Panic => write!(f, "panic"),
             AbortKind::UndefinedBehavior => write!(f, "undefined_behavior"),
-            AbortKind::UnwindTerminate => write!(f, "unwind_terminate"),
+            AbortKind::UnwindTerminate(UnwindTerminateReason::Abi) => {
+                write!(f, "unwind_terminate(abi)")
+            }
+            AbortKind::UnwindTerminate(UnwindTerminateReason::InCleanup) => {
+                write!(f, "unwind_terminate(in_cleanup)")
+            }
         }
     }
 }
@@ -187,8 +186,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Assert {
             self.cond.with_ctx(ctx),
             self.expected,
         )?;
-        if let Some(check_kind) = &self.check_kind {
-            write!(f, " ({})", check_kind.with_ctx(ctx))?;
+        if let Some(kind) = &self.check_kind {
+            write!(f, " ({})", kind.with_ctx(ctx))?;
         }
         Ok(())
     }
@@ -2508,12 +2507,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
                 write!(f, "{tab}_ = {}", place.with_ctx(ctx))
             }
             StatementKind::Assert { assert, on_failure } => {
-                write!(
-                    f,
-                    "{tab}{} else {}",
-                    assert.with_ctx(ctx),
-                    on_failure.with_ctx(ctx)
-                )
+                write!(f, "{tab}{} else ", assert.with_ctx(ctx))?;
+                match on_failure {
+                    AbortKind::Panic => write!(f, "panic({})", assert.call.with_ctx(ctx)),
+                    _ => write!(f, "{}", on_failure.with_ctx(ctx)),
+                }
             }
             StatementKind::Nop => write!(f, "{tab}nop"),
         }?;
@@ -2582,12 +2580,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 on_failure,
                 on_unwind,
             } => {
-                write!(
-                    f,
-                    "{} else {}",
-                    assert.with_ctx(ctx),
-                    on_failure.with_ctx(ctx)
-                )?;
+                write!(f, "{} else ", assert.with_ctx(ctx))?;
+                match on_failure {
+                    AbortKind::Panic => write!(f, "panic({})", assert.call.with_ctx(ctx))?,
+                    _ => write!(f, "{}", on_failure.with_ctx(ctx))?,
+                };
                 fmt_llbc_unwind_block(ctx, f, on_unwind)
             }
             StatementKind::InlineAsm {
@@ -2632,15 +2629,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 write!(f, "{} = {}", dest.with_ctx(ctx), call.with_ctx(ctx))?;
                 fmt_llbc_unwind_block(ctx, f, on_unwind)
             }
-            StatementKind::Panic { name, on_unwind } => {
-                write!(f, "{}", AbortKind::Panic(Some(name.clone())).with_ctx(ctx))?;
+            StatementKind::Panic { call, on_unwind } => {
+                write!(f, "panic({})", call.with_ctx(ctx))?;
                 fmt_llbc_unwind_block(ctx, f, on_unwind)
             }
             StatementKind::UndefinedBehavior => {
                 write!(f, "{}", AbortKind::UndefinedBehavior.with_ctx(ctx))
             }
-            StatementKind::UnwindTerminate => {
-                write!(f, "{}", AbortKind::UnwindTerminate.with_ctx(ctx))
+            StatementKind::UnwindTerminate(reason, _) => {
+                write!(f, "{}", AbortKind::UnwindTerminate(*reason).with_ctx(ctx))
             }
             StatementKind::Return => write!(f, "return"),
             StatementKind::UnwindResume => write!(f, "unwind_continue"),
@@ -2846,16 +2843,16 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                         .format(", ");
                 write!(f, "{} -> {targets}", asm.with_ctx(ctx))
             }
-            TerminatorKind::Panic { name, on_unwind } => write!(
+            TerminatorKind::Panic { call, on_unwind } => write!(
                 f,
-                "{} -> (unwind: bb{on_unwind})",
-                AbortKind::Panic(Some(name.clone())).with_ctx(ctx)
+                "panic({}) -> (unwind: bb{on_unwind})",
+                call.with_ctx(ctx)
             ),
             TerminatorKind::UndefinedBehavior => {
                 write!(f, "{}", AbortKind::UndefinedBehavior.with_ctx(ctx))
             }
-            TerminatorKind::UnwindTerminate => {
-                write!(f, "{}", AbortKind::UnwindTerminate.with_ctx(ctx))
+            TerminatorKind::UnwindTerminate(reason, _) => {
+                write!(f, "{}", AbortKind::UnwindTerminate(*reason).with_ctx(ctx))
             }
             TerminatorKind::Return => write!(f, "return"),
             TerminatorKind::UnwindResume => write!(f, "unwind_continue"),

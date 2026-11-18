@@ -24,6 +24,11 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: core::ptr::mut_ptr::{*mut T}::drop_in_place
 #[diagnostic_item("ptr_drop_in_place_self")]
 pub unsafe fn drop_in_place<T>(_1: *mut T)
@@ -157,7 +162,7 @@ where
                             storage_dead(_10)
                             storage_dead(_9)
                             storage_dead(_8)
-                            unwind_terminate
+                            unwind_terminate(in_cleanup)
                         continue 0
                     }
                 }
@@ -168,6 +173,10 @@ where
                 storage_dead(_3)
                 storage_dead(_2)
                 storage_dead(_1)
+                storage_dead(_11)
+                storage_dead(_10)
+                storage_dead(_9)
+                storage_dead(_8)
                 unwind_continue
             continue 0
         }
@@ -283,7 +292,7 @@ where
         ↳⚡ storage_dead(_3)
             storage_dead(_2)
             storage_dead(_1)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)

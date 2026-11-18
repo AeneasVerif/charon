@@ -13,6 +13,11 @@ vtable core::marker::MetaSized::{vtable}::<S>: core::marker::MetaSized::{vtable}
 
 vtable core::marker::MetaSized::{vtable}::<*mut u32>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: alloc::boxed::Box::<S>
 #[fundamental]
 #[lang_item(OwnedBox)]
@@ -324,7 +329,9 @@ fn main()
     _0 = ()
     storage_live(x)
     x = mk()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_11)
+        storage_dead(_10)
+        unwind_continue
     fake_read(x)
     storage_live(_v_2)
     storage_live(_3)
@@ -335,7 +342,9 @@ fn main()
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'17>] x
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
+        storage_dead(_11)
+        storage_dead(_10)
         unwind_continue
     storage_dead(_3)
     fake_read(_v_2)
@@ -351,7 +360,9 @@ fn main()
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'17>] x
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
+        storage_dead(_11)
+        storage_dead(_10)
         unwind_continue
     storage_dead(_6)
     fake_read(p)
@@ -365,11 +376,13 @@ fn main()
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'24>] p
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'17>] x
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
+        storage_dead(_11)
+        storage_dead(_10)
         unwind_continue
     storage_dead(_9)
     fake_read(_v_8)
@@ -379,13 +392,17 @@ fn main()
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'17>] x
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
+        storage_dead(_11)
+        storage_dead(_10)
         unwind_continue
     storage_dead(p)
     storage_dead(n)
     storage_dead(_v_2)
     conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'26>] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_11)
+        storage_dead(_10)
+        unwind_continue
     storage_dead(x)
     storage_dead(_11)
     storage_dead(_10)

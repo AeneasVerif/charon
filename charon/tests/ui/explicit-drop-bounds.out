@@ -24,6 +24,11 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
 // Full name: alloc::string::String
 #[lang_item(String)]
 pub opaque type String
@@ -123,7 +128,7 @@ where
     ↳⚡ drop[TraitClause3::drop_glue<'2>] _x
         ↳⚡ storage_dead(_y)
             storage_dead(_x)
-            unwind_terminate
+            unwind_terminate(in_cleanup)
         storage_dead(_y)
         storage_dead(_x)
         unwind_continue

@@ -24,6 +24,11 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <missing>
+
 // Full name: core::result::Result
 #[diagnostic_item("Result")]
 pub enum Result<T, E>
@@ -83,12 +88,13 @@ where
                     storage_dead(e)
                     storage_dead(self)
                     storage_dead(_6)
-                    unwind_terminate
+                    unwind_terminate(in_cleanup)
                 storage_dead(_5)
                 storage_dead(_4)
                 storage_dead(_3)
                 storage_dead(e)
                 storage_dead(self)
+                storage_dead(_6)
                 unwind_continue
         },
     }
@@ -111,7 +117,7 @@ fn test_crate::unwrap(res: Result<u32, u32>[{built_in impl Sized for u32}, {buil
     storage_live(_0)
     storage_live(_2)
     _2 = copy res
-    _0 = core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {impl#8}](move _2)
+    _0 = core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {impl#11}](move _2)
     ↳⚡ storage_dead(res)
         unwind_continue
     storage_dead(_2)

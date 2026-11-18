@@ -103,6 +103,7 @@ where
     _3 = copy slice
     _2 = into_iter<'78, T>[TraitClause0](move _3)
     ↳⚡ storage_dead(slice)
+        storage_dead(_20)
         unwind_continue
     storage_dead(_3)
     storage_live(iter)
@@ -115,6 +116,7 @@ where
         _6 = &two-phase-mut (*_7)
         _5 = next<'83, '87, T>[TraitClause0](move _6)
         ↳⚡ storage_dead(slice)
+            storage_dead(_20)
             unwind_continue
         storage_dead(_6)
         match _5 {
@@ -140,6 +142,7 @@ where
         _15 = &(*args_11._0)
         _14 = new_debug<'3, '136, &'4 T>[{built_in impl Sized for &'4 T}, {impl#6}<'2, T>[TraitClause1]](move _15)
         ↳⚡ storage_dead(slice)
+            storage_dead(_20)
             unwind_continue
         storage_dead(_15)
         args_13 = [move _14]
@@ -157,6 +160,7 @@ where
         _18 = &(*_19)
         _10 = new<'5, 7usize, 1usize>(move _16, move _18)
         ↳⚡ storage_dead(slice)
+            storage_dead(_20)
             unwind_continue
         storage_dead(_19)
         storage_dead(_18)
@@ -164,6 +168,7 @@ where
         storage_dead(_16)
         _9 = _eprint<'149>(move _10)
         ↳⚡ storage_dead(slice)
+            storage_dead(_20)
             unwind_continue
         storage_dead(_10)
         storage_dead(args_13)
@@ -218,6 +223,9 @@ fn main()
     storage_dead(_3)
     _1 = debug_slice<'11, i32>[{built_in impl Sized for i32}, {impl#10}](move _2)
     ↳⚡ storage_dead(_5)
+        storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_6)
         unwind_continue
     storage_dead(_2)
     storage_dead(_4)
