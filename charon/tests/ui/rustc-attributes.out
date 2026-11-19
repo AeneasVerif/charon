@@ -1,5 +1,12 @@
 # Final LLBC before serialization:
 
+struct () {}
+
+// Full name: core::core_arch::x86::avx::_mm256_zeroall
+#[target_feature(enable = "avx")]
+pub unsafe fn _mm256_zeroall()
+= <opaque>
+
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
@@ -24,8 +31,6 @@ where
   None,
   Some { _0: T },
 }
-
-struct () {}
 
 // Full name: test_crate::export_name
 #[export_name = "exported"]
@@ -90,6 +95,18 @@ fn no_writable<'_0>(_1: &'_0 mut u32)
     _0 = ()
     _0 = ()
     storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::call_foreign_target_feature
+fn call_foreign_target_feature()
+{
+    let mut _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = _mm256_zeroall()
+    ↳⚡ unwind_continue
     return
 }
 
