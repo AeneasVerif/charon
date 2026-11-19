@@ -379,6 +379,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         let item = match ty.kind() {
                             hax::TyKind::Adt(adt) => &adt.item,
                             hax::TyKind::Closure(closure) => &closure.item,
+                            hax::TyKind::Coroutine(coroutine) => &coroutine.item,
                             hax::TyKind::Array(array) => &array.item,
                             hax::TyKind::Slice(slice) => &slice.item,
                             hax::TyKind::Tuple(tuple) => &tuple.item,
@@ -401,6 +402,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             span,
                             &item,
                             closure_kind,
+                        )?)
+                    }
+                    _ if let Some(item) = self.recognize_coroutine_impl_proof(impl_source) => {
+                        TraitRefKind::TraitImpl(self.translate_item(
+                            span,
+                            &item,
+                            TransItemSourceKind::TraitImpl(TransImplSource::Coroutine),
                         )?)
                     }
                     _ if let Some(builtin_data) = self.recognize_builtin_impl(trait_data) => {

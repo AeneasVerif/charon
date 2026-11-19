@@ -865,26 +865,15 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let trait_decl_id = timpl.impl_trait.id;
         let trait_method_id =
             self.translate_trait_method_id(trait_decl_id, &vimpl.methods[0].def_id)?;
-        let call_fn_binder = {
-            let kind = TransItemSourceKind::CallableMethod(target_kind);
-            let bound_method_ref: RegionBinder<DeclRef<ItemId>> = self
-                .translate_callable_bound_ref_with_method_bound(
-                    span,
-                    callable.item(),
-                    kind,
-                    target_kind,
-                )?;
-            let params = GenericParams {
-                regions: bound_method_ref.regions,
-                ..GenericParams::empty()
-            };
-            let fn_decl_ref: FunDeclRef = bound_method_ref.skip_binder.try_into().unwrap();
-            Binder::new(
-                BinderKind::TraitMethod(trait_decl_id, trait_method_id),
-                params,
-                fn_decl_ref,
-            )
-        };
+        let call_fn_binder = self
+            .translate_callable_bound_ref_with_method_bound(
+                span,
+                callable.item(),
+                TransItemSourceKind::CallableMethod(target_kind),
+                target_kind,
+            )?
+            .into_binder(BinderKind::TraitMethod(trait_decl_id, trait_method_id))
+            .map(|method_ref| method_ref.try_into().unwrap());
         timpl
             .methods
             .set_slot_extend(trait_method_id, call_fn_binder);

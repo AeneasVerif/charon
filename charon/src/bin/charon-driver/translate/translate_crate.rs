@@ -70,6 +70,9 @@ pub enum TransItemSourceKind {
     CallableMethod(ClosureKind),
     /// A cast of a stateless closure to a function pointer.
     ClosureAsFnCast,
+    /// The method of the generated `Coroutine`/`Future`/`Iterator`/`AsyncIterator` impl of a
+    /// coroutine. The `DefId` is that of the coroutine.
+    CoroutineResume,
     /// The `drop_glue` method of a `Destruct` impl. It contains the drop glue that calls
     /// `Drop::drop` for the type and then drops its fields. This is a method implementation (and
     /// the DefId is that of the ADT or closure for which to generate the drop glue).
@@ -98,6 +101,9 @@ pub enum TransImplSource {
     TraitAlias,
     /// An impl of the appropriate `Fn*` trait for a closure or function item.
     Callable(ClosureKind),
+    /// The impl of `Coroutine`, `Future`, `Iterator` or `AsyncIterator` for a coroutine. The
+    /// `DefId` is that of the coroutine.
+    Coroutine,
     /// A fictitious `impl Destruct for T` that contains the drop glue code for the given ADT or
     /// closure. The `DefId` is that of the ADT or closure.
     ImplicitDestruct,
@@ -171,6 +177,9 @@ impl<'tcx> TransItemSource<'tcx> {
             TransItemSourceKind::CallableMethod(kind)
             | TransItemSourceKind::VTableMethod(TransImplSource::Callable(kind)) => {
                 TransItemSourceKind::TraitImpl(TransImplSource::Callable(kind))
+            }
+            TransItemSourceKind::CoroutineResume => {
+                TransItemSourceKind::TraitImpl(TransImplSource::Coroutine)
             }
             TransItemSourceKind::DropGlueMethod(TransImplSource::Marker)
             | TransItemSourceKind::VTableInstance(TransImplSource::Marker)
@@ -570,10 +579,9 @@ impl<'tcx> TranslateCtx<'tcx> {
                     Global | VTableInstance(..) => {
                         ItemId::Global(self.translated.global_decls.reserve_slot())
                     }
-                    Fun | CallableMethod(..) | ClosureAsFnCast | DropGlueMethod(..)
-                    | VTableMethod(..) | VTableDropShim(..) | IntrinsicFallback => {
-                        ItemId::Fun(self.translated.fun_decls.reserve_slot())
-                    }
+                    Fun | CallableMethod(..) | ClosureAsFnCast | CoroutineResume
+                    | DropGlueMethod(..) | VTableMethod(..) | VTableDropShim(..)
+                    | IntrinsicFallback => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
                     InherentImpl | Module => {
                         return ItemOrModuleId::Module(src.def_id().real_rust_def_id());
                     }
@@ -986,6 +994,17 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         .map(|_| self.translate_erased_region()),
                 );
             }
+            if let hax::FullDefKind::Coroutine(c) = def.kind()
+                && let TransItemSourceKind::CoroutineResume = kind
+            {
+                generics.regions.extend(
+                    c.resume_method(self.hax_state())
+                        .sig
+                        .bound_vars
+                        .iter()
+                        .map(|_| self.translate_erased_region()),
+                );
+            }
             if let TransItemSourceKind::CallableMethod(ClosureKind::FnMut | ClosureKind::Fn)
             | TransItemSourceKind::VTableMethod(TransImplSource::Callable(
                 ClosureKind::FnMut | ClosureKind::Fn,
@@ -1169,6 +1188,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         if let Some(fn_ptr) = self.translate_callable_method_fn_ptr(span, item)? {
             return Ok(fn_ptr);
         }
+        if let Some(fn_ptr) = self.translate_coroutine_resume_fn_ptr(span, item)? {
+            return Ok(fn_ptr);
+        }
         if let Some(fn_ptr) = self.translate_method_decl_fn_ptr(span, item)? {
             return Ok(fn_ptr);
         }
@@ -1323,6 +1345,7 @@ pub fn translate<'tcx>(
         exported_fns: Default::default(),
         lt_mutability_computer: Default::default(),
         monomorphic_layouts: Default::default(),
+        cached_coroutine_bodies: Default::default(),
     };
     ctx.register_target_info();
     ctx.reserve_unit_decl();
