@@ -741,9 +741,19 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 Size::new(alloc.align.bytes()),
             )
         } else {
+            let mut align = SizeExpr::align_of(&ty);
+            if let hax::FullDefKind::Static(_) = def.kind()
+                && let Some(rust_def_id) = def.def_id().as_real_def_id()
+                && let Some(attr_align) = self.t_ctx.tcx.codegen_fn_attrs(rust_def_id).alignment
+            {
+                align = SizeExpr::max_align(vec![
+                    align,
+                    SizeExpr::from_usize(attr_align.bytes().into()),
+                ]);
+            }
             (
                 Size::from_expr(SizeExpr::size_of(&ty)),
-                Size::from_expr(SizeExpr::align_of(&ty)),
+                Size::from_expr(align),
             )
         };
 

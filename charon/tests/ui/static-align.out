@@ -28,7 +28,7 @@ pub fn OVER_ALIGNED() -> u8
 // Full name: test_crate::OVER_ALIGNED
 #[rustc_align(64)]
 pub static OVER_ALIGNED: u8 = OVER_ALIGNED()
-// size: size_of::<u8>(), align: align_of::<u8>()
+// size: size_of::<u8>(), align: max(align_of::<u8>(), 64usize)
 
 // Full name: test_crate::UNDER_ALIGNED
 #[rustc_align(1)]
@@ -44,7 +44,7 @@ pub fn UNDER_ALIGNED() -> u64
 // Full name: test_crate::UNDER_ALIGNED
 #[rustc_align(1)]
 pub static UNDER_ALIGNED: u64 = UNDER_ALIGNED()
-// size: size_of::<u64>(), align: align_of::<u64>()
+// size: size_of::<u64>(), align: max(align_of::<u64>(), 1usize)
 
 // Full name: test_crate::NOT_ALIGNED
 pub fn NOT_ALIGNED() -> u8
