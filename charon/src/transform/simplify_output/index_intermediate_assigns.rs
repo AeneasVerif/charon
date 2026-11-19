@@ -63,6 +63,10 @@ impl Rvalue {
 pub struct Transform;
 
 impl UllbcPass for Transform {
+    fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
+        options.index_to_function_calls
+    }
+
     fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
         decl.transform_ullbc_statements(ctx, |ctx, st: &mut Statement| {
             // Introduce an intermediate statement if both the rhs and the lhs contain an
