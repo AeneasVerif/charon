@@ -1,3 +1,4 @@
+//@ known-failure
 #![feature(min_specialization)]
 trait Tr {
     fn f(&self);

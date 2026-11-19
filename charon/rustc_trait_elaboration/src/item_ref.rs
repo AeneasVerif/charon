@@ -50,14 +50,15 @@ pub trait ItemId: Clone + Debug + Hash + PartialEq + Eq {
     fn takes_explicit_self_clause<'tcx>(&self, state: &Self::State<'tcx>) -> bool;
 
     /// If this item is an associated item definition, and the given impl implements it, returns
-    /// the implemented associated item along with the generics of the impl that defines it.
+    /// the implemented associated item along with the generics of the impl that defines it, and
+    /// whether that item is final, i.e. can't be overridden by a more specialized impl.
     fn find_in_impl<'tcx>(
         &self,
         state: &Self::State<'tcx>,
         typing_env: ty::TypingEnv<'tcx>,
         trait_impl: &Self,
         impl_generics: GenericArgsRef<'tcx>,
-    ) -> Option<(Self, GenericArgsRef<'tcx>)>;
+    ) -> Option<(Self, GenericArgsRef<'tcx>, bool)>;
 }
 
 impl ItemId for DefId {
@@ -126,7 +127,7 @@ impl ItemId for DefId {
         typing_env: ty::TypingEnv<'tcx>,
         trait_impl: &Self,
         impl_generics: GenericArgsRef<'tcx>,
-    ) -> Option<(Self, GenericArgsRef<'tcx>)> {
+    ) -> Option<(Self, GenericArgsRef<'tcx>, bool)> {
         use rustc_infer::infer::TyCtxtInferExt;
         use rustc_middle::traits::specialization_graph::{self, Node};
         let trait_id = tcx.impl_trait_ref(*trait_impl).skip_binder().def_id;
@@ -165,7 +166,7 @@ impl ItemId for DefId {
                 }
             })
         };
-        Some((leaf_def.item.def_id, impl_generics))
+        Some((leaf_def.item.def_id, impl_generics, leaf_def.is_final()))
     }
 }
 
@@ -194,6 +195,9 @@ pub struct ItemRefContents<'tcx, Id: ItemId = DefId> {
     pub has_param: bool,
     /// Whether this contains any reference to a type/const parameter.
     pub has_non_lt_param: bool,
+    /// Whether we resolved this to an impl item that a more specialized impl may override for
+    /// some instantiations of the generics. In that case this reference may be wrong.
+    pub may_be_further_specialized: bool,
 }
 
 impl<'tcx, Id: ItemId> ItemRefContents<'tcx, Id> {
@@ -284,13 +288,14 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
 
         // If the reference is a known trait impl and the impl implements the target item, we can
         // point directly to the implemented item.
+        let mut may_be_further_specialized = false;
         if assoc_item_resolution == AssocItemResolution::ImplItem
             && let Some((tinfo, _)) = &trait_info
             && let TraitProofKind::Concrete(impl_item_ref) = &tinfo.kind
         {
             // If the item is implemented, point to it; otherwise the item has a default and we're
             // already pointing to it.
-            if let Some((implemented_item, impl_generics)) = def_id.find_in_impl(
+            if let Some((implemented_item, impl_generics, is_final)) = def_id.find_in_impl(
                 state,
                 typing_env,
                 &impl_item_ref.def_id,
@@ -298,6 +303,9 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             ) {
                 def_id = implemented_item;
                 generics = generics.rebase_onto(tcx, tinfo.pred.def_id(), impl_generics);
+                // Same criterion as rustc's `resolve_associated_item`.
+                may_be_further_specialized =
+                    !is_final && tinfo.pred.skip_binder().still_further_specializable();
             }
             trait_info = None;
         }
@@ -314,6 +322,7 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
                 || generics.has_escaping_bound_vars()
                 || generics.has_free_regions(),
             has_non_lt_param: generics.has_non_region_param(),
+            may_be_further_specialized,
         };
         content.intern()
     }
@@ -330,6 +339,7 @@ impl<'tcx, Id: ItemId> ItemRef<'tcx, Id> {
             needs_explicit_self_clause: false,
             has_param: false,
             has_non_lt_param: false,
+            may_be_further_specialized: false,
         };
         content.intern()
     }

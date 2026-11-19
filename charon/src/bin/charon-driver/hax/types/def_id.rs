@@ -279,13 +279,13 @@ impl rustc_trait_elaboration::ItemId for DefId {
         typing_env: ty::TypingEnv<'tcx>,
         trait_impl: &Self,
         impl_generics: ty::GenericArgsRef<'tcx>,
-    ) -> Option<(Self, ty::GenericArgsRef<'tcx>)> {
+    ) -> Option<(Self, ty::GenericArgsRef<'tcx>, bool)> {
         let tcx = s.base().tcx;
         let trait_impl = trait_impl.as_real_def_id()?;
         match self.base {
             DefIdBase::Real(def_id) => def_id
                 .find_in_impl(&tcx, typing_env, &trait_impl, impl_generics)
-                .map(|(item, generics)| (item.sinto(s), generics)),
+                .map(|(item, generics, is_final)| (item.sinto(s), generics, is_final)),
             _ => None,
         }
     }

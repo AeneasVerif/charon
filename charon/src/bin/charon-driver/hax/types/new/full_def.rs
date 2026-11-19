@@ -702,7 +702,7 @@ impl<'tcx> TraitImpl<'tcx> {
                 let decl_def_id = decl_assoc.def_id;
                 let trait_impl_id = def_id;
                 let assoc_item = decl_def_id.find_in_impl(&tcx, s.typing_env(), &def_id, args);
-                let value = assoc_item.map(|(impl_assoc_rdef_id, impl_args)| {
+                let value = assoc_item.map(|(impl_assoc_rdef_id, impl_args, _)| {
                     let impl_assoc_def_id: DefId = impl_assoc_rdef_id.sinto(s);
                     let virtual_item =
                         VirtualImplAssocItem::new(trait_impl_id, decl_def_id, impl_assoc_rdef_id);

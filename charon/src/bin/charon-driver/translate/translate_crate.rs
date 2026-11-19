@@ -939,6 +939,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax_item
         };
 
+        if hax_item.may_be_further_specialized {
+            register_error!(
+                self,
+                span,
+                "`{:?}` may be overridden by a more specialized impl depending on how generics are \
+                instantiated; translating it as is",
+                hax_item.def_id
+            );
+        }
+
         let id: ItemId = self.register_item_maybe_enqueue(span, enqueue, hax_item, kind);
         // In mono mode, we keep trait decls generic.
         let mut generics = if self.should_monomorphize_item(hax_item, kind)
