@@ -1,0 +1,69 @@
+# Final LLBC before serialization:
+
+opaque type core::any::Any::{vtable}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::any::TypeId
+#[lang_item(TypeId)]
+pub opaque type TypeId
+
+// Full name: core::any::Any
+#[diagnostic_item("Any")]
+pub trait Any<Self>
+where
+    Outlives0: (Self: 'static),
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    fn type_id<'_0_1, Outlives0: (Self: '_0_1)>;
+    vtable: core::any::Any::{vtable}
+}
+
+// Full name: core::marker::Send
+#[diagnostic_item("Send")]
+pub unsafe trait Send<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+opaque type alloc::panicking::PanicPayload::{vtable}
+
+// Full name: alloc::boxed::Box
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box<T>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
+
+// Full name: alloc::alloc::Global
+#[lang_item(GlobalAlloc)]
+pub struct Global {}
+
+// Full name: alloc::panicking::PanicPayload
+pub trait PanicPayload<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Display)
+    fn take_box<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn get<'_0_1, Outlives0: (Self: '_0_1)>;
+    vtable: alloc::panicking::PanicPayload::{vtable}
+}
+
+pub fn panic_unwind::__rust_start_panic<'_0>(_1: &'_0 mut (dyn PanicPayload + '_0)) -> u32
+= <opaque>
+
+extern fn std::panicking::__rust_start_panic<'_0>(_1: &'_0 mut (dyn PanicPayload + '_0)) -> u32
+= <extern:_RNvCs<hash>_7___rustc18___rust_start_panic> linked(strong) to panic_unwind::__rust_start_panic<'_>
+
+
+

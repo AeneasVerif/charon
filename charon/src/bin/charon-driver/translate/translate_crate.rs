@@ -432,6 +432,10 @@ impl<'tcx> TranslateCtx<'tcx> {
                 .crates(())
                 .iter()
                 .filter(|&&cnum| !tcx.crate_dep_kind(cnum).macros_only())
+                .filter(|&&cnum| {
+                    !tcx.is_panic_runtime(cnum)
+                        || tcx.required_panic_strategy(cnum) == Some(tcx.sess.panic_strategy())
+                })
                 .flat_map(|&cnum| tcx.exported_non_generic_symbols(cnum))
                 .filter_map(|(symbol, _)| match symbol {
                     ExportedSymbol::NonGeneric(def_id) => Some(*def_id),
