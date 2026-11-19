@@ -154,7 +154,16 @@ impl ItemId for DefId {
             );
             // ...however the generics' regions may still contain inference variables,
             // so we have to erase them here.
-            tcx.erase_and_anonymize_regions(generics)
+            use rustc_type_ir::InferCtxtLike;
+            ty::fold_regions(*tcx, generics, |r, _| {
+                let ty::ReVar(vid) = r.kind() else { return r };
+                let r = infcx.shallow_resolve_region_var(vid);
+                if r.is_var() {
+                    tcx.lifetimes.re_erased
+                } else {
+                    r
+                }
+            })
         };
         Some((leaf_def.item.def_id, impl_generics))
     }

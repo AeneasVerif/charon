@@ -108,7 +108,7 @@ where
 {
     proof ImpliedClause0: (Pair<&'a T, bool>[{built_in impl Sized for &'a T}, {built_in impl Sized for bool}]: MetaSized) = {built_in impl MetaSized for Pair<&'a T, bool>[{built_in impl Sized for &'a T}, {built_in impl Sized for bool}]}
     proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
-    fn inherited<'_0_1> = inherited<'_0_1, u32, Pair<&'_ T, bool>[{built_in impl Sized for &'_ T}, {built_in impl Sized for bool}]>[{built_in impl Sized for u32}, {built_in impl Sized for Pair<&'_ T, bool>[{built_in impl Sized for &'_ T}, {built_in impl Sized for bool}]}]
+    fn inherited<'_0_1> = inherited<'_0_1, u32, Pair<&'a T, bool>[{built_in impl Sized for &'a T}, {built_in impl Sized for bool}]>[{built_in impl Sized for u32}, {built_in impl Sized for Pair<&'a T, bool>[{built_in impl Sized for &'a T}, {built_in impl Sized for bool}]}]
     fn overridden<'_0_1> = impl_Tr_u32_for_Pair_bool::overridden<'a, '_0_1, T>[TraitClause0]
     vtable: lazy
 }
