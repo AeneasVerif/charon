@@ -1,3 +1,5 @@
+mod merge;
+pub mod multi_crate;
 pub mod multi_target;
 
 use crate::ast::*;

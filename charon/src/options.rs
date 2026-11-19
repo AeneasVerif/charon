@@ -73,6 +73,17 @@ pub struct CliOpts {
     #[clap(long, value_delimiter = ',')]
     #[serde(default)]
     pub targets: Vec<String>,
+    /// When cargo builds several crates (e.g. with `charon cargo -- --workspace`), translate each
+    /// of them as the local crate and merge the results into a single output, as if they were one
+    /// crate. Only supported with `charon cargo`.
+    #[clap(long)]
+    #[serde(default)]
+    pub merge_crates: bool,
+    /// The crate name to give the merged crate when using `--merge-crates`. Defaults to the first
+    /// crate selected by cargo.
+    #[clap(long)]
+    #[serde(default)]
+    pub merged_crate_name: Option<String>,
     /// Sysroot to use for rustc invocations. By default Charon builds a sysroot that has full MIR
     /// for the standard library. You can pass a custom sysroot to use instead, or pass "default"
     /// to use the normal distributed sysroot, which lacks MIR bodies for many standard library
@@ -790,6 +801,8 @@ pub enum StartFrom {
 pub struct TranslateOptions {
     /// Items from which to start translation.
     pub start_from: Vec<StartFrom>,
+    /// Whether we are using `--merge-crates`, which affects what items we start translating from.
+    pub merge_crates: bool,
     /// The level at which to extract the MIR
     pub mir_level: MirLevel,
     /// Usually we skip the provided methods that aren't used. When this flag is on, we translate
@@ -1029,6 +1042,7 @@ impl TranslateOptions {
 
         TranslateOptions {
             start_from,
+            merge_crates: options.merge_crates,
             mir_level,
             monomorphize_mut: options.monomorphize_mut,
             collect_instantiated_layouts: options.collect_instantiated_layouts,

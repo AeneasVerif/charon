@@ -1,0 +1,178 @@
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::Arguments
+#[lang_item(FormatArguments)]
+pub opaque type Arguments<'a>
+
+struct str {
+  _0: [u8],
+}
+
+// Full name: core::fmt::{Arguments<'a>}::from_str
+pub fn from_str<'a>(_1: &'static str) -> Arguments<'a>
+= <opaque>
+
+// Full name: core::panicking::panic_fmt
+#[track_caller]
+#[lang_item(PanicFmt)]
+pub fn panic_fmt<'_0>(_1: Arguments<'_0>) -> !
+= <opaque>
+
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
+// Full name: alloc::alloc::Global
+#[lang_item(GlobalAlloc)]
+pub struct Global {}
+
+// Full name: alloc::boxed::Box
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box<T>
+
+opaque type ()
+
+// Full name: alloc::boxed::Box::{impl Destruct for Box<T>}::drop_glue
+unsafe fn drop_glue<'_0, T, A>(_1: &'_0 mut Box<T>)
+where
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
+= <opaque>
+
+// Full name: crate_a::unbox
+pub fn unbox(b: Box<u32>) -> u32
+{
+    let mut _0: u32; // return
+    let b: Box<u32>; // arg #1
+
+    storage_live(_0)
+    _0 = copy (*b)
+    conditional_drop[drop_glue<'0, u32, Global>] b
+    ↳⚡ storage_dead(b)
+        unwind_continue
+    storage_dead(b)
+    return
+}
+
+// Full name: crate_a::check::{promoted_const}
+pub const {promoted_const}: str = "n is zero" with_metadata(9usize)
+
+// Full name: crate_a::check
+pub fn check(n: u32) -> u32
+{
+    let mut _0: u32; // return
+    let n: u32; // arg #1
+    let mut _2: bool; // anonymous local
+    let mut _3: u32; // anonymous local
+    let mut _4: Arguments<'2>; // anonymous local
+    let mut _5: &'7 str; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy n
+    _2 = move _3 > const 0u32
+    if move _2 {
+    } else {
+        storage_dead(_3)
+        storage_live(_4)
+        storage_live(_5)
+        _5 = &{promoted_const} with_metadata(const 9usize)
+        _4 = from_str<'0>(move _5)
+        ↳⚡ storage_dead(_4)
+            storage_dead(n)
+            storage_dead(_5)
+            unwind_continue
+        panic(panic_fmt<'11>(move _4))
+        ↳⚡ storage_dead(_4)
+            storage_dead(n)
+            storage_dead(_5)
+            unwind_continue
+    }
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 = copy n
+    storage_dead(_4)
+    storage_dead(n)
+    storage_dead(_5)
+    return
+}
+
+// Full name: crate_a::m::Alias
+pub trait Alias<Self>
+{
+    proof ImpliedClause0: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: crate_b::use_a
+pub fn use_a(b: Box<u32>) -> u32
+{
+    let mut _0: u32; // return
+    let b: Box<u32>; // arg #1
+    let mut _2: u32; // anonymous local
+    let mut _3: Box<u32>; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = move b
+    _2 = unbox(move _3)
+    ↳⚡ conditional_drop[drop_glue<'0, u32, Global>] _3
+        ↳⚡ storage_dead(b)
+            unwind_terminate(in_cleanup)
+        conditional_drop[drop_glue<'1, u32, Global>] b
+        ↳⚡ storage_dead(b)
+            unwind_terminate(in_cleanup)
+        storage_dead(b)
+        unwind_continue
+    storage_dead(_3)
+    _0 = check(move _2)
+    ↳⚡ conditional_drop[drop_glue<'1, u32, Global>] b
+        ↳⚡ storage_dead(b)
+            unwind_terminate(in_cleanup)
+        storage_dead(b)
+        unwind_continue
+    storage_dead(_2)
+    conditional_drop[drop_glue<'2, u32, Global>] b
+    ↳⚡ storage_dead(b)
+        unwind_continue
+    storage_dead(b)
+    return
+}
+
+// Full name: crate_b::Shape
+pub trait Shape<Self>
+{
+    fn area<'_0_1, Outlives0: (Self: '_0_1)>;
+    vtable: crate_b::Shape::{vtable}
+}
+
+// Full name: crate_b::{impl Shape for u32}::area
+pub fn area<'_0>(self: &'_0 u32) -> u32
+{
+    let mut _0: u32; // return
+    let self: &'1 u32; // arg #1
+
+    storage_live(_0)
+    _0 = copy (*self)
+    storage_dead(self)
+    return
+}
+
+// Full name: crate_b::{impl Shape for u32}
+impl "impl_Shape_for_u32" Shape for u32 {
+    fn area<'_0_1> = area<'_0_1>
+    vtable: lazy
+}
+
+

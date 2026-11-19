@@ -1,30 +1,35 @@
+// Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
-pub trait core::marker::MetaSized<Self>
+pub trait MetaSized<Self>
 
+// Full name: core::marker::Sized
 #[fundamental]
 #[lang_item(Sized)]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 {
-    proof ImpliedClause0: (Self: core::marker::MetaSized)
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
-pub fn core::num::{u32}::wrapping_add(_1: u32, _2: u32) -> u32
+// Full name: core::num::{u32}::wrapping_add
+pub fn wrapping_add(_1: u32, _2: u32) -> u32
 = <opaque>
 
 struct str {
   _0: [u8],
 }
 
+// Full name: core::panicking::panic
 #[track_caller]
 #[lang_item(Panic)]
-pub fn core::panicking::panic(_1: &'static str) -> !
+pub fn panic(_1: &'static str) -> !
 = <opaque>
 
 pub const test_crate::mod_reduce::{promoted_const}: str = "assertion failed: a < 100" with_metadata(25usize)
 
-pub fn test_crate::mod_reduce(a: u32) -> u32
+// Full name: test_crate::mod_reduce
+pub fn mod_reduce(a: u32) -> u32
 {
     let mut _0: u32; // return
     let a: u32; // arg #1
@@ -40,14 +45,14 @@ pub fn test_crate::mod_reduce(a: u32) -> u32
     _2 = move _3 < const 100u32
     storage_live(_5)
     _5 = &test_crate::mod_reduce::{promoted_const} with_metadata(const 25usize)
-    assert(move _2 == true) else panic(core::panicking::panic(move _5))
+    assert(move _2 == true) else panic(panic(move _5))
     ↳⚡ storage_dead(_5)
         unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
     _4 = copy a
-    _0 = core::num::{u32}::wrapping_add(move _4, const 1u32)
+    _0 = wrapping_add(move _4, const 1u32)
     ↳⚡ storage_dead(a)
         storage_dead(_5)
         unwind_continue

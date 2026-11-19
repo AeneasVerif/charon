@@ -1,30 +1,35 @@
+// Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
-pub trait core::marker::MetaSized<Self>
+pub trait MetaSized<Self>
 
+// Full name: core::marker::Sized
 #[fundamental]
 #[lang_item(Sized)]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 {
-    proof ImpliedClause0: (Self: core::marker::MetaSized)
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
+// Full name: core::clone::Clone
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
-pub trait core::clone::Clone<Self>
+pub trait Clone<Self>
 {
-    proof ImpliedClause0: (Self: core::marker::Sized)
+    proof ImpliedClause0: (Self: Sized)
     fn clone<'_0_1, Outlives0: (Self: '_0_1)>;
     non-dyn-compatible
 }
 
-pub struct test_crate::Foo {}
+// Full name: test_crate::Foo
+pub struct Foo {}
 
-pub fn test_crate::{impl core::clone::Clone for test_crate::Foo}::clone<'_0>(self: &'_0 test_crate::Foo) -> test_crate::Foo
+// Full name: test_crate::{impl Clone for Foo}::clone
+pub fn clone<'_0>(self: &'_0 Foo) -> Foo
 {
-    let mut _0: test_crate::Foo; // return
-    let self: &'1 test_crate::Foo; // arg #1
+    let mut _0: Foo; // return
+    let self: &'1 Foo; // arg #1
 
     storage_live(_0)
     loop {
@@ -32,10 +37,10 @@ pub fn test_crate::{impl core::clone::Clone for test_crate::Foo}::clone<'_0>(sel
     }
 }
 
-// Full name: test_crate::{impl core::clone::Clone for test_crate::Foo}
-impl core::clone::Clone for test_crate::Foo {
-    proof ImpliedClause0: (test_crate::Foo: core::marker::Sized) = {built_in impl core::marker::Sized for test_crate::Foo}
-    fn clone<'_0_1> = test_crate::{impl core::clone::Clone for test_crate::Foo}::clone<'_0_1>
+// Full name: test_crate::{impl Clone for Foo}
+impl "impl_Clone_for_Foo" Clone for Foo {
+    proof ImpliedClause0: (Foo: Sized) = {built_in impl Sized for Foo}
+    fn clone<'_0_1> = clone<'_0_1>
     non-dyn-compatible
 }
 

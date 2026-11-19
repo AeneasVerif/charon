@@ -1,233 +1,251 @@
+// Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
-pub trait core::marker::MetaSized<Self>
+pub trait MetaSized<Self>
 
+// Full name: core::marker::Sized
 #[fundamental]
 #[lang_item(Sized)]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 {
-    proof ImpliedClause0: (Self: core::marker::MetaSized)
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
-pub opaque type core::iter::adapters::zip::Zip<A, B>
+// Full name: core::iter::adapters::zip::Zip
+pub opaque type Zip<A, B>
 where
-    TraitClause0: (A: core::marker::Sized),
-    TraitClause1: (B: core::marker::Sized),
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
 
 struct (_, _)<A, B>
 where
-    TraitClause0: (A: core::marker::Sized),
+    TraitClause0: (A: Sized),
 {
   _0: A,
   _1: B,
 }
 
+// Full name: core::option::Option
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
-pub enum core::option::Option<T>
+pub enum Option<T>
 where
-    TraitClause0: (T: core::marker::Sized),
+    TraitClause0: (T: Sized),
 {
   None,
   Some { _0: T },
 }
 
+// Full name: core::iter::traits::collect::IntoIterator
 #[diagnostic_item("IntoIterator")]
-pub trait core::iter::traits::collect::IntoIterator<Self>
+pub trait IntoIterator<Self>
 where
     TypeConstraint0: Self::ImpliedClause3::Item = Self::Item,
 {
-    proof ImpliedClause0: (Self: core::marker::MetaSized)
-    proof ImpliedClause1: (Self::Item: core::marker::Sized)
-    proof ImpliedClause2: (Self::IntoIter: core::marker::Sized)
-    proof ImpliedClause3: (Self::IntoIter: core::iter::traits::iterator::Iterator)
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Item: Sized)
+    proof ImpliedClause2: (Self::IntoIter: Sized)
+    proof ImpliedClause3: (Self::IntoIter: Iterator)
     type Item
     type IntoIter
     fn into_iter;
     vtable: core::iter::traits::collect::IntoIterator::{vtable}<Self::Item, Self::IntoIter>
 }
 
+// Full name: core::iter::traits::iterator::Iterator
 #[lang_item(Iterator)]
 #[diagnostic_item("Iterator")]
-pub trait core::iter::traits::iterator::Iterator<Self>
+pub trait Iterator<Self>
 {
-    proof ImpliedClause0: (Self: core::marker::MetaSized)
-    proof ImpliedClause1: (Self::Item: core::marker::Sized)
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Item: Sized)
     type Item
     fn next<'_0_1, Outlives0: (Self: '_0_1)>;
-    fn zip<U, TraitClause0_1: (U: core::marker::Sized), TraitClause1_1: (Self: core::marker::Sized), TraitClause2_1: (U: core::iter::traits::collect::IntoIterator)> = core::iter::traits::iterator::Iterator::zip<Self, U>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    fn zip<U, TraitClause0_1: (U: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: (U: IntoIterator)> = core::iter::traits::iterator::Iterator::zip<Self, U>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 
-pub fn core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator for core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]}::next<'_0, A, B>(_1: &'_0 mut core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]) -> core::option::Option<(TraitClause2::Item, TraitClause3::Item)>[{built_in impl core::marker::Sized for (TraitClause2::Item, TraitClause3::Item)}]
+// Full name: core::iter::adapters::zip::{impl Iterator for Zip<A, B>[TraitClause0, TraitClause1]}::next
+pub fn impl_Iterator_for_Zip::next<'_0, A, B>(_1: &'_0 mut Zip<A, B>[TraitClause0, TraitClause1]) -> Option<(TraitClause2::Item, TraitClause3::Item)>[{built_in impl Sized for (TraitClause2::Item, TraitClause3::Item)}]
 where
-    TraitClause0: (A: core::marker::Sized),
-    TraitClause1: (B: core::marker::Sized),
-    TraitClause2: (A: core::iter::traits::iterator::Iterator),
-    TraitClause3: (B: core::iter::traits::iterator::Iterator),
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+    TraitClause2: (A: Iterator),
+    TraitClause3: (B: Iterator),
     Outlives0: (A: '_0),
     Outlives1: (B: '_0),
 = <opaque>
 
-pub fn core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator for core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]}::zip<A, B, U>(_1: core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1], _2: U) -> core::iter::adapters::zip::Zip<core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1], TraitClause6::IntoIter>[TraitClause5, TraitClause6::ImpliedClause2]
+// Full name: core::iter::adapters::zip::{impl Iterator for Zip<A, B>[TraitClause0, TraitClause1]}::zip
+pub fn impl_Iterator_for_Zip::zip<A, B, U>(_1: Zip<A, B>[TraitClause0, TraitClause1], _2: U) -> Zip<Zip<A, B>[TraitClause0, TraitClause1], TraitClause6::IntoIter>[TraitClause5, TraitClause6::ImpliedClause2]
 where
-    TraitClause0: (A: core::marker::Sized),
-    TraitClause1: (B: core::marker::Sized),
-    TraitClause2: (A: core::iter::traits::iterator::Iterator),
-    TraitClause3: (B: core::iter::traits::iterator::Iterator),
-    TraitClause4: (U: core::marker::Sized),
-    TraitClause5: (core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]: core::marker::Sized),
-    TraitClause6: (U: core::iter::traits::collect::IntoIterator),
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+    TraitClause2: (A: Iterator),
+    TraitClause3: (B: Iterator),
+    TraitClause4: (U: Sized),
+    TraitClause5: (Zip<A, B>[TraitClause0, TraitClause1]: Sized),
+    TraitClause6: (U: IntoIterator),
 = <opaque>
 
-// Full name: core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator for core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]}
-impl<A, B> core::iter::traits::iterator::Iterator for core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]
+// Full name: core::iter::adapters::zip::{impl Iterator for Zip<A, B>[TraitClause0, TraitClause1]}
+impl<A, B> "impl_Iterator_for_Zip" Iterator for Zip<A, B>[TraitClause0, TraitClause1]
 where
-    TraitClause0: (A: core::marker::Sized),
-    TraitClause1: (B: core::marker::Sized),
-    TraitClause2: (A: core::iter::traits::iterator::Iterator),
-    TraitClause3: (B: core::iter::traits::iterator::Iterator),
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+    TraitClause2: (A: Iterator),
+    TraitClause3: (B: Iterator),
 {
-    proof ImpliedClause0: (core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]}
-    proof ImpliedClause1: ((TraitClause2::Item, TraitClause3::Item): core::marker::Sized) = {built_in impl core::marker::Sized for (TraitClause2::Item, TraitClause3::Item)}
+    proof ImpliedClause0: (Zip<A, B>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for Zip<A, B>[TraitClause0, TraitClause1]}
+    proof ImpliedClause1: ((TraitClause2::Item, TraitClause3::Item): Sized) = {built_in impl Sized for (TraitClause2::Item, TraitClause3::Item)}
     type Item = (TraitClause2::Item, TraitClause3::Item)
-    fn next<'_0_1> = core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator for core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]}::next<'_0_1, A, B>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
-    fn zip<U, TraitClause0_1: (U: core::marker::Sized), TraitClause1_1: (core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]: core::marker::Sized), TraitClause2_1: (U: core::iter::traits::collect::IntoIterator)> = core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator for core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]}::zip<A, B, U>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    fn next<'_0_1> = impl_Iterator_for_Zip::next<'_0_1, A, B>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
+    fn zip<U, TraitClause0_1: (U: Sized), TraitClause1_1: (Zip<A, B>[TraitClause0, TraitClause1]: Sized), TraitClause2_1: (U: IntoIterator)> = impl_Iterator_for_Zip::zip<A, B, U>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause0_1, TraitClause1_1, TraitClause2_1]
     vtable: lazy
 }
 
-pub fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<I>(_1: I) -> I
+// Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
+pub fn into_iter<I>(_1: I) -> I
 where
-    TraitClause0: (I: core::marker::Sized),
-    TraitClause1: (I: core::iter::traits::iterator::Iterator),
+    TraitClause0: (I: Sized),
+    TraitClause1: (I: Iterator),
 = <opaque>
 
-// Full name: core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}
-impl<I> core::iter::traits::collect::IntoIterator for I
+// Full name: core::iter::traits::collect::{impl IntoIterator for I}
+impl<I> "impl_IntoIterator_for_T" IntoIterator for I
 where
-    TraitClause0: (I: core::marker::Sized),
-    TraitClause1: (I: core::iter::traits::iterator::Iterator),
+    TraitClause0: (I: Sized),
+    TraitClause1: (I: Iterator),
 {
-    proof ImpliedClause0: (I: core::marker::MetaSized) = TraitClause0::ImpliedClause0
-    proof ImpliedClause1: (TraitClause1::Item: core::marker::Sized) = TraitClause1::ImpliedClause1
-    proof ImpliedClause2: (I: core::marker::Sized) = TraitClause0
-    proof ImpliedClause3: (I: core::iter::traits::iterator::Iterator) = TraitClause1
+    proof ImpliedClause0: (I: MetaSized) = TraitClause0::ImpliedClause0
+    proof ImpliedClause1: (TraitClause1::Item: Sized) = TraitClause1::ImpliedClause1
+    proof ImpliedClause2: (I: Sized) = TraitClause0
+    proof ImpliedClause3: (I: Iterator) = TraitClause1
     type Item = TraitClause1::Item
     type IntoIter = I
-    fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<I>[TraitClause0, TraitClause1]
+    fn into_iter = into_iter<I>[TraitClause0, TraitClause1]
     vtable: lazy
 }
 
-pub fn core::iter::traits::iterator::Iterator::zip<Self, U>(_1: Self, _2: U) -> core::iter::adapters::zip::Zip<Self, TraitClause3::IntoIter>[TraitClause2, TraitClause3::ImpliedClause2]
+pub fn core::iter::traits::iterator::Iterator::zip<Self, U>(_1: Self, _2: U) -> Zip<Self, TraitClause3::IntoIter>[TraitClause2, TraitClause3::ImpliedClause2]
 where
-    TraitClause0: (Self: core::iter::traits::iterator::Iterator),
-    TraitClause1: (U: core::marker::Sized),
-    TraitClause2: (Self: core::marker::Sized),
-    TraitClause3: (U: core::iter::traits::collect::IntoIterator),
+    TraitClause0: (Self: Iterator),
+    TraitClause1: (U: Sized),
+    TraitClause2: (Self: Sized),
+    TraitClause3: (U: IntoIterator),
 = <opaque>
 
+// Full name: core::slice::iter::Iter
 #[diagnostic_item("SliceIter")]
-pub opaque type core::slice::iter::Iter<'a, T>
+pub opaque type Iter<'a, T>
 where
-    TraitClause0: (T: core::marker::Sized),
+    TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
     Outlives1: (T: 'a),
 
-pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}::zip<'a, T, U>(_1: core::slice::iter::Iter<'a, T>[TraitClause0], _2: U) -> core::iter::adapters::zip::Zip<core::slice::iter::Iter<'a, T>[TraitClause0], TraitClause3::IntoIter>[TraitClause2, TraitClause3::ImpliedClause2]
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::zip
+pub fn impl_Iterator_for_Iter::zip<'a, T, U>(_1: Iter<'a, T>[TraitClause0], _2: U) -> Zip<Iter<'a, T>[TraitClause0], TraitClause3::IntoIter>[TraitClause2, TraitClause3::ImpliedClause2]
 where
-    TraitClause0: (T: core::marker::Sized),
-    TraitClause1: (U: core::marker::Sized),
-    TraitClause2: (core::slice::iter::Iter<'a, T>[TraitClause0]: core::marker::Sized),
-    TraitClause3: (U: core::iter::traits::collect::IntoIterator),
+    TraitClause0: (T: Sized),
+    TraitClause1: (U: Sized),
+    TraitClause2: (Iter<'a, T>[TraitClause0]: Sized),
+    TraitClause3: (U: IntoIterator),
     Outlives0: (T: 'a),
 = <opaque>
 
-pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}::next<'a, '_1, T>(_1: &'_1 mut core::slice::iter::Iter<'a, T>[TraitClause0]) -> core::option::Option<&'a T>[{built_in impl core::marker::Sized for &'a T}]
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::next
+pub fn impl_Iterator_for_Iter::next<'a, '_1, T>(_1: &'_1 mut Iter<'a, T>[TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'a T}]
 where
-    TraitClause0: (T: core::marker::Sized),
+    TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
     Outlives1: ('a: '_1),
     Outlives2: (T: '_1),
 = <opaque>
 
-// Full name: core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}
-impl<'a, T> core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}
+impl<'a, T> "impl_Iterator_for_Iter" Iterator for Iter<'a, T>[TraitClause0]
 where
-    TraitClause0: (T: core::marker::Sized),
+    TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
 {
-    proof ImpliedClause0: (core::slice::iter::Iter<'a, T>[TraitClause0]: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for core::slice::iter::Iter<'a, T>[TraitClause0]}
-    proof ImpliedClause1: (&'a T: core::marker::Sized) = {built_in impl core::marker::Sized for &'a T}
+    proof ImpliedClause0: (Iter<'a, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Iter<'a, T>[TraitClause0]}
+    proof ImpliedClause1: (&'a T: Sized) = {built_in impl Sized for &'a T}
     type Item = &'a T
-    fn next<'_0_1> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}::next<'a, '_0_1, T>[TraitClause0]
-    fn zip<U, TraitClause0_1: (U: core::marker::Sized), TraitClause1_1: (core::slice::iter::Iter<'a, T>[TraitClause0]: core::marker::Sized), TraitClause2_1: (U: core::iter::traits::collect::IntoIterator)> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}::zip<'a, T, U>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    fn next<'_0_1> = impl_Iterator_for_Iter::next<'a, '_0_1, T>[TraitClause0]
+    fn zip<U, TraitClause0_1: (U: Sized), TraitClause1_1: (Iter<'a, T>[TraitClause0]: Sized), TraitClause2_1: (U: IntoIterator)> = impl_Iterator_for_Iter::zip<'a, T, U>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
     vtable: lazy
 }
 
-pub opaque type core::slice::iter::IterMut<mut 'a, T>
+// Full name: core::slice::iter::IterMut
+pub opaque type IterMut<mut 'a, T>
 where
-    TraitClause0: (T: core::marker::Sized),
+    TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
     Outlives1: (T: 'a),
 
-pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::zip<'a, T, U>(_1: core::slice::iter::IterMut<'a, T>[TraitClause0], _2: U) -> core::iter::adapters::zip::Zip<core::slice::iter::IterMut<'a, T>[TraitClause0], TraitClause3::IntoIter>[TraitClause2, TraitClause3::ImpliedClause2]
+// Full name: core::slice::iter::{impl Iterator for IterMut<'a, T>[TraitClause0]}::zip
+pub fn impl_Iterator_for_IterMut::zip<'a, T, U>(_1: IterMut<'a, T>[TraitClause0], _2: U) -> Zip<IterMut<'a, T>[TraitClause0], TraitClause3::IntoIter>[TraitClause2, TraitClause3::ImpliedClause2]
 where
-    TraitClause0: (T: core::marker::Sized),
-    TraitClause1: (U: core::marker::Sized),
-    TraitClause2: (core::slice::iter::IterMut<'a, T>[TraitClause0]: core::marker::Sized),
-    TraitClause3: (U: core::iter::traits::collect::IntoIterator),
+    TraitClause0: (T: Sized),
+    TraitClause1: (U: Sized),
+    TraitClause2: (IterMut<'a, T>[TraitClause0]: Sized),
+    TraitClause3: (U: IntoIterator),
     Outlives0: (T: 'a),
 = <opaque>
 
-pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::next<'a, '_1, T>(_1: &'_1 mut core::slice::iter::IterMut<'a, T>[TraitClause0]) -> core::option::Option<&'a mut T>[{built_in impl core::marker::Sized for &'a mut T}]
+// Full name: core::slice::iter::{impl Iterator for IterMut<'a, T>[TraitClause0]}::next
+pub fn impl_Iterator_for_IterMut::next<'a, '_1, T>(_1: &'_1 mut IterMut<'a, T>[TraitClause0]) -> Option<&'a mut T>[{built_in impl Sized for &'a mut T}]
 where
-    TraitClause0: (T: core::marker::Sized),
+    TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
     Outlives1: ('a: '_1),
     Outlives2: (T: '_1),
 = <opaque>
 
-// Full name: core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}
-impl<'a, T> core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]
+// Full name: core::slice::iter::{impl Iterator for IterMut<'a, T>[TraitClause0]}
+impl<'a, T> "impl_Iterator_for_IterMut" Iterator for IterMut<'a, T>[TraitClause0]
 where
-    TraitClause0: (T: core::marker::Sized),
+    TraitClause0: (T: Sized),
     Outlives0: (T: 'a),
 {
-    proof ImpliedClause0: (core::slice::iter::IterMut<'a, T>[TraitClause0]: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for core::slice::iter::IterMut<'a, T>[TraitClause0]}
-    proof ImpliedClause1: (&'a mut T: core::marker::Sized) = {built_in impl core::marker::Sized for &'a mut T}
+    proof ImpliedClause0: (IterMut<'a, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for IterMut<'a, T>[TraitClause0]}
+    proof ImpliedClause1: (&'a mut T: Sized) = {built_in impl Sized for &'a mut T}
     type Item = &'a mut T
-    fn next<'_0_1> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::next<'a, '_0_1, T>[TraitClause0]
-    fn zip<U, TraitClause0_1: (U: core::marker::Sized), TraitClause1_1: (core::slice::iter::IterMut<'a, T>[TraitClause0]: core::marker::Sized), TraitClause2_1: (U: core::iter::traits::collect::IntoIterator)> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::zip<'a, T, U>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    fn next<'_0_1> = impl_Iterator_for_IterMut::next<'a, '_0_1, T>[TraitClause0]
+    fn zip<U, TraitClause0_1: (U: Sized), TraitClause1_1: (IterMut<'a, T>[TraitClause0]: Sized), TraitClause2_1: (U: IntoIterator)> = impl_Iterator_for_IterMut::zip<'a, T, U>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
     vtable: lazy
 }
 
+// Full name: core::slice::{[T]}::iter
 #[diagnostic_item("slice_iter")]
-pub fn core::slice::{[T]}::iter<'_0, T>(_1: &'_0 [T]) -> core::slice::iter::Iter<'_0, T>[TraitClause0]
+pub fn iter<'_0, T>(_1: &'_0 [T]) -> Iter<'_0, T>[TraitClause0]
 where
-    TraitClause0: (T: core::marker::Sized),
+    TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 = <opaque>
 
-pub fn core::slice::{[T]}::iter_mut<'_0, T>(_1: &'_0 mut [T]) -> core::slice::iter::IterMut<'_0, T>[TraitClause0]
+// Full name: core::slice::{[T]}::iter_mut
+pub fn iter_mut<'_0, T>(_1: &'_0 mut [T]) -> IterMut<'_0, T>[TraitClause0]
 where
-    TraitClause0: (T: core::marker::Sized),
+    TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 = <opaque>
 
 struct () {}
 
-fn test_crate::f<'_0>(blocks: &'_0 mut [u8])
+// Full name: test_crate::f
+fn f<'_0>(blocks: &'_0 mut [u8])
 {
     let mut _0: (); // return
     let blocks: &'1 mut [u8]; // arg #1
-    let mut _2: core::slice::iter::IterMut<'3, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
-    let mut _3: core::slice::iter::IterMut<'4, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
+    let mut _2: IterMut<'3, u8>[{built_in impl Sized for u8}]; // anonymous local
+    let mut _3: IterMut<'4, u8>[{built_in impl Sized for u8}]; // anonymous local
     let mut _4: &'5 mut [u8]; // anonymous local
-    let mut iter: core::slice::iter::IterMut<'6, u8>[{built_in impl core::marker::Sized for u8}]; // local
-    let mut _6: core::option::Option<&'15 mut u8>[{built_in impl core::marker::Sized for &'15 mut u8}]; // anonymous local
-    let mut _7: &'21 mut core::slice::iter::IterMut<'22, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
-    let mut _8: &'23 mut core::slice::iter::IterMut<'24, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
+    let mut iter: IterMut<'6, u8>[{built_in impl Sized for u8}]; // local
+    let mut _6: Option<&'15 mut u8>[{built_in impl Sized for &'15 mut u8}]; // anonymous local
+    let mut _7: &'21 mut IterMut<'22, u8>[{built_in impl Sized for u8}]; // anonymous local
+    let mut _8: &'23 mut IterMut<'24, u8>[{built_in impl Sized for u8}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -235,11 +253,11 @@ fn test_crate::f<'_0>(blocks: &'_0 mut [u8])
     storage_live(_3)
     storage_live(_4)
     _4 = &two-phase-mut (*blocks) with_metadata(read blocks.metadata)
-    _3 = core::slice::{[T]}::iter_mut<'28, u8>[{built_in impl core::marker::Sized for u8}](move _4)
+    _3 = iter_mut<'28, u8>[{built_in impl Sized for u8}](move _4)
     ↳⚡ storage_dead(blocks)
         unwind_continue
     storage_dead(_4)
-    _2 = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::slice::iter::IterMut<'40, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::IterMut<'40, u8>[{built_in impl core::marker::Sized for u8}]}, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}<'40, u8>[{built_in impl core::marker::Sized for u8}]](move _3)
+    _2 = into_iter<IterMut<'40, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for IterMut<'40, u8>[{built_in impl Sized for u8}]}, impl_Iterator_for_IterMut<'40, u8>[{built_in impl Sized for u8}]](move _3)
     ↳⚡ storage_dead(blocks)
         unwind_continue
     storage_dead(_3)
@@ -251,15 +269,15 @@ fn test_crate::f<'_0>(blocks: &'_0 mut [u8])
         storage_live(_8)
         _8 = &mut iter
         _7 = &two-phase-mut (*_8)
-        _6 = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::next<'60, '64, u8>[{built_in impl core::marker::Sized for u8}](move _7)
+        _6 = impl_Iterator_for_IterMut::next<'60, '64, u8>[{built_in impl Sized for u8}](move _7)
         ↳⚡ storage_dead(blocks)
             unwind_continue
         storage_dead(_7)
         match _6 {
-            core::option::Option::None => {
+            Option::None => {
                 break 0
             },
-            core::option::Option::Some => {
+            Option::Some => {
             },
         }
         storage_dead(_8)
@@ -275,21 +293,22 @@ fn test_crate::f<'_0>(blocks: &'_0 mut [u8])
     return
 }
 
-fn test_crate::g<'_0, '_1>(s0: &'_0 [u8], s1: &'_1 [u8])
+// Full name: test_crate::g
+fn g<'_0, '_1>(s0: &'_0 [u8], s1: &'_1 [u8])
 {
     let mut _0: (); // return
     let s0: &'1 [u8]; // arg #1
     let s1: &'2 [u8]; // arg #2
-    let mut _3: core::iter::adapters::zip::Zip<core::slice::iter::Iter<'18, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'19, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'18, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'19, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
-    let mut _4: core::iter::adapters::zip::Zip<core::slice::iter::Iter<'26, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'27, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'26, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'27, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
-    let mut _5: core::slice::iter::Iter<'34, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
+    let mut _3: Zip<Iter<'18, u8>[{built_in impl Sized for u8}], Iter<'19, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Iter<'18, u8>[{built_in impl Sized for u8}]}, {built_in impl Sized for Iter<'19, u8>[{built_in impl Sized for u8}]}]; // anonymous local
+    let mut _4: Zip<Iter<'26, u8>[{built_in impl Sized for u8}], Iter<'27, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Iter<'26, u8>[{built_in impl Sized for u8}]}, {built_in impl Sized for Iter<'27, u8>[{built_in impl Sized for u8}]}]; // anonymous local
+    let mut _5: Iter<'34, u8>[{built_in impl Sized for u8}]; // anonymous local
     let mut _6: &'35 [u8]; // anonymous local
-    let mut _7: core::slice::iter::Iter<'36, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
+    let mut _7: Iter<'36, u8>[{built_in impl Sized for u8}]; // anonymous local
     let mut _8: &'37 [u8]; // anonymous local
-    let mut iter: core::iter::adapters::zip::Zip<core::slice::iter::Iter<'38, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'39, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'38, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'39, u8>[{built_in impl core::marker::Sized for u8}]}]; // local
-    let mut _10: core::option::Option<(&'102 u8, &'103 u8)>[{built_in impl core::marker::Sized for (&'102 u8, &'103 u8)}]; // anonymous local
-    let mut _11: &'131 mut core::iter::adapters::zip::Zip<core::slice::iter::Iter<'132, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'133, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'132, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'133, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
-    let mut _12: &'140 mut core::iter::adapters::zip::Zip<core::slice::iter::Iter<'141, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'142, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'141, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'142, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
+    let mut iter: Zip<Iter<'38, u8>[{built_in impl Sized for u8}], Iter<'39, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Iter<'38, u8>[{built_in impl Sized for u8}]}, {built_in impl Sized for Iter<'39, u8>[{built_in impl Sized for u8}]}]; // local
+    let mut _10: Option<(&'102 u8, &'103 u8)>[{built_in impl Sized for (&'102 u8, &'103 u8)}]; // anonymous local
+    let mut _11: &'131 mut Zip<Iter<'132, u8>[{built_in impl Sized for u8}], Iter<'133, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Iter<'132, u8>[{built_in impl Sized for u8}]}, {built_in impl Sized for Iter<'133, u8>[{built_in impl Sized for u8}]}]; // anonymous local
+    let mut _12: &'140 mut Zip<Iter<'141, u8>[{built_in impl Sized for u8}], Iter<'142, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Iter<'141, u8>[{built_in impl Sized for u8}]}, {built_in impl Sized for Iter<'142, u8>[{built_in impl Sized for u8}]}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -298,7 +317,7 @@ fn test_crate::g<'_0, '_1>(s0: &'_0 [u8], s1: &'_1 [u8])
     storage_live(_5)
     storage_live(_6)
     _6 = &(*s0) with_metadata(read s0.metadata)
-    _5 = core::slice::{[T]}::iter<'152, u8>[{built_in impl core::marker::Sized for u8}](move _6)
+    _5 = iter<'152, u8>[{built_in impl Sized for u8}](move _6)
     ↳⚡ storage_dead(s1)
         storage_dead(s0)
         unwind_continue
@@ -306,18 +325,18 @@ fn test_crate::g<'_0, '_1>(s0: &'_0 [u8], s1: &'_1 [u8])
     storage_live(_7)
     storage_live(_8)
     _8 = &(*s1) with_metadata(read s1.metadata)
-    _7 = core::slice::{[T]}::iter<'155, u8>[{built_in impl core::marker::Sized for u8}](move _8)
+    _7 = iter<'155, u8>[{built_in impl Sized for u8}](move _8)
     ↳⚡ storage_dead(s1)
         storage_dead(s0)
         unwind_continue
     storage_dead(_8)
-    _4 = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}::zip<'186, u8, core::slice::iter::Iter<'187, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for u8}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'187, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'186, u8>[{built_in impl core::marker::Sized for u8}]}, core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<core::slice::iter::Iter<'187, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'187, u8>[{built_in impl core::marker::Sized for u8}]}, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}<'187, u8>[{built_in impl core::marker::Sized for u8}]]](move _5, move _7)
+    _4 = impl_Iterator_for_Iter::zip<'186, u8, Iter<'187, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for u8}, {built_in impl Sized for Iter<'187, u8>[{built_in impl Sized for u8}]}, {built_in impl Sized for Iter<'186, u8>[{built_in impl Sized for u8}]}, impl_IntoIterator_for_T<Iter<'187, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Iter<'187, u8>[{built_in impl Sized for u8}]}, impl_Iterator_for_Iter<'187, u8>[{built_in impl Sized for u8}]]](move _5, move _7)
     ↳⚡ storage_dead(s1)
         storage_dead(s0)
         unwind_continue
     storage_dead(_7)
     storage_dead(_5)
-    _3 = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::iter::adapters::zip::Zip<core::slice::iter::Iter<'372, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'375, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'372, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'375, u8>[{built_in impl core::marker::Sized for u8}]}]>[{built_in impl core::marker::Sized for core::iter::adapters::zip::Zip<core::slice::iter::Iter<'372, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'375, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'372, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'375, u8>[{built_in impl core::marker::Sized for u8}]}]}, core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator for core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]}<core::slice::iter::Iter<'372, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'375, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'372, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'375, u8>[{built_in impl core::marker::Sized for u8}]}, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}<'372, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}<'375, u8>[{built_in impl core::marker::Sized for u8}]]](move _4)
+    _3 = into_iter<Zip<Iter<'372, u8>[{built_in impl Sized for u8}], Iter<'375, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Iter<'372, u8>[{built_in impl Sized for u8}]}, {built_in impl Sized for Iter<'375, u8>[{built_in impl Sized for u8}]}]>[{built_in impl Sized for Zip<Iter<'372, u8>[{built_in impl Sized for u8}], Iter<'375, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Iter<'372, u8>[{built_in impl Sized for u8}]}, {built_in impl Sized for Iter<'375, u8>[{built_in impl Sized for u8}]}]}, impl_Iterator_for_Zip<Iter<'372, u8>[{built_in impl Sized for u8}], Iter<'375, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Iter<'372, u8>[{built_in impl Sized for u8}]}, {built_in impl Sized for Iter<'375, u8>[{built_in impl Sized for u8}]}, impl_Iterator_for_Iter<'372, u8>[{built_in impl Sized for u8}], impl_Iterator_for_Iter<'375, u8>[{built_in impl Sized for u8}]]](move _4)
     ↳⚡ storage_dead(s1)
         storage_dead(s0)
         unwind_continue
@@ -330,16 +349,16 @@ fn test_crate::g<'_0, '_1>(s0: &'_0 [u8], s1: &'_1 [u8])
         storage_live(_12)
         _12 = &mut iter
         _11 = &two-phase-mut (*_12)
-        _10 = core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator for core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]}::next<'620, core::slice::iter::Iter<'585, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'586, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'585, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'586, u8>[{built_in impl core::marker::Sized for u8}]}, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}<'585, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}<'586, u8>[{built_in impl core::marker::Sized for u8}]](move _11)
+        _10 = impl_Iterator_for_Zip::next<'620, Iter<'585, u8>[{built_in impl Sized for u8}], Iter<'586, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Iter<'585, u8>[{built_in impl Sized for u8}]}, {built_in impl Sized for Iter<'586, u8>[{built_in impl Sized for u8}]}, impl_Iterator_for_Iter<'585, u8>[{built_in impl Sized for u8}], impl_Iterator_for_Iter<'586, u8>[{built_in impl Sized for u8}]](move _11)
         ↳⚡ storage_dead(s1)
             storage_dead(s0)
             unwind_continue
         storage_dead(_11)
         match _10 {
-            core::option::Option::None => {
+            Option::None => {
                 break 0
             },
-            core::option::Option::Some => {
+            Option::Some => {
             },
         }
         storage_dead(_12)

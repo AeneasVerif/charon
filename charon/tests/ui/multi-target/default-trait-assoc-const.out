@@ -1,19 +1,22 @@
+// Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
-pub trait core::marker::MetaSized<Self>
+pub trait MetaSized<Self>
 
 struct () {}
 
-trait test_crate::Trait<Self>
+// Full name: test_crate::Trait
+trait Trait<Self>
 {
-    proof ImpliedClause0: (Self: core::marker::MetaSized)
+    proof ImpliedClause0: (Self: MetaSized)
     const VALUE : usize
     non-dyn-compatible
 }
 
-fn test_crate::Trait::VALUE<Self>() -> usize
+// Full name: test_crate::Trait::VALUE
+fn VALUE<Self>() -> usize
 where
-    TraitClause0: (Self: test_crate::Trait),
+    TraitClause0: (Self: Trait),
 {
     let mut _0: usize; // return
 
@@ -22,15 +25,16 @@ where
     return
 }
 
-const test_crate::Trait::VALUE<Self>: usize
+// Full name: test_crate::Trait::VALUE
+const VALUE<Self>: usize
 where
-    TraitClause0: (Self: test_crate::Trait),
- = test_crate::Trait::VALUE<Self>[TraitClause0]()
+    TraitClause0: (Self: Trait),
+ = VALUE<Self>[TraitClause0]()
 
-// Full name: test_crate::{impl test_crate::Trait for ()}
-impl test_crate::Trait for () {
-    proof ImpliedClause0: ((): core::marker::MetaSized) = {built_in impl core::marker::MetaSized for ()}
-    const VALUE = test_crate::Trait::VALUE<()>[test_crate::{impl test_crate::Trait for ()}]
+// Full name: test_crate::{impl Trait for ()}
+impl "impl_Trait_for_unit" Trait for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    const VALUE = VALUE<()>[impl_Trait_for_unit]
     non-dyn-compatible
 }
 

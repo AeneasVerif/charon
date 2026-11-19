@@ -1,6 +1,7 @@
 struct () {}
 
-extern "C" fn test_crate::macho_ctor()
+// Full name: test_crate::macho_ctor
+extern "C" fn macho_ctor()
 {
     let mut _0: (); // return
 
@@ -10,7 +11,8 @@ extern "C" fn test_crate::macho_ctor()
     return
 }
 
+// Full name: test_crate::MACHO_CTOR
 #[link_section = "__DATA,__mod_init_func"]
-static test_crate::MACHO_CTOR: extern "C" fn() = fn_def_to_fn_ptr(test_crate::macho_ctor)
+static MACHO_CTOR: extern "C" fn() = fn_def_to_fn_ptr(macho_ctor)
 
 

@@ -1,34 +1,40 @@
+// Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
-pub trait core::marker::MetaSized<Self>
+pub trait MetaSized<Self>
 
+// Full name: core::marker::Sized
 #[fundamental]
 #[lang_item(Sized)]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 {
-    proof ImpliedClause0: (Self: core::marker::MetaSized)
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
-pub fn core::num::{u32}::MAX() -> u32
+// Full name: core::num::{u32}::MAX
+pub fn MAX() -> u32
 = <opaque>
 
 struct () {}
 
-pub const core::num::{u32}::MAX: u32 = core::num::{u32}::MAX()
+// Full name: core::num::{u32}::MAX
+pub const MAX: u32 = MAX()
 
 struct str {
   _0: [u8],
 }
 
+// Full name: core::panicking::panic
 #[track_caller]
 #[lang_item(Panic)]
-pub fn core::panicking::panic(_1: &'static str) -> !
+pub fn panic(_1: &'static str) -> !
 = <opaque>
 
 pub const test_crate::const_time_array_copy_mwe::{promoted_const}: str = "assertion failed: N <= u32::MAX as usize" with_metadata(40usize)
 
-pub fn test_crate::const_time_array_copy_mwe<'_0, const N : usize>(_a: &'_0 mut [u8; N])
+// Full name: test_crate::const_time_array_copy_mwe
+pub fn const_time_array_copy_mwe<'_0, const N : usize>(_a: &'_0 mut [u8; N])
 {
     let mut _0: (); // return
     let _a: &'1 mut [u8; N]; // arg #1
@@ -38,11 +44,11 @@ pub fn test_crate::const_time_array_copy_mwe<'_0, const N : usize>(_a: &'_0 mut 
 
     storage_live(_2)
     storage_live(_3)
-    _3 = cast<usize>(read core::num::{u32}::MAX)
+    _3 = cast<usize>(read MAX)
     _2 = const N <= move _3
     storage_live(_4)
     _4 = &test_crate::const_time_array_copy_mwe::{promoted_const} with_metadata(const 40usize)
-    assert(move _2 == true) else panic(core::panicking::panic(move _4))
+    assert(move _2 == true) else panic(panic(move _4))
     ↳⚡ storage_dead(_4)
         unwind_continue
     storage_dead(_3)

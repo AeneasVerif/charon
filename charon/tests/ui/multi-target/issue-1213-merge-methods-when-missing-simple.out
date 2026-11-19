@@ -1,29 +1,33 @@
+// Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
-pub trait core::marker::MetaSized<Self>
+pub trait MetaSized<Self>
 
+// Full name: core::marker::Sized
 #[fundamental]
 #[lang_item(Sized)]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 {
-    proof ImpliedClause0: (Self: core::marker::MetaSized)
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 struct () {}
 
+// Full name: test_crate::Trait
 #[charon::opaque]
-trait test_crate::Trait<Self>
+trait Trait<Self>
 {
-    proof ImpliedClause0: (Self: core::marker::MetaSized)
-    fn method1<'_0_1, Outlives0: (Self: '_0_1)> = test_crate::Trait::method1<'_0_1, Self>[Self]
-    fn method2<'_0_1, Outlives0: (Self: '_0_1)> = test_crate::Trait::method2<'_0_1, Self>[Self]
+    proof ImpliedClause0: (Self: MetaSized)
+    fn method1<'_0_1, Outlives0: (Self: '_0_1)> = method1<'_0_1, Self>[Self]
+    fn method2<'_0_1, Outlives0: (Self: '_0_1)> = method2<'_0_1, Self>[Self]
     vtable: test_crate::Trait::{vtable}
 }
 
-fn test_crate::Trait::method1<'_0, Self>(self: &'_0 Self)
+// Full name: test_crate::Trait::method1
+fn method1<'_0, Self>(self: &'_0 Self)
 where
-    TraitClause0: (Self: test_crate::Trait),
+    TraitClause0: (Self: Trait),
     Outlives0: (Self: '_0),
 {
     let mut _0: (); // return
@@ -36,9 +40,10 @@ where
     return
 }
 
-fn test_crate::Trait::method2<'_0, Self>(self: &'_0 Self)
+// Full name: test_crate::Trait::method2
+fn method2<'_0, Self>(self: &'_0 Self)
 where
-    TraitClause0: (Self: test_crate::Trait),
+    TraitClause0: (Self: Trait),
     Outlives0: (Self: '_0),
 {
     let mut _0: (); // return
@@ -51,10 +56,11 @@ where
     return
 }
 
-fn test_crate::f<'_0, T0>(x: &'_0 T0)
+// Full name: test_crate::f
+fn f<'_0, T0>(x: &'_0 T0)
 where
-    TraitClause0: (T0: core::marker::Sized),
-    TraitClause1: (T0: test_crate::Trait),
+    TraitClause0: (T0: Sized),
+    TraitClause1: (T0: Trait),
     Outlives0: (T0: '_0),
 {
     let mut _0: (); // return
@@ -73,10 +79,11 @@ where
     return
 }
 
-fn test_crate::g<'_0, T0>(x: &'_0 T0)
+// Full name: test_crate::g
+fn g<'_0, T0>(x: &'_0 T0)
 where
-    TraitClause0: (T0: core::marker::Sized),
-    TraitClause1: (T0: test_crate::Trait),
+    TraitClause0: (T0: Sized),
+    TraitClause1: (T0: Trait),
     Outlives0: (T0: '_0),
 {
     let mut _0: (); // return
