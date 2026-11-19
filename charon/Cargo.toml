@@ -154,6 +154,10 @@ walkdir = "2.3.2"
 [package.metadata.rust-analyzer]
 rustc_private = true
 
+[profile.dev]
+# This flag slims down target folder by ~40% 
+split-debuginfo = "unpacked"
+
 [profile.dev.package.minirust-rs]
 opt-level = 3
 
