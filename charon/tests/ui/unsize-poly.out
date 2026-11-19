@@ -78,7 +78,7 @@ where
     storage_live(_0)
     storage_live(_2)
     _2 = &(*x) with_metadata(read x.metadata)
-    _0 = unsize_cast<&'5 U, ?>(move _2)
+    _0 = unsize_cast<&'5 U, TraitClause2>(move _2)
     storage_dead(_2)
     storage_dead(x)
     return
@@ -98,7 +98,7 @@ where
     storage_live(_0)
     storage_live(_2)
     _2 = move x
-    _0 = unsize_cast<Box<U>[TraitClause1, {built_in impl Sized for Global}], ?>(move _2)
+    _0 = unsize_cast<Box<U>[TraitClause1, {built_in impl Sized for Global}], TraitClause2>(move _2)
     conditional_drop[impl_Destruct_for_Box::drop_glue<'0, T, Global>[TraitClause0, {built_in impl Sized for Global}]] _2
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'2, T, Global>[TraitClause0, {built_in impl Sized for Global}]] x
         ↳⚡ storage_dead(x)
@@ -164,7 +164,7 @@ where
     storage_live(_0)
     storage_live(_2)
     _2 = move x
-    _0 = unsize_cast<Wrapper<Q>[TraitClause1], ?>(move _2)
+    _0 = unsize_cast<Wrapper<Q>[TraitClause1], TraitClause2>(move _2)
     conditional_drop[impl_Destruct_for_Wrapper::drop_glue<'0, P>[TraitClause0]] _2
     ↳⚡ conditional_drop[impl_Destruct_for_Wrapper::drop_glue<'2, P>[TraitClause0]] x
         ↳⚡ storage_dead(x)

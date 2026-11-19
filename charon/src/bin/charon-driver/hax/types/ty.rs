@@ -7,6 +7,7 @@ use crate::hax::prelude::*;
 use rustc_data_structures::intern::Interned;
 use rustc_middle::ty;
 use rustc_middle::ty::inherent::IntoKind;
+use rustc_span::DUMMY_SP;
 use rustc_span::def_id::DefId as RDefId;
 
 sinto_reexport!(rustc_abi::ExternAbi);
@@ -579,8 +580,10 @@ pub enum UnsizingMetadata<'tcx> {
     DirectVTable(TraitProof<'tcx>),
     /// Unsize a dyn-type to another dyn-type, (optionally) indexing within the current vtable.
     NestedVTable(DynBinder<'tcx, TraitProof<'tcx>>),
-    /// Couldn't compute
-    Unknown,
+    /// Generic case: proof of `Unsize` between the pointees.
+    UnsizeClause(TraitProof<'tcx>),
+    /// Generic case: proof of `CoerceUnsized` between the struct fields.
+    CoerceUnsizedClause(TraitProof<'tcx>),
 }
 
 pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
@@ -620,7 +623,13 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
                 (path, meta)
             }
             (ty::Pat(a, _), ty::Pat(b, _)) => compute_unsizing_metadata(s, *a, *b),
-            _ => (vec![], UnsizingMetadata::Unknown),
+            _ => {
+                let coerce_trait =
+                    tcx.require_lang_item(rustc_hir::attrs::LangItem::CoerceUnsized, DUMMY_SP);
+                let tref = ty::TraitRef::new(tcx, coerce_trait, [src_ty, tgt_ty]);
+                let proof = solve_trait(s, ty::Binder::dummy(tref));
+                (vec![], UnsizingMetadata::CoerceUnsizedClause(proof))
+            }
         };
     };
     let typing_env = s.typing_env();
@@ -661,7 +670,11 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
 
             UnsizingMetadata::DirectVTable(trait_proof)
         }
-        _ => UnsizingMetadata::Unknown,
+        _ => {
+            let unsize_trait = tcx.require_lang_item(rustc_hir::attrs::LangItem::Unsize, DUMMY_SP);
+            let tref = ty::TraitRef::new(tcx, unsize_trait, [src_ty, tgt_ty]);
+            UnsizingMetadata::UnsizeClause(solve_trait(s, ty::Binder::dummy(tref)))
+        }
     };
     (vec![], meta)
 }

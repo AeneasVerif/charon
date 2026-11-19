@@ -1546,7 +1546,12 @@ and unsizing_metadata_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
      | 2 ->
          let* _0 = list_of_postcard field_id_of_postcard ctx st in
          Ok (MetaVTableUpcast _0)
-     | 3 -> Ok MetaUnknown
+     | 3 ->
+         let* _0 = trait_ref_of_postcard ctx st in
+         Ok (MetaUnsizeClause _0)
+     | 4 ->
+         let* _0 = trait_ref_of_postcard ctx st in
+         Ok (MetaCoerceUnsizedClause _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and unwind_terminate_reason_of_postcard (ctx : of_postcard_ctx)

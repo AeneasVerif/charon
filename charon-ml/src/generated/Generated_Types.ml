@@ -903,7 +903,13 @@ and unsizing_metadata =
 
           Note that we cheat in one case: when upcasting to a marker trait (e.g.
           [dyn Trait -> dyn Sized]), we keep the current vtable. *)
-  | MetaUnknown
+  | MetaUnsizeClause of trait_ref
+      (** The metadata depends on generic parameters: this is the proof of the
+          [Unsize] predicate between the pointees. *)
+  | MetaCoerceUnsizedClause of trait_ref
+      (** The metadata depends on generic parameters: this is proof of the
+          [CoerceUnsized] predicate between the fields of a [CoerceUnsized]
+          struct. *)
 
 (** The variance of a lifetime or type parameter. *)
 and variance =

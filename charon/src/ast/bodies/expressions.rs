@@ -284,7 +284,12 @@ pub enum UnsizingMetadata {
     /// Note that we cheat in one case: when upcasting to a marker trait (e.g. `dyn Trait -> dyn
     /// Sized`), we keep the current vtable.
     VTableUpcast(Vec<FieldId>),
-    Unknown,
+    /// The metadata depends on generic parameters: this is the proof of the `Unsize` predicate
+    /// between the pointees.
+    UnsizeClause(TraitRef),
+    /// The metadata depends on generic parameters: this is proof of the `CoerceUnsized` predicate
+    /// between the fields of a `CoerceUnsized` struct.
+    CoerceUnsizedClause(TraitRef),
 }
 
 /// An aggregated ADT.

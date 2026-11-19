@@ -129,7 +129,9 @@ fn transform_constant_expr(
                 GlobalPlaceKind::Value(bval) if !bval_is_sized => {
                     let meta = match metadata.as_ref().unwrap() {
                         UnsizingMetadata::Length(meta) | UnsizingMetadata::VTable(_, meta) => meta,
-                        UnsizingMetadata::VTableUpcast(..) | UnsizingMetadata::Unknown => {
+                        UnsizingMetadata::VTableUpcast(..)
+                        | UnsizingMetadata::CoerceUnsizedClause(..)
+                        | UnsizingMetadata::UnsizeClause(..) => {
                             unreachable!("unexpected const metadata")
                         }
                     };
