@@ -1818,7 +1818,12 @@ and unsizing_metadata_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("VTableUpcast", _0) ] ->
         let* _0 = list_of_json field_id_of_json ctx _0 in
         Ok (MetaVTableUpcast _0)
-    | `String "Unknown" -> Ok MetaUnknown
+    | `Assoc [ ("UnsizeClause", _0) ] ->
+        let* _0 = trait_ref_of_json ctx _0 in
+        Ok (MetaUnsizeClause _0)
+    | `Assoc [ ("CoerceUnsizedClause", _0) ] ->
+        let* _0 = trait_ref_of_json ctx _0 in
+        Ok (MetaCoerceUnsizedClause _0)
     | _ -> Error "")
 
 and unwind_terminate_reason_of_json (ctx : of_json_ctx) (js : json) :

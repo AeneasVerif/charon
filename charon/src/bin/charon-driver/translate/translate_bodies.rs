@@ -372,13 +372,17 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     }
                 }
 
-                if field_path.len() == clause_path.len() {
-                    UnsizingMetadata::VTableUpcast(field_path)
-                } else {
-                    UnsizingMetadata::Unknown
-                }
+                assert_eq!(field_path.len(), clause_path.len());
+                UnsizingMetadata::VTableUpcast(field_path)
             }
-            hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
+            hax::UnsizingMetadata::UnsizeClause(trait_proof) => UnsizingMetadata::UnsizeClause(
+                self.translate_trait_proof(span, trait_proof)?.erase(),
+            ),
+            hax::UnsizingMetadata::CoerceUnsizedClause(trait_proof) => {
+                UnsizingMetadata::CoerceUnsizedClause(
+                    self.translate_trait_proof(span, trait_proof)?.erase(),
+                )
+            }
         })
     }
 

@@ -501,8 +501,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for UnsizingMetadata {
                 let fields = fields.iter().map(|x| format!("{}", x.index())).format(", ");
                 write!(f, "{fields}]")
             }
-            UnsizingMetadata::Unknown => {
-                write!(f, "?")
+            UnsizingMetadata::UnsizeClause(tref) | UnsizingMetadata::CoerceUnsizedClause(tref) => {
+                write!(f, "{}", tref.with_ctx(ctx))
             }
         }
     }

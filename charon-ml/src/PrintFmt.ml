@@ -521,7 +521,8 @@ and pp_unsizing_metadata (env : fmt_env) (fmt : Format.formatter)
       Format.fprintf fmt " at [%a]"
         (pp_sep_list ", " (fun fmt id -> pp_string fmt (FieldId.to_string id)))
         fields
-  | MetaUnknown -> pp_string fmt "?"
+  | MetaUnsizeClause tref | MetaCoerceUnsizedClause tref ->
+      pp_trait_ref env fmt tref
 
 and pp_const_aggregate (env : fmt_env) (tref : type_decl_ref) opt_variant_id
     (fmt : Format.formatter) (fields : constant_expr list) : unit =

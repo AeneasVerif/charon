@@ -1,0 +1,183 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Unsize
+#[lang_item(Unsize)]
+pub trait Unsize<Self, T>
+
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
+    non-dyn-compatible
+}
+
+// Full name: core::ops::unsize::CoerceUnsized
+#[lang_item(CoerceUnsized)]
+pub trait CoerceUnsized<Self, T>
+{
+    proof ImpliedClause0: (Self: Sized)
+    non-dyn-compatible
+}
+
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
+// Full name: alloc::alloc::Global
+#[lang_item(GlobalAlloc)]
+pub struct Global {}
+
+// Full name: alloc::boxed::Box
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box<T>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
+
+// Full name: alloc::boxed::Box::{impl Destruct for Box<T>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn impl_Destruct_for_Box::drop_glue<'_0, T, A>(_1: &'_0 mut Box<T>[TraitClause0, TraitClause1])
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
+= <opaque>
+
+// Full name: test_crate::through_ref
+pub fn through_ref<'_0, T, U>(x: &'_0 T) -> &'_0 U
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (U: MetaSized),
+    TraitClause2: (T: Unsize<U>),
+    Outlives0: (T: '_0),
+    Outlives1: (U: '_0),
+{
+    let mut _0: &'1 U; // return
+    let x: &'3 T; // arg #1
+    let mut _2: &'4 T; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = &(*x) with_metadata(read x.metadata)
+    _0 = unsize_cast<&'5 U, TraitClause2>(move _2)
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::through_box
+pub fn through_box<T, U>(x: Box<T>[TraitClause0, {built_in impl Sized for Global}]) -> Box<U>[TraitClause1, {built_in impl Sized for Global}]
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (U: MetaSized),
+    TraitClause2: (T: Unsize<U>),
+{
+    let mut _0: Box<U>[TraitClause1, {built_in impl Sized for Global}]; // return
+    let x: Box<T>[TraitClause0, {built_in impl Sized for Global}]; // arg #1
+    let mut _2: Box<T>[TraitClause0, {built_in impl Sized for Global}]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = move x
+    _0 = unsize_cast<Box<U>[TraitClause1, {built_in impl Sized for Global}], TraitClause2>(move _2)
+    conditional_drop[impl_Destruct_for_Box::drop_glue<'0, T, Global>[TraitClause0, {built_in impl Sized for Global}]] _2
+    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'2, T, Global>[TraitClause0, {built_in impl Sized for Global}]] x
+        ↳⚡ storage_dead(x)
+            unwind_terminate(in_cleanup)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    conditional_drop[impl_Destruct_for_Box::drop_glue<'1, T, Global>[TraitClause0, {built_in impl Sized for Global}]] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::Wrapper
+pub struct Wrapper<P>
+where
+    TraitClause0: (P: Sized),
+{
+  _0: P,
+}
+
+// Full name: test_crate::Wrapper::{impl Destruct for Wrapper<P>[TraitClause0]}::drop_glue
+unsafe fn impl_Destruct_for_Wrapper::drop_glue<'_0, P>(_1: &'_0 mut Wrapper<P>[TraitClause0])
+where
+    TraitClause0: (P: Sized),
+    Outlives0: (P: '_0),
+{
+    let mut _0: (); // return
+    let _1: &'1 mut Wrapper<P>[TraitClause0]; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    drop[{built_in impl Destruct for P}::drop_glue<'2>] (*_1)._0
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::{impl CoerceUnsized<Wrapper<Q>[TraitClause1]> for Wrapper<P>[TraitClause0]}
+impl<P, Q> "impl_CoerceUnsized_Wrapper_for_Wrapper" CoerceUnsized<Wrapper<Q>[TraitClause1]> for Wrapper<P>[TraitClause0]
+where
+    TraitClause0: (P: Sized),
+    TraitClause1: (Q: Sized),
+    TraitClause2: (P: CoerceUnsized<Q>),
+{
+    proof ImpliedClause0: (Wrapper<P>[TraitClause0]: Sized) = {built_in impl Sized for Wrapper<P>[TraitClause0]}
+    non-dyn-compatible
+}
+
+// Full name: test_crate::through_coerce_unsized
+pub fn through_coerce_unsized<P, Q>(x: Wrapper<P>[TraitClause0]) -> Wrapper<Q>[TraitClause1]
+where
+    TraitClause0: (P: Sized),
+    TraitClause1: (Q: Sized),
+    TraitClause2: (P: CoerceUnsized<Q>),
+{
+    let mut _0: Wrapper<Q>[TraitClause1]; // return
+    let x: Wrapper<P>[TraitClause0]; // arg #1
+    let mut _2: Wrapper<P>[TraitClause0]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = move x
+    _0 = unsize_cast<Wrapper<Q>[TraitClause1], TraitClause2>(move _2)
+    conditional_drop[impl_Destruct_for_Wrapper::drop_glue<'0, P>[TraitClause0]] _2
+    ↳⚡ conditional_drop[impl_Destruct_for_Wrapper::drop_glue<'2, P>[TraitClause0]] x
+        ↳⚡ storage_dead(x)
+            unwind_terminate(in_cleanup)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    conditional_drop[impl_Destruct_for_Wrapper::drop_glue<'1, P>[TraitClause0]] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
+    return
+}
+
+
+
