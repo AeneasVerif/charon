@@ -1450,6 +1450,9 @@ pub fn translate<'tcx>(
         // We are then stuck with a foreign `foo`, despite crate A being translatable.
         // Translating all items and then pruning them after filtering avoids this.
         let root: hax::DefId = LOCAL_CRATE.as_def_id().sinto(&ctx.hax_state);
+        // Enqueue the whole crate for translation, but without marking any more
+        // items as "started from" (since only items reachable from the `Start` node
+        // are counted as such).
         ctx.enqueue_module_item(&root, ContainmentNode::WholeCrate);
     }
 
