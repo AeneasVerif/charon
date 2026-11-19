@@ -1,0 +1,64 @@
+# Final LLBC before serialization:
+
+struct () {}
+// layout:
+//     size: 0usize (guaranteed: at_least(0usize)),
+//     align: 1usize (guaranteed: at_least(1usize)),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+// Full name: test_crate::OVER_ALIGNED
+#[rustc_align(64)]
+pub fn OVER_ALIGNED() -> u8
+{
+    let mut _0: u8; // return
+
+    storage_live(_0)
+    _0 = const 0u8
+    return
+}
+
+// Full name: test_crate::OVER_ALIGNED
+#[rustc_align(64)]
+pub static OVER_ALIGNED: u8 = OVER_ALIGNED()
+// size: size_of::<u8>(), align: align_of::<u8>()
+
+// Full name: test_crate::UNDER_ALIGNED
+#[rustc_align(1)]
+pub fn UNDER_ALIGNED() -> u64
+{
+    let mut _0: u64; // return
+
+    storage_live(_0)
+    _0 = const 0u64
+    return
+}
+
+// Full name: test_crate::UNDER_ALIGNED
+#[rustc_align(1)]
+pub static UNDER_ALIGNED: u64 = UNDER_ALIGNED()
+// size: size_of::<u64>(), align: align_of::<u64>()
+
+// Full name: test_crate::NOT_ALIGNED
+pub fn NOT_ALIGNED() -> u8
+{
+    let mut _0: u8; // return
+
+    storage_live(_0)
+    _0 = const 0u8
+    return
+}
+
+// Full name: test_crate::NOT_ALIGNED
+pub static NOT_ALIGNED: u8 = NOT_ALIGNED()
+// size: size_of::<u8>(), align: align_of::<u8>()
+
+
+
