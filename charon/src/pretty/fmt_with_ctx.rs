@@ -527,6 +527,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for CastKind {
                 meta.with_ctx(ctx)
             ),
             CastKind::Transmute(tgt) => write!(f, "transmute<{}>", tgt.with_ctx(ctx)),
+            CastKind::BoxDerefTransmute(tgt) => {
+                write!(f, "box_deref_transmute<{}>", tgt.with_ctx(ctx))
+            }
             CastKind::Concretize(tgt, _) => write!(f, "concretize<{}>", tgt.with_ctx(ctx)),
         }
     }

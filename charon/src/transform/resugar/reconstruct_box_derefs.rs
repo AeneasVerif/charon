@@ -12,21 +12,28 @@ pub struct Transform;
 
 /// Look for
 /// ```ignore
-/// transmute::<Unique<T>, *const T>(copy (*b))
-/// transmute::<NonNull<T>, *const T>(copy (*b).0)
+/// box_deref_transmute::<Unique<T>, *const T>(copy (*b)) // box deref elaboration
+/// transmute::<NonNull<T>, *const T>(copy (*b).0)        // drop elaboration
 /// ```
 /// Returns `b`
 fn box_pointer_assignment(rvalue: &Rvalue) -> Option<Place> {
-    let Rvalue::UnaryOp(
-        UnOp::Cast(CastKind::Transmute(raw_ptr_ty)),
-        Operand::Copy(hidden_pointer, _),
-    ) = &rvalue
-    else {
-        return None;
-    };
-    let unique_place = match hidden_pointer.as_projection()? {
-        (field_base, ProjectionElem::Field(_, FieldId::ZERO)) => field_base,
-        _ => hidden_pointer,
+    let (unique_place, raw_ptr_ty) = match rvalue {
+        Rvalue::UnaryOp(
+            UnOp::Cast(CastKind::BoxDerefTransmute(raw_ptr_ty)),
+            Operand::Copy(unique_place, _),
+        ) => (unique_place, raw_ptr_ty),
+        Rvalue::UnaryOp(
+            UnOp::Cast(CastKind::Transmute(raw_ptr_ty)),
+            Operand::Copy(nonnull_place, _),
+        ) => {
+            let (unique_place, ProjectionElem::Field(_, FieldId::ZERO)) =
+                nonnull_place.as_projection()?
+            else {
+                return None;
+            };
+            (unique_place, raw_ptr_ty)
+        }
+        _ => return None,
     };
     let (box_place, ProjectionElem::Deref) = unique_place.as_projection()? else {
         return None;

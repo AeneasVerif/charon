@@ -1260,9 +1260,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         ty::adjustment::PointerCoercion::UnsafeFnPointer,
                         ..,
                     ) => CastKind::FnPtrToUnsafe,
-                    mir::CastKind::Transmute | mir::CastKind::BoxDerefTransmute => {
-                        CastKind::Transmute(tgt_ty.clone())
-                    }
+                    mir::CastKind::Transmute => CastKind::Transmute(tgt_ty.clone()),
+                    mir::CastKind::BoxDerefTransmute => CastKind::BoxDerefTransmute(tgt_ty.clone()),
                     mir::CastKind::Subtype => CastKind::Subtype(tgt_ty.clone()),
                     mir::CastKind::PointerCoercion(ty::adjustment::PointerCoercion::Unsize, ..) => {
                         let (path, meta) =

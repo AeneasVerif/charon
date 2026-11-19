@@ -2360,7 +2360,7 @@ where
     ↳⚡ unwind_continue
     storage_dead(_7)
     _8 = noretag read (*_6)
-    _9 = transmute<*const T>(copy _8._0)
+    _9 = box_deref_transmute<*const T>(copy _8._0)
     _5 = &mut (*_9) with_metadata(read _9.metadata)
     _4 = &raw mut (*_5) with_metadata(read _5.metadata)
     _0 = copy _4
@@ -2420,7 +2420,7 @@ where
     ↳⚡ unwind_continue
     storage_dead(_6)
     _14 = noretag read (*_5)
-    _15 = transmute<*const T>(copy _14._0)
+    _15 = box_deref_transmute<*const T>(copy _14._0)
     ptr = &raw mut (*_15) with_metadata(read _15.metadata)
     storage_live(alloc)
     storage_live(_8)
@@ -2550,9 +2550,9 @@ unsafe fn foo()
     ↳⚡ unwind_continue
     storage_dead(_7)
     storage_live(i)
-    _9 = transmute<*const i32>(copy b_6._0)
+    _9 = box_deref_transmute<*const i32>(copy b_6._0)
     i = copy (*_9)
-    _10 = transmute<*const i32>(copy b_6._0)
+    _10 = box_deref_transmute<*const i32>(copy b_6._0)
     (*_10) = const 42i32
     _0 = ()
     storage_dead(i)

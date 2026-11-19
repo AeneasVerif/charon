@@ -471,6 +471,9 @@ and cast_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (CastTransmute _0)
      | 9 ->
          let* _0 = ty_of_postcard ctx st in
+         Ok (CastBoxDerefTransmute _0)
+     | 10 ->
+         let* _0 = ty_of_postcard ctx st in
          let* _1 = list_of_postcard field_id_of_postcard ctx st in
          Ok (CastConcretize (_0, _1))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))

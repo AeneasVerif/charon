@@ -307,6 +307,10 @@ and cast_kind =
   | CastTransmute of ty
       (** Reinterprets the bits of a value of one type as another type, i.e.
           exactly what [[std::mem::transmute]] does. *)
+  | CastBoxDerefTransmute of ty
+      (** Like [Transmute], but only used for desugaring box derefs. This is
+          almost equivalent to a regular transmute except that if the input
+          would not be valid as [Box<T>], the cast is UB. *)
   | CastConcretize of ty * field_id list
       (** Converts a receiver type with [dyn Trait<...>] to a concrete type [T],
           used in vtable method shims. Valid conversions are references, raw
