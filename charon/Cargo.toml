@@ -154,6 +154,13 @@ walkdir = "2.3.2"
 [package.metadata.rust-analyzer]
 rustc_private = true
 
+[profile.dev]
+# Keep debuginfo in per-crate split files instead of copying it into every
+# linked binary. Charon links ~13 binaries (bins, tests, examples) against
+# `charon_lib`; by default each one is ~90% DWARF. Line tables stay in the
+# binary, so backtraces are unaffected; debuggers find the rest in `target/`.
+split-debuginfo = "unpacked"
+
 [profile.dev.package.minirust-rs]
 opt-level = 3
 
