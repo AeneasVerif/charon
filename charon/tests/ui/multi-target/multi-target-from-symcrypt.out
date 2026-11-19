@@ -1,13 +1,16 @@
 pub opaque type core::core_arch::arm_shared::neon::uint16x8_t
 
+#[target_feature(enable = "neon")]
 pub unsafe fn core::core_arch::aarch64::neon::generated::vld1q_u16(_1: *const u16) -> core::core_arch::arm_shared::neon::uint16x8_t
 = <opaque>
 
 struct () {}
 
+#[target_feature(enable = "neon")]
 pub unsafe fn core::core_arch::aarch64::neon::generated::vst1q_u16(_1: *mut u16, _2: core::core_arch::arm_shared::neon::uint16x8_t)
 = <opaque>
 
+#[target_feature(enable = "neon")]
 pub unsafe fn core::core_arch::arm_shared::neon::generated::vaddq_u16(_1: core::core_arch::arm_shared::neon::uint16x8_t, _2: core::core_arch::arm_shared::neon::uint16x8_t) -> core::core_arch::arm_shared::neon::uint16x8_t
 = <opaque>
 
@@ -77,12 +80,15 @@ impl core::marker::Copy for core::core_arch::x86::__m128i {
     non-dyn-compatible
 }
 
+#[target_feature(enable = "sse2")]
 pub unsafe fn core::core_arch::x86::sse2::_mm_add_epi16(_1: core::core_arch::x86::__m128i, _2: core::core_arch::x86::__m128i) -> core::core_arch::x86::__m128i
 = <opaque>
 
+#[target_feature(enable = "sse2")]
 pub unsafe fn core::core_arch::x86::sse2::_mm_loadu_si128(_1: *const core::core_arch::x86::__m128i) -> core::core_arch::x86::__m128i
 = <opaque>
 
+#[target_feature(enable = "sse2")]
 pub unsafe fn core::core_arch::x86::sse2::_mm_storeu_si128(_1: *mut core::core_arch::x86::__m128i, _2: core::core_arch::x86::__m128i)
 = <opaque>
 

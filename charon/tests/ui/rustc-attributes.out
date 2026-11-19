@@ -3,6 +3,7 @@
 struct () {}
 
 // Full name: core::core_arch::x86::avx::_mm256_zeroall
+#[target_feature(enable = "avx")]
 pub unsafe fn _mm256_zeroall()
 = <opaque>
 

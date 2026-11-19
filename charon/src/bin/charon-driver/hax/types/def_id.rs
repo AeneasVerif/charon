@@ -738,21 +738,49 @@ impl DefId {
         } else {
             let attrs = tcx.attrs_for_def(def_id);
 
-            // Restore the allocator attributes that aren't encode in crate metadata.
+            // Restore the attributes that aren't encoded in crate metadata.
             let restored = if matches!(self.kind, Fn | AssocFn) {
                 use rustc_hir::attrs::AttributeKind::*;
+                let codegen_attrs = tcx.codegen_fn_attrs(def_id);
+                let span = tcx.def_span(def_id);
+
+                // get the target features attributes
+                use rustc_middle::middle::codegen_fn_attrs::TargetFeatureKind;
+                let target_features = [
+                    (TargetFeatureKind::Enabled, false),
+                    (TargetFeatureKind::Forced, true),
+                ]
+                .into_iter()
+                .map(|(kind, was_forced)| TargetFeature {
+                    features: codegen_attrs
+                        .target_features
+                        .iter()
+                        .filter(|feature| feature.kind == kind)
+                        .map(|feature| (feature.name, span))
+                        .collect(),
+                    attr_span: span,
+                    was_forced,
+                })
+                .filter(
+                    |attr| !matches!(attr, TargetFeature { features, .. } if features.is_empty()),
+                );
+
+                // get the allocator attributes
                 use rustc_middle::middle::codegen_fn_attrs::CodegenFnAttrFlags;
-                let flags = tcx.codegen_fn_attrs(def_id).flags;
-                [
+                let allocator_flags = [
                     (CodegenFnAttrFlags::ALLOCATOR, RustcAllocator),
                     (CodegenFnAttrFlags::DEALLOCATOR, RustcDeallocator),
                     (CodegenFnAttrFlags::REALLOCATOR, RustcReallocator),
                     (CodegenFnAttrFlags::ALLOCATOR_ZEROED, RustcAllocatorZeroed),
                 ]
                 .into_iter()
-                .filter(|(flag, _)| flags.contains(*flag))
-                .map(|(_, attr)| hir::Attribute::Parsed(attr))
-                .collect_vec()
+                .filter(|(flag, _)| codegen_attrs.flags.contains(*flag))
+                .map(|(_, attr)| attr);
+
+                allocator_flags
+                    .chain(target_features)
+                    .map(hir::Attribute::Parsed)
+                    .collect_vec()
             } else {
                 vec![]
             };
