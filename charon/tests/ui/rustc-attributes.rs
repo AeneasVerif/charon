@@ -22,3 +22,8 @@ unsafe extern "C" {
 
 #[rustc_no_writable]
 fn no_writable(_: &mut u32) {}
+
+// `#[target_feature]` isn't encoded in crate metadata; check we still see it on foreign functions.
+fn call_foreign_target_feature() {
+    unsafe { core::arch::x86_64::_mm256_zeroall() }
+}
