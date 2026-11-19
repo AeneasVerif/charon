@@ -1,7 +1,6 @@
 use itertools::Itertools;
 use rustc_hash::FxHashMap as HashMap;
 use rustc_middle::ty;
-use rustc_span::sym;
 use rustc_trait_elaboration::ItemId;
 
 use super::translate_ctx::*;
@@ -591,7 +590,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 | hax::SyntheticItem::FnPtr(_) => None,
             })
             .or_else(|| {
-                (self.hax_def(item).ok()?.lang_item? == sym::owned_box).then_some(BuiltinAdt::Box)
+                let def_id = item.def_id.as_real_def_id()?;
+                self.tcx
+                    .is_lang_item(def_id, rustc_hir::attrs::LangItem::OwnedBox)
+                    .then_some(BuiltinAdt::Box)
             })
     }
 
