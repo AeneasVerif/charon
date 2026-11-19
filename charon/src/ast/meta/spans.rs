@@ -315,9 +315,12 @@ where
     V: for<'a> VisitMut<'a, SerializedSpan> + for<'a> VisitMut<'a, Option<SerializedSpan>>,
 {
     fn drive_inner_mut(&'s mut self, v: &mut V) -> ControlFlow<V::Break> {
-        let mut span = self.unpack();
+        let old_span = self.unpack();
+        let mut span = old_span;
         let res = v.visit(&mut span);
-        *self = Span::from_unpacked(span);
+        if span != old_span {
+            *self = Span::from_unpacked(span);
+        }
         res
     }
 }
