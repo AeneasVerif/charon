@@ -271,6 +271,13 @@ impl<'tcx> ConstReader<'tcx> {
         ty: Ty<'tcx>,
         mode: ReadMode,
     ) -> Result<Const<'tcx>, ReadError<'tcx>> {
+        // Fast path: there are lots of `FnDef` constants (one per function call)
+        if mode == ReadMode::Structured && matches!(ty.kind(), ty::FnDef(..)) {
+            return Ok(Const {
+                ty,
+                kind: ConstKind::fn_def(self.tcx, ty),
+            });
+        }
         let (ecx, op) =
             const_eval::mk_eval_cx_for_const_val(self.tcx.at(span), self.typing_env, val, ty)
                 .ok_or(ReadError::NotLoadable)?;

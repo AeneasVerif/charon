@@ -460,12 +460,12 @@ fn identity<'a>(x: Adt::<'_, u32>) -> Adt::<'_, u32>
     return
 }
 
-fn test_crate::call_once::<'_, fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>>(f: fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>, x: Adt::<'_, u32>) -> Adt::<'_, u32>
+fn test_crate::call_once::<'_, fn<'b>(Adt::<'_, u32>) -> Adt::<'_, u32>>(f: fn<'b>(Adt::<'_, u32>) -> Adt::<'_, u32>, x: Adt::<'_, u32>) -> Adt::<'_, u32>
 {
     let mut _0: Adt::<'_, u32>; // return
-    let f: fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>; // arg #1
+    let f: fn<'b>(Adt::<'_, u32>) -> Adt::<'_, u32>; // arg #1
     let x: Adt::<'_, u32>; // arg #2
-    let mut _3: fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>; // anonymous local
+    let mut _3: fn<'b>(Adt::<'_, u32>) -> Adt::<'_, u32>; // anonymous local
     let mut _4: (Adt::<'_, u32>,); // anonymous local
     let mut _5: Adt::<'_, u32>; // anonymous local
 
@@ -546,13 +546,13 @@ fn generic_call_once::<fn(&'_ u32) -> &'_ u32, &'_ u32, &'_ u32>(f: fn(&'_ u32) 
     return
 }
 
-// Full name: test_crate::generic_call_once::<fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize], [&'_ u8; 3usize], [&'_ u8; 3usize]>
-fn generic_call_once::<fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize], [&'_ u8; 3usize], [&'_ u8; 3usize]>(f: fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize], x: [&'_ u8; 3usize]) -> [&'_ u8; 3usize]
+// Full name: test_crate::generic_call_once::<fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize], [&'_ u8; 3usize], [&'_ u8; 3usize]>
+fn generic_call_once::<fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize], [&'_ u8; 3usize], [&'_ u8; 3usize]>(f: fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize], x: [&'_ u8; 3usize]) -> [&'_ u8; 3usize]
 {
     let mut _0: [&'0 u8; 3usize]; // return
-    let f: fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize]; // arg #1
+    let f: fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize]; // arg #1
     let x: [&'3 u8; 3usize]; // arg #2
-    let mut _3: fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize]; // anonymous local
+    let mut _3: fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize]; // anonymous local
     let mut _4: ([&'_ u8; 3usize],); // anonymous local
     let mut _5: [&'6 u8; 3usize]; // anonymous local
 
@@ -650,14 +650,14 @@ fn generic_call_once2::<for<'a, 'b> swap<'a, 'b>, &'_ u8, &'_ u8, (&'_ u8, &'_ u
     return
 }
 
-// Full name: test_crate::generic_call_once2::<fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32, Plain::<u32>, &'_ u32, &'_ u32>
-fn generic_call_once2::<fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32, Plain::<u32>, &'_ u32, &'_ u32>(f: fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32, x: Plain::<u32>, y: &'_ u32) -> &'_ u32
+// Full name: test_crate::generic_call_once2::<fn<'b>(Plain::<u32>, &'b u32) -> &'b u32, Plain::<u32>, &'_ u32, &'_ u32>
+fn generic_call_once2::<fn<'b>(Plain::<u32>, &'b u32) -> &'b u32, Plain::<u32>, &'_ u32, &'_ u32>(f: fn<'b>(Plain::<u32>, &'b u32) -> &'b u32, x: Plain::<u32>, y: &'_ u32) -> &'_ u32
 {
     let mut _0: &'0 u32; // return
-    let f: fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32; // arg #1
+    let f: fn<'b>(Plain::<u32>, &'b u32) -> &'b u32; // arg #1
     let x: Plain::<u32>; // arg #2
     let y: &'1 u32; // arg #3
-    let mut _4: fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32; // anonymous local
+    let mut _4: fn<'b>(Plain::<u32>, &'b u32) -> &'b u32; // anonymous local
     let mut _5: (Plain::<u32>, &'_ u32); // anonymous local
     let mut _6: Plain::<u32>; // anonymous local
     let mut _7: &'2 u32; // anonymous local
@@ -686,14 +686,14 @@ fn generic_call_once2::<fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32, Plain
     return
 }
 
-// Full name: test_crate::generic_call_once2::<fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_ u8, &'_ u8), &'_ u8, &'_ u8, (&'_ u8, &'_ u8)>
-fn generic_call_once2::<fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_ u8, &'_ u8), &'_ u8, &'_ u8, (&'_ u8, &'_ u8)>(f: fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_ u8, &'_ u8), x: &'_ u8, y: &'_ u8) -> (&'_ u8, &'_ u8)
+// Full name: test_crate::generic_call_once2::<fn<'c, 'd>(&'c u8, &'d u8) -> (&'_ u8, &'_ u8), &'_ u8, &'_ u8, (&'_ u8, &'_ u8)>
+fn generic_call_once2::<fn<'c, 'd>(&'c u8, &'d u8) -> (&'_ u8, &'_ u8), &'_ u8, &'_ u8, (&'_ u8, &'_ u8)>(f: fn<'c, 'd>(&'c u8, &'d u8) -> (&'_ u8, &'_ u8), x: &'_ u8, y: &'_ u8) -> (&'_ u8, &'_ u8)
 {
     let mut _0: (&'_ u8, &'_ u8); // return
-    let f: fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_ u8, &'_ u8); // arg #1
+    let f: fn<'c, 'd>(&'c u8, &'d u8) -> (&'_ u8, &'_ u8); // arg #1
     let x: &'0 u8; // arg #2
     let y: &'1 u8; // arg #3
-    let mut _4: fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_ u8, &'_ u8); // anonymous local
+    let mut _4: fn<'c, 'd>(&'c u8, &'d u8) -> (&'_ u8, &'_ u8); // anonymous local
     let mut _5: (&'_ u8, &'_ u8); // anonymous local
     let mut _6: &'2 u8; // anonymous local
     let mut _7: &'3 u8; // anonymous local
@@ -747,7 +747,7 @@ pub fn test<'a>(x: &'a u32) -> &'a u32
     _6 = &(*x)
     _5 = Adt::<'_, u32> { _0: move _6 }
     storage_dead(_6)
-    _3 = test_crate::call_once::<'_, fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>>(move _4, move _5)
+    _3 = test_crate::call_once::<'_, fn<'b>(Adt::<'_, u32>) -> Adt::<'_, u32>>(move _4, move _5)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_5)
@@ -884,7 +884,7 @@ pub fn test_freshen_whole_adt<'a>(x: Plain::<u32>, y: &'a u32) -> &'a u32
     _6 = move x
     storage_live(_7)
     _7 = &(*y)
-    _4 = generic_call_once2::<fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32, Plain::<u32>, &'_ u32, &'_ u32>(move _5, move _6, move _7)
+    _4 = generic_call_once2::<fn<'b>(Plain::<u32>, &'b u32) -> &'b u32, Plain::<u32>, &'_ u32, &'_ u32>(move _5, move _6, move _7)
     ↳⚡ storage_dead(y)
         storage_dead(x)
         unwind_continue
@@ -930,7 +930,7 @@ pub fn test_const_under_binder<'a>(x: [&'a u8; 3usize]) -> [&'a u8; 3usize]
     _3 = copy f
     storage_live(_4)
     _4 = copy x
-    _0 = generic_call_once::<fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize], [&'_ u8; 3usize], [&'_ u8; 3usize]>(move _3, move _4)
+    _0 = generic_call_once::<fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize], [&'_ u8; 3usize], [&'_ u8; 3usize]>(move _3, move _4)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_4)
@@ -988,7 +988,7 @@ pub fn test_fn_ptr_regions<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'_ u8, &'_ u8)
     _5 = &(*x)
     storage_live(_6)
     _6 = &(*y)
-    _0 = generic_call_once2::<fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_ u8, &'_ u8), &'_ u8, &'_ u8, (&'_ u8, &'_ u8)>(move _4, move _5, move _6)
+    _0 = generic_call_once2::<fn<'c, 'd>(&'c u8, &'d u8) -> (&'_ u8, &'_ u8), &'_ u8, &'_ u8, (&'_ u8, &'_ u8)>(move _4, move _5, move _6)
     ↳⚡ storage_dead(y)
         storage_dead(x)
         unwind_continue

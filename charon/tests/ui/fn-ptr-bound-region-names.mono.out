@@ -1,0 +1,212 @@
+# Final LLBC before serialization:
+
+struct () {}
+
+struct (_,)::<&'_ u8> {
+  _0: &'_ u8,
+}
+
+// Full name: {impl FnOnce<(&'_ u8,)> for fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8}::call_once::<u8, u8>
+extern "rust-call" fn call_once::<u8, u8><'_0>(fn_ptr: fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8, args: (&'_ u8,)) -> &'_0 u8
+{
+    let mut _0: &'_0 u8; // return
+    let mut fn_ptr: fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8; // arg #1
+    let mut args: (&'_ u8,); // arg #2
+
+    storage_live(_0)
+    _0 = (copy fn_ptr)<'_0>(move args._0)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+// Full name: test_crate::id
+fn id<'a>(x: &'a u8) -> &'a u8
+{
+    let mut _0: &'1 u8; // return
+    let x: &'2 u8; // arg #1
+
+    storage_live(_0)
+    _0 = copy x
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::call::<fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8>
+fn call::<fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8><'_0>(f: fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8, x: &'_0 u8) -> &'_0 u8
+{
+    let mut _0: &'1 u8; // return
+    let f: fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8; // arg #1
+    let x: &'2 u8; // arg #2
+    let _3: &'3 u8; // anonymous local
+    let mut _4: fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8; // anonymous local
+    let mut _5: (&'_ u8,); // anonymous local
+    let mut _6: &'4 u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = move f
+    storage_live(_5)
+    storage_live(_6)
+    _6 = &(*x)
+    _5 = (move _6,)
+    _3 = call_once::<u8, u8><'6>(move _4, move _5)
+    ↳⚡ storage_dead(x)
+        storage_dead(f)
+        unwind_continue
+    _0 = &(*_3)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(x)
+    storage_dead(f)
+    return
+}
+
+// Full name: test_crate::call::<fn<'a>(&'a u8) -> &'a u8>
+fn call::<fn<'a>(&'a u8) -> &'a u8><'_0>(f: fn<'a>(&'a u8) -> &'a u8, x: &'_0 u8) -> &'_0 u8
+{
+    let mut _0: &'1 u8; // return
+    let f: fn<'a>(&'a u8) -> &'a u8; // arg #1
+    let x: &'2 u8; // arg #2
+    let _3: &'3 u8; // anonymous local
+    let mut _4: fn<'a>(&'a u8) -> &'a u8; // anonymous local
+    let mut _5: (&'_ u8,); // anonymous local
+    let mut _6: &'4 u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = move f
+    storage_live(_5)
+    storage_live(_6)
+    _6 = &(*x)
+    _5 = (move _6,)
+    _3 = call_once::<u8, u8><'6>(move _4, move _5)
+    ↳⚡ storage_dead(x)
+        storage_dead(f)
+        unwind_continue
+    _0 = &(*_3)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(x)
+    storage_dead(f)
+    return
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let mut _0: (); // return
+    let f: fn<'a>(&'a u8) -> &'a u8; // local
+        where f :< fn<'a>(&'a u8) -> &'a u8;
+        where f := fn<'a>(&'a u8) -> &'a u8;
+    let _2: &'1 u8; // anonymous local
+    let mut _3: fn<'a>(&'a u8) -> &'a u8; // anonymous local
+    let mut _4: &'2 u8; // anonymous local
+    let _5: &'3 u8; // anonymous local
+    let g: fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8; // local
+        where g :< fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8;
+        where g := fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8;
+    let _7: &'4 u8; // anonymous local
+    let mut _8: fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8; // anonymous local
+    let mut _9: &'5 u8; // anonymous local
+    let _10: &'6 u8; // anonymous local
+    let mut _11: &'7 u8; // anonymous local
+    let mut _12: &'8 u8; // anonymous local
+    let mut _13: &'12 u8; // anonymous local
+    let mut _14: &'19 u8; // anonymous local
+    let mut _15: &'24 u8; // anonymous local
+    let mut _16: u8; // anonymous local
+    let mut _17: &'25 u8; // anonymous local
+    let mut _18: u8; // anonymous local
+
+    storage_live(_13)
+    storage_live(_15)
+    storage_live(_16)
+    _16 = const 0u8
+    _15 = &_16
+    _13 = move _15
+    storage_live(_0)
+    storage_live(_11)
+    storage_live(_12)
+    _0 = ()
+    storage_live(f)
+    f = fn_def_to_fn_ptr(const id<'11>)
+    fake_read(f)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy f
+    storage_live(_4)
+    storage_live(_5)
+    _12 = move _13
+    _5 = &(*_12)
+    _4 = &(*_5)
+    _2 = call::<fn<'a>(&'a u8) -> &'a u8><'16>(move _3, move _4)
+    ↳⚡ storage_dead(_12)
+        storage_dead(_11)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_13)
+        unwind_continue
+    storage_live(_14)
+    storage_live(_17)
+    storage_live(_18)
+    _18 = const 0u8
+    _17 = &_18
+    _14 = move _17
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_5)
+    storage_dead(_2)
+    storage_live(g)
+    g = fn_def_to_fn_ptr(const id<'18>)
+    fake_read(g)
+    storage_live(_7)
+    storage_live(_8)
+    _8 = copy g
+    storage_live(_9)
+    storage_live(_10)
+    _11 = move _14
+    _10 = &(*_11)
+    _9 = &(*_10)
+    _7 = call::<fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8><'23>(move _8, move _9)
+    ↳⚡ storage_dead(_12)
+        storage_dead(_11)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_13)
+        unwind_continue
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_dead(_10)
+    storage_dead(_7)
+    _0 = ()
+    storage_dead(g)
+    storage_dead(f)
+    storage_dead(_12)
+    storage_dead(_11)
+    storage_dead(_18)
+    storage_dead(_17)
+    storage_dead(_16)
+    storage_dead(_15)
+    storage_dead(_14)
+    storage_dead(_13)
+    return
+}
+
+
+
