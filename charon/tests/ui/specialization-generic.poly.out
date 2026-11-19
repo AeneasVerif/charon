@@ -1,0 +1,226 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: test_crate::Pair
+struct Pair<X, Y>
+where
+    TraitClause0: (X: Sized),
+    TraitClause1: (Y: Sized),
+{
+  _0: X,
+  _1: Y,
+}
+
+// Full name: test_crate::Tr
+trait Tr<Self, A>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (A: Sized)
+    fn inherited<'_0_1, Outlives0: (Self: '_0_1)>;
+    fn overridden<'_0_1, Outlives0: (Self: '_0_1)>;
+    vtable: test_crate::Tr::{vtable}<A>
+}
+
+// Full name: test_crate::{impl Tr<A> for S}::overridden
+fn impl_Tr_for_T::overridden<'_0, A, S>(self: &'_0 S)
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (S: Sized),
+    Outlives0: (S: '_0),
+{
+    let mut _0: (); // return
+    let self: &'1 S; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::{impl Tr<A> for S}::inherited
+fn inherited<'_0, A, S>(self: &'_0 S)
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (S: Sized),
+    Outlives0: (S: '_0),
+{
+    let mut _0: (); // return
+    let self: &'1 S; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::{impl Tr<A> for S}
+impl<A, S> "impl_Tr_for_T" Tr<A> for S
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (S: Sized),
+{
+    proof ImpliedClause0: (S: MetaSized) = TraitClause1::ImpliedClause0
+    proof ImpliedClause1: (A: Sized) = TraitClause0
+    fn inherited<'_0_1> = inherited<'_0_1, A, S>[TraitClause0, TraitClause1]
+    fn overridden<'_0_1> = impl_Tr_for_T::overridden<'_0_1, A, S>[TraitClause0, TraitClause1]
+    vtable: lazy
+}
+
+// Full name: test_crate::{impl Tr<u32> for Pair<&'a T, bool>[{built_in impl Sized for &'a T}, {built_in impl Sized for bool}]}::overridden
+fn impl_Tr_u32_for_Pair_bool::overridden<'a, '_1, T>(self: &'_1 Pair<&'a T, bool>[{built_in impl Sized for &'a T}, {built_in impl Sized for bool}])
+where
+    TraitClause0: (T: Sized),
+    Outlives0: ('a: '_1),
+    Outlives1: (T: 'a),
+{
+    let mut _0: (); // return
+    let self: &'13 Pair<&'14 T, bool>[{built_in impl Sized for &'14 T}, {built_in impl Sized for bool}]; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::{impl Tr<u32> for Pair<&'a T, bool>[{built_in impl Sized for &'a T}, {built_in impl Sized for bool}]}
+impl<'a, T> "impl_Tr_u32_for_Pair_bool" Tr<u32> for Pair<&'a T, bool>[{built_in impl Sized for &'a T}, {built_in impl Sized for bool}]
+where
+    TraitClause0: (T: Sized),
+    Outlives0: (T: 'a),
+{
+    proof ImpliedClause0: (Pair<&'a T, bool>[{built_in impl Sized for &'a T}, {built_in impl Sized for bool}]: MetaSized) = {built_in impl MetaSized for Pair<&'a T, bool>[{built_in impl Sized for &'a T}, {built_in impl Sized for bool}]}
+    proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
+    fn inherited<'_0_1> = inherited<'_0_1, u32, Pair<&'a T, bool>[{built_in impl Sized for &'a T}, {built_in impl Sized for bool}]>[{built_in impl Sized for u32}, {built_in impl Sized for Pair<&'a T, bool>[{built_in impl Sized for &'a T}, {built_in impl Sized for bool}]}]
+    fn overridden<'_0_1> = impl_Tr_u32_for_Pair_bool::overridden<'a, '_0_1, T>[TraitClause0]
+    vtable: lazy
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let mut _0: (); // return
+    let _1: (); // anonymous local
+    let mut _2: &'83 Pair<&'84 u8, bool>[{built_in impl Sized for &'84 u8}, {built_in impl Sized for bool}]; // anonymous local
+    let _3: &'88 Pair<&'89 u8, bool>[{built_in impl Sized for &'89 u8}, {built_in impl Sized for bool}]; // anonymous local
+    let _4: (); // anonymous local
+    let mut _5: &'98 Pair<&'99 u8, bool>[{built_in impl Sized for &'99 u8}, {built_in impl Sized for bool}]; // anonymous local
+    let _6: &'103 Pair<&'104 u8, bool>[{built_in impl Sized for &'104 u8}, {built_in impl Sized for bool}]; // anonymous local
+    let mut _7: &'113 Pair<&'114 u8, bool>[{built_in impl Sized for &'114 u8}, {built_in impl Sized for bool}]; // anonymous local
+    let mut _8: &'118 Pair<&'119 u8, bool>[{built_in impl Sized for &'119 u8}, {built_in impl Sized for bool}]; // anonymous local
+    let mut _9: &'123 Pair<&'124 u8, bool>[{built_in impl Sized for &'124 u8}, {built_in impl Sized for bool}]; // anonymous local
+    let mut _10: &'253 Pair<&'254 u8, bool>[{built_in impl Sized for &'254 u8}, {built_in impl Sized for bool}]; // anonymous local
+    let mut _11: &'274 Pair<&'275 u8, bool>[{built_in impl Sized for &'275 u8}, {built_in impl Sized for bool}]; // anonymous local
+    let mut _12: Pair<&'279 u8, bool>[{built_in impl Sized for &'279 u8}, {built_in impl Sized for bool}]; // anonymous local
+    let mut _13: &'283 u8; // anonymous local
+    let mut _14: u8; // anonymous local
+    let mut _15: &'291 Pair<&'292 u8, bool>[{built_in impl Sized for &'292 u8}, {built_in impl Sized for bool}]; // anonymous local
+    let mut _16: Pair<&'296 u8, bool>[{built_in impl Sized for &'296 u8}, {built_in impl Sized for bool}]; // anonymous local
+    let mut _17: &'300 u8; // anonymous local
+    let mut _18: u8; // anonymous local
+
+    storage_live(_9)
+    storage_live(_11)
+    storage_live(_12)
+    storage_live(_13)
+    storage_live(_14)
+    _14 = const 0u8
+    _13 = &_14
+    _12 = Pair { _0: move _13, _1: const true }
+    _11 = &_12
+    _9 = move _11
+    storage_live(_0)
+    storage_live(_7)
+    storage_live(_8)
+    _0 = ()
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    _8 = move _9
+    _3 = &(*_8)
+    _2 = &(*_3)
+    _1 = inherited<'252, u32, Pair<&'49 u8, bool>[{built_in impl Sized for &'49 u8}, {built_in impl Sized for bool}]>[{built_in impl Sized for u32}, {built_in impl Sized for Pair<&'49 u8, bool>[{built_in impl Sized for &'49 u8}, {built_in impl Sized for bool}]}](move _2)
+    ↳⚡ storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_13)
+        storage_dead(_12)
+        storage_dead(_11)
+        storage_dead(_10)
+        storage_dead(_9)
+        unwind_continue
+    storage_live(_10)
+    storage_live(_15)
+    storage_live(_16)
+    storage_live(_17)
+    storage_live(_18)
+    _18 = const 0u8
+    _17 = &_18
+    _16 = Pair { _0: move _17, _1: const true }
+    _15 = &_16
+    _10 = move _15
+    storage_dead(_2)
+    storage_dead(_3)
+    storage_dead(_1)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    _7 = move _10
+    _6 = &(*_7)
+    _5 = &(*_6)
+    _4 = impl_Tr_u32_for_Pair_bool::overridden<'68, '273, u8>[{built_in impl Sized for u8}](move _5)
+    ↳⚡ storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_13)
+        storage_dead(_12)
+        storage_dead(_11)
+        storage_dead(_10)
+        storage_dead(_9)
+        unwind_continue
+    storage_dead(_5)
+    storage_dead(_6)
+    storage_dead(_4)
+    _0 = ()
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(_18)
+    storage_dead(_17)
+    storage_dead(_16)
+    storage_dead(_15)
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_dead(_12)
+    storage_dead(_11)
+    storage_dead(_10)
+    storage_dead(_9)
+    return
+}
+
+
+

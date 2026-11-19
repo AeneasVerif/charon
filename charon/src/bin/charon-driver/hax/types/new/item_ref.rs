@@ -76,6 +76,10 @@ pub struct ItemRefContents<'tcx> {
     /// Whether this contains any reference to a type/const parameter.
     #[value(self.has_non_lt_param)]
     pub has_non_lt_param: bool,
+    /// Whether we resolved this to an impl item that a more specialized impl may override for
+    /// some instantiations of the generics. In that case this reference may be wrong.
+    #[value(self.may_be_further_specialized)]
+    pub may_be_further_specialized: bool,
 }
 
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef<'tcx>>
@@ -187,6 +191,7 @@ impl<'tcx> ItemRef<'tcx> {
             in_trait: Default::default(),
             has_param: false,
             has_non_lt_param: false,
+            may_be_further_specialized: false,
         };
         content.intern(s)
     }

@@ -1,0 +1,13 @@
+error: `test_crate::{impl#0}::f` may be overridden by a more specialized impl depending on how generics are instantiated; translating it as is
+  --> tests/ui/specialization-poly-unsound.rs:15:5
+   |
+15 |     x.f()
+   |     ^^^^^
+
+error: `test_crate::{impl#0}::f` may be overridden by a more specialized impl depending on how generics are instantiated; translating it as is
+  --> tests/ui/specialization-poly-unsound.rs:15:5
+   |
+15 |     x.f()
+   |     ^^^^^
+
+ERROR Charon failed to translate this code (2 errors)

@@ -688,7 +688,7 @@ impl<'tcx> TraitImpl<'tcx> {
     }
 
     fn compute_items(&self, s: &impl BaseState<'tcx>) -> Vec<ImplAssocItem<'tcx>> {
-        use std::collections::HashMap;
+        use rustc_trait_elaboration::ItemId;
         let this = &self.this;
         let s = &s.with_hax_owner(&this.def_id);
         let tcx = s.base().tcx;
@@ -696,25 +696,20 @@ impl<'tcx> TraitImpl<'tcx> {
         let trait_ref = self.trait_ref;
         let args = self.args.unwrap_or_else(|| this.def_id.identity_args(s));
 
-        let mut item_map: HashMap<RDefId, _> = tcx
-            .associated_items(def_id)
-            .in_definition_order()
-            .map(|assoc| (assoc.trait_item_def_id().unwrap(), assoc))
-            .collect();
-        let items = tcx
-            .associated_items(trait_ref.def_id)
+        tcx.associated_items(trait_ref.def_id)
             .in_definition_order()
             .map(|decl_assoc| {
                 let decl_def_id = decl_assoc.def_id;
                 let trait_impl_id = def_id;
-                let value = item_map.remove(&decl_def_id).map(|impl_assoc| {
-                    let impl_assoc_def_id: DefId = impl_assoc.def_id.sinto(s);
+                let assoc_item = decl_def_id.find_in_impl(&tcx, s.typing_env(), &def_id, args);
+                let value = assoc_item.map(|(impl_assoc_rdef_id, impl_args, _)| {
+                    let impl_assoc_def_id: DefId = impl_assoc_rdef_id.sinto(s);
                     let virtual_item =
-                        VirtualImplAssocItem::new(trait_impl_id, decl_def_id, impl_assoc.def_id);
+                        VirtualImplAssocItem::new(trait_impl_id, decl_def_id, impl_assoc_rdef_id);
                     let virtual_item_def_id = DefId::make_assoc_item_impl(s, virtual_item);
                     let s = &s.with_hax_owner(&virtual_item_def_id);
                     let item_decl_args = virtual_item.args_for_item_decl(s, trait_ref.args);
-                    let item_impl_args = virtual_item.args_for_item_impl(s, args);
+                    let item_impl_args = virtual_item.args_for_item_impl(s, impl_args);
                     let assoc_ty_value = matches!(decl_assoc.kind, ty::AssocKind::Type { .. })
                         .then(|| {
                             inst_binder(
@@ -733,10 +728,10 @@ impl<'tcx> TraitImpl<'tcx> {
                         let mut param_env = get_param_env(s, None, Some(this.clone()));
                         param_env.generics.parent = Some(this.def_id.clone());
                         param_env.late_bound =
-                            late_bound_for_def(s, impl_assoc.def_id, Some(item_impl_args));
+                            late_bound_for_def(s, impl_assoc_rdef_id, Some(item_impl_args));
                         param_env
                     };
-                    let item = ItemRef::translate(s, impl_assoc.def_id, item_impl_args);
+                    let item = ItemRef::translate(s, impl_assoc_rdef_id, item_impl_args);
                     let value = ImplAssocItemValue {
                         item,
                         assoc_ty_value,
@@ -755,9 +750,7 @@ impl<'tcx> TraitImpl<'tcx> {
                     decl_def_id: decl_def_id.sinto(s),
                 }
             })
-            .collect();
-        assert!(item_map.is_empty());
-        items
+            .collect()
     }
 }
 
