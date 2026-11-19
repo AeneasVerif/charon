@@ -348,6 +348,16 @@ fn main() -> Result<(), Box<dyn Error>> {
             Success,
         ),
         mktest(
+            "merge-crates-multi-targets",
+            root.join("merge-crates-multi-targets"),
+            &[
+                "--merge-crates".to_owned(),
+                "--targets=x86_64-unknown-linux-gnu,i686-unknown-linux-gnu".to_owned(),
+            ],
+            &["--workspace".to_owned()],
+            Success,
+        ),
+        mktest(
             "multi-targets",
             root.join("multi-targets"),
             &[

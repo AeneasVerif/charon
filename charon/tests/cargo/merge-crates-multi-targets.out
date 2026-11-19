@@ -1,0 +1,61 @@
+pub fn crate_a::width::x86_64-unknown-linux-gnu() -> u32
+{
+    let mut _0: u32; // return
+
+    storage_live(_0)
+    _0 = const 64u32
+    return
+}
+
+pub fn crate_a::width::i686-unknown-linux-gnu() -> u32
+{
+    let mut _0: u32; // return
+
+    storage_live(_0)
+    _0 = const 32u32
+    return
+}
+
+// Full name: crate_a::width
+pub fn width() -> u32
+= target_dispatch {
+    x86_64-unknown-linux-gnu => crate_a::width::x86_64-unknown-linux-gnu,
+    i686-unknown-linux-gnu => crate_a::width::i686-unknown-linux-gnu,
+}
+
+// Full name: crate_a::OnlyOn64
+pub struct OnlyOn64 {}
+
+// Full name: crate_a::same
+pub fn same() -> u32
+{
+    let mut _0: u32; // return
+
+    storage_live(_0)
+    _0 = const 0u32
+    return
+}
+
+// Full name: crate_b::use_width
+pub fn use_width() -> u32
+{
+    let mut _0: u32; // return
+
+    storage_live(_0)
+    _0 = width()
+    ↳⚡ unwind_continue
+    return
+}
+
+// Full name: crate_b::use_same
+pub fn use_same() -> u32
+{
+    let mut _0: u32; // return
+
+    storage_live(_0)
+    _0 = same()
+    ↳⚡ unwind_continue
+    return
+}
+
+
