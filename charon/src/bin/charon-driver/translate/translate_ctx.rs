@@ -357,7 +357,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         t_ctx: &'ctx mut TranslateCtx<'tcx>,
     ) -> Self {
         use crate::hax::BaseState;
-        let hax_state_with_id = t_ctx.hax_state.clone().with_hax_owner(item_src.def_id());
+        let owner_args = match &item_src.item {
+            RustcItem::Mono(item_ref) => Some(item_ref.rustc_args(&t_ctx.hax_state)),
+            RustcItem::Poly(_) | RustcItem::MonoTrait(_) => None,
+        };
+        let hax_state_with_id = t_ctx
+            .hax_state
+            .clone()
+            .with_hax_owner_for(item_src.def_id(), owner_args);
         ItemTransCtx {
             item_src,
             item_id,

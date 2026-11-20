@@ -671,7 +671,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     where
         F: FnOnce(&mut Self) -> Result<U, Error>,
     {
-        let inner_hax_state = self.t_ctx.hax_state.clone().with_hax_owner(def.def_id());
+        let inner_hax_state = def.owner_state(&self.t_ctx.hax_state);
         let outer_hax_state = mem::replace(&mut self.hax_state, inner_hax_state);
         let ret = self.inside_binder(kind, Some(def.def_id().clone()), |this| {
             this.push_generics_for_def_without_parents(span, def)?;

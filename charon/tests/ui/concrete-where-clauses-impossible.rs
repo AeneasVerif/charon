@@ -1,5 +1,4 @@
 //@ charon-args=--monomorphize
-//@ known-failure
 #![feature(trivial_bounds)]
 pub struct Env;
 pub trait Unix {}

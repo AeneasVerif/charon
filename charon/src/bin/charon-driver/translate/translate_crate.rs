@@ -522,11 +522,20 @@ impl<'tcx> TranslateCtx<'tcx> {
         let item_src = if self.options.monomorphize_with_hax {
             if let Ok(def) = self.poly_hax_def(def_id)
                 && !def.has_any_generics()
+                && let Ok(def) = self.hax_def_for_item(&RustcItem::Mono(def.this().clone()))
+                // Monomorphic items resolve traits in the empty environment, which is only valid
+                // if their clauses hold.
+                && (def.param_env().is_none()
+                    || !self.tcx.instantiate_and_check_impossible_clauses((
+                        def_id.real_rust_def_id(),
+                        def.this().rustc_args(&self.hax_state),
+                    )))
             {
                 // Monomorphize this item and the items it depends on.
                 TransItemSource::monomorphic(def.this(), kind)
             } else {
-                // Skip polymorphic items and items that cause errors.
+                // Skip polymorphic items, items with impossible clauses, and items that cause
+                // errors.
                 return None;
             }
         } else {
