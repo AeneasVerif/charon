@@ -16,9 +16,9 @@ struct NormalizeTraitRefs<'a> {
 }
 
 impl VisitAstMut for NormalizeTraitRefs<'_> {
-    fn visit_with_cached_type_info<T: AstVisitable>(
+    fn visit_with_cached_type_info<T: AstVisitable + HashConsable>(
         &mut self,
-        value: &mut WithCachedTypeInfo<T>,
+        value: &mut HashConsed<WithCachedTypeInfo<T>>,
     ) -> ControlFlow<Self::Break> {
         if value.type_info().is_normalized() {
             ControlFlow::Continue(())

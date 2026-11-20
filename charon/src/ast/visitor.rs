@@ -198,7 +198,8 @@ use derive_generic_visitor::*;
         for<I: Idx, T: AstVisitable> IndexMap<I, T>,
         for<I: Idx, T: AstVisitable> IndexVec<I, T>,
         for<Id: AstVisitable> DeclRef<Id>,
-        for<T: AstVisitable + HashConsable> HashConsed<T>,
+        for<T: AstVisitable> WithCachedTypeInfo<T>,
+        HashConsed<InhabitedPredicateKind>,
         for<T: AstVisitable> Box<T>,
         for<T: AstVisitable> Option<T>,
         for<T: AstVisitable> Vec<T>,
@@ -277,7 +278,9 @@ use derive_generic_visitor::*;
         for<T: TypeLevelVar> DeBruijnVar<T>,
         for<T: AstVisitable> Binder<T>,
         for<T: AstVisitable> RegionBinder<T>,
-        for<T: AstVisitable> WithCachedTypeInfo<T>,
+        // This is used for shortcutting visitors; by catching the HashConsed instead of just
+        // WithCachedTypeInfo, we can avoid unnecessary clones
+        with_cached_type_info: for<T: AstVisitable + HashConsable> HashConsed<WithCachedTypeInfo<T>>,
     )
 )]
 pub trait AstVisitable: Any {

@@ -362,9 +362,9 @@ pub trait TyVisitable: Sized + AstVisitable {
                 VisitWithBinderDepth::new(self).visit(x)
             }
 
-            fn visit_with_cached_type_info<T: AstVisitable>(
+            fn visit_with_cached_type_info<T: AstVisitable + HashConsable>(
                 &mut self,
-                value: &mut WithCachedTypeInfo<T>,
+                value: &mut HashConsed<WithCachedTypeInfo<T>>,
             ) -> ControlFlow<Self::Break> {
                 if value
                     .type_info()
