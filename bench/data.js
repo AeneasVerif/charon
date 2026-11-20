@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1795120018599,
+  "lastUpdate": 1795186102059,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -21906,6 +21906,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 277.4,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.8,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fe01c0a90a868c158d10b2a2999cb9bfa63f1ae7",
+          "message": "Merge pull request #1635 from Nadrieril/anonimize-fn-ptr-shape-regions\n\nAnonymize bound vars in fn ptr shapes",
+          "timestamp": "2026-11-20T14:35:05Z",
+          "tree_id": "47207cfc5eb5dd643839b5a2e15ed8d0faad7290",
+          "url": "https://github.com/AeneasVerif/charon/commit/fe01c0a90a868c158d10b2a2999cb9bfa63f1ae7"
+        },
+        "date": 1795186099974,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 54389831362,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 11.78,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 380,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 21.7,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 26264377793,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 8.78,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 277.6,
             "unit": "max-rss(MB)"
           },
           {
