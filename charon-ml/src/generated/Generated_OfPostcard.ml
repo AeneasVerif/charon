@@ -1936,7 +1936,8 @@ and attr_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* inline = option_of_postcard inline_attr_of_postcard ctx st in
      let* rename = option_of_postcard string_of_postcard ctx st in
      let* public = bool_of_postcard ctx st in
-     Ok ({ attributes; inline; rename; public } : attr_info))
+     let* exported = bool_of_postcard ctx st in
+     Ok ({ attributes; inline; rename; public; exported } : attr_info))
 
 and attribute_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (attribute, string) result =
@@ -2523,6 +2524,17 @@ and impl_elem_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 1 ->
          let* _0 = trait_impl_id_of_postcard ctx st in
          Ok (ImplElemTrait _0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and impl_restriction_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (impl_restriction, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok Unrestricted
+     | 1 ->
+         let* _0 = name_of_postcard ctx st in
+         Ok (Restricted _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and implements_marker_traits_of_postcard (ctx : of_postcard_ctx)
@@ -3339,6 +3351,7 @@ and trait_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* item_meta = item_meta_of_postcard ctx st in
      let* src = trait_decl_source_of_postcard ctx st in
      let* is_unsafe = bool_of_postcard ctx st in
+     let* impl_restriction = impl_restriction_of_postcard ctx st in
      let* generics = generic_params_of_postcard ctx st in
      let* implied_clauses =
        index_vec_of_postcard trait_clause_id_of_postcard trait_param_of_postcard
@@ -3374,6 +3387,7 @@ and trait_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           item_meta;
           src;
           is_unsafe;
+          impl_restriction;
           generics;
           implied_clauses;
           consts;

@@ -859,6 +859,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             hax::FullDefKind::TraitAlias(_) => (TraitDeclSource::TraitAlias, false),
             _ => unreachable!(),
         };
+        let impl_restriction = if let hax::FullDefKind::Trait(tr) = def.kind()
+            && let Some(mod_id) = tr.impl_restriction()
+        {
+            let mod_src = TransItemSource::polymorphic(mod_id, TransItemSourceKind::Module);
+            ImplRestriction::Restricted(self.translate_name(&mod_src)?)
+        } else {
+            ImplRestriction::Unrestricted
+        };
 
         // Register implied predicates. We gather the clauses and consider the other predicates as
         // required since the distinction doesn't matter for non-trait-clauses.
@@ -878,6 +886,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 item_meta,
                 src,
                 is_unsafe,
+                impl_restriction: impl_restriction.clone(),
                 implied_clauses,
                 generics: self.into_generics(),
                 consts: Default::default(),
@@ -954,6 +963,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 item_meta,
                 src,
                 is_unsafe,
+                impl_restriction: impl_restriction.clone(),
                 implied_clauses,
                 generics: self.into_generics(),
                 consts,
@@ -1186,6 +1196,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             item_meta,
             src,
             is_unsafe,
+            impl_restriction,
             implied_clauses,
             generics: self.into_generics(),
             consts,
