@@ -132,6 +132,19 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         out
     }
 
+    /// Initialize the elaborator for a monomorphic context.
+    pub fn new_monomorphic(elab_ctx: ElaborationCtx<'tcx, Id>) -> Self {
+        Self {
+            elab_ctx,
+            typing_env: TypingEnv::fully_monomorphized(),
+            candidates: Default::default(),
+            implicit_self_clause: false,
+            item_refs_cache: Default::default(),
+            trait_proofs_cache: Default::default(),
+            has_no_concrete_clauses: true,
+        }
+    }
+
     /// Whether the environment has where-clauses that apply to parameter-free types.
     /// The solver prioritises these, so trait proofs then depend on the owner.
     pub fn has_concrete_clauses(&self) -> bool {

@@ -589,7 +589,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             //
             (FnOnce, Fn | FnMut) => {
                 // Hax (via rustc) gives us the MIR to do this.
-                let Some(body) = def.this.closure_once_shim(self.hax_state()) else {
+                let Some(body) = def.closure_once_shim(self.hax_state()) else {
                     panic!("missing shim for closure")
                 };
                 let mut body = self.translate_body(span, body, &def.source_text);

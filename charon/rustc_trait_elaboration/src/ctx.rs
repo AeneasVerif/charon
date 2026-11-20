@@ -99,6 +99,7 @@ struct ElaborationData<'tcx, Id: ItemId = DefId> {
     bounds_options: BoundsOptions,
     trait_proofs: intern::Interner<'tcx, TraitProofContents<'tcx, Id>>,
     predicate_searchers: RefCell<FxHashMap<Id, PredicateSearcher<'tcx, Id>>>,
+    monomorphic_predicate_searcher: RefCell<Option<PredicateSearcher<'tcx, Id>>>,
     concrete_item_refs: RefCell<FxHashMap<ItemRefKey<'tcx, Id>, ItemRef<'tcx, Id>>>,
     concrete_trait_proofs: RefCell<FxHashMap<ty::PolyTraitRef<'tcx>, TraitProof<'tcx, Id>>>,
     required_predicates: PredicateCache<'tcx, Id>,
@@ -112,6 +113,7 @@ impl<'tcx, Id: ItemId> Default for ElaborationData<'tcx, Id> {
             bounds_options: Default::default(),
             trait_proofs: Default::default(),
             predicate_searchers: Default::default(),
+            monomorphic_predicate_searcher: Default::default(),
             concrete_item_refs: Default::default(),
             concrete_trait_proofs: Default::default(),
             required_predicates: Default::default(),
@@ -202,6 +204,13 @@ impl<'tcx, Id: ItemId> ElaborationCtx<'tcx, Id> {
         self.predicate_searcher_for_with(def_id.clone(), || {
             PredicateSearcher::new_for_owner(*self, state, def_id)
         })
+    }
+
+    pub fn monomorphic_predicate_searcher(&self) -> RefMut<'_, PredicateSearcher<'tcx, Id>> {
+        RefMut::map(
+            self.data.monomorphic_predicate_searcher.borrow_mut(),
+            |searcher| searcher.get_or_insert_with(|| PredicateSearcher::new_monomorphic(*self)),
+        )
     }
 
     pub fn predicate_searcher_for_with(

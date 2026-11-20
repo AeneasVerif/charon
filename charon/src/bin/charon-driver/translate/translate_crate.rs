@@ -505,6 +505,7 @@ impl<'tcx> TranslateCtx<'tcx> {
         let item_src = if self.options.monomorphize_with_hax {
             if let Ok(def) = self.poly_hax_def(def_id)
                 && !def.has_any_generics()
+                && let Ok(def) = self.hax_def_for_item(&RustcItem::Mono(def.this().clone()))
             {
                 // Monomorphize this item and the items it depends on.
                 TransItemSource::monomorphic(def.this(), kind)

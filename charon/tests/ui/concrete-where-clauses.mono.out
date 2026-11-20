@@ -1,13 +1,150 @@
-error: Unexpected error: could not find the trait clause variable Required(test_crate::with_clause, 0)
-  --> tests/ui/concrete-where-clauses.rs:25:5
-   |
-25 |     x.0.method()
-   |     ^^^^^^^^^^^^
+# Final LLBC before serialization:
 
-error: Unexpected error: could not find the trait clause variable Required(test_crate::with_clause, 0)
-  --> tests/ui/concrete-where-clauses.rs:25:5
-   |
-25 |     x.0.method()
-   |     ^^^^^^^^^^^^
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
 
-ERROR Charon failed to translate this code (2 errors)
+struct () {}
+
+// Full name: test_crate::Tr
+pub trait Tr<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: test_crate::Tr::{vtable}
+}
+
+// Full name: test_crate::{impl Tr for u32}
+impl "impl_Tr_for_u32" Tr for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    vtable: lazy
+}
+
+// Full name: test_crate::{impl Tr for u32}::method
+pub fn impl_Tr_for_u32::method<'_0>(self: &'_0 u32)
+{
+    let mut _0: (); // return
+    let self: &'1 u32; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::{impl Tr for &'_ u8}::method::<'_>
+pub fn {impl Tr for &'_ u8}::method::<'_><'_0>(self: &'_0 &'_ u8)
+{
+    let mut _0: (); // return
+    let self: &'2 &'3 u8; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::Wrap::<u32>
+pub struct Wrap::<u32> {
+  _0: u32,
+}
+
+// Full name: test_crate::before
+pub fn before(x: Wrap::<u32>)
+{
+    let mut _0: (); // return
+    let x: Wrap::<u32>; // arg #1
+    let mut _2: &'1 u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = &x._0
+    _0 = impl_Tr_for_u32::method<'5>(move _2)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::with_clause
+pub fn with_clause(x: Wrap::<u32>)
+{
+    let mut _0: (); // return
+    let x: Wrap::<u32>; // arg #1
+    let mut _2: &'1 u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = &x._0
+    _0 = impl_Tr_for_u32::method<'5>(move _2)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::after
+pub fn after(x: Wrap::<u32>)
+{
+    let mut _0: (); // return
+    let x: Wrap::<u32>; // arg #1
+    let mut _2: &'1 u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = &x._0
+    _0 = impl_Tr_for_u32::method<'5>(move _2)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::ref_before
+pub fn ref_before<'a>(x: &'a u8)
+{
+    let mut _0: (); // return
+    let x: &'1 u8; // arg #1
+    let mut _2: &'4 &'5 u8; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = &x
+    _0 = {impl Tr for &'_ u8}::method::<'_><'9>(move _2)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::ref_after
+pub fn ref_after<'a>(x: &'a u8)
+{
+    let mut _0: (); // return
+    let x: &'1 u8; // arg #1
+    let mut _2: &'4 &'5 u8; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = &x
+    _0 = {impl Tr for &'_ u8}::method::<'_><'9>(move _2)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+
+

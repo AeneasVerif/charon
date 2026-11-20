@@ -24,13 +24,8 @@ pub struct S {
   _0: Box::<u8, Global>,
 }
 
-// Full name: test_crate::S
-pub struct S {
-  _0: Box::<u8, Global>,
-}
-
 // Full name: test_crate::S::{impl Destruct for S}::drop_glue
-unsafe fn {impl Destruct for S}::drop_glue<'_0>(_1: &'_0 mut S)
+unsafe fn impl_Destruct_for_S::drop_glue<'_0>(_1: &'_0 mut S)
 {
     let mut _0: (); // return
     let _1: &'1 mut S; // arg #1
@@ -53,7 +48,7 @@ pub fn drop_s(_1: S)
     storage_live(_0)
     _0 = ()
     _0 = ()
-    conditional_drop[{impl Destruct for S}::drop_glue<'0>] _1
+    conditional_drop[impl_Destruct_for_S::drop_glue<'0>] _1
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)
@@ -73,36 +68,8 @@ pub fn closure() -> {closure}
     return
 }
 
-// Full name: test_crate::closure
-pub fn closure() -> {closure}
-{
-    let mut _0: {closure}; // return
-
-    storage_live(_0)
-    _0 = {closure} {  }
-    return
-}
-
-// Full name: test_crate::closure::{closure}
-struct {closure} {}
-
 // Full name: test_crate::closure::{impl FnOnce<()> for {closure}}::call_once
-extern "rust-call" fn {impl FnOnce<()> for {closure}}::call_once(_1: {closure}, tupled_args: ())
-{
-    let mut _0: (); // return
-    let mut _1: {closure}; // arg #1
-    let mut tupled_args: (); // arg #2
-
-    storage_live(_0)
-    _0 = ()
-    _0 = ()
-    storage_dead(tupled_args)
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::closure::{impl FnOnce<()> for {closure}}::call_once
-extern "rust-call" fn {impl FnOnce<()> for {closure}}::call_once(_1: {closure}, tupled_args: ())
+extern "rust-call" fn call_once(_1: {closure}, tupled_args: ())
 {
     let mut _0: (); // return
     let mut _1: {closure}; // arg #1
@@ -130,7 +97,7 @@ pub fn use_closure()
     ↳⚡ unwind_continue
     storage_live(_2)
     _2 = ()
-    _0 = {impl FnOnce<()> for {closure}}::call_once(move _1, move _2)
+    _0 = call_once(move _1, move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)
