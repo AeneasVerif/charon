@@ -187,16 +187,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         self.translate_region_binder(span, callable.sig(), |ctx, _| {
             let mut dref = dref.move_under_binder();
             // The regions for these item kinds have the fn late bound regions at the end.
-            for (a, b) in dref.generics.regions.iter_mut().rev().zip(
-                ctx.innermost_binder()
-                    .params
-                    .identity_args()
-                    .regions
-                    .into_iter()
-                    .rev(),
-            ) {
-                *a = b;
-            }
+            dref.generics
+                .set_trailing_regions_to_identity(&ctx.innermost_binder().params);
             Ok(dref)
         })
     }

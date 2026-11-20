@@ -1117,16 +1117,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             self.translate_region_binder(span, &f.param_env().late_bound, |ctx, _| {
                 let mut generics = fn_ref.generics.move_under_binder();
                 // The method's late-bound regions are the last regions of the generated method.
-                for (a, b) in generics.regions.iter_mut().rev().zip(
-                    ctx.innermost_binder()
-                        .params
-                        .identity_args()
-                        .regions
-                        .into_iter()
-                        .rev(),
-                ) {
-                    *a = b;
-                }
+                generics.set_trailing_regions_to_identity(&ctx.innermost_binder().params);
                 Ok(FnPtr::new(FnPtrKind::Fun(fn_ref.id), generics))
             })
             .map(Some)
@@ -1195,16 +1186,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let mut generics = fun_item.generics;
         // The last n regions are the late-bound ones and were provided as erased regions by
         // `translate_item`.
-        for (a, b) in generics.regions.iter_mut().rev().zip(
-            self.innermost_binder()
-                .params
-                .identity_args()
-                .regions
-                .into_iter()
-                .rev(),
-        ) {
-            *a = b;
-        }
+        generics.set_trailing_regions_to_identity(&self.innermost_binder().params);
         Ok(FnPtr::new(fun_id, generics))
     }
 
