@@ -84,19 +84,19 @@ fn plain(x: i32) -> i32
 }
 
 // Full name: test_crate::{impl Fn<(i32,)> for plain}::call
-extern "rust-call" fn {impl Fn<(i32,)> for plain}::call<'_0>(state: &'_0 plain, args: (i32,)) -> i32
+extern "rust-call" fn {impl Fn<(i32,)> for plain}::call<'_0>(_1: &'_0 plain, _2: (i32,)) -> i32
 {
     let mut _0: i32; // return
-    let mut state: &'_0 plain; // arg #1
-    let mut args: (i32,); // arg #2
+    let _1: &'1 plain; // arg #1
+    let _2: (i32,); // arg #2
 
     storage_live(_0)
-    _0 = plain(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(state)
+    _0 = plain(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(state)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -187,19 +187,19 @@ fn apply_mut::<test_crate::main::{closure#1}>(f: test_crate::main::{closure#1}, 
 }
 
 // Full name: test_crate::{impl FnMut<(i32,)> for plain}::call_mut
-extern "rust-call" fn {impl FnMut<(i32,)> for plain}::call_mut<'_0>(state: &'_0 mut plain, args: (i32,)) -> i32
+extern "rust-call" fn {impl FnMut<(i32,)> for plain}::call_mut<'_0>(_1: &'_0 mut plain, _2: (i32,)) -> i32
 {
     let mut _0: i32; // return
-    let mut state: &'_0 mut plain; // arg #1
-    let mut args: (i32,); // arg #2
+    let _1: &'1 mut plain; // arg #1
+    let _2: (i32,); // arg #2
 
     storage_live(_0)
-    _0 = plain(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(state)
+    _0 = plain(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(state)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -290,19 +290,19 @@ fn apply_once::<test_crate::main::{closure#2}>(f: test_crate::main::{closure#2},
 }
 
 // Full name: test_crate::{impl FnOnce<(i32,)> for plain}::call_once
-extern "rust-call" fn {impl FnOnce<(i32,)> for plain}::call_once(state: plain, args: (i32,)) -> i32
+extern "rust-call" fn {impl FnOnce<(i32,)> for plain}::call_once(_1: plain, _2: (i32,)) -> i32
 {
     let mut _0: i32; // return
-    let mut state: plain; // arg #1
-    let mut args: (i32,); // arg #2
+    let _1: plain; // arg #1
+    let _2: (i32,); // arg #2
 
     storage_live(_0)
-    _0 = plain(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(state)
+    _0 = plain(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(state)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 

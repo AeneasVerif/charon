@@ -45,7 +45,7 @@ struct (_,)<A> {
 }
 
 // Full name: {impl Fn<(A,)> for fn(A) -> B}::call
-extern "rust-call" fn {impl Fn<(A,)> for fn(A) -> B}::call<'_0, A, B>(fn_ptr: &'_0 fn(A) -> B, args: (A,)) -> B
+extern "rust-call" fn {impl Fn<(A,)> for fn(A) -> B}::call<'_0, A, B>(_1: &'_0 fn(A) -> B, _2: (A,)) -> B
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
@@ -53,16 +53,16 @@ where
     Outlives1: (B: '_0),
 {
     let mut _0: B; // return
-    let mut fn_ptr: &'_0 fn(A) -> B; // arg #1
-    let mut args: (A,); // arg #2
+    let _1: &'1 fn(A) -> B; // arg #1
+    let _2: (A,); // arg #2
 
     storage_live(_0)
-    _0 = (copy (*fn_ptr))(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(fn_ptr)
+    _0 = (move (*_1))(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(fn_ptr)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 

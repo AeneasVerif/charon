@@ -7,8 +7,7 @@ use crate::hax::{BaseState, Symbol};
 use rustc_middle::ty;
 use rustc_span::def_id::DefId as RDefId;
 
-use super::translate_crate::VirtualImplKind;
-use super::translate_ctx::{ItemTransCtx, TransImplSource, TransItemSourceKind};
+use super::translate_ctx::{ItemTransCtx, TransItemSourceKind};
 use charon_lib::ast::*;
 use charon_lib::utils::CycleDetector;
 
@@ -48,10 +47,9 @@ pub(crate) struct BindingLevel<'tcx> {
     /// Extra lifetimes unerased from the closure arguments. Hax represents them with placeholder
     /// regions; they are parameters of the closure struct.
     pub closure_extra_self_regions: HashMap<hax::PlaceholderRegion, RegionId>,
-    /// Region added for the lifetime bound in the signature of the `call`/`call_mut` methods.
-    pub closure_call_method_region: Option<RegionId>,
-    /// Region added for the borrow accepted by a drop glue method or vtable drop shim.
-    pub drop_glue_region: Option<RegionId>,
+    /// Region added for the borrow of `self` accepted by a virtual impl method (e.g. `drop_glue` or
+    /// `call`), or by a vtable shim.
+    pub self_borrow_region: Option<RegionId>,
     /// The map from rust type variable indices to translated type variable indices. `None` marks
     /// inference-only parameters, which hax should normally never give us.
     pub type_vars_map: HashMap<u32, Option<TypeVarId>>,
@@ -164,12 +162,12 @@ impl<'tcx> BindingLevel<'tcx> {
         self.closure_extra_self_regions.insert(region, region_id);
     }
 
-    pub fn push_drop_glue_region(&mut self) -> RegionId {
+    pub fn push_self_borrow_region(&mut self) -> RegionId {
         let region_id = self
             .params
             .regions
             .push_with(|index| RegionParam::new(index, None, Variance::Covariant));
-        self.drop_glue_region = Some(region_id);
+        self.self_borrow_region = Some(region_id);
         region_id
     }
 
@@ -434,6 +432,28 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         )
     }
 
+    pub(crate) fn self_borrow_region(&self) -> Region {
+        Region::Var(DeBruijnVar::new_at_zero(
+            self.the_only_binder()
+                .self_borrow_region
+                .expect("item should have a borrow lifetime"),
+        ))
+    }
+
+    pub(crate) fn self_borrow_generic_args(&mut self) -> GenericArgs {
+        let mut generics = GenericArgs::empty();
+        generics.regions.push(self.translate_erased_region());
+        generics
+    }
+
+    pub(crate) fn self_borrow_params() -> GenericParams {
+        let mut params = GenericParams::empty();
+        params
+            .regions
+            .push_with(|index| RegionParam::new(index, None, Variance::Covariant));
+        params
+    }
+
     pub(crate) fn push_generic_params(
         &mut self,
         generics: &hax::TyGenerics<'tcx>,
@@ -605,33 +625,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             self.push_late_bound_generics_for_def(def)?;
         }
 
-        if let hax::FullDefKind::Fn(_)
-        | hax::FullDefKind::FnPtr(_)
-        | hax::FullDefKind::AssocFn(_)
-        | hax::FullDefKind::Closure(_)
-        | hax::FullDefKind::Ctor(_) = def.kind()
-            && let TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(
-                ClosureKind::Fn | ClosureKind::FnMut,
-            ))
-            | TransItemSourceKind::VTableMethod(TransImplSource::Virtual(
-                VirtualImplKind::Callable(ClosureKind::Fn | ClosureKind::FnMut),
-            )) = kind
-        {
-            // Add the lifetime generics coming from the method itself.
-            let rid = self
-                .the_only_binder_mut()
-                .params
-                .regions
-                .push_with(|index| RegionParam::new(index, None, Variance::Covariant));
-            self.the_only_binder_mut().closure_call_method_region = Some(rid);
-        }
-
-        if matches!(
-            kind,
-            TransItemSourceKind::VirtualMethod(VirtualImplKind::Destruct)
-                | TransItemSourceKind::VTableDropShim(..)
-        ) {
-            self.the_only_binder_mut().push_drop_glue_region();
+        if kind.has_self_borrow_region() {
+            self.the_only_binder_mut().push_self_borrow_region();
         }
 
         self.innermost_binder_mut().params.check_consistency();

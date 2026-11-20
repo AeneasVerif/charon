@@ -41,7 +41,7 @@
 //! }
 //! ```
 
-use crate::hax::{self, UnderOwnerState};
+use crate::hax;
 use itertools::Itertools;
 use std::mem;
 
@@ -180,127 +180,17 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 self,
                 span,
                 "Called `translate_callable_bound_ref_with_late_bound` on a `{kind:?}`; \
-                use `translate_closure_ref_with_upvars` \
-                or `translate_callable_bound_ref_with_method_bound` instead"
+                use `translate_closure_ref_with_upvars` instead"
             )
         }
         let dref: DeclRef<ItemId> = self.translate_item(span, callable.item(), kind)?;
         self.translate_region_binder(span, callable.sig(), |ctx, _| {
             let mut dref = dref.move_under_binder();
             // The regions for these item kinds have the fn late bound regions at the end.
-            for (a, b) in dref.generics.regions.iter_mut().rev().zip(
-                ctx.innermost_binder()
-                    .params
-                    .identity_args()
-                    .regions
-                    .into_iter()
-                    .rev(),
-            ) {
-                *a = b;
-            }
+            dref.generics
+                .set_trailing_regions_to_identity(&ctx.innermost_binder().params);
             Ok(dref)
         })
-    }
-
-    /// Translate a reference to a callable item that takes late-bound lifetimes and method
-    /// lifetimes. The binder binds the late-bound lifetimes of the `call`/`call_mut` method
-    /// (specified by `target_kind`).
-    fn translate_callable_bound_ref_with_method_bound(
-        &mut self,
-        span: Span,
-        item: &hax::ItemRef<'tcx>,
-        kind: TransItemSourceKind,
-        target_kind: ClosureKind,
-    ) -> Result<RegionBinder<DeclRef<ItemId>>, Error> {
-        if !matches!(
-            kind,
-            TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(..))
-        ) {
-            raise_error!(
-                self,
-                span,
-                "Called `translate_callable_bound_ref_with_method_bound` on a `{kind:?}`; \
-                use `translate_closure_ref_with_upvars` \
-                or `translate_callable_bound_ref_with_late_bound` instead"
-            )
-        }
-        let dref: DeclRef<ItemId> = self.translate_item(span, item, kind)?;
-        let mut dref = dref.move_under_binder();
-        let mut regions = IndexVec::new();
-        match target_kind {
-            ClosureKind::FnOnce => {}
-            ClosureKind::FnMut | ClosureKind::Fn => {
-                let rid =
-                    regions.push_with(|index| RegionParam::new(index, None, Variance::Covariant));
-                *dref.generics.regions.iter_mut().last().unwrap() =
-                    Region::Var(DeBruijnVar::new_at_zero(rid));
-            }
-        }
-        Ok(RegionBinder {
-            regions,
-            outlives: Vec::new(),
-            skip_binder: dref,
-        })
-    }
-
-    /// If this trait proof is the built-in impl of a `Fn*` trait for a closure, function item or
-    /// function pointer, return the callable item and the kind of the implemented trait. The
-    /// returned item has its regions erased.
-    pub fn recognize_callable_impl_proof(
-        &self,
-        trait_proof: &hax::TraitProof<'tcx>,
-    ) -> Option<(hax::ItemRef<'tcx>, ClosureKind)> {
-        let hax::TraitProofKind::Builtin {
-            trait_data: hax::BuiltinTraitData::Other(lang_item),
-            ..
-        } = &trait_proof.kind
-        else {
-            return None;
-        };
-        let target_kind = match lang_item {
-            hax::SolverTraitLangItem::FnOnce => ClosureKind::FnOnce,
-            hax::SolverTraitLangItem::FnMut => ClosureKind::FnMut,
-            hax::SolverTraitLangItem::Fn => ClosureKind::Fn,
-            _ => return None,
-        };
-        // We skip the binder and erase regions to avoid bound vars escaping.
-        let hax::GenericArg::Type(callable_ty) = trait_proof
-            .pred
-            .hax_skip_binder_ref()
-            .generic_args
-            .first()?
-        else {
-            return None;
-        };
-        let item = callable_ty.callable_item()?;
-        Some((item.erase(self.hax_state_with_id()), target_kind))
-    }
-
-    pub(crate) fn translate_callable_method_fn_ptr(
-        &mut self,
-        span: Span,
-        item: &hax::ItemRef<'tcx>,
-    ) -> Result<Option<RegionBinder<FnPtr>>, Error> {
-        if !self.monomorphize() {
-            return Ok(None);
-        }
-        let Some(in_trait) = &item.in_trait else {
-            return Ok(None);
-        };
-        let Some((callable, target_kind)) = self.recognize_callable_impl_proof(in_trait) else {
-            return Ok(None);
-        };
-        let kind = TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(target_kind));
-        let bound_ref = self.translate_callable_bound_ref_with_method_bound(
-            span,
-            &callable,
-            kind,
-            target_kind,
-        )?;
-        Ok(Some(bound_ref.map(|dref| {
-            let fn_ref: FunDeclRef = dref.try_into().unwrap();
-            FnPtr::new(FnPtrKind::Fun(fn_ref.id), fn_ref.generics)
-        })))
     }
 }
 
@@ -447,14 +337,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         Ok(TypeDeclKind::Struct(fields))
     }
 
-    fn translate_callable_method_body(
+    pub(crate) fn translate_callable_method_body(
         &mut self,
         span: Span,
         def: &hax::FullDef<'tcx>,
         target_kind: ClosureKind,
-        callable: Callable<'tcx, '_>,
         signature: &FunSig,
     ) -> Result<Body, Error> {
+        let callable = Callable::from_def(def).unwrap();
         match callable.kind() {
             CallableKind::Closure(source_kind) => self.translate_closure_method_body(
                 span,
@@ -464,11 +354,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 callable.item(),
                 signature,
             ),
-            CallableKind::FnDef => {
-                self.translate_fn_def_method_body(span, callable.item(), signature)
-            }
-            CallableKind::FnPtr => {
-                self.translate_fn_ptr_method_body(span, callable.item(), signature)
+            CallableKind::FnDef | CallableKind::FnPtr => {
+                let vimpl = callable_virtual_impl(self.hax_state(), def, target_kind);
+                let Some(body) = vimpl.method_shim(self.hax_state(), &vimpl.methods[0].def_id)
+                else {
+                    panic!("missing shim for function item or pointer")
+                };
+                Ok(self.translate_body(span, body, &def.source_text))
             }
         }
     }
@@ -635,230 +527,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 )
             }
         })
-    }
-
-    fn translate_fn_def_method_body(
-        &mut self,
-        span: Span,
-        item: &hax::ItemRef<'tcx>,
-        signature: &FunSig,
-    ) -> Result<Body, Error> {
-        let late_bound_regions: RegionArgs = self
-            .innermost_binder()
-            .bound_region_vars
-            .iter()
-            .map(|rid| Region::Var(DeBruijnVar::new_at_zero(*rid)))
-            .collect();
-        let fn_ptr = self
-            .translate_bound_fn_ptr(span, item, TransItemSourceKind::Fun)?
-            .apply(late_bound_regions);
-        let fn_op = FnOperand::Regular(fn_ptr);
-
-        let mut builder = BodyBuilder::new(span, 2);
-
-        let output = builder.new_var(None, signature.output.clone());
-        let _state = builder.new_var(Some("state".to_string()), signature.inputs[0].clone());
-        let tupled_args_ty = &signature.inputs[1];
-        let tupled_args = builder.new_var(Some("args".to_string()), tupled_args_ty.clone());
-
-        // We need the type declaration to have been translated to get the fields (since in monomorphic)
-        // mode they aren't in the generics. So ensure it's been translated!
-        let tuple_id = tupled_args_ty.as_adt().unwrap().id;
-        let _ = self.get_or_translate(ItemId::Type(tuple_id))?;
-        let arg_tys = tupled_args_ty.as_tuple_fields(&self.t_ctx.translated);
-
-        let args = arg_tys
-            .into_iter()
-            .enumerate()
-            .map(|(i, ty)| {
-                let nth_field = tupled_args
-                    .clone()
-                    .project(ProjectionElem::Field(None, FieldId::new(i)), ty);
-                Operand::Move(nth_field)
-            })
-            .collect();
-
-        builder.call(
-            output,
-            Call {
-                func: fn_op,
-                args,
-                safety: CallSafety::Inherit,
-            },
-        );
-
-        Ok(Body::Unstructured(builder.build()))
-    }
-
-    fn translate_fn_ptr_method_body(
-        &mut self,
-        span: Span,
-        item: &hax::ItemRef<'tcx>,
-        signature: &FunSig,
-    ) -> Result<Body, Error> {
-        let ty = item
-            .def_id
-            .type_of(&self.hax_state)
-            .instantiate(self.tcx, item.rustc_args(&self.hax_state));
-        let ty = hax::normalize(self.tcx, self.hax_state.typing_env(), ty);
-        let copy_proof =
-            hax::solve_copy(&self.hax_state, ty).expect("function pointers are always Copy");
-        let copy_proof = self
-            .translate_trait_proof(span, &copy_proof)?
-            .no_bound_vars();
-        let mut builder = BodyBuilder::new(span, 2);
-        let output = builder.new_var(None, signature.output.clone());
-        let fn_ptr = builder.new_var(Some("fn_ptr".to_string()), signature.inputs[0].clone());
-        let tupled_args_ty = &signature.inputs[1];
-        let tupled_args = builder.new_var(Some("args".to_string()), tupled_args_ty.clone());
-
-        // `FnOnce::call_once` receives the function pointer directly, whereas `Fn::call` and
-        // `FnMut::call_mut` receive it through a shared or mutable reference respectively.
-        let fn_ptr = if matches!(fn_ptr.ty().kind(), TyKind::FnPtr(..)) {
-            fn_ptr
-        } else {
-            fn_ptr.deref()
-        };
-        let fn_ptr = Operand::Copy(fn_ptr, copy_proof);
-        let TyKind::FnPtr(fn_sig) = fn_ptr.ty().kind() else {
-            unreachable!()
-        };
-        let late_bound_regions: RegionArgs = self
-            .innermost_binder()
-            .bound_region_vars
-            .iter()
-            .map(|rid| Region::Var(DeBruijnVar::new_at_zero(*rid)))
-            .collect();
-        let arg_tys = fn_sig.clone().apply(late_bound_regions.clone()).inputs;
-        let args = arg_tys
-            .into_iter()
-            .enumerate()
-            .map(|(i, ty)| {
-                let field = tupled_args
-                    .clone()
-                    .project(ProjectionElem::Field(None, FieldId::new(i)), ty);
-                Operand::Move(field)
-            })
-            .collect();
-        builder.call(
-            output,
-            Call {
-                func: FnOperand::Dynamic(fn_ptr, late_bound_regions),
-                args,
-                safety: CallSafety::Inherit,
-            },
-        );
-        Ok(Body::Unstructured(builder.build()))
-    }
-
-    /// Given an item that is a closure, generate the `call_once`/`call_mut`/`call` method
-    /// (depending on `target_kind`).
-    #[tracing::instrument(skip(self, item_meta))]
-    pub fn translate_closure_method(
-        mut self,
-        def_id: FunDeclId,
-        item_meta: ItemMeta,
-        def: &hax::FullDef<'tcx>,
-        target_kind: ClosureKind,
-    ) -> Result<FunDecl, Error> {
-        let span = item_meta.span;
-        let callable = Callable::from_def(def).unwrap();
-
-        // Hax gives us trait-related information for the impl we're building.
-        let vimpl = callable_virtual_impl(self.hax_state(), def, target_kind);
-        let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
-        let method = &vimpl.methods[0];
-        let method_id = self.translate_trait_method_id(implemented_trait.id, &method.def_id)?;
-
-        let impl_ref = self.translate_callable_impl_ref(span, callable.item(), target_kind)?;
-        let src = FunSource::TraitImpl {
-            impl_ref,
-            trait_ref: implemented_trait.clone(),
-            item_id: method_id,
-            reuses_default: false,
-        };
-
-        // Translate the function signature
-        let bound_sig = self.translate_poly_fun_sig(span, &method.sig)?;
-        // We give it the lifetime parameter we had prepared for that purpose.
-        let signature = bound_sig.apply(
-            self.the_only_binder()
-                .closure_call_method_region
-                .iter()
-                .map(|r| Region::Var(DeBruijnVar::new_at_zero(*r)))
-                .collect(),
-        );
-
-        let body = if item_meta.opacity.with_private_contents().is_opaque() {
-            Body::Opaque
-        } else {
-            self.translate_callable_method_body(span, def, target_kind, callable, &signature)?
-        };
-
-        Ok(FunDecl {
-            def_id,
-            item_meta,
-            generics: self.into_generics(),
-            signature: Box::new(signature),
-            src,
-            body,
-        })
-    }
-
-    #[tracing::instrument(skip(self, item_meta))]
-    pub fn translate_closure_trait_impl(
-        mut self,
-        def_id: TraitImplId,
-        item_meta: ItemMeta,
-        def: &hax::FullDef<'tcx>,
-        target_kind: ClosureKind,
-    ) -> Result<TraitImpl, Error> {
-        let span = item_meta.span;
-        let callable = Callable::from_def(def).unwrap();
-
-        // Hax gives us trait-related information for the impl we're building.
-        let vimpl = callable_virtual_impl(self.hax_state(), def, target_kind);
-        let mut timpl = self.translate_virtual_trait_impl(
-            def_id,
-            item_meta,
-            callable.item(),
-            TransImplSource::Virtual(VirtualImplKind::Callable(target_kind)),
-            vimpl,
-        )?;
-
-        if self.monomorphize() {
-            return Ok(timpl);
-        }
-
-        // Construct the `call_*` method reference.
-        let trait_decl_id = timpl.impl_trait.id;
-        let trait_method_id =
-            self.translate_trait_method_id(trait_decl_id, &vimpl.methods[0].def_id)?;
-        let call_fn_binder = {
-            let kind = TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(target_kind));
-            let bound_method_ref: RegionBinder<DeclRef<ItemId>> = self
-                .translate_callable_bound_ref_with_method_bound(
-                    span,
-                    callable.item(),
-                    kind,
-                    target_kind,
-                )?;
-            let params = GenericParams {
-                regions: bound_method_ref.regions,
-                ..GenericParams::empty()
-            };
-            let fn_decl_ref: FunDeclRef = bound_method_ref.skip_binder.try_into().unwrap();
-            Binder::new(
-                BinderKind::TraitMethod(trait_decl_id, trait_method_id),
-                params,
-                fn_decl_ref,
-            )
-        };
-        timpl
-            .methods
-            .set_slot_extend(trait_method_id, call_fn_binder);
-
-        Ok(timpl)
     }
 
     /// Given an item that is a non-capturing closure, generate the equivalent function,

@@ -223,6 +223,17 @@ impl TransItemSourceKind {
         )
     }
 
+    /// Whether the item takes an extra lifetime parameter for the borrow of `self`.
+    pub fn has_self_borrow_region(&self) -> bool {
+        match self {
+            Self::VirtualMethod(kind) | Self::VTableMethod(TransImplSource::Virtual(kind)) => {
+                kind.has_self_borrow()
+            }
+            Self::VTableDropShim(..) => true,
+            _ => false,
+        }
+    }
+
     /// Whether the corresponding item binds the late-bound lifetimes of the closure, or just its
     /// early-bound ones.
     pub fn has_closure_late_params(&self) -> bool {
@@ -997,15 +1008,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         .map(|_| self.translate_erased_region()),
                 );
             }
-            if let TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(
-                ClosureKind::FnMut | ClosureKind::Fn,
-            ))
-            | TransItemSourceKind::VTableMethod(TransImplSource::Virtual(
-                VirtualImplKind::Callable(ClosureKind::FnMut | ClosureKind::Fn),
-            )) = kind
-            {
-                generics.regions.push(self.translate_erased_region());
-            }
             // If we're in the process of translating this same item (possibly with a
             // different `TransItemSourceKind`), we can reuse the generics they have in
             // common.
@@ -1021,12 +1023,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
             }
         }
-        if matches!(
-            kind,
-            TransItemSourceKind::VirtualMethod(VirtualImplKind::Destruct)
-                | TransItemSourceKind::VTableDropShim(..)
-        ) {
-            generics = generics.concat(&self.drop_glue_generic_args());
+        if kind.has_self_borrow_region() {
+            generics = generics.concat(&self.self_borrow_generic_args());
         }
 
         let trait_ref = hax_item
@@ -1099,6 +1097,35 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
+    /// In mono mode, trait impls have no methods. So a call to a method of an impl we generate
+    /// (e.g. `call` of a closure's `Fn` impl) points directly to the method we generate. Only
+    /// required methods are generated; provided ones use the trait default.
+    fn translate_generated_method_fn_ptr(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef<'tcx>,
+    ) -> Result<Option<RegionBinder<FnPtr>>, Error> {
+        if self.monomorphize()
+            && let Some(in_trait) = &item.in_trait
+            && let Some((impl_item, impl_kind)) = self.recognize_generated_impl_proof(in_trait)
+            && let def = self.hax_def(item)?
+            && let hax::FullDefKind::AssocFn(f) = def.kind()
+            && !f.associated_item().has_value
+        {
+            let method_kind = TransItemSourceKind::VirtualMethod(impl_kind);
+            let fn_ref: FunDeclRef = self.translate_item(span, &impl_item, method_kind)?;
+            self.translate_region_binder(span, &f.param_env().late_bound, |ctx, _| {
+                let mut generics = fn_ref.generics.move_under_binder();
+                // The method's late-bound regions are the last regions of the generated method.
+                generics.set_trailing_regions_to_identity(&ctx.innermost_binder().params);
+                Ok(FnPtr::new(FnPtrKind::Fun(fn_ref.id), generics))
+            })
+            .map(Some)
+        } else {
+            Ok(None)
+        }
+    }
+
     /// Translate a reference to a trait method declaration without registering the declaration as
     /// a `FunDecl`. `TraitDecl.methods` contains the declaration signature and metadata; only
     /// default implementations give rise to a real function item.
@@ -1159,16 +1186,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let mut generics = fun_item.generics;
         // The last n regions are the late-bound ones and were provided as erased regions by
         // `translate_item`.
-        for (a, b) in generics.regions.iter_mut().rev().zip(
-            self.innermost_binder()
-                .params
-                .identity_args()
-                .regions
-                .into_iter()
-                .rev(),
-        ) {
-            *a = b;
-        }
+        generics.set_trailing_regions_to_identity(&self.innermost_binder().params);
         Ok(FnPtr::new(fun_id, generics))
     }
 
@@ -1180,7 +1198,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: TransItemSourceKind,
         enqueue: bool,
     ) -> Result<RegionBinder<FnPtr>, Error> {
-        if let Some(fn_ptr) = self.translate_callable_method_fn_ptr(span, item)? {
+        if let Some(fn_ptr) = self.translate_generated_method_fn_ptr(span, item)? {
             return Ok(fn_ptr);
         }
         if let Some(fn_ptr) = self.translate_method_decl_fn_ptr(span, item)? {

@@ -93,19 +93,19 @@ struct (_,)::<u32> {
 }
 
 // Full name: {impl FnOnce<(u32,)> for fn(u32) -> u32}::call_once::<u32, u32>
-extern "rust-call" fn {impl FnOnce<(u32,)> for fn(u32) -> u32}::call_once::<u32, u32>(fn_ptr: fn(u32) -> u32, args: (u32,)) -> u32
+extern "rust-call" fn {impl FnOnce<(u32,)> for fn(u32) -> u32}::call_once::<u32, u32>(_1: fn(u32) -> u32, _2: (u32,)) -> u32
 {
     let mut _0: u32; // return
-    let mut fn_ptr: fn(u32) -> u32; // arg #1
-    let mut args: (u32,); // arg #2
+    let _1: fn(u32) -> u32; // arg #1
+    let _2: (u32,); // arg #2
 
     storage_live(_0)
-    _0 = (copy fn_ptr)(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(fn_ptr)
+    _0 = (move _1)(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(fn_ptr)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -151,19 +151,19 @@ unsafe fn {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u3
 vtable {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::FnOnce::{vtable} = core::ops::function::FnOnce::{vtable} { size: size_of::<fn(u32) -> u32>(), align: align_of::<fn(u32) -> u32>(), drop: cast<*const ()>(fnptr({impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'_>)), method_call_once: cast<*const ()>(fnptr({impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32>)), super_trait_0: &core::marker::MetaSized::{vtable}::<fn(u32) -> u32> }
 
 // Full name: {impl FnMut<(u32,)> for fn(u32) -> u32}::call_mut::<u32, u32>
-extern "rust-call" fn call_mut::<u32, u32><'_0>(fn_ptr: &'_0 mut fn(u32) -> u32, args: (u32,)) -> u32
+extern "rust-call" fn call_mut::<u32, u32><'_0>(_1: &'_0 mut fn(u32) -> u32, _2: (u32,)) -> u32
 {
     let mut _0: u32; // return
-    let mut fn_ptr: &'_0 mut fn(u32) -> u32; // arg #1
-    let mut args: (u32,); // arg #2
+    let _1: &'1 mut fn(u32) -> u32; // arg #1
+    let _2: (u32,); // arg #2
 
     storage_live(_0)
-    _0 = (copy (*fn_ptr))(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(fn_ptr)
+    _0 = (move (*_1))(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(fn_ptr)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -209,19 +209,19 @@ unsafe fn {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32
 vtable {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::FnMut::{vtable} = core::ops::function::FnMut::{vtable} { size: size_of::<fn(u32) -> u32>(), align: align_of::<fn(u32) -> u32>(), drop: cast<*const ()>(fnptr({impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'_>)), method_call_mut: cast<*const ()>(fnptr({impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32><'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<fn(u32) -> u32>, super_trait_1: &{impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32> }
 
 // Full name: {impl Fn<(u32,)> for fn(u32) -> u32}::call::<u32, u32>
-extern "rust-call" fn call::<u32, u32><'_0>(fn_ptr: &'_0 fn(u32) -> u32, args: (u32,)) -> u32
+extern "rust-call" fn call::<u32, u32><'_0>(_1: &'_0 fn(u32) -> u32, _2: (u32,)) -> u32
 {
     let mut _0: u32; // return
-    let mut fn_ptr: &'_0 fn(u32) -> u32; // arg #1
-    let mut args: (u32,); // arg #2
+    let _1: &'1 fn(u32) -> u32; // arg #1
+    let _2: (u32,); // arg #2
 
     storage_live(_0)
-    _0 = (copy (*fn_ptr))(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(fn_ptr)
+    _0 = (move (*_1))(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(fn_ptr)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -297,19 +297,19 @@ struct (_,)::<[&'_ u8; 3usize]> {
 }
 
 // Full name: {impl FnOnce<([&'_ u8; 3usize],)> for fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize]}::call_once::<u8, u8, 3usize, 3usize>
-extern "rust-call" fn {impl FnOnce<([&'_ u8; 3usize],)> for fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize]}::call_once::<u8, u8, 3usize, 3usize><'_0>(fn_ptr: fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize], args: ([&'_ u8; 3usize],)) -> [&'_0 u8; 3usize]
+extern "rust-call" fn {impl FnOnce<([&'_ u8; 3usize],)> for fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize]}::call_once::<u8, u8, 3usize, 3usize><'_0>(_1: fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize], _2: ([&'_ u8; 3usize],)) -> [&'_0 u8; 3usize]
 {
-    let mut _0: [&'_0 u8; 3usize]; // return
-    let mut fn_ptr: fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize]; // arg #1
-    let mut args: ([&'_ u8; 3usize],); // arg #2
+    let mut _0: [&'6 u8; 3usize]; // return
+    let _1: fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize]; // arg #1
+    let _2: ([&'_ u8; 3usize],); // arg #2
 
     storage_live(_0)
-    _0 = (copy fn_ptr)<'_0>(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(fn_ptr)
+    _0 = (move _1)<'9>(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(fn_ptr)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -319,19 +319,19 @@ struct (_, _)::<&'_ u8, &'_ u8> {
 }
 
 // Full name: {impl FnOnce<(&'_ u8, &'_ u8)> for fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_ u8, &'_ u8)}::call_once::<u8, u8, u8, u8>
-extern "rust-call" fn {impl FnOnce<(&'_ u8, &'_ u8)> for fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_ u8, &'_ u8)}::call_once::<u8, u8, u8, u8><'_0, '_1>(fn_ptr: fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_ u8, &'_ u8), args: (&'_ u8, &'_ u8)) -> (&'_ u8, &'_ u8)
+extern "rust-call" fn {impl FnOnce<(&'_ u8, &'_ u8)> for fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_ u8, &'_ u8)}::call_once::<u8, u8, u8, u8><'_0, '_1>(_1: fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_ u8, &'_ u8), _2: (&'_ u8, &'_ u8)) -> (&'_ u8, &'_ u8)
 {
     let mut _0: (&'_ u8, &'_ u8); // return
-    let mut fn_ptr: fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_ u8, &'_ u8); // arg #1
-    let mut args: (&'_ u8, &'_ u8); // arg #2
+    let _1: fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_ u8, &'_ u8); // arg #1
+    let _2: (&'_ u8, &'_ u8); // arg #2
 
     storage_live(_0)
-    _0 = (copy fn_ptr)<'_0, '_1>(move args._0, move args._1)
-    ↳⚡ storage_dead(args)
-        storage_dead(fn_ptr)
+    _0 = (move _1)<'0, '1>(move _2._0, move _2._1)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(fn_ptr)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -345,19 +345,19 @@ struct (_,)::<Adt::<'_, u32>> {
 }
 
 // Full name: {impl FnOnce<(Adt::<'_, u32>,)> for fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>}::call_once::<u32, u32>
-extern "rust-call" fn {impl FnOnce<(Adt::<'_, u32>,)> for fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>}::call_once::<u32, u32><'_0>(fn_ptr: fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>, args: (Adt::<'_, u32>,)) -> Adt::<'_, u32>
+extern "rust-call" fn {impl FnOnce<(Adt::<'_, u32>,)> for fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>}::call_once::<u32, u32><'_0>(_1: fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>, _2: (Adt::<'_, u32>,)) -> Adt::<'_, u32>
 {
     let mut _0: Adt::<'_, u32>; // return
-    let mut fn_ptr: fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>; // arg #1
-    let mut args: (Adt::<'_, u32>,); // arg #2
+    let _1: fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>; // arg #1
+    let _2: (Adt::<'_, u32>,); // arg #2
 
     storage_live(_0)
-    _0 = (copy fn_ptr)<'_0>(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(fn_ptr)
+    _0 = (move _1)<'0>(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(fn_ptr)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -371,19 +371,19 @@ struct (_,)::<ConstAdt::<3usize>> {
 }
 
 // Full name: {impl FnOnce<(ConstAdt::<3usize>,)> for fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>}::call_once::<ConstAdt::<3usize>, ConstAdt::<3usize>>
-extern "rust-call" fn {impl FnOnce<(ConstAdt::<3usize>,)> for fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>}::call_once::<ConstAdt::<3usize>, ConstAdt::<3usize>>(fn_ptr: fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>, args: (ConstAdt::<3usize>,)) -> ConstAdt::<3usize>
+extern "rust-call" fn {impl FnOnce<(ConstAdt::<3usize>,)> for fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>}::call_once::<ConstAdt::<3usize>, ConstAdt::<3usize>>(_1: fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>, _2: (ConstAdt::<3usize>,)) -> ConstAdt::<3usize>
 {
     let mut _0: ConstAdt::<3usize>; // return
-    let mut fn_ptr: fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>; // arg #1
-    let mut args: (ConstAdt::<3usize>,); // arg #2
+    let _1: fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>; // arg #1
+    let _2: (ConstAdt::<3usize>,); // arg #2
 
     storage_live(_0)
-    _0 = (copy fn_ptr)(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(fn_ptr)
+    _0 = (move _1)(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(fn_ptr)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -398,19 +398,19 @@ struct (_, _)::<Plain::<u32>, &'_ u32> {
 }
 
 // Full name: {impl FnOnce<(Plain::<u32>, &'_ u32)> for fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32}::call_once::<Plain::<u32>, u32, u32>
-extern "rust-call" fn {impl FnOnce<(Plain::<u32>, &'_ u32)> for fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32}::call_once::<Plain::<u32>, u32, u32><'_0>(fn_ptr: fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32, args: (Plain::<u32>, &'_ u32)) -> &'_0 u32
+extern "rust-call" fn {impl FnOnce<(Plain::<u32>, &'_ u32)> for fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32}::call_once::<Plain::<u32>, u32, u32><'_0>(_1: fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32, _2: (Plain::<u32>, &'_ u32)) -> &'_0 u32
 {
-    let mut _0: &'_0 u32; // return
-    let mut fn_ptr: fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32; // arg #1
-    let mut args: (Plain::<u32>, &'_ u32); // arg #2
+    let mut _0: &'1 u32; // return
+    let _1: fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32; // arg #1
+    let _2: (Plain::<u32>, &'_ u32); // arg #2
 
     storage_live(_0)
-    _0 = (copy fn_ptr)<'_0>(move args._0, move args._1)
-    ↳⚡ storage_dead(args)
-        storage_dead(fn_ptr)
+    _0 = (move _1)<'2>(move _2._0, move _2._1)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(fn_ptr)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -419,19 +419,19 @@ struct (_,)::<&'_ u32> {
 }
 
 // Full name: {impl FnOnce<(&'_ u32,)> for fn(&'_ u32) -> &'_ u32}::call_once::<&'_ u32, &'_ u32>
-extern "rust-call" fn {impl FnOnce<(&'_ u32,)> for fn(&'_ u32) -> &'_ u32}::call_once::<&'_ u32, &'_ u32>(fn_ptr: fn(&'_ u32) -> &'_ u32, args: (&'_ u32,)) -> &'_ u32
+extern "rust-call" fn {impl FnOnce<(&'_ u32,)> for fn(&'_ u32) -> &'_ u32}::call_once::<&'_ u32, &'_ u32>(_1: fn(&'_ u32) -> &'_ u32, _2: (&'_ u32,)) -> &'_ u32
 {
-    let mut _0: &'0 u32; // return
-    let mut fn_ptr: fn(&'1 u32) -> &'2 u32; // arg #1
-    let mut args: (&'_ u32,); // arg #2
+    let mut _0: &'1 u32; // return
+    let _1: fn(&'2 u32) -> &'3 u32; // arg #1
+    let _2: (&'_ u32,); // arg #2
 
     storage_live(_0)
-    _0 = (copy fn_ptr)(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(fn_ptr)
+    _0 = (move _1)(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(fn_ptr)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -598,19 +598,19 @@ fn swap<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'_ u8, &'_ u8)
 }
 
 // Full name: test_crate::{impl FnOnce<(&'_ u8, &'_ u8)> for for<'a, 'b> swap<'a, 'b>}::call_once
-extern "rust-call" fn {impl FnOnce<(&'_ u8, &'_ u8)> for for<'a, 'b> swap<'a, 'b>}::call_once<'a, 'b>(state: for<'a, 'b> swap<'a, 'b>, args: (&'_ u8, &'_ u8)) -> (&'_ u8, &'_ u8)
+extern "rust-call" fn {impl FnOnce<(&'_ u8, &'_ u8)> for for<'a, 'b> swap<'a, 'b>}::call_once<'a, 'b>(_1: for<'a, 'b> swap<'a, 'b>, _2: (&'_ u8, &'_ u8)) -> (&'_ u8, &'_ u8)
 {
     let mut _0: (&'_ u8, &'_ u8); // return
-    let mut state: for<'a, 'b> swap<'a, 'b>; // arg #1
-    let mut args: (&'_ u8, &'_ u8); // arg #2
+    let _1: for<'a, 'b> swap<'a, 'b>; // arg #1
+    let _2: (&'_ u8, &'_ u8); // arg #2
 
     storage_live(_0)
-    _0 = swap<'a, 'b>(move args._0, move args._1)
-    ↳⚡ storage_dead(args)
-        storage_dead(state)
+    _0 = swap<'0, '1>(move _2._0, move _2._1)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(state)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 

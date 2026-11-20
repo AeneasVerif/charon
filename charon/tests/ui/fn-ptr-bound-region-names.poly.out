@@ -57,24 +57,24 @@ struct (_,)<A> {
 }
 
 // Full name: {impl FnOnce<(&'_0 A,)> for fn<'_0_1 where A: '_0_1, B: '_0_1>(&'_0_1 A) -> &'_0_1 B}::call_once
-extern "rust-call" fn call_once<'_0, A, B>(fn_ptr: fn<'_0_1 where A: '_0_1, B: '_0_1>(&'_0_1 A) -> &'_0_1 B, args: (&'_0 A,)) -> &'_0 B
+extern "rust-call" fn call_once<'_0, A, B>(_1: fn<'_0_1 where A: '_0_1, B: '_0_1>(&'_0_1 A) -> &'_0_1 B, _2: (&'_0 A,)) -> &'_0 B
 where
     TraitClause0: for<'_0_1> (&'_0_1 A: Sized),
     TraitClause1: for<'_0_1> (&'_0_1 B: Sized),
     Outlives0: (A: '_0),
     Outlives1: (B: '_0),
 {
-    let mut _0: &'_0 B; // return
-    let mut fn_ptr: fn<'_0_1 where A: '_0_1, B: '_0_1>(&'_0_1 A) -> &'_0_1 B; // arg #1
-    let mut args: (&'_0 A,); // arg #2
+    let mut _0: &'1 B; // return
+    let _1: fn<'_0_1 where A: '_0_1, B: '_0_1>(&'_0_1 A) -> &'_0_1 B; // arg #1
+    let _2: (&'4 A,); // arg #2
 
     storage_live(_0)
-    _0 = (copy fn_ptr)<'_0>(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(fn_ptr)
+    _0 = (move _1)<'5>(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(fn_ptr)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
