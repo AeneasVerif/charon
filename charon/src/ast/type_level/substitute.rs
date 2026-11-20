@@ -179,6 +179,25 @@ pub trait TyVisitable: Sized + AstVisitable {
                 VisitWithBinderDepth::new(self).visit(x)
             }
 
+            fn visit_with_cached_type_info<T: AstVisitable + HashConsable>(
+                &mut self,
+                value: &mut HashConsed<WithCachedTypeInfo<T>>,
+            ) -> ControlFlow<Self::Break> {
+                let info = value.type_info();
+                if info.max_de_bruijn_id().is_some_and(|max| max >= self.depth)
+                    || info.flags.intersects(
+                        TypeFlags::MENTIONS_FREE_VAR
+                            | TypeFlags::MENTIONS_SELF_CLAUSE
+                            | TypeFlags::HAS_ERASED_OR_BODY_REGIONS
+                            | TypeFlags::USES_SIZE_METADATA,
+                    )
+                {
+                    self.visit_inner(value)
+                } else {
+                    Continue(())
+                }
+            }
+
             fn exit_region(&mut self, r: &mut Region) {
                 match r {
                     Region::Var(var)
@@ -362,9 +381,9 @@ pub trait TyVisitable: Sized + AstVisitable {
                 VisitWithBinderDepth::new(self).visit(x)
             }
 
-            fn visit_with_cached_type_info<T: AstVisitable>(
+            fn visit_with_cached_type_info<T: AstVisitable + HashConsable>(
                 &mut self,
-                value: &mut WithCachedTypeInfo<T>,
+                value: &mut HashConsed<WithCachedTypeInfo<T>>,
             ) -> ControlFlow<Self::Break> {
                 if value
                     .type_info()

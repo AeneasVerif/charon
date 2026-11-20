@@ -44,9 +44,9 @@ impl TypeInfo {
                 VisitWithBinderDepth::new(self).visit(value)
             }
 
-            fn visit_with_cached_type_info<T: AstVisitable>(
+            fn visit_with_cached_type_info<T: AstVisitable + HashConsable>(
                 &mut self,
-                value: &WithCachedTypeInfo<T>,
+                value: &HashConsed<WithCachedTypeInfo<T>>,
             ) -> ControlFlow<Self::Break> {
                 let TypeInfo {
                     max_de_bruijn_id,
@@ -267,6 +267,13 @@ impl<T: TyVisitable> WithCachedTypeInfo<T> {
         // Recompute the cached values.
         self.recompute_type_info();
         ret
+    }
+}
+
+impl<T> HashConsed<WithCachedTypeInfo<T>> {
+    /// Shadow `TyVisitable::type_info` to avoid recomputing the info.
+    pub fn type_info(&self) -> TypeInfo {
+        self.inner().info
     }
 }
 
