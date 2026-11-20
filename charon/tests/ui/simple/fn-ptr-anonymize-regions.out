@@ -1,0 +1,111 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Tuple
+#[fundamental]
+#[lang_item(Tuple)]
+pub trait Tuple<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::ops::function::FnOnce
+#[fundamental]
+#[lang_item(FnOnce)]
+pub trait FnOnce<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    proof ImpliedClause3: (Self::Output: Sized)
+    type Output
+    fn call_once;
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
+}
+
+struct () {}
+
+struct (_,)<A> {
+  _0: A,
+}
+
+// Full name: {impl FnOnce<(&'_0 A,)> for fn<'_0_1 where A: '_0_1>(&'_0_1 A) -> B}::call_once
+extern "rust-call" fn call_once<'_0, A, B>(fn_ptr: fn<'_0_1 where A: '_0_1>(&'_0_1 A) -> B, args: (&'_0 A,)) -> B
+where
+    TraitClause0: for<'_0_1> (&'_0_1 A: Sized),
+    TraitClause1: for<'_0_1> (B: Sized),
+    Outlives0: (A: '_0),
+{
+    let mut _0: B; // return
+    let mut fn_ptr: fn<'_0_1 where A: '_0_1>(&'_0_1 A) -> B; // arg #1
+    let mut args: (&'_0 A,); // arg #2
+
+    storage_live(_0)
+    _0 = (copy fn_ptr)<'_0>(move args._0)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+// Full name: {impl FnOnce<(&'_0 A,)> for fn<'_0_1 where A: '_0_1>(&'_0_1 A) -> B}
+impl<'_0, A, B> FnOnce<(&'_0 A,)> for fn<'_0_1 where A: '_0_1>(&'_0_1 A) -> B
+where
+    TraitClause0: for<'_0_1> (&'_0_1 A: Sized),
+    TraitClause1: for<'_0_1> (B: Sized),
+    Outlives0: (A: '_0),
+{
+    proof ImpliedClause0: (fn<'_0_2>(&'_0_2 A) -> B: MetaSized) = {built_in impl MetaSized for fn<'_0_2>(&'_0_2 A) -> B}
+    proof ImpliedClause1: ((&'_0 A,): Sized) = {built_in impl Sized for (&'_0 A,)}
+    proof ImpliedClause2: ((&'_0 A,): Tuple) = {built_in impl Tuple for (&'_0 A,)}
+    proof ImpliedClause3: (B: Sized) = TraitClause1<'_>
+    type Output = B
+    fn call_once = call_once<'_0, A, B>[for<'_0_2> TraitClause0<'_0_2>, for<'_0_2> TraitClause1<'_>]
+    vtable: lazy
+}
+
+// Full name: test_crate::NeedsFn
+struct NeedsFn<F, A>
+where
+    TraitClause0: (F: Sized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (F: FnOnce<(A,)>),
+    TypeConstraint0: TraitClause2::Output = (),
+{
+  _0: F,
+  _1: A,
+}
+
+// Full name: test_crate::simple
+fn simple(_1: NeedsFn<fn<'a>(&'a u8), &'static u8>[{built_in impl Sized for fn<'a>(&'a u8)}, {built_in impl Sized for &'static u8}, {impl FnOnce<(&'_0 A,)> for fn<'_0_1 where A: '_0_1>(&'_0_1 A) -> B}<'_, u8, ()>[for<'_0_2> {built_in impl Sized for &'_0_2 u8}, for<'_0_2> {built_in impl Sized for ()}]], _2: NeedsFn<fn<'b>(&'b u8), &'static u8>[{built_in impl Sized for fn<'b>(&'b u8)}, {built_in impl Sized for &'static u8}, {impl FnOnce<(&'_0 A,)> for fn<'_0_1 where A: '_0_1>(&'_0_1 A) -> B}<'_, u8, ()>[for<'_0_2> {built_in impl Sized for &'_0_2 u8}, for<'_0_2> {built_in impl Sized for ()}]])
+{
+    let mut _0: (); // return
+    let mut _1: NeedsFn<fn<'a>(&'a u8), &'18 u8>[{built_in impl Sized for fn<'a>(&'a u8)}, {built_in impl Sized for &'18 u8}, {impl FnOnce<(&'_0 A,)> for fn<'_0_1 where A: '_0_1>(&'_0_1 A) -> B}<'18, u8, ()>[for<'_0_2> {built_in impl Sized for &'_0_2 u8}, for<'_0_2> {built_in impl Sized for ()}]]; // arg #1
+    let mut _2: NeedsFn<fn<'b>(&'b u8), &'43 u8>[{built_in impl Sized for fn<'b>(&'b u8)}, {built_in impl Sized for &'43 u8}, {impl FnOnce<(&'_0 A,)> for fn<'_0_1 where A: '_0_1>(&'_0_1 A) -> B}<'43, u8, ()>[for<'_0_2> {built_in impl Sized for &'_0_2 u8}, for<'_0_2> {built_in impl Sized for ()}]]; // arg #2
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+
+
