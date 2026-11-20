@@ -95,6 +95,17 @@ impl VisitAstMut for Infer<'_> {
         VisitWithBinderStack::new(self).visit(value)
     }
 
+    fn visit_with_cached_type_info<T: AstVisitable + HashConsable>(
+        &mut self,
+        value: &mut HashConsed<WithCachedTypeInfo<T>>,
+    ) -> ControlFlow<Self::Break> {
+        if value.type_info().has_erased_or_body_regions() {
+            self.visit_inner(value)
+        } else {
+            ControlFlow::Continue(())
+        }
+    }
+
     fn exit_trait_ref(&mut self, proof: &mut TraitRef) {
         if let Some(recovered) = self.infer(proof) {
             *proof = recovered;

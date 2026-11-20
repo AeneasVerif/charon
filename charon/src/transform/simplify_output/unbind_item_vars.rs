@@ -24,6 +24,22 @@ impl VisitAstMut for UnbindVarVisitor {
         VisitWithBinderDepth::new(self).visit(x)
     }
 
+    fn visit_with_cached_type_info<T: AstVisitable + HashConsable>(
+        &mut self,
+        value: &mut HashConsed<WithCachedTypeInfo<T>>,
+    ) -> ControlFlow<Self::Break> {
+        let info = value.type_info();
+        if info
+            .max_de_bruijn_id()
+            .is_some_and(|max| max >= self.binder_depth)
+            || info.flags.contains(TypeFlags::MENTIONS_FREE_VAR)
+        {
+            self.visit_inner(value)
+        } else {
+            ControlFlow::Continue(())
+        }
+    }
+
     fn exit_de_bruijn_var<T: AstVisitable + Idx>(&mut self, var: &mut DeBruijnVar<T>) {
         match var {
             DeBruijnVar::Bound(dbid, varid) if *dbid == self.binder_depth => {
