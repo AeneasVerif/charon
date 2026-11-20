@@ -638,7 +638,7 @@ impl FnPtrShape {
                 self.binder_depth += 1;
                 let binder = binder.super_fold_with(self);
                 self.binder_depth -= 1;
-                binder
+                self.tcx.anonymize_bound_vars(binder)
             }
 
             fn fold_ty(&mut self, ty: ty::Ty<'tcx>) -> ty::Ty<'tcx> {
