@@ -1,3 +1,4 @@
+use super::translate_crate::VirtualImplKind;
 use super::translate_ctx::*;
 use crate::hax;
 use charon_lib::{ast::*, ids::IndexVec};
@@ -391,7 +392,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         TraitRefKind::TraitImpl(self.translate_trait_impl_ref(
                             span,
                             item,
-                            TransImplSource::ImplicitDestruct,
+                            TransImplSource::Virtual(VirtualImplKind::Destruct),
                         )?)
                     }
                     _ if let Some((item, closure_kind)) =

@@ -7,6 +7,7 @@ use crate::hax::{BaseState, Symbol};
 use rustc_middle::ty;
 use rustc_span::def_id::DefId as RDefId;
 
+use super::translate_crate::VirtualImplKind;
 use super::translate_ctx::{ItemTransCtx, TransImplSource, TransItemSourceKind};
 use charon_lib::ast::*;
 use charon_lib::utils::CycleDetector;
@@ -609,9 +610,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         | hax::FullDefKind::AssocFn(_)
         | hax::FullDefKind::Closure(_)
         | hax::FullDefKind::Ctor(_) = def.kind()
-            && let TransItemSourceKind::CallableMethod(ClosureKind::Fn | ClosureKind::FnMut)
-            | TransItemSourceKind::VTableMethod(TransImplSource::Callable(
+            && let TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(
                 ClosureKind::Fn | ClosureKind::FnMut,
+            ))
+            | TransItemSourceKind::VTableMethod(TransImplSource::Virtual(
+                VirtualImplKind::Callable(ClosureKind::Fn | ClosureKind::FnMut),
             )) = kind
         {
             // Add the lifetime generics coming from the method itself.
@@ -625,7 +628,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         if matches!(
             kind,
-            TransItemSourceKind::DropGlueMethod(..) | TransItemSourceKind::VTableDropShim(..)
+            TransItemSourceKind::VirtualMethod(VirtualImplKind::Destruct)
+                | TransItemSourceKind::VTableDropShim(..)
         ) {
             self.the_only_binder_mut().push_drop_glue_region();
         }

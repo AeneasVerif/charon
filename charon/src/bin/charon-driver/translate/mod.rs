@@ -13,4 +13,5 @@ pub mod translate_meta;
 pub mod translate_predicates;
 pub mod translate_trait_objects;
 pub mod translate_types;
+pub mod translate_virtual_impls;
 pub mod user_type_annotations;

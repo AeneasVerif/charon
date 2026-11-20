@@ -4153,10 +4153,7 @@ and trait_impl_source_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `String "Normal" -> Ok NormalTraitImpl
     | `String "TraitAlias" -> Ok TraitAliasTraitImpl
-    | `Assoc [ ("Closure", `Assoc [ ("kind", kind) ]) ] ->
-        let* kind = closure_kind_of_json ctx kind in
-        Ok (ClosureTraitImpl kind)
-    | `String "Destruct" -> Ok DestructTraitImpl
+    | `String "Builtin" -> Ok BuiltinTraitImpl
     | _ -> Error "")
 
 and trait_item_name_of_json (ctx : of_json_ctx) (js : json) :

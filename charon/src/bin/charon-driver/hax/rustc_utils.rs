@@ -803,26 +803,6 @@ pub fn dyn_self_ty<'tcx>(
     Some(ty)
 }
 
-pub fn closure_once_shim<'tcx>(
-    tcx: ty::TyCtxt<'tcx>,
-    closure_ty: ty::Ty<'tcx>,
-) -> Option<mir::Body<'tcx>> {
-    let ty::Closure(def_id, args) = closure_ty.kind() else {
-        unreachable!()
-    };
-    let instance = match args.as_closure().kind() {
-        ty::ClosureKind::Fn | ty::ClosureKind::FnMut => {
-            ty::Instance::fn_once_adapter_instance(tcx, *def_id, args)
-        }
-        ty::ClosureKind::FnOnce => return None,
-    };
-    let mir = tcx.instance_mir(instance.def).clone();
-    let mir = ty::EarlyBinder::bind(tcx, mir)
-        .instantiate(tcx, instance.args)
-        .skip_normalization();
-    Some(mir)
-}
-
 pub fn drop_glue_shim<'tcx>(
     s: &impl UnderOwnerState<'tcx>,
     def_id: &DefId,

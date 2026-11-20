@@ -31,6 +31,30 @@ pub struct FullDef<'tcx> {
     /// If this definition is a diagnostic item, we store the identifier, e.g. `box_new`.
     pub diagnostic_item: Option<Symbol>,
     pub kind: FullDefKind<'tcx>,
+    /// Computed on demand, see [`FullDef::virtual_impl`].
+    virtual_impls: [OnceCell<Box<VirtualTraitImpl<'tcx>>>; VirtualTrait::COUNT],
+}
+
+/// The built-in traits for which we construct virtual impls, see [`FullDef::virtual_impl`].
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum VirtualTrait {
+    Destruct,
+    FnOnce,
+    FnMut,
+    Fn,
+}
+
+impl VirtualTrait {
+    const COUNT: usize = 4;
+
+    pub fn lang_item(self) -> LangItem {
+        match self {
+            VirtualTrait::Destruct => LangItem::Destruct,
+            VirtualTrait::FnOnce => LangItem::FnOnce,
+            VirtualTrait::FnMut => LangItem::FnMut,
+            VirtualTrait::Fn => LangItem::Fn,
+        }
+    }
 }
 
 /// Construct the `FullDefKind` for this item. If `args` is `Some`, the returned `FullDef` will be
@@ -78,7 +102,6 @@ where
                         SyntheticItem::FnPtr(_) => unreachable!(),
                     };
                     kind = FullDefKind::Adt(Adt {
-                        def_id: def_id.clone(),
                         self_ty: inst_binder(tcx, s.typing_env(), args, def_id.type_of(s)),
                         param_env,
                         adt_kind,
@@ -90,7 +113,6 @@ where
                             pack: None,
                             flags: Default::default(),
                         },
-                        destruct_impl: Default::default(),
                     });
                 }
                 SyntheticItem::FnPtr(_) => {
@@ -102,8 +124,6 @@ where
                     let late_bound_scope = item.late_bound_scope(s);
                     let hax_sig: PolyFnSig<'tcx> = sig.sinto(s);
                     kind = FullDefKind::FnPtr(FnPointer {
-                        def_id: def_id.clone(),
-                        self_ty,
                         rustc_sig: sig,
                         param_env: ParamEnv {
                             late_bound: hax_sig.rebind(()),
@@ -111,7 +131,6 @@ where
                         },
                         sig: hax_sig,
                         late_bound_scope,
-                        fn_trait_impls: OnceCell::new(),
                     });
                 }
             }
@@ -212,6 +231,7 @@ where
         lang_item,
         diagnostic_item,
         kind,
+        virtual_impls: Default::default(),
     }
 }
 
@@ -265,18 +285,51 @@ impl<'tcx> ItemRef<'tcx> {
         let args = self.rustc_args(s);
         crate::hax::drop_glue_shim(s, &self.def_id, Some(args))
     }
+}
 
-    /// For `FnMut`&`Fn` closures: the MIR for the `call_once` method; it simply calls
-    /// `call_mut`.
-    pub fn closure_once_shim<S>(&self, s: &S) -> Option<mir::Body<'tcx>>
-    where
-        S: BaseState<'tcx>,
-    {
-        let tcx = s.base().tcx;
-        let s = &s.with_hax_owner(&self.def_id);
-        let args = self.rustc_args(s);
-        let closure_ty = inst_binder(tcx, s.typing_env(), Some(args), self.def_id.type_of(s));
-        crate::hax::closure_once_shim(tcx, closure_ty)
+impl<'tcx> FullDef<'tcx> {
+    /// The virtual impl of the given built-in trait for the type of this item. The caller must
+    /// know that the impl exists, e.g. because rustc resolved a trait ref to it.
+    pub fn virtual_impl(
+        &self,
+        s: &impl BaseState<'tcx>,
+        vtrait: VirtualTrait,
+    ) -> &VirtualTraitImpl<'tcx> {
+        self.virtual_impls[vtrait as usize].get_or_init(|| {
+            let s = &s.with_hax_owner(&self.this.def_id);
+            let tcx = s.base().tcx;
+            let trait_def_id = tcx.require_lang_item(vtrait.lang_item(), rustc_span::DUMMY_SP);
+            let self_ty = match self.kind() {
+                // using `type_of` would erase regions
+                FullDefKind::Closure(c) => c.fn_trait_args[0],
+                _ => {
+                    let args = self.this.rustc_args(s);
+                    inst_binder(tcx, s.typing_env(), Some(args), self.this.def_id.type_of(s))
+                }
+            };
+
+            let mut trait_args = vec![self_ty];
+
+            if let VirtualTrait::FnOnce | VirtualTrait::FnMut | VirtualTrait::Fn = vtrait {
+                // The `Fn*` traits take the tupled inputs of the callable as parameter.
+                let tupled_inputs = |sig: ty::PolyFnSig<'tcx>, late_bound_scope| {
+                    let sig = tcx.liberate_late_bound_regions(late_bound_scope, sig);
+                    ty::Ty::new_tup(tcx, sig.inputs())
+                };
+                trait_args.push(match self.kind() {
+                    FullDefKind::Closure(c) => c.fn_trait_args[1],
+                    FullDefKind::Fn(Fn { rustc_sig, .. })
+                    | FullDefKind::AssocFn(AssocFn { rustc_sig, .. })
+                    | FullDefKind::Ctor(Ctor { rustc_sig, .. }) => {
+                        tupled_inputs(*rustc_sig, self.this.def_id.real_rust_def_id())
+                    }
+                    FullDefKind::FnPtr(f) => tupled_inputs(f.rustc_sig, f.late_bound_scope),
+                    _ => panic!("{:?} is not callable", self.this.def_id),
+                });
+            }
+
+            virtual_impl_for(s, ty::TraitRef::new(tcx, trait_def_id, trait_args))
+        })
     }
 }
 
@@ -462,16 +515,12 @@ pub enum FullDefKind<'tcx> {
 /// ADts (`Struct`, `Enum` and `Union` map to this).
 #[derive(Debug, Clone)]
 pub struct Adt<'tcx> {
-    def_id: DefId,
     /// The (instantiated) type of this adt.
     self_ty: ty::Ty<'tcx>,
     param_env: ParamEnv<'tcx>,
     adt_kind: AdtKind,
     variants: IndexVec<VariantIdx, VariantDef<'tcx>>,
     repr: ReprOptions<'tcx>,
-    /// Info required to construct a virtual `Drop` impl for this adt.
-    /// Computed on demand, see [`Adt::destruct_impl`].
-    destruct_impl: OnceCell<Box<VirtualTraitImpl<'tcx>>>,
 }
 
 impl<'tcx> Adt<'tcx> {
@@ -486,15 +535,6 @@ impl<'tcx> Adt<'tcx> {
     }
     pub fn repr(&self) -> &ReprOptions<'tcx> {
         &self.repr
-    }
-    /// Info required to construct a virtual `Drop` impl for this adt.
-    pub fn destruct_impl(&self, s: &impl BaseState<'tcx>) -> &VirtualTraitImpl<'tcx> {
-        self.destruct_impl.get_or_init(|| {
-            let s = &s.with_hax_owner(&self.def_id);
-            let tcx = s.base().tcx;
-            let destruct_trait = tcx.lang_items().destruct_trait().unwrap();
-            virtual_impl_for(s, ty::TraitRef::new(tcx, destruct_trait, [self.self_ty]))
-        })
     }
 }
 
@@ -801,73 +841,13 @@ fn assoc_items_of<'tcx, S: UnderOwnerState<'tcx>>(
         .collect()
 }
 
-/// The virtual `Fn*` impls of a callable type.
-#[derive(Debug, Clone)]
-pub struct FnTraitImpls<'tcx> {
-    /// Info required to construct a virtual `FnOnce` impl for this callable.
-    pub fn_once_impl: Box<VirtualTraitImpl<'tcx>>,
-    /// Info required to construct a virtual `FnMut` impl, if the callable implements it.
-    pub fn_mut_impl: Option<Box<VirtualTraitImpl<'tcx>>>,
-    /// Info required to construct a virtual `Fn` impl, if the callable implements it.
-    pub fn_impl: Option<Box<VirtualTraitImpl<'tcx>>>,
-}
-
-/// Compute the `Fn*` impls of a callable type, given its (instantiated) signature.
-fn callable_trait_impls<'tcx, S: UnderOwnerState<'tcx>>(
-    s: &S,
-    self_ty: ty::Ty<'tcx>,
-    fn_sig: ty::PolyFnSig<'tcx>,
-    late_bound_scope: RDefId,
-) -> Option<FnTraitImpls<'tcx>> {
-    let tcx = s.base().tcx;
-    if !fn_sig.is_fn_trait_compatible() {
-        return None;
-    }
-    let liberated_sig = tcx.liberate_late_bound_regions(late_bound_scope, fn_sig);
-    let input_ty = ty::Ty::new_tup(tcx, liberated_sig.inputs());
-    let trait_args = [self_ty, input_ty];
-
-    let fn_once_trait = tcx.lang_items().fn_once_trait().unwrap();
-    let fn_mut_trait = tcx.lang_items().fn_mut_trait().unwrap();
-    let fn_trait = tcx.lang_items().fn_trait().unwrap();
-
-    let fn_once_tref = ty::TraitRef::new(tcx, fn_once_trait, trait_args);
-    let fn_mut_tref = ty::TraitRef::new(tcx, fn_mut_trait, trait_args);
-    let fn_tref = ty::TraitRef::new(tcx, fn_trait, trait_args);
-    Some(FnTraitImpls {
-        fn_once_impl: virtual_impl_for(s, fn_once_tref),
-        fn_mut_impl: Some(virtual_impl_for(s, fn_mut_tref)),
-        fn_impl: Some(virtual_impl_for(s, fn_tref)),
-    })
-}
-
-/// Compute the `Fn*` impls of the function item owned by `s`, given its (instantiated) signature.
-fn fn_def_trait_impls<'tcx, S: UnderOwnerState<'tcx>>(
-    s: &S,
-    args: Option<ty::GenericArgsRef<'tcx>>,
-    fn_sig: ty::PolyFnSig<'tcx>,
-) -> Option<FnTraitImpls<'tcx>> {
-    let tcx = s.base().tcx;
-    let def_id = s.owner().real_rust_def_id();
-    if !tcx.codegen_fn_attrs(def_id).target_features.is_empty() {
-        return None;
-    }
-    let fn_args = args.unwrap_or_else(|| s.owner().identity_args(s));
-    let self_ty = ty::Ty::new_fn_def(tcx, def_id, fn_sig.rebind(fn_args));
-    callable_trait_impls(s, self_ty, fn_sig, def_id)
-}
-
 #[derive(Debug, Clone)]
 pub struct Fn<'tcx> {
-    def_id: DefId,
-    args: Option<ty::GenericArgsRef<'tcx>>,
     /// The signature, instantiated with `args` if relevant.
     rustc_sig: ty::PolyFnSig<'tcx>,
     param_env: ParamEnv<'tcx>,
     inline: InlineAttr,
     sig: PolyFnSig<'tcx>,
-    /// Computed on demand, see [`Fn::fn_trait_impls`].
-    fn_trait_impls: OnceCell<Option<FnTraitImpls<'tcx>>>,
 }
 
 impl<'tcx> Fn<'tcx> {
@@ -879,14 +859,6 @@ impl<'tcx> Fn<'tcx> {
     }
     pub fn sig(&self) -> &PolyFnSig<'tcx> {
         &self.sig
-    }
-    /// The virtual `Fn*` impls for this function, if it is `Fn*`-compatible.
-    pub fn fn_trait_impls(&self, s: &impl BaseState<'tcx>) -> Option<&FnTraitImpls<'tcx>> {
-        self.fn_trait_impls
-            .get_or_init(|| {
-                fn_def_trait_impls(&s.with_hax_owner(&self.def_id), self.args, self.rustc_sig)
-            })
-            .as_ref()
     }
 }
 
@@ -902,8 +874,6 @@ pub struct AssocFn<'tcx> {
     associated_item: AssocItem<'tcx>,
     inline: InlineAttr,
     sig: PolyFnSig<'tcx>,
-    /// Computed on demand, see [`AssocFn::fn_trait_impls`].
-    fn_trait_impls: OnceCell<Option<FnTraitImpls<'tcx>>>,
 }
 
 impl<'tcx> AssocFn<'tcx> {
@@ -941,25 +911,14 @@ impl<'tcx> AssocFn<'tcx> {
     pub fn sig(&self) -> &PolyFnSig<'tcx> {
         &self.sig
     }
-    /// The virtual `Fn*` impls for this function, if it is `Fn*`-compatible.
-    pub fn fn_trait_impls(&self, s: &impl BaseState<'tcx>) -> Option<&FnTraitImpls<'tcx>> {
-        self.fn_trait_impls
-            .get_or_init(|| {
-                fn_def_trait_impls(&s.with_hax_owner(&self.def_id), self.args, self.rustc_sig)
-            })
-            .as_ref()
-    }
 }
 
 #[derive(Debug, Clone)]
 pub struct FnPointer<'tcx> {
-    def_id: DefId,
-    self_ty: ty::Ty<'tcx>,
     rustc_sig: ty::PolyFnSig<'tcx>,
     param_env: ParamEnv<'tcx>,
     sig: PolyFnSig<'tcx>,
     late_bound_scope: RDefId,
-    fn_trait_impls: OnceCell<Option<FnTraitImpls<'tcx>>>,
 }
 
 impl<'tcx> FnPointer<'tcx> {
@@ -977,25 +936,11 @@ impl<'tcx> FnPointer<'tcx> {
     pub fn late_bound_scope(&self) -> RDefId {
         self.late_bound_scope
     }
-
-    pub fn fn_trait_impls(&self, s: &impl BaseState<'tcx>) -> Option<&FnTraitImpls<'tcx>> {
-        self.fn_trait_impls
-            .get_or_init(|| {
-                callable_trait_impls(
-                    &s.with_hax_owner(&self.def_id),
-                    self.self_ty,
-                    self.rustc_sig,
-                    self.late_bound_scope,
-                )
-            })
-            .as_ref()
-    }
 }
 
 /// A closure, coroutine, or coroutine-closure.
 #[derive(Debug, Clone)]
 pub struct Closure<'tcx> {
-    def_id: DefId,
     /// `[closure_ty, tupled_args_ty]`: the args of the `Fn*` traits for this closure.
     /// The signature's bound regions are liberated in these types, and the `extra_regions` may be
     /// mentioned as well.
@@ -1010,9 +955,6 @@ pub struct Closure<'tcx> {
     /// The captured variables, which together form the closure's state.
     upvar_tys: Vec<Ty<'tcx>>,
     inline: InlineAttr,
-    /// Computed on demand, see [`Closure::fn_trait_impls`].
-    fn_trait_impls: OnceCell<FnTraitImpls<'tcx>>,
-    destruct_impl: OnceCell<Box<VirtualTraitImpl<'tcx>>>,
 }
 
 impl<'tcx> Closure<'tcx> {
@@ -1030,34 +972,6 @@ impl<'tcx> Closure<'tcx> {
     }
     pub fn inline(&self) -> &InlineAttr {
         &self.inline
-    }
-    /// The virtual impl of this closure for the given trait.
-    fn virtual_impl(
-        &self,
-        s: &impl BaseState<'tcx>,
-        trait_lang_item: LangItem,
-        trait_args: &[ty::Ty<'tcx>],
-    ) -> Box<VirtualTraitImpl<'tcx>> {
-        let s = &s.with_hax_owner(&self.def_id);
-        let tcx = s.base().tcx;
-        let def_id = tcx.lang_items().get(trait_lang_item).unwrap();
-        let tref = ty::TraitRef::new(tcx, def_id, trait_args.iter().copied());
-        virtual_impl_for(s, tref)
-    }
-    /// The virtual `Fn*` impls supported by this closure.
-    pub fn fn_trait_impls(&self, s: &impl BaseState<'tcx>) -> &FnTraitImpls<'tcx> {
-        self.fn_trait_impls.get_or_init(|| FnTraitImpls {
-            fn_once_impl: self.virtual_impl(s, LangItem::FnOnce, &self.fn_trait_args),
-            fn_mut_impl: matches!(self.kind, ClosureKind::FnMut | ClosureKind::Fn)
-                .then(|| self.virtual_impl(s, LangItem::FnMut, &self.fn_trait_args)),
-            fn_impl: matches!(self.kind, ClosureKind::Fn)
-                .then(|| self.virtual_impl(s, LangItem::Fn, &self.fn_trait_args)),
-        })
-    }
-    /// Info required to construct a virtual `Drop` impl for this closure.
-    pub fn destruct_impl(&self, s: &impl BaseState<'tcx>) -> &VirtualTraitImpl<'tcx> {
-        self.destruct_impl
-            .get_or_init(|| self.virtual_impl(s, LangItem::Destruct, &self.fn_trait_args[..1]))
     }
 }
 
@@ -1162,9 +1076,7 @@ impl ForeignMod {
 /// The constructor function of a tuple/unit struct or tuple/unit enum variant.
 #[derive(Debug, Clone)]
 pub struct Ctor<'tcx> {
-    def_id: DefId,
     param_env: ParamEnv<'tcx>,
-    args: ty::GenericArgsRef<'tcx>,
     /// The signature, instantiated with `args`.
     rustc_sig: ty::PolyFnSig<'tcx>,
     adt_def_id: DefId,
@@ -1173,8 +1085,6 @@ pub struct Ctor<'tcx> {
     fields: IndexVec<FieldIdx, FieldDef<'tcx>>,
     output_ty: Ty<'tcx>,
     sig: PolyFnSig<'tcx>,
-    /// Computed on demand, see [`Ctor::fn_trait_impls`].
-    fn_trait_impls: OnceCell<Option<FnTraitImpls<'tcx>>>,
 }
 
 impl<'tcx> Ctor<'tcx> {
@@ -1198,18 +1108,6 @@ impl<'tcx> Ctor<'tcx> {
     }
     pub fn sig(&self) -> &PolyFnSig<'tcx> {
         &self.sig
-    }
-    /// The virtual `Fn*` impls for this constructor.
-    pub fn fn_trait_impls(&self, s: &impl BaseState<'tcx>) -> Option<&FnTraitImpls<'tcx>> {
-        self.fn_trait_impls
-            .get_or_init(|| {
-                fn_def_trait_impls(
-                    &s.with_hax_owner(&self.def_id),
-                    Some(self.args),
-                    self.rustc_sig,
-                )
-            })
-            .as_ref()
     }
 }
 
@@ -1370,13 +1268,11 @@ where
                 .collect();
 
             FullDefKind::Adt(Adt {
-                def_id: hax_def_id.clone(),
                 self_ty: type_of_self(),
                 param_env,
                 adt_kind: def.adt_kind().sinto(s),
                 variants,
                 repr: def.repr().sinto(s),
-                destruct_impl: Default::default(),
             })
         }
         RDefKind::TyAlias { .. } => FullDefKind::TyAlias(TyAlias {
@@ -1446,8 +1342,6 @@ where
             let sig = inst_binder(tcx, s.typing_env(), args, sig);
             let hax_sig: PolyFnSig<'tcx> = sig.sinto(s);
             FullDefKind::Fn(Fn {
-                def_id: hax_def_id.clone(),
-                args,
                 rustc_sig: sig,
                 param_env: ParamEnv {
                     late_bound: hax_sig.rebind(()),
@@ -1455,7 +1349,6 @@ where
                 },
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
                 sig: hax_sig,
-                fn_trait_impls: OnceCell::new(),
             })
         }
         RDefKind::AssocFn { .. } => {
@@ -1473,7 +1366,6 @@ where
                 associated_item: AssocItem::sfrom_instantiated(s, &item, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
                 sig: hax_sig,
-                fn_trait_impls: OnceCell::new(),
             })
         }
         RDefKind::Closure { .. } => {
@@ -1485,7 +1377,6 @@ where
             let input_ty = tcx.liberate_late_bound_regions(def_id, raw_sig).inputs()[0];
             let hax_sig: PolyFnSig<'tcx> = sig.sinto(s);
             FullDefKind::Closure(Closure {
-                def_id: hax_def_id.clone(),
                 kind: closure.kind().sinto(s),
                 param_env: ParamEnv {
                     late_bound: hax_sig.rebind(()),
@@ -1495,8 +1386,6 @@ where
                 sig: hax_sig,
                 fn_trait_args: [closure_ty, input_ty],
                 upvar_tys: closure.upvar_tys().sinto(s),
-                fn_trait_impls: Default::default(),
-                destruct_impl: Default::default(),
             })
         }
         kind @ (RDefKind::Const | RDefKind::AnonConst { .. }) => {
@@ -1560,8 +1449,6 @@ where
             let sig = inst_binder(tcx, s.typing_env(), args, tcx.fn_sig(def_id));
             let hax_sig: PolyFnSig<'tcx> = sig.sinto(s);
             FullDefKind::Ctor(Ctor {
-                def_id: hax_def_id.clone(),
-                args: adt_args,
                 rustc_sig: sig,
                 param_env: ParamEnv {
                     late_bound: hax_sig.rebind(()),
@@ -1573,7 +1460,6 @@ where
                 fields,
                 output_ty,
                 sig: hax_sig,
-                fn_trait_impls: OnceCell::new(),
             })
         }
         RDefKind::Field => FullDefKind::Field,
@@ -1698,6 +1584,26 @@ impl<'tcx> VirtualTraitImpl<'tcx> {
                 Some((dyn_self.sinto(s), vtable_sigs))
             })
             .as_ref()
+    }
+    /// The body that rustc generates for the given method of this impl, if that is a shim (e.g.
+    /// `call_once` for a `Fn` closure). Returns `None` if the method resolves to a normal item.
+    pub fn method_shim(&self, s: &impl BaseState<'tcx>, method: &DefId) -> Option<mir::Body<'tcx>> {
+        let s = &s.with_hax_owner(&self.owner);
+        let tcx = s.base().tcx;
+        let method = method.real_rust_def_id();
+        let instance =
+            ty::Instance::try_resolve(tcx, s.typing_env(), method, self.trait_ref.args).ok()??;
+        let ty::InstanceKind::Shim(_) = instance.def else {
+            return None;
+        };
+        let mir = tcx.instance_mir(instance.def).clone();
+        Some(if instance.def.has_polymorphic_mir_body() {
+            ty::EarlyBinder::bind(tcx, mir)
+                .instantiate(tcx, instance.args)
+                .skip_normalization()
+        } else {
+            mir
+        })
     }
     /// The `dyn Trait<..>` type for the implemented trait ref, if dyn-compatible.
     pub fn dyn_self(&self, s: &impl BaseState<'tcx>) -> Option<Ty<'tcx>> {

@@ -2,8 +2,7 @@ use rustc_middle::ty;
 
 use super::translate_ctx::*;
 use crate::hax;
-use crate::hax::FullDefKind;
-use crate::translate::translate_crate::TransItemSourceKind;
+use crate::translate::translate_crate::{TransItemSourceKind, VirtualImplKind};
 use charon_lib::ast::*;
 
 impl<'tcx> ItemTransCtx<'tcx, '_> {
@@ -59,18 +58,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         def_id: FunDeclId,
         item_meta: ItemMeta,
         def: &hax::FullDef<'tcx>,
-        impl_kind: TransImplSource,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
         let borrow_region = self.drop_glue_region();
 
         // Charon-generated `Destruct` impl for an ADT.
-        assert_eq!(impl_kind, TransImplSource::ImplicitDestruct);
-        let trait_pred = match def.kind() {
-            FullDefKind::Adt(adt) => &adt.destruct_impl(self.hax_state()).trait_pred,
-            FullDefKind::Closure(c) => &c.destruct_impl(self.hax_state()).trait_pred,
-            _ => unreachable!(),
-        };
+        let trait_pred = &def
+            .virtual_impl(self.hax_state(), hax::VirtualTrait::Destruct)
+            .trait_pred;
 
         let implemented_trait = self.translate_trait_predicate(span, trait_pred)?;
         let item_id =
@@ -87,8 +82,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 .regions
                 .pop()
                 .expect("drop glue method should have a borrow lifetime");
-            let destruct_impl_id =
-                self.register_item(span, def.this(), TransItemSourceKind::TraitImpl(impl_kind));
+            let destruct_impl_id = self.register_item(
+                span,
+                def.this(),
+                TransItemSourceKind::TraitImpl(TransImplSource::Virtual(VirtualImplKind::Destruct)),
+            );
             let impl_ref = TraitImplRef {
                 id: destruct_impl_id,
                 generics: Box::new(impl_generics),
@@ -171,16 +169,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
 
-        let destruct_impl = match def.kind() {
-            FullDefKind::Adt(adt) => adt.destruct_impl(self.hax_state()),
-            FullDefKind::Closure(c) => c.destruct_impl(self.hax_state()),
-            _ => unreachable!("{:?}", def.def_id()),
-        };
+        let destruct_impl = def.virtual_impl(self.hax_state(), hax::VirtualTrait::Destruct);
         let mut timpl = self.translate_virtual_trait_impl(
             impl_id,
             item_meta,
             def.this(),
-            TransImplSource::ImplicitDestruct,
+            TransImplSource::Virtual(VirtualImplKind::Destruct),
             destruct_impl,
         )?;
 
@@ -193,7 +187,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             let fun_id = self.register_item(
                 span,
                 def.this(),
-                TransItemSourceKind::DropGlueMethod(TransImplSource::ImplicitDestruct),
+                TransItemSourceKind::VirtualMethod(VirtualImplKind::Destruct),
             );
             let method_params = Self::drop_glue_params();
             let generics = self

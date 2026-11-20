@@ -67,14 +67,11 @@ pub enum TransItemSourceKind {
     InherentImpl,
     /// We don't translate these as proper items, but we use them to explore the crate.
     Module,
-    /// The `call_*` method of the generated `Fn*` impl for a closure or fn item.
-    CallableMethod(ClosureKind),
     /// A cast of a stateless closure to a function pointer.
     ClosureAsFnCast,
-    /// The `drop_glue` method of a `Destruct` impl. It contains the drop glue that calls
-    /// `Drop::drop` for the type and then drops its fields. This is a method implementation (and
-    /// the DefId is that of the ADT or closure for which to generate the drop glue).
-    DropGlueMethod(TransImplSource),
+    /// The method we generate for a [`TransImplSource::Virtual`] impl, e.g. the `drop_glue`
+    /// method of a `Destruct` impl. The `DefId` is the same as for the impl.
+    VirtualMethod(VirtualImplKind),
     /// The virtual table struct definition for a trait. The `DefId` is that of the trait.
     VTable,
     /// The static vtable value for a specific impl.
@@ -97,13 +94,22 @@ pub enum TransImplSource {
     Normal,
     /// The blanket impl we generate for a trait alias. The `DefId` is that of the trait alias.
     TraitAlias,
-    /// An impl of the appropriate `Fn*` trait for a closure or function item.
-    Callable(ClosureKind),
-    /// A fictitious `impl Destruct for T` that contains the drop glue code for the given ADT or
-    /// closure. The `DefId` is that of the ADT or closure.
-    ImplicitDestruct,
+    /// A trait impl that rustc provides without source code, for which we generate the impl and
+    /// its method. See `translate_virtual_impls`. The `DefId` is that of the type that the impl is for.
+    Virtual(VirtualImplKind),
     /// A marker-trait implementation. The `DefId` is that of the trait.
     Marker,
+}
+
+/// The kind of a [`TransImplSource::Virtual`] impl.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum VirtualImplKind {
+    /// A fictitious `impl Destruct for T` whose `drop_glue` method contains the drop glue code for
+    /// `T`: it calls `Drop::drop` for the type and then drops its fields.
+    Destruct,
+    /// An impl of the appropriate `Fn*` trait for a closure, function item or function pointer.
+    /// Its method is `call_once`, `call_mut` or `call`.
+    Callable(ClosureKind),
 }
 
 impl<'tcx> TransItemSource<'tcx> {
@@ -169,17 +175,17 @@ impl<'tcx> TransItemSource<'tcx> {
     /// not attempt to generally compute the parent of an item. Used to compute names.
     pub(crate) fn parent(&self) -> Option<Self> {
         let parent_kind = match self.kind {
-            TransItemSourceKind::CallableMethod(kind)
-            | TransItemSourceKind::VTableMethod(TransImplSource::Callable(kind)) => {
-                TransItemSourceKind::TraitImpl(TransImplSource::Callable(kind))
+            TransItemSourceKind::VTableMethod(impl_kind @ TransImplSource::Virtual(..)) => {
+                TransItemSourceKind::TraitImpl(impl_kind)
             }
-            TransItemSourceKind::DropGlueMethod(TransImplSource::Marker)
-            | TransItemSourceKind::VTableInstance(TransImplSource::Marker)
+            TransItemSourceKind::VirtualMethod(kind) => {
+                TransItemSourceKind::TraitImpl(TransImplSource::Virtual(kind))
+            }
+            TransItemSourceKind::VTableInstance(TransImplSource::Marker)
             | TransItemSourceKind::VTableDropShim(TransImplSource::Marker) => {
                 TransItemSourceKind::TraitDecl
             }
-            TransItemSourceKind::DropGlueMethod(impl_kind)
-            | TransItemSourceKind::VTableInstance(impl_kind)
+            TransItemSourceKind::VTableInstance(impl_kind)
             | TransItemSourceKind::VTableDropShim(impl_kind) => {
                 TransItemSourceKind::TraitImpl(impl_kind)
             }
@@ -222,11 +228,11 @@ impl TransItemSourceKind {
     pub fn has_closure_late_params(&self) -> bool {
         matches!(
             self,
-            Self::TraitImpl(TransImplSource::Callable(..))
-                | Self::VTableInstance(TransImplSource::Callable(..))
-                | Self::VTableDropShim(TransImplSource::Callable(..))
-                | Self::CallableMethod(..)
-                | Self::VTableMethod(TransImplSource::Callable(..))
+            Self::TraitImpl(TransImplSource::Virtual(VirtualImplKind::Callable(..)))
+                | Self::VTableInstance(TransImplSource::Virtual(VirtualImplKind::Callable(..)))
+                | Self::VTableDropShim(TransImplSource::Virtual(VirtualImplKind::Callable(..)))
+                | Self::VirtualMethod(VirtualImplKind::Callable(..))
+                | Self::VTableMethod(TransImplSource::Virtual(VirtualImplKind::Callable(..)))
                 | Self::ClosureAsFnCast
         )
     }
@@ -575,8 +581,8 @@ impl<'tcx> TranslateCtx<'tcx> {
                     Global | VTableInstance(..) => {
                         ItemId::Global(self.translated.global_decls.reserve_slot())
                     }
-                    Fun | CallableMethod(..) | ClosureAsFnCast | DropGlueMethod(..)
-                    | VTableMethod(..) | VTableDropShim(..) | IntrinsicFallback => {
+                    Fun | ClosureAsFnCast | VirtualMethod(..) | VTableMethod(..)
+                    | VTableDropShim(..) | IntrinsicFallback => {
                         ItemId::Fun(self.translated.fun_decls.reserve_slot())
                     }
                     InherentImpl | Module => {
@@ -991,9 +997,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         .map(|_| self.translate_erased_region()),
                 );
             }
-            if let TransItemSourceKind::CallableMethod(ClosureKind::FnMut | ClosureKind::Fn)
-            | TransItemSourceKind::VTableMethod(TransImplSource::Callable(
+            if let TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(
                 ClosureKind::FnMut | ClosureKind::Fn,
+            ))
+            | TransItemSourceKind::VTableMethod(TransImplSource::Virtual(
+                VirtualImplKind::Callable(ClosureKind::FnMut | ClosureKind::Fn),
             )) = kind
             {
                 generics.regions.push(self.translate_erased_region());
@@ -1015,7 +1023,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
         if matches!(
             kind,
-            TransItemSourceKind::DropGlueMethod(..) | TransItemSourceKind::VTableDropShim(..)
+            TransItemSourceKind::VirtualMethod(VirtualImplKind::Destruct)
+                | TransItemSourceKind::VTableDropShim(..)
         ) {
             generics = generics.concat(&self.drop_glue_generic_args());
         }
