@@ -195,7 +195,15 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             predicate.clause = erase_free_regions(tcx, predicate.clause);
         }
 
-        let mut searcher = self.clone();
+        let mut searcher = PredicateSearcher {
+            elab_ctx: self.elab_ctx,
+            typing_env: self.typing_env,
+            candidates: self.candidates.clone(),
+            implicit_self_clause: self.implicit_self_clause,
+            item_refs_cache: Default::default(),
+            trait_proofs_cache: Default::default(),
+            has_no_concrete_clauses: self.has_no_concrete_clauses,
+        };
         searcher.insert_bound_predicates(state, erased_predicates.iter());
         searcher.typing_env.param_env = param_env_from_clauses(
             tcx,
