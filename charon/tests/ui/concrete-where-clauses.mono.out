@@ -1,0 +1,13 @@
+error: Unexpected error: could not find the trait clause variable Required(test_crate::with_clause, 0)
+  --> tests/ui/concrete-where-clauses.rs:24:5
+   |
+24 |     x.0.method()
+   |     ^^^^^^^^^^^^
+
+error: Unexpected error: could not find the trait clause variable Required(test_crate::with_clause, 0)
+  --> tests/ui/concrete-where-clauses.rs:24:5
+   |
+24 |     x.0.method()
+   |     ^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (2 errors)

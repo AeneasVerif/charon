@@ -1,0 +1,141 @@
+# Final LLBC before serialization:
+
+// Full name: alloc::boxed::Box::<u8>
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box::<u8, Global>
+
+struct () {}
+
+// Full name: alloc::boxed::Box::{impl Destruct for Box::<u8, Global>}::drop_glue::<u8, Global>
+unsafe fn {impl Destruct for Box::<u8, Global>}::drop_glue::<u8, Global><'_0>(_1: &'_0 mut Box::<u8, Global>)
+= <opaque>
+
+// Full name: test_crate::Tr
+pub trait Tr<Self>
+
+// Full name: test_crate::{impl Tr for u32}
+impl "impl_Tr_for_u32" Tr for u32 {
+    vtable: lazy
+}
+
+// Full name: test_crate::S
+pub struct S {
+  _0: Box::<u8, Global>,
+}
+
+// Full name: test_crate::S
+pub struct S {
+  _0: Box::<u8, Global>,
+}
+
+// Full name: test_crate::S::{impl Destruct for S}::drop_glue
+unsafe fn {impl Destruct for S}::drop_glue<'_0>(_1: &'_0 mut S)
+{
+    let mut _0: (); // return
+    let _1: &'1 mut S; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    drop[{impl Destruct for Box::<u8, Global>}::drop_glue::<u8, Global><'2>] (*_1)._0
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::drop_s
+pub fn drop_s(_1: S)
+{
+    let mut _0: (); // return
+    let mut _1: S; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    conditional_drop[{impl Destruct for S}::drop_glue<'0>] _1
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::closure::{closure}
+struct {closure} {}
+
+// Full name: test_crate::closure
+pub fn closure() -> {closure}
+{
+    let mut _0: {closure}; // return
+
+    storage_live(_0)
+    _0 = {closure} {  }
+    return
+}
+
+// Full name: test_crate::closure
+pub fn closure() -> {closure}
+{
+    let mut _0: {closure}; // return
+
+    storage_live(_0)
+    _0 = {closure} {  }
+    return
+}
+
+// Full name: test_crate::closure::{closure}
+struct {closure} {}
+
+// Full name: test_crate::closure::{impl FnOnce<()> for {closure}}::call_once
+extern "rust-call" fn {impl FnOnce<()> for {closure}}::call_once(_1: {closure}, tupled_args: ())
+{
+    let mut _0: (); // return
+    let mut _1: {closure}; // arg #1
+    let mut tupled_args: (); // arg #2
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::closure::{impl FnOnce<()> for {closure}}::call_once
+extern "rust-call" fn {impl FnOnce<()> for {closure}}::call_once(_1: {closure}, tupled_args: ())
+{
+    let mut _0: (); // return
+    let mut _1: {closure}; // arg #1
+    let mut tupled_args: (); // arg #2
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::use_closure
+pub fn use_closure()
+{
+    let mut _0: (); // return
+    let mut _1: {closure}; // anonymous local
+    let mut _2: (); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    _1 = closure()
+    ↳⚡ unwind_continue
+    storage_live(_2)
+    _2 = ()
+    _0 = {impl FnOnce<()> for {closure}}::call_once(move _1, move _2)
+    ↳⚡ unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+
+

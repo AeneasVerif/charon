@@ -1,0 +1,39 @@
+error: Unexpected error: could not find the trait clause variable Required(test_crate::{impl#0}, 0)
+  --> tests/ui/concrete-where-clauses-impossible.rs:22:1
+   |
+22 | / impl Tr for Env
+23 | | where
+24 | |     Env: Unix,
+...  |
+29 | | }
+   | |_^
+
+warning: trait bound Env: Unix does not depend on any type or lifetime parameters
+ --> tests/ui/concrete-where-clauses-impossible.rs:9:10
+  |
+9 |     Env: Unix,
+  |          ^^^^
+  |
+  = note: `#[warn(trivial_bounds)]` on by default
+
+warning: trait bound Env: Unix does not depend on any type or lifetime parameters
+  --> tests/ui/concrete-where-clauses-impossible.rs:14:10
+   |
+14 |     Env: Unix,
+   |          ^^^^
+
+warning: trait bound Env: Unix does not depend on any type or lifetime parameters
+  --> tests/ui/concrete-where-clauses-impossible.rs:24:10
+   |
+24 |     Env: Unix,
+   |          ^^^^
+
+warning: trait bound u32: std::marker::Copy does not depend on any type or lifetime parameters
+  --> tests/ui/concrete-where-clauses-impossible.rs:34:10
+   |
+34 |     u32: Copy,
+   |          ^^^^
+
+warning: 4 warnings emitted
+
+ERROR Charon failed to translate this code (1 errors)
