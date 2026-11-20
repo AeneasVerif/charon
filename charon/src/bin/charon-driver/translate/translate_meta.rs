@@ -198,10 +198,13 @@ impl<'tcx> TranslateCtx<'tcx> {
         // If the span comes from a macro expansion, point to the outermost macro call and record
         // the span inside the macro as `generated_from_span`. We skip compiler desugarings
         // `ExpnKind::Desugaring` since their spans already point to user code.
-        let macro_call = span
-            .macro_backtrace()
-            .filter(|expn| matches!(expn.kind, rustc_span::ExpnKind::Macro(..)))
-            .last();
+        let macro_call = if span.from_expansion() {
+            span.macro_backtrace()
+                .filter(|expn| matches!(expn.kind, rustc_span::ExpnKind::Macro(..)))
+                .last()
+        } else {
+            None
+        };
         let data = self.translate_span_data(*span);
         match macro_call {
             Some(expn) => {

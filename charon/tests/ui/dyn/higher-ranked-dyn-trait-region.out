@@ -55,7 +55,7 @@ fn main()
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = use_type<fn<'_0_1>(&'_0_1 (dyn Trait<'_0_1> + '_0_1))>[{built_in impl Sized for fn<'_0_2>(&'_0_2 (dyn Trait<'_0_2> + '_0_2))}]()
+    _1 = use_type<fn<'a>(&'a (dyn Trait<'a> + 'a))>[{built_in impl Sized for fn<'a>(&'a (dyn Trait<'a> + 'a))}]()
     ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()
