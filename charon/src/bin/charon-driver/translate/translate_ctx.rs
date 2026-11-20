@@ -308,10 +308,10 @@ impl<'tcx> TranslateCtx<'tcx> {
         item: &RustcItem<'tcx>,
     ) -> Result<Arc<hax::FullDef<'tcx>>, Error> {
         let def_id = item.def_id();
-        let span = self.def_span(def_id);
         if let RustcItem::Mono(item_ref) = item
             && item_ref.has_non_lt_param
         {
+            let span = self.def_span(def_id);
             raise_error!(self, span, "Item is not monomorphic: {item:?}")
         }
         // Hax takes care of caching the translation.
@@ -322,7 +322,10 @@ impl<'tcx> TranslateCtx<'tcx> {
             RustcItem::Mono(item_ref) => item_ref.instantiated_full_def(*unwind_safe_s),
             RustcItem::MonoTrait(def_id) => def_id.full_def(*unwind_safe_s),
         })
-        .or_else(|_| raise_error!(self, span, "Hax panicked when translating `{def_id:?}`."))
+        .or_else(|_| {
+            let span = self.def_span(def_id);
+            raise_error!(self, span, "Hax panicked when translating `{def_id:?}`.")
+        })
     }
 
     pub(crate) fn with_def_id<F, T>(

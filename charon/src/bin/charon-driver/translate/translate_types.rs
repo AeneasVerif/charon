@@ -1,7 +1,6 @@
 use itertools::Itertools;
 use rustc_hash::FxHashMap as HashMap;
 use rustc_middle::ty;
-use rustc_span::sym;
 use rustc_trait_elaboration::ItemId;
 
 use super::translate_ctx::*;
@@ -526,6 +525,20 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let Some(param_env) = def.param_env() else {
             return Ok(vec![]);
         };
+        // Fast path: most items don't have extra early regions anywhere up the soft parent chain
+        let mut ancestor = def.clone();
+        loop {
+            let Some(env) = ancestor.param_env() else {
+                return Ok(vec![]);
+            };
+            if !env.extra_early_regions.is_empty() {
+                break;
+            }
+            let Some(parent) = &env.soft_parent else {
+                return Ok(vec![]);
+            };
+            ancestor = self.poly_hax_def(&parent.def_id)?;
+        }
         let (parent, actual, template) = item.soft_typing_parent(self.hax_state_with_id());
         // Recover parent arguments, in the same order as `push_generics_for_def`.
         let mut regions = if let Some(parent) = parent {
@@ -577,7 +590,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 | hax::SyntheticItem::FnPtr(_) => None,
             })
             .or_else(|| {
-                (self.hax_def(item).ok()?.lang_item? == sym::owned_box).then_some(BuiltinAdt::Box)
+                let def_id = item.def_id.as_real_def_id()?;
+                self.tcx
+                    .is_lang_item(def_id, rustc_hir::attrs::LangItem::OwnedBox)
+                    .then_some(BuiltinAdt::Box)
             })
     }
 
