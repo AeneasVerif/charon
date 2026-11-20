@@ -100,160 +100,86 @@ pub fn chain(state: u32) -> u32
                     ret = const 10u32
                     storage_dead(_6)
                     storage_dead(_4)
+                    fake_read(ret)
+                    storage_live(_13)
+                    storage_live(_14)
+                    _14 = copy state
+                    _13 = finish(move _14)
+                    ↳⚡ storage_dead(state)
+                        unwind_continue
+                    storage_dead(_14)
+                    storage_dead(_13)
+                    _0 = copy ret
+                    storage_dead(ret)
+                    storage_dead(state)
+                    return
                 } else {
                     storage_dead(_6)
                     state = const 1u32
-                    storage_dead(_4)
-                    storage_live(_7)
-                    storage_live(_8)
-                    _8 = copy state
-                    _7 = move _8 == const 1u32
-                    if move _7 {
-                        storage_dead(_8)
-                        storage_live(_9)
-                        _9 = step(const 1u32)
-                        ↳⚡ storage_dead(state)
-                            unwind_continue
-                        if move _9 {
-                            ret = const 11u32
-                            storage_dead(_9)
-                            storage_dead(_7)
-                        } else {
-                            storage_dead(_9)
-                            state = const 2u32
-                            storage_dead(_7)
-                            storage_live(_10)
-                            storage_live(_11)
-                            _11 = copy state
-                            _10 = move _11 == const 2u32
-                            if move _10 {
-                                storage_dead(_11)
-                                storage_live(_12)
-                                _12 = step(const 2u32)
-                                ↳⚡ storage_dead(state)
-                                    unwind_continue
-                                if move _12 {
-                                    ret = const 12u32
-                                    storage_dead(_12)
-                                    storage_dead(_10)
-                                } else {
-                                    storage_dead(_12)
-                                    state = const 3u32
-                                    storage_dead(_10)
-                                    ret = const 20u32
-                                }
-                            } else {
-                                storage_dead(_11)
-                                storage_dead(_10)
-                                ret = const 20u32
-                            }
-                        }
-                    } else {
-                        storage_dead(_8)
-                        storage_dead(_7)
-                        storage_live(_10)
-                        storage_live(_11)
-                        _11 = copy state
-                        _10 = move _11 == const 2u32
-                        if move _10 {
-                            storage_dead(_11)
-                            storage_live(_12)
-                            _12 = step(const 2u32)
-                            ↳⚡ storage_dead(state)
-                                unwind_continue
-                            if move _12 {
-                                ret = const 12u32
-                                storage_dead(_12)
-                                storage_dead(_10)
-                            } else {
-                                storage_dead(_12)
-                                state = const 3u32
-                                storage_dead(_10)
-                                ret = const 20u32
-                            }
-                        } else {
-                            storage_dead(_11)
-                            storage_dead(_10)
-                            ret = const 20u32
-                        }
-                    }
                 }
             } else {
                 storage_dead(_5)
-                storage_dead(_4)
-                storage_live(_7)
-                storage_live(_8)
-                _8 = copy state
-                _7 = move _8 == const 1u32
-                if move _7 {
-                    storage_dead(_8)
-                    storage_live(_9)
-                    _9 = step(const 1u32)
+            }
+            storage_dead(_4)
+            storage_live(_7)
+            storage_live(_8)
+            _8 = copy state
+            _7 = move _8 == const 1u32
+            if move _7 {
+                storage_dead(_8)
+                storage_live(_9)
+                _9 = step(const 1u32)
+                ↳⚡ storage_dead(state)
+                    unwind_continue
+                if move _9 {
+                    ret = const 11u32
+                    storage_dead(_9)
+                    storage_dead(_7)
+                    fake_read(ret)
+                    storage_live(_13)
+                    storage_live(_14)
+                    _14 = copy state
+                    _13 = finish(move _14)
                     ↳⚡ storage_dead(state)
                         unwind_continue
-                    if move _9 {
-                        ret = const 11u32
-                        storage_dead(_9)
-                        storage_dead(_7)
-                    } else {
-                        storage_dead(_9)
-                        state = const 2u32
-                        storage_dead(_7)
-                        storage_live(_10)
-                        storage_live(_11)
-                        _11 = copy state
-                        _10 = move _11 == const 2u32
-                        if move _10 {
-                            storage_dead(_11)
-                            storage_live(_12)
-                            _12 = step(const 2u32)
-                            ↳⚡ storage_dead(state)
-                                unwind_continue
-                            if move _12 {
-                                ret = const 12u32
-                                storage_dead(_12)
-                                storage_dead(_10)
-                            } else {
-                                storage_dead(_12)
-                                state = const 3u32
-                                storage_dead(_10)
-                                ret = const 20u32
-                            }
-                        } else {
-                            storage_dead(_11)
-                            storage_dead(_10)
-                            ret = const 20u32
-                        }
-                    }
+                    storage_dead(_14)
+                    storage_dead(_13)
+                    _0 = copy ret
+                    storage_dead(ret)
+                    storage_dead(state)
+                    return
                 } else {
-                    storage_dead(_8)
-                    storage_dead(_7)
-                    storage_live(_10)
-                    storage_live(_11)
-                    _11 = copy state
-                    _10 = move _11 == const 2u32
-                    if move _10 {
-                        storage_dead(_11)
-                        storage_live(_12)
-                        _12 = step(const 2u32)
-                        ↳⚡ storage_dead(state)
-                            unwind_continue
-                        if move _12 {
-                            ret = const 12u32
-                            storage_dead(_12)
-                            storage_dead(_10)
-                        } else {
-                            storage_dead(_12)
-                            state = const 3u32
-                            storage_dead(_10)
-                            ret = const 20u32
-                        }
-                    } else {
-                        storage_dead(_11)
-                        storage_dead(_10)
-                        ret = const 20u32
-                    }
+                    storage_dead(_9)
+                    state = const 2u32
                 }
+            } else {
+                storage_dead(_8)
+            }
+            storage_dead(_7)
+            storage_live(_10)
+            storage_live(_11)
+            _11 = copy state
+            _10 = move _11 == const 2u32
+            if move _10 {
+                storage_dead(_11)
+                storage_live(_12)
+                _12 = step(const 2u32)
+                ↳⚡ storage_dead(state)
+                    unwind_continue
+                if move _12 {
+                    ret = const 12u32
+                    storage_dead(_12)
+                    storage_dead(_10)
+                } else {
+                    storage_dead(_12)
+                    state = const 3u32
+                    storage_dead(_10)
+                    ret = const 20u32
+                }
+            } else {
+                storage_dead(_11)
+                storage_dead(_10)
+                ret = const 20u32
             }
         },
         1u32 => {
@@ -274,160 +200,86 @@ pub fn chain(state: u32) -> u32
                     ret = const 10u32
                     storage_dead(_6)
                     storage_dead(_4)
+                    fake_read(ret)
+                    storage_live(_13)
+                    storage_live(_14)
+                    _14 = copy state
+                    _13 = finish(move _14)
+                    ↳⚡ storage_dead(state)
+                        unwind_continue
+                    storage_dead(_14)
+                    storage_dead(_13)
+                    _0 = copy ret
+                    storage_dead(ret)
+                    storage_dead(state)
+                    return
                 } else {
                     storage_dead(_6)
                     state = const 1u32
-                    storage_dead(_4)
-                    storage_live(_7)
-                    storage_live(_8)
-                    _8 = copy state
-                    _7 = move _8 == const 1u32
-                    if move _7 {
-                        storage_dead(_8)
-                        storage_live(_9)
-                        _9 = step(const 1u32)
-                        ↳⚡ storage_dead(state)
-                            unwind_continue
-                        if move _9 {
-                            ret = const 11u32
-                            storage_dead(_9)
-                            storage_dead(_7)
-                        } else {
-                            storage_dead(_9)
-                            state = const 2u32
-                            storage_dead(_7)
-                            storage_live(_10)
-                            storage_live(_11)
-                            _11 = copy state
-                            _10 = move _11 == const 2u32
-                            if move _10 {
-                                storage_dead(_11)
-                                storage_live(_12)
-                                _12 = step(const 2u32)
-                                ↳⚡ storage_dead(state)
-                                    unwind_continue
-                                if move _12 {
-                                    ret = const 12u32
-                                    storage_dead(_12)
-                                    storage_dead(_10)
-                                } else {
-                                    storage_dead(_12)
-                                    state = const 3u32
-                                    storage_dead(_10)
-                                    ret = const 20u32
-                                }
-                            } else {
-                                storage_dead(_11)
-                                storage_dead(_10)
-                                ret = const 20u32
-                            }
-                        }
-                    } else {
-                        storage_dead(_8)
-                        storage_dead(_7)
-                        storage_live(_10)
-                        storage_live(_11)
-                        _11 = copy state
-                        _10 = move _11 == const 2u32
-                        if move _10 {
-                            storage_dead(_11)
-                            storage_live(_12)
-                            _12 = step(const 2u32)
-                            ↳⚡ storage_dead(state)
-                                unwind_continue
-                            if move _12 {
-                                ret = const 12u32
-                                storage_dead(_12)
-                                storage_dead(_10)
-                            } else {
-                                storage_dead(_12)
-                                state = const 3u32
-                                storage_dead(_10)
-                                ret = const 20u32
-                            }
-                        } else {
-                            storage_dead(_11)
-                            storage_dead(_10)
-                            ret = const 20u32
-                        }
-                    }
                 }
             } else {
                 storage_dead(_5)
-                storage_dead(_4)
-                storage_live(_7)
-                storage_live(_8)
-                _8 = copy state
-                _7 = move _8 == const 1u32
-                if move _7 {
-                    storage_dead(_8)
-                    storage_live(_9)
-                    _9 = step(const 1u32)
+            }
+            storage_dead(_4)
+            storage_live(_7)
+            storage_live(_8)
+            _8 = copy state
+            _7 = move _8 == const 1u32
+            if move _7 {
+                storage_dead(_8)
+                storage_live(_9)
+                _9 = step(const 1u32)
+                ↳⚡ storage_dead(state)
+                    unwind_continue
+                if move _9 {
+                    ret = const 11u32
+                    storage_dead(_9)
+                    storage_dead(_7)
+                    fake_read(ret)
+                    storage_live(_13)
+                    storage_live(_14)
+                    _14 = copy state
+                    _13 = finish(move _14)
                     ↳⚡ storage_dead(state)
                         unwind_continue
-                    if move _9 {
-                        ret = const 11u32
-                        storage_dead(_9)
-                        storage_dead(_7)
-                    } else {
-                        storage_dead(_9)
-                        state = const 2u32
-                        storage_dead(_7)
-                        storage_live(_10)
-                        storage_live(_11)
-                        _11 = copy state
-                        _10 = move _11 == const 2u32
-                        if move _10 {
-                            storage_dead(_11)
-                            storage_live(_12)
-                            _12 = step(const 2u32)
-                            ↳⚡ storage_dead(state)
-                                unwind_continue
-                            if move _12 {
-                                ret = const 12u32
-                                storage_dead(_12)
-                                storage_dead(_10)
-                            } else {
-                                storage_dead(_12)
-                                state = const 3u32
-                                storage_dead(_10)
-                                ret = const 20u32
-                            }
-                        } else {
-                            storage_dead(_11)
-                            storage_dead(_10)
-                            ret = const 20u32
-                        }
-                    }
+                    storage_dead(_14)
+                    storage_dead(_13)
+                    _0 = copy ret
+                    storage_dead(ret)
+                    storage_dead(state)
+                    return
                 } else {
-                    storage_dead(_8)
-                    storage_dead(_7)
-                    storage_live(_10)
-                    storage_live(_11)
-                    _11 = copy state
-                    _10 = move _11 == const 2u32
-                    if move _10 {
-                        storage_dead(_11)
-                        storage_live(_12)
-                        _12 = step(const 2u32)
-                        ↳⚡ storage_dead(state)
-                            unwind_continue
-                        if move _12 {
-                            ret = const 12u32
-                            storage_dead(_12)
-                            storage_dead(_10)
-                        } else {
-                            storage_dead(_12)
-                            state = const 3u32
-                            storage_dead(_10)
-                            ret = const 20u32
-                        }
-                    } else {
-                        storage_dead(_11)
-                        storage_dead(_10)
-                        ret = const 20u32
-                    }
+                    storage_dead(_9)
+                    state = const 2u32
                 }
+            } else {
+                storage_dead(_8)
+            }
+            storage_dead(_7)
+            storage_live(_10)
+            storage_live(_11)
+            _11 = copy state
+            _10 = move _11 == const 2u32
+            if move _10 {
+                storage_dead(_11)
+                storage_live(_12)
+                _12 = step(const 2u32)
+                ↳⚡ storage_dead(state)
+                    unwind_continue
+                if move _12 {
+                    ret = const 12u32
+                    storage_dead(_12)
+                    storage_dead(_10)
+                } else {
+                    storage_dead(_12)
+                    state = const 3u32
+                    storage_dead(_10)
+                    ret = const 20u32
+                }
+            } else {
+                storage_dead(_11)
+                storage_dead(_10)
+                ret = const 20u32
             }
         },
         _ => {
@@ -519,216 +371,6 @@ pub fn chain_with_loops(state: u32) -> u32
                 storage_dead(state)
                 unwind_continue
             if move _6 {
-                x_5 = const 0u32
-                storage_dead(_6)
-                fake_read(x_5)
-                storage_live(_10)
-                _10 = copy x_5
-                _11 = copy _10 panic.+ const 1u32
-                state = move _11
-                storage_dead(_10)
-                storage_dead(x_5)
-                storage_dead(_3)
-                storage_live(_12)
-                storage_live(_13)
-                _13 = copy state
-                _12 = move _13 == const 1u32
-                if move _12 {
-                    storage_dead(_13)
-                    storage_live(x_14)
-                    loop {
-                        storage_live(_15)
-                        _15 = step(const 1u32)
-                        ↳⚡ storage_dead(_29)
-                            storage_dead(_20)
-                            storage_dead(_11)
-                            storage_dead(state)
-                            unwind_continue
-                        if move _15 {
-                            x_14 = const 1u32
-                            storage_dead(_15)
-                            fake_read(x_14)
-                            storage_live(_19)
-                            _19 = copy x_14
-                            _20 = copy _19 panic.+ const 1u32
-                            state = move _20
-                            storage_dead(_19)
-                            storage_dead(x_14)
-                            storage_dead(_12)
-                            storage_live(_21)
-                            storage_live(_22)
-                            _22 = copy state
-                            _21 = move _22 == const 2u32
-                            if move _21 {
-                                storage_dead(_22)
-                                storage_live(x_23)
-                                loop {
-                                    storage_live(_24)
-                                    _24 = step(const 2u32)
-                                    ↳⚡ storage_dead(_29)
-                                        storage_dead(_20)
-                                        storage_dead(_11)
-                                        storage_dead(state)
-                                        unwind_continue
-                                    if move _24 {
-                                        x_23 = const 2u32
-                                        storage_dead(_24)
-                                        fake_read(x_23)
-                                        storage_live(_28)
-                                        _28 = copy x_23
-                                        _29 = copy _28 panic.+ const 1u32
-                                        state = move _29
-                                        storage_dead(_28)
-                                        storage_dead(x_23)
-                                        storage_dead(_21)
-                                        ret = const 20u32
-                                        break 0
-                                    } else {
-                                        storage_dead(_24)
-                                        storage_live(_25)
-                                        storage_live(_26)
-                                        storage_live(_27)
-                                        _27 = pull(const 2u32)
-                                        ↳⚡ storage_dead(_29)
-                                            storage_dead(_20)
-                                            storage_dead(_11)
-                                            storage_dead(state)
-                                            unwind_continue
-                                        _26 = &_27
-                                        _25 = is_none<'13, u32>[{built_in impl Sized for u32}](move _26)
-                                        ↳⚡ storage_dead(_29)
-                                            storage_dead(_20)
-                                            storage_dead(_11)
-                                            storage_dead(state)
-                                            unwind_continue
-                                        if move _25 {
-                                            storage_dead(_27)
-                                            storage_dead(_26)
-                                            ret = const 12u32
-                                            storage_dead(_25)
-                                            storage_dead(x_23)
-                                            storage_dead(_21)
-                                            break 0
-                                        } else {
-                                            storage_dead(_27)
-                                            storage_dead(_26)
-                                            storage_dead(_25)
-                                            continue 0
-                                        }
-                                    }
-                                }
-                                break 0
-                            } else {
-                                storage_dead(_22)
-                                storage_dead(_21)
-                                ret = const 20u32
-                                break 0
-                            }
-                        } else {
-                            storage_dead(_15)
-                            storage_live(_16)
-                            storage_live(_17)
-                            storage_live(_18)
-                            _18 = pull(const 1u32)
-                            ↳⚡ storage_dead(_29)
-                                storage_dead(_20)
-                                storage_dead(_11)
-                                storage_dead(state)
-                                unwind_continue
-                            _17 = &_18
-                            _16 = is_none<'10, u32>[{built_in impl Sized for u32}](move _17)
-                            ↳⚡ storage_dead(_29)
-                                storage_dead(_20)
-                                storage_dead(_11)
-                                storage_dead(state)
-                                unwind_continue
-                            if move _16 {
-                                storage_dead(_18)
-                                storage_dead(_17)
-                                ret = const 11u32
-                                storage_dead(_16)
-                                storage_dead(x_14)
-                                storage_dead(_12)
-                                break 0
-                            } else {
-                                storage_dead(_18)
-                                storage_dead(_17)
-                                storage_dead(_16)
-                                continue 0
-                            }
-                        }
-                    }
-                } else {
-                    storage_dead(_13)
-                    storage_dead(_12)
-                    storage_live(_21)
-                    storage_live(_22)
-                    _22 = copy state
-                    _21 = move _22 == const 2u32
-                    if move _21 {
-                        storage_dead(_22)
-                        storage_live(x_23)
-                        loop {
-                            storage_live(_24)
-                            _24 = step(const 2u32)
-                            ↳⚡ storage_dead(_29)
-                                storage_dead(_20)
-                                storage_dead(_11)
-                                storage_dead(state)
-                                unwind_continue
-                            if move _24 {
-                                x_23 = const 2u32
-                                storage_dead(_24)
-                                fake_read(x_23)
-                                storage_live(_28)
-                                _28 = copy x_23
-                                _29 = copy _28 panic.+ const 1u32
-                                state = move _29
-                                storage_dead(_28)
-                                storage_dead(x_23)
-                                storage_dead(_21)
-                                ret = const 20u32
-                                break 0
-                            } else {
-                                storage_dead(_24)
-                                storage_live(_25)
-                                storage_live(_26)
-                                storage_live(_27)
-                                _27 = pull(const 2u32)
-                                ↳⚡ storage_dead(_29)
-                                    storage_dead(_20)
-                                    storage_dead(_11)
-                                    storage_dead(state)
-                                    unwind_continue
-                                _26 = &_27
-                                _25 = is_none<'13, u32>[{built_in impl Sized for u32}](move _26)
-                                ↳⚡ storage_dead(_29)
-                                    storage_dead(_20)
-                                    storage_dead(_11)
-                                    storage_dead(state)
-                                    unwind_continue
-                                if move _25 {
-                                    storage_dead(_27)
-                                    storage_dead(_26)
-                                    ret = const 12u32
-                                    storage_dead(_25)
-                                    storage_dead(x_23)
-                                    storage_dead(_21)
-                                    break 0
-                                } else {
-                                    storage_dead(_27)
-                                    storage_dead(_26)
-                                    storage_dead(_25)
-                                    continue 0
-                                }
-                            }
-                        }
-                    } else {
-                        storage_dead(_22)
-                        storage_dead(_21)
-                        ret = const 20u32
-                    }
-                }
                 break 0
             } else {
                 storage_dead(_6)
@@ -755,7 +397,25 @@ pub fn chain_with_loops(state: u32) -> u32
                     storage_dead(_7)
                     storage_dead(x_5)
                     storage_dead(_3)
-                    break 0
+                    fake_read(ret)
+                    storage_live(_30)
+                    storage_live(_31)
+                    _31 = copy state
+                    _30 = finish(move _31)
+                    ↳⚡ storage_dead(_29)
+                        storage_dead(_20)
+                        storage_dead(_11)
+                        storage_dead(state)
+                        unwind_continue
+                    storage_dead(_31)
+                    storage_dead(_30)
+                    _0 = copy ret
+                    storage_dead(ret)
+                    storage_dead(_29)
+                    storage_dead(_20)
+                    storage_dead(_11)
+                    storage_dead(state)
+                    return
                 } else {
                 }
                 storage_dead(_9)
@@ -764,25 +424,15 @@ pub fn chain_with_loops(state: u32) -> u32
                 continue 0
             }
         }
-        fake_read(ret)
-        storage_live(_30)
-        storage_live(_31)
-        _31 = copy state
-        _30 = finish(move _31)
-        ↳⚡ storage_dead(_29)
-            storage_dead(_20)
-            storage_dead(_11)
-            storage_dead(state)
-            unwind_continue
-        storage_dead(_31)
-        storage_dead(_30)
-        _0 = copy ret
-        storage_dead(ret)
-        storage_dead(_29)
-        storage_dead(_20)
-        storage_dead(_11)
-        storage_dead(state)
-        return
+        x_5 = const 0u32
+        storage_dead(_6)
+        fake_read(x_5)
+        storage_live(_10)
+        _10 = copy x_5
+        _11 = copy _10 panic.+ const 1u32
+        state = move _11
+        storage_dead(_10)
+        storage_dead(x_5)
     } else {
         storage_dead(_4)
     }
@@ -803,118 +453,135 @@ pub fn chain_with_loops(state: u32) -> u32
                 storage_dead(state)
                 unwind_continue
             if move _15 {
-                x_14 = const 1u32
-                storage_dead(_15)
-                fake_read(x_14)
-                storage_live(_19)
-                _19 = copy x_14
-                _20 = copy _19 panic.+ const 1u32
-                state = move _20
-                storage_dead(_19)
+                break 0
+            } else {
+            }
+            storage_dead(_15)
+            storage_live(_16)
+            storage_live(_17)
+            storage_live(_18)
+            _18 = pull(const 1u32)
+            ↳⚡ storage_dead(_29)
+                storage_dead(_20)
+                storage_dead(_11)
+                storage_dead(state)
+                unwind_continue
+            _17 = &_18
+            _16 = is_none<'10, u32>[{built_in impl Sized for u32}](move _17)
+            ↳⚡ storage_dead(_29)
+                storage_dead(_20)
+                storage_dead(_11)
+                storage_dead(state)
+                unwind_continue
+            if move _16 {
+                storage_dead(_18)
+                storage_dead(_17)
+                ret = const 11u32
+                storage_dead(_16)
                 storage_dead(x_14)
                 storage_dead(_12)
-                storage_live(_21)
-                storage_live(_22)
-                _22 = copy state
-                _21 = move _22 == const 2u32
-                if move _21 {
-                    storage_dead(_22)
-                    storage_live(x_23)
-                    loop {
-                        storage_live(_24)
-                        _24 = step(const 2u32)
-                        ↳⚡ storage_dead(_29)
-                            storage_dead(_20)
-                            storage_dead(_11)
-                            storage_dead(state)
-                            unwind_continue
-                        if move _24 {
-                            x_23 = const 2u32
-                            storage_dead(_24)
-                            fake_read(x_23)
-                            storage_live(_28)
-                            _28 = copy x_23
-                            _29 = copy _28 panic.+ const 1u32
-                            state = move _29
-                            storage_dead(_28)
-                            storage_dead(x_23)
-                            storage_dead(_21)
-                            ret = const 20u32
-                            break 0
-                        } else {
-                            storage_dead(_24)
-                            storage_live(_25)
-                            storage_live(_26)
-                            storage_live(_27)
-                            _27 = pull(const 2u32)
-                            ↳⚡ storage_dead(_29)
-                                storage_dead(_20)
-                                storage_dead(_11)
-                                storage_dead(state)
-                                unwind_continue
-                            _26 = &_27
-                            _25 = is_none<'13, u32>[{built_in impl Sized for u32}](move _26)
-                            ↳⚡ storage_dead(_29)
-                                storage_dead(_20)
-                                storage_dead(_11)
-                                storage_dead(state)
-                                unwind_continue
-                            if move _25 {
-                                storage_dead(_27)
-                                storage_dead(_26)
-                                ret = const 12u32
-                                storage_dead(_25)
-                                storage_dead(x_23)
-                                storage_dead(_21)
-                                break 0
-                            } else {
-                                storage_dead(_27)
-                                storage_dead(_26)
-                                storage_dead(_25)
-                                continue 0
-                            }
-                        }
-                    }
-                    break 0
-                } else {
-                    storage_dead(_22)
+                fake_read(ret)
+                storage_live(_30)
+                storage_live(_31)
+                _31 = copy state
+                _30 = finish(move _31)
+                ↳⚡ storage_dead(_29)
+                    storage_dead(_20)
+                    storage_dead(_11)
+                    storage_dead(state)
+                    unwind_continue
+                storage_dead(_31)
+                storage_dead(_30)
+                _0 = copy ret
+                storage_dead(ret)
+                storage_dead(_29)
+                storage_dead(_20)
+                storage_dead(_11)
+                storage_dead(state)
+                return
+            } else {
+            }
+            storage_dead(_18)
+            storage_dead(_17)
+            storage_dead(_16)
+            continue 0
+        }
+        x_14 = const 1u32
+        storage_dead(_15)
+        fake_read(x_14)
+        storage_live(_19)
+        _19 = copy x_14
+        _20 = copy _19 panic.+ const 1u32
+        state = move _20
+        storage_dead(_19)
+        storage_dead(x_14)
+        storage_dead(_12)
+        storage_live(_21)
+        storage_live(_22)
+        _22 = copy state
+        _21 = move _22 == const 2u32
+        if move _21 {
+            storage_dead(_22)
+            storage_live(x_23)
+            loop {
+                storage_live(_24)
+                _24 = step(const 2u32)
+                ↳⚡ storage_dead(_29)
+                    storage_dead(_20)
+                    storage_dead(_11)
+                    storage_dead(state)
+                    unwind_continue
+                if move _24 {
+                    x_23 = const 2u32
+                    storage_dead(_24)
+                    fake_read(x_23)
+                    storage_live(_28)
+                    _28 = copy x_23
+                    _29 = copy _28 panic.+ const 1u32
+                    state = move _29
+                    storage_dead(_28)
+                    storage_dead(x_23)
                     storage_dead(_21)
                     ret = const 20u32
                     break 0
+                } else {
                 }
-            } else {
-                storage_dead(_15)
-                storage_live(_16)
-                storage_live(_17)
-                storage_live(_18)
-                _18 = pull(const 1u32)
+                storage_dead(_24)
+                storage_live(_25)
+                storage_live(_26)
+                storage_live(_27)
+                _27 = pull(const 2u32)
                 ↳⚡ storage_dead(_29)
                     storage_dead(_20)
                     storage_dead(_11)
                     storage_dead(state)
                     unwind_continue
-                _17 = &_18
-                _16 = is_none<'10, u32>[{built_in impl Sized for u32}](move _17)
+                _26 = &_27
+                _25 = is_none<'13, u32>[{built_in impl Sized for u32}](move _26)
                 ↳⚡ storage_dead(_29)
                     storage_dead(_20)
                     storage_dead(_11)
                     storage_dead(state)
                     unwind_continue
-                if move _16 {
-                    storage_dead(_18)
-                    storage_dead(_17)
-                    ret = const 11u32
-                    storage_dead(_16)
-                    storage_dead(x_14)
-                    storage_dead(_12)
+                if move _25 {
+                    storage_dead(_27)
+                    storage_dead(_26)
+                    ret = const 12u32
+                    storage_dead(_25)
+                    storage_dead(x_23)
+                    storage_dead(_21)
                     break 0
                 } else {
-                    storage_dead(_18)
-                    storage_dead(_17)
-                    storage_dead(_16)
-                    continue 0
                 }
+                storage_dead(_27)
+                storage_dead(_26)
+                storage_dead(_25)
+                continue 0
             }
+        } else {
+            storage_dead(_22)
+            storage_dead(_21)
+            ret = const 20u32
         }
     } else {
         storage_dead(_13)
@@ -948,38 +615,38 @@ pub fn chain_with_loops(state: u32) -> u32
                     ret = const 20u32
                     break 0
                 } else {
-                    storage_dead(_24)
-                    storage_live(_25)
-                    storage_live(_26)
-                    storage_live(_27)
-                    _27 = pull(const 2u32)
-                    ↳⚡ storage_dead(_29)
-                        storage_dead(_20)
-                        storage_dead(_11)
-                        storage_dead(state)
-                        unwind_continue
-                    _26 = &_27
-                    _25 = is_none<'13, u32>[{built_in impl Sized for u32}](move _26)
-                    ↳⚡ storage_dead(_29)
-                        storage_dead(_20)
-                        storage_dead(_11)
-                        storage_dead(state)
-                        unwind_continue
-                    if move _25 {
-                        storage_dead(_27)
-                        storage_dead(_26)
-                        ret = const 12u32
-                        storage_dead(_25)
-                        storage_dead(x_23)
-                        storage_dead(_21)
-                        break 0
-                    } else {
-                        storage_dead(_27)
-                        storage_dead(_26)
-                        storage_dead(_25)
-                        continue 0
-                    }
                 }
+                storage_dead(_24)
+                storage_live(_25)
+                storage_live(_26)
+                storage_live(_27)
+                _27 = pull(const 2u32)
+                ↳⚡ storage_dead(_29)
+                    storage_dead(_20)
+                    storage_dead(_11)
+                    storage_dead(state)
+                    unwind_continue
+                _26 = &_27
+                _25 = is_none<'13, u32>[{built_in impl Sized for u32}](move _26)
+                ↳⚡ storage_dead(_29)
+                    storage_dead(_20)
+                    storage_dead(_11)
+                    storage_dead(state)
+                    unwind_continue
+                if move _25 {
+                    storage_dead(_27)
+                    storage_dead(_26)
+                    ret = const 12u32
+                    storage_dead(_25)
+                    storage_dead(x_23)
+                    storage_dead(_21)
+                    break 0
+                } else {
+                }
+                storage_dead(_27)
+                storage_dead(_26)
+                storage_dead(_25)
+                continue 0
             }
         } else {
             storage_dead(_22)

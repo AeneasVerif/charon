@@ -1146,18 +1146,18 @@ pub fn test_loop7(max: u32) -> u32
                     storage_dead(_10)
                     break 0
                 } else {
-                    storage_dead(_11)
-                    storage_dead(_10)
-                    storage_live(_12)
-                    _12 = copy i
-                    _13 = copy s panic.+ copy _12
-                    s = move _13
-                    storage_dead(_12)
-                    _14 = copy i panic.+ const 1u32
-                    i = move _14
-                    storage_dead(_7)
-                    continue 0
                 }
+                storage_dead(_11)
+                storage_dead(_10)
+                storage_live(_12)
+                _12 = copy i
+                _13 = copy s panic.+ copy _12
+                s = move _13
+                storage_dead(_12)
+                _14 = copy i panic.+ const 1u32
+                i = move _14
+                storage_dead(_7)
+                continue 0
             } else {
                 storage_dead(_9)
                 storage_dead(_8)
