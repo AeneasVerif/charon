@@ -5,6 +5,7 @@ use enum_as_inner::EnumAsInner;
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 use std::vec::Vec;
+use thin_vec::ThinVec;
 
 /// An expression that evaluates to a value. This is the RHS of an assignment.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -189,7 +190,7 @@ pub enum CastKind {
     /// (reference, `Box`, or other type that implements `CoerceUnsized`).
     ///
     /// The special case of `&[T; N]` -> `&[T]` coercion is caught by `UnOp::ArrayToSlice`.
-    Unsize(Ty, UnsizingMetadata, MetadataPath),
+    Unsize(Ty, UnsizingMetadata, #[serde_state(stateless)] MetadataPath),
     /// Reinterprets the bits of a value of one type as another type, i.e. exactly what
     /// [`std::mem::transmute`] does.
     Transmute(Ty),
@@ -210,7 +211,7 @@ pub enum CastKind {
     /// equivalents) when an array subslice projection determines the length statically.
     // FIXME(#855): smart-pointer receivers should rather be unpacked before the cast and re-packed after,
     // so that the cast only ever applies to built-in pointers.
-    Concretize(Ty, MetadataPath),
+    Concretize(Ty, #[serde_state(stateless)] MetadataPath),
 }
 
 /// Nullary operation
@@ -266,7 +267,7 @@ impl BorrowKind {
 /// For `Unsize` and `Concretize` casts, the fields to follow from the cast value to the built-in
 /// pointer whose metadata is changed, e.g. `[ptr, pointer]` for `Rc<T>`. Empty for built-in
 /// pointers.
-pub type MetadataPath = Vec<FieldId>;
+pub type MetadataPath = ThinVec<FieldId>;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(EnumAsInner)]
@@ -283,7 +284,7 @@ pub enum UnsizingMetadata {
     ///
     /// Note that we cheat in one case: when upcasting to a marker trait (e.g. `dyn Trait -> dyn
     /// Sized`), we keep the current vtable.
-    VTableUpcast(Vec<FieldId>),
+    VTableUpcast(#[serde_state(stateless)] MetadataPath),
     /// The metadata depends on generic parameters: this is the proof of the `Unsize` predicate
     /// between the pointees.
     UnsizeClause(TraitRef),

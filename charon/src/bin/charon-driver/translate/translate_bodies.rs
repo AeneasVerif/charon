@@ -356,7 +356,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     target_tref = tref;
                 }
 
-                let mut field_path = vec![];
+                let mut field_path = thin_vec::ThinVec::new();
                 for &(trait_id, clause_id) in &clause_path {
                     if let Ok(ItemRef::TraitDecl(tdecl)) = self.get_or_translate(trait_id.into())
                         && let vtable_decl_id = tdecl.vtable.as_ref().unwrap().id

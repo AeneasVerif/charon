@@ -170,7 +170,7 @@ pub enum VTableField {
     Size,
     Align,
     Drop,
-    Method(TraitMethodId, MetadataPath),
+    Method(TraitMethodId, #[serde_state(stateless)] MetadataPath),
     SuperTrait(TraitClauseId),
 }
 

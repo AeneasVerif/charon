@@ -1235,7 +1235,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         // Perform the core concretization cast.
         let rval = Rvalue::UnaryOp(
-            UnOp::Cast(CastKind::Concretize(target_self.ty().clone(), vec![])),
+            UnOp::Cast(CastKind::Concretize(
+                target_self.ty().clone(),
+                MetadataPath::new(),
+            )),
             Operand::Move(dyn_self.clone()),
         );
         builder.push_statement(StatementKind::Assign(target_self.clone(), rval));
@@ -1371,7 +1374,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 }
             };
             receiver_is_by_value = target_kind == ClosureKind::FnOnce;
-            receiver_path = vec![];
+            receiver_path = MetadataPath::new();
             target_item =
                 TransItemSourceKind::VirtualMethod(VirtualImplKind::Callable(target_kind));
         } else {

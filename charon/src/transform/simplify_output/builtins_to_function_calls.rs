@@ -425,7 +425,7 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
                 self.ctx.insert_assn_stmt(
                     array_ref_var.clone(),
                     Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::Concretize(array_ref_ty, vec![])),
+                        UnOp::Cast(CastKind::Concretize(array_ref_ty, MetadataPath::new())),
                         Operand::Move(output_var),
                     ),
                 );

@@ -120,7 +120,7 @@ fn transform_dyn_trait_call(
 
     let receiver_path = match target_field {
         VTableField::Method(_, path) => path.clone(),
-        _ => vec![],
+        _ => MetadataPath::new(),
     };
 
     let method_field = &fields[method_field_id];

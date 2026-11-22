@@ -23,7 +23,7 @@ pub enum PlaceKind {
     Projection(Box<(Place, ProjectionElem)>),
     /// A global (const or static).
     /// Not present in MIR; introduced in [simplify_constants.rs].
-    Global(GlobalDeclRef),
+    Global(Box<GlobalDeclRef>),
 }
 
 /// Projects a place to a subplace.
@@ -85,7 +85,7 @@ impl Place {
 
     pub fn new_global(global: GlobalDeclRef, ty: Ty) -> Place {
         Place {
-            kind: PlaceKind::Global(global),
+            kind: PlaceKind::Global(Box::new(global)),
             ty,
         }
     }
