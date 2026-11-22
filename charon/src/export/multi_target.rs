@@ -473,7 +473,7 @@ impl<'a> ItemDeduplicator<'a> {
         // Merge per-target layouts into the canonical type.
         if let ItemId::Type(canonical_type_id) = canonical {
             let mut layouts = TargetLayouts::default();
-            let mut mono_layouts: SeqHashMap<GenericArgs, TargetLayouts> = SeqHashMap::new();
+            let mut mono_layouts: SeqHashMap<GenericArgs, TargetLayouts> = SeqHashMap::default();
             for &id in group.ids.values() {
                 if let Some(tdecl) = self.krate.type_decls.get_mut(*id.as_type().unwrap()) {
                     layouts.extend(mem::take(&mut tdecl.layout.0));

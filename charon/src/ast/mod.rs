@@ -18,8 +18,12 @@ pub mod ullbc_ast {
 // Re-export everything except llbc/ullbc.
 pub use derive_generic_visitor::Visitor;
 pub use index_vec::Idx;
-pub use indexmap::{IndexMap as SeqHashMap, IndexSet as SeqHashSet};
 pub use std::ops::ControlFlow;
+
+/// Insertion-ordered hash map.
+pub type SeqHashMap<K, V> = indexmap::IndexMap<K, V, rustc_hash::FxBuildHasher>;
+/// Insertion-ordered hash set.
+pub type SeqHashSet<T> = indexmap::IndexSet<T, rustc_hash::FxBuildHasher>;
 
 pub use crate::errors::Error;
 pub use crate::ids::{IndexMap, IndexVec};

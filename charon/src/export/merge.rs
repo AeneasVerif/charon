@@ -308,7 +308,7 @@ fn discover_groups<K: Clone + Eq + Hash>(
     item_key: impl Fn(ItemId, &Name) -> Option<(Name, K)>,
 ) -> Vec<SeqHashMap<K, ItemId>> {
     let mut groups_map: SeqHashMap<(Name, std::mem::Discriminant<ItemId>), SeqHashMap<K, ItemId>> =
-        SeqHashMap::new();
+        SeqHashMap::default();
     for (&item_id, name) in &krate.item_names {
         if let Some((base_name, key)) = item_key(item_id, name) {
             let group_key = (base_name, std::mem::discriminant(&item_id));
@@ -433,7 +433,8 @@ fn remove_unmentioned_methods(krate: &mut TranslatedCrate) {
     // method), as well as all the methods without default. We end up with a graph where methods
     // with a default may end up not reachable.
     let graph = {
-        let mut graph: DiGraphMap<ReachabilityNode, ()> = DiGraphMap::new();
+        let mut graph: DiGraphMap<ReachabilityNode, (), rustc_hash::FxBuildHasher> =
+            DiGraphMap::new();
         graph.add_node(Root);
 
         for (fun_id, fun) in krate.fun_decls.iter_indexed() {

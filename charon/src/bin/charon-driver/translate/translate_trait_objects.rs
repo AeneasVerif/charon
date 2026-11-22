@@ -514,7 +514,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 TrVTableField::Method(id, _, path) => VTableField::Method(*id, path.clone()),
                 TrVTableField::SuperTrait(clause_id, ..) => VTableField::SuperTrait(*clause_id),
             });
-            let layout = TargetLayouts([(self.get_target_triple(), l)].into());
+            let layout = TargetLayouts(SeqHashMap::from_iter([(self.get_target_triple(), l)]));
             (kind, layout)
         };
 

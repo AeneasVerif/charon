@@ -270,10 +270,8 @@ pub mod hash_by_addr {
 
 pub mod serialize_map_to_array {
     use core::{fmt, marker::PhantomData};
-    use std::{
-        collections::hash_map::RandomState,
-        hash::{BuildHasher, Hash},
-    };
+    use rustc_hash::FxBuildHasher;
+    use std::hash::{BuildHasher, Hash};
 
     use indexmap::IndexMap as SeqHashMap;
     use serde::{
@@ -290,7 +288,7 @@ pub mod serialize_map_to_array {
     }
 
     /// A converter between an `SeqHashMap` and a sequence of named key-value pairs.
-    pub struct SeqHashMapToArray<K, V, U = RandomState>(PhantomData<(K, V, U)>);
+    pub struct SeqHashMapToArray<K, V, U = FxBuildHasher>(PhantomData<(K, V, U)>);
 
     impl<K, V, U> SeqHashMapToArray<K, V, U> {
         /// Serializes the given `map` to an array of named key-values.

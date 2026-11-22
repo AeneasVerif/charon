@@ -319,7 +319,7 @@ impl OutlivesPred {
                 .visit_by_val_infallible(ty)
                 .regions
         } else {
-            [longer.clone()].into()
+            SeqHashSet::from_iter([longer.clone()])
         };
         longers
             .into_iter()

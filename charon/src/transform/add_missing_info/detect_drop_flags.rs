@@ -206,7 +206,7 @@ impl FlagUpdate {
 struct CheckFlagCorrectness<'a, 'b> {
     /// List of candidate drop flags, with the place they correspond to.
     flags: &'b mut SeqHashMap<LocalId, &'a Place>,
-    graph: DiGraphMap<AnalysisNode, ()>,
+    graph: DiGraphMap<AnalysisNode, (), rustc_hash::FxBuildHasher>,
     /// For each block, the updates to candidate flags affected by the block.
     updates: IndexVec<BlockId, HashMap<LocalId, FlagUpdate>>,
 }

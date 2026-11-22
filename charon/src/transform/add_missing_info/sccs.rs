@@ -41,7 +41,7 @@ use crate::ast::*;
 /// which case we have reordering to do). This is what this function does: we add an SCC and its
 /// dependencies to the list of reordered SCCs by doing a depth-first search.
 pub fn ordered_scc<Id: NodeTrait + Debug, O: Ord>(
-    graph: &DiGraphMap<Id, ()>,
+    graph: &DiGraphMap<Id, (), rustc_hash::FxBuildHasher>,
     sort_by: impl Fn(&Id) -> O,
 ) -> Vec<Vec<Id>> {
     #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -65,7 +65,7 @@ pub fn ordered_scc<Id: NodeTrait + Debug, O: Ord>(
 
     // Compute the graph of the sccs, where there is an edge between sccs if there's an edge
     // between some nodes of each scc.
-    let mut scc_graph: DiGraphMap<SccId, ()> = DiGraphMap::new();
+    let mut scc_graph: DiGraphMap<SccId, (), rustc_hash::FxBuildHasher> = DiGraphMap::new();
     // Add sccs in the order of their earliest element.
     for (_, &scc_id) in &id_to_scc {
         scc_graph.add_node(scc_id);
@@ -87,7 +87,7 @@ pub fn ordered_scc<Id: NodeTrait + Debug, O: Ord>(
     // on we haven't yet included, in postorder. This guarantees that the final order is a
     // topological sort for the scc DAG. Moreover this will explore other sccs in order too because
     // we sorted the list of neighbors.
-    let mut reordered_sccs_ids: SeqHashSet<SccId> = SeqHashSet::new();
+    let mut reordered_sccs_ids: SeqHashSet<SccId> = SeqHashSet::default();
     let mut dfs = DfsPostOrder::empty(&scc_graph);
     for scc_id in scc_graph.nodes() {
         dfs.move_to(scc_id);

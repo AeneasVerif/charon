@@ -3,7 +3,6 @@
 //! Note that the deduplication scheme is order-dependent: it relies on the fact that
 //! serialization and deserialization traverse the value in the same order.
 
-use indexmap::IndexMap as SeqHashMap;
 use rustc_hash::FxHashMap;
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
@@ -11,6 +10,7 @@ use std::any::type_name;
 use std::cell::RefCell;
 use std::hash::Hash;
 
+use crate::ast::SeqHashMap;
 use crate::utils::type_map::{Mappable, Mapper, TypeMap};
 
 /// Identifies a deduplicated value amongst the values of its type within a single serialized

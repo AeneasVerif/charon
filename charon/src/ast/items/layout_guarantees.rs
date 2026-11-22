@@ -569,7 +569,7 @@ mod tests {
                 target_pointer_size: 8,
                 is_little_endian: true,
                 c_enum_smallest_repr_ty: IntTy::I32,
-                primitive_alignments: SeqHashMap::new(),
+                primitive_alignments: SeqHashMap::default(),
             },
         );
         (krate, target)
@@ -842,7 +842,7 @@ mod tests {
         let mut krate = TranslatedCrate::default();
         let scalar_ty = ScalarTy::Integer(IntegerTy::Unsigned(UIntTy::U64));
         for (triple, pointer_size, alignment) in [("a", 4, 4), ("b", 8, 8)] {
-            let mut primitive_alignments = SeqHashMap::new();
+            let mut primitive_alignments = SeqHashMap::default();
             primitive_alignments.insert(scalar_ty, alignment);
             krate.target_information.insert(
                 triple.to_owned(),
@@ -938,7 +938,7 @@ mod tests {
             .types
             .push_with(|id| TypeParam::new(id, "T".to_owned(), Variance::Invariant));
         let generic_ty = generics.identity_args().types[TypeVarId::ZERO].clone();
-        let mut layouts = SeqHashMap::new();
+        let mut layouts = SeqHashMap::default();
         layouts.insert(
             target.clone(),
             Layout {

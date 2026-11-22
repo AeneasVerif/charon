@@ -141,7 +141,7 @@ impl Display for DeclarationGroup {
 pub struct Deps {
     /// The dependency graph between translated items. We're careful to only add items that got
     /// translated.
-    graph: DiGraphMap<ItemId, ()>,
+    graph: DiGraphMap<ItemId, (), rustc_hash::FxBuildHasher>,
     unprocessed: Vec<ItemId>,
     visited: HashSet<ItemId>,
 }
@@ -403,7 +403,9 @@ impl VisitAst for DepsForItem<'_> {
     }
 }
 
-fn compute_declarations_graph(ctx: &TransformCtx) -> DiGraphMap<ItemId, ()> {
+fn compute_declarations_graph(
+    ctx: &TransformCtx,
+) -> DiGraphMap<ItemId, (), rustc_hash::FxBuildHasher> {
     let mut deps = Deps::default();
     // Start from the items selected as starting points. We've mostly only translated items
     // accessible from those, but some passes render items inaccessible again, which we filter out
