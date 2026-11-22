@@ -23,7 +23,7 @@ pub struct FullDef<'tcx> {
     /// The text of the whole definition.
     pub source_text: Option<String>,
     /// Attributes on this definition, if applicable.
-    pub attributes: Vec<hir::Attribute>,
+    pub attributes: &'tcx [hir::Attribute],
     /// Visibility of the definition, for definitions where this makes sense.
     pub visibility: Option<bool>,
     /// If this definition is a lang item, we store the identifier, e.g. `sized`.
@@ -216,7 +216,7 @@ where
         }
     }
 
-    let attributes = def_id.attrs(tcx).to_vec();
+    let attributes = def_id.attrs(tcx);
     let visibility = def_id.visibility(tcx);
     let source_text = source_span
         .filter(|source_span| source_span.ctxt().is_root())
