@@ -685,6 +685,16 @@ impl CliOpts {
         }
     }
 
+    /// The MIR level we read bodies at.
+    pub fn mir_level(&self) -> MirLevel {
+        let mir_level = self.mir.unwrap_or(MirLevel::Promoted);
+        if self.precise_drops {
+            std::cmp::max(mir_level, MirLevel::Elaborated)
+        } else {
+            mir_level
+        }
+    }
+
     /// Check that the options are meaningful
     pub fn validate(&self) -> anyhow::Result<()> {
         if self.dest_dir.is_some() {
@@ -907,11 +917,6 @@ impl TranslateOptions {
             }
         };
 
-        let mut mir_level = options.mir.unwrap_or(MirLevel::Promoted);
-        if options.precise_drops {
-            mir_level = std::cmp::max(mir_level, MirLevel::Elaborated);
-        }
-
         let mut start_from = options
             .start_from
             .iter()
@@ -1043,7 +1048,7 @@ impl TranslateOptions {
         TranslateOptions {
             start_from,
             merge_crates: options.merge_crates,
-            mir_level,
+            mir_level: options.mir_level(),
             monomorphize_mut: options.monomorphize_mut,
             collect_instantiated_layouts: options.collect_instantiated_layouts,
             hide_marker_traits: options.hide_marker_traits,
