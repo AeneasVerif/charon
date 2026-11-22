@@ -1,6 +1,6 @@
 //! Desugar built-in operations and array/slice indexing to standard library function calls.
 
-use std::collections::{HashMap, HashSet};
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 
 use crate::llbc_ast::*;
 use crate::name_matcher::NamePattern;
@@ -633,7 +633,7 @@ impl Transform {
             }
         }
 
-        let mut index_impl_methods: HashMap<StdItem, Vec<ItemId>> = HashMap::new();
+        let mut index_impl_methods: HashMap<StdItem, Vec<ItemId>> = HashMap::default();
         for fun in &ctx.translated.fun_decls {
             let FunSource::TraitImpl { trait_ref, .. } = &fun.src else {
                 continue;

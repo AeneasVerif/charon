@@ -27,7 +27,7 @@
 //! benefit of reducing the size of signatures. Moreover, the rustc rules on which bounds are
 //! required vs implied are subtle. We may change our choice if this proves to be a problem.
 use itertools::Itertools;
-use std::collections::HashSet;
+use rustc_hash::FxHashSet as HashSet;
 
 use rustc_attr_ir::LangItem;
 use rustc_hir::def::DefKind;

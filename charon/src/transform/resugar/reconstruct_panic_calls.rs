@@ -1,5 +1,5 @@
 //! Transform calls to builtin panicking functions into `TerminatorKind::Panic`.
-use std::collections::HashSet;
+use rustc_hash::FxHashSet as HashSet;
 
 use crate::ast::{Name, from_rustc, names};
 use crate::transform::{CowBox, TransformCtx, ctx::UllbcPass};

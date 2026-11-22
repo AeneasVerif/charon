@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 
 use crate::transform::CowBox;
 use crate::transform::{TransformCtx, ctx::UllbcPass};
@@ -32,7 +32,7 @@ pub(super) fn globals_in_constant_repeats(krate: &TranslatedCrate) -> HashSet<Gl
             }
         }
     }
-    RepeatedGlobals(HashSet::new())
+    RepeatedGlobals(HashSet::default())
         .visit_by_val_infallible(krate)
         .0
 }

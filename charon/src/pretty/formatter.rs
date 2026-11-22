@@ -1,5 +1,5 @@
+use rustc_hash::FxHashMap as HashMap;
 use std::borrow::Cow;
-use std::collections::HashMap;
 use std::fmt;
 
 use crate::ast::*;
@@ -389,7 +389,7 @@ pub fn compute_local_names(locals: &Locals) -> IndexVec<LocalId, String> {
         )
     });
 
-    let mut name_counts = HashMap::<String, usize>::new();
+    let mut name_counts = HashMap::<String, usize>::default();
     for local in &locals.locals {
         *name_counts
             .entry(local_names[local.index].clone())

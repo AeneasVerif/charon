@@ -1,5 +1,5 @@
 use itertools::Itertools;
-use std::collections::HashSet;
+use rustc_hash::FxHashSet as HashSet;
 
 use crate::{ast::*, name_matcher::NamePattern};
 

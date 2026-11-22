@@ -1,6 +1,6 @@
 //! Generic logic for merging several [`CrateData`]s into one.
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::mem;
@@ -144,8 +144,8 @@ impl CrateMerger {
                 translated,
                 has_errors: false,
             },
-            file_name_to_id: HashMap::new(),
-            item_sources: HashMap::new(),
+            file_name_to_id: HashMap::default(),
+            item_sources: HashMap::default(),
         };
         for (i, (krate, name_suffix)) in krates.into_iter().enumerate() {
             merger.add_one(i, krate, name_suffix);
@@ -482,7 +482,7 @@ fn remove_unmentioned_methods(krate: &mut TranslatedCrate) {
 
     let reachable_nodes: HashSet<_> = Dfs::new(&graph, Root).iter(&graph).collect();
 
-    let mut unused_methods: HashMap<TraitDeclId, HashSet<TraitMethodId>> = HashMap::new();
+    let mut unused_methods: HashMap<TraitDeclId, HashSet<TraitMethodId>> = HashMap::default();
     // Iterate over unreachable nodes.
     for n in graph.nodes().filter(|n| !reachable_nodes.contains(n)) {
         match n {

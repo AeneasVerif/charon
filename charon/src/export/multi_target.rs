@@ -1,5 +1,5 @@
 //! Merging multiple [`CrateData`]s from different compilation targets into one.
-use std::collections::HashMap;
+use rustc_hash::FxHashMap as HashMap;
 use std::mem;
 
 use itertools::Itertools;

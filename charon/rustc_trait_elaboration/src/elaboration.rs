@@ -2,7 +2,8 @@
 
 use crate::*;
 use itertools::{Either, Itertools};
-use std::collections::{HashMap, hash_map::Entry};
+use rustc_hash::FxHashMap as HashMap;
+use std::collections::hash_map::Entry;
 
 use rustc_hir::def_id::DefId;
 use rustc_middle::traits::CodegenObligationError;

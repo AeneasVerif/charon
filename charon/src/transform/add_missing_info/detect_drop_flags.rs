@@ -2,7 +2,7 @@
 //!
 //! This may miss some drop flags but the ones it detects are guaranteed to be correct, as we do
 //! a control-flow analysis to be sure.
-use std::collections::HashMap;
+use rustc_hash::FxHashMap as HashMap;
 use std::ops::ControlFlow;
 
 use derive_generic_visitor::Visitor;
@@ -261,7 +261,7 @@ impl<'a, 'b> CheckFlagCorrectness<'a, 'b> {
     /// Check if these drop flags correctly track the corresponding place. Removes the ones that
     /// don't.
     fn filter_invalid_flags(body: &ExprBody, flags: &'b mut SeqHashMap<LocalId, &'a Place>) {
-        let updates = body.body.map_ref(|_| HashMap::new());
+        let updates = body.body.map_ref(|_| HashMap::default());
         let mut graph = DiGraphMap::new();
         graph.add_node(AnalysisNode::Root);
         let mut analysis = Self {

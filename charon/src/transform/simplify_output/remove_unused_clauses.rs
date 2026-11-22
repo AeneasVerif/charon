@@ -3,7 +3,7 @@
 use derive_generic_visitor::*;
 use petgraph::visit::Walker;
 use petgraph::{graphmap::DiGraphMap, visit::Dfs};
-use std::collections::{HashMap, HashSet};
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 
 use crate::ast::*;
 use crate::ids::IndexVec;

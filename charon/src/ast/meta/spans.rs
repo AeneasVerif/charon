@@ -1,8 +1,8 @@
 use crate::utils::dedup::*;
 use derive_generic_visitor::{ControlFlow, Drive, DriveMut, DriveTwo, Visit, VisitMut, VisitTwo};
+use rustc_hash::FxHashMap as HashMap;
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
-use std::collections::HashMap;
 use std::sync::{LazyLock, Mutex};
 use std::{borrow::Cow, cmp::Ordering, ops::Range, path::PathBuf};
 

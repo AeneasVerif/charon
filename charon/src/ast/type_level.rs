@@ -1,7 +1,8 @@
 use derive_generic_visitor::*;
 use itertools::Itertools;
+use rustc_hash::FxHashSet as HashSet;
 use serde_state::{DeserializeState, SerializeState};
-use std::{collections::HashSet, mem};
+use std::mem;
 
 use crate::ast::*;
 
@@ -360,7 +361,7 @@ impl GenericParams {
         // names for the backward functions in Aeneas): at some point, Rustc introduced names equal
         // to `Some("'_")` for the anonymous regions, instead of using `None` (we now check in
         // [translate_region_name] and ignore names equal to "'_").
-        let mut s = HashSet::new();
+        let mut s = HashSet::default();
         for r in &self.regions {
             if let Some(name) = &r.name {
                 assert!(
