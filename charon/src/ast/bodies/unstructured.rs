@@ -134,7 +134,7 @@ pub enum TerminatorKind {
     },
     /// An inline assembly block.
     InlineAsm {
-        asm: InlineAsm,
+        asm: Box<InlineAsm>,
         /// Next block if the control-flow continues without jumping. Absent for `naked_asm!` and `noreturn`.
         fallthrough: Option<BlockId>,
         /// Targets of [`AsmOperand::Label`] operands.

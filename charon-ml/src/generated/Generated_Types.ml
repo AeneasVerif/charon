@@ -263,11 +263,8 @@ and builtin_impl_data =
 and byte =
   | Uninit  (** An uninitialized byte *)
   | Value of int  (** A concrete byte value *)
-  | Provenance of global_provenance * integer_value * int
-      (** A byte that is part of a pointer with provenance, at the given offset
-          into the pointee. The u8 is the index of this byte within the pointer.
-          Note that we do not have an actual value for this pointer byte, unlike
-          MiniRust, as that is non-deterministic. *)
+  | Provenance of pointer_fragment
+      (** A byte that is part of a pointer with provenance. *)
 
 (** Cast the operand to a new type. *)
 and cast_kind =
@@ -569,6 +566,15 @@ and lifetime_mutability =
     This can also represent [T: 'r], by using [Region::Lub] for the left region.
     The right region may not be [Region::Lub]. *)
 and outlives_pred = region * region
+
+(** A byte that is part of a pointer with provenance. Note that we do not have
+    an actual value for this pointer byte, unlike MiniRust, as that is
+    non-deterministic. *)
+and pointer_fragment = {
+  provenance : global_provenance;
+  offset : integer_value;  (** The offset into the pointee. *)
+  index : int;  (** The index of this byte within the pointer. *)
+}
 
 (** A proof of a higher-ranked trait predicate. *)
 and poly_trait_ref = trait_ref region_binder

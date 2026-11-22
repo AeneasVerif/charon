@@ -465,11 +465,9 @@ and byte_of_json (ctx : of_json_ctx) (js : json) : (byte, string) result =
     | `Assoc [ ("Value", _0) ] ->
         let* _0 = int_of_json ctx _0 in
         Ok (Value _0)
-    | `Assoc [ ("Provenance", `List [ _0; _1; _2 ]) ] ->
-        let* _0 = global_provenance_of_json ctx _0 in
-        let* _1 = integer_value_of_json ctx _1 in
-        let* _2 = int_of_json ctx _2 in
-        Ok (Provenance (_0, _1, _2))
+    | `Assoc [ ("Provenance", _0) ] ->
+        let* _0 = box_of_json pointer_fragment_of_json ctx _0 in
+        Ok (Provenance _0)
     | _ -> Error "")
 
 and call_of_json (ctx : of_json_ctx) (js : json) : (call, string) result =
@@ -799,7 +797,7 @@ and fn_operand_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = fn_ptr_of_json ctx _0 in
         Ok (FnOpRegular _0)
     | `Assoc [ ("Dynamic", `List [ _0; _1 ]) ] ->
-        let* _0 = operand_of_json ctx _0 in
+        let* _0 = box_of_json operand_of_json ctx _0 in
         let* _1 = region_args_of_json ctx _1 in
         Ok (FnOpDynamic (_0, _1))
     | _ -> Error "")
@@ -1185,6 +1183,18 @@ and place_type_constraint_of_json (ctx : of_json_ctx) (js : json) :
         let* ty = ty_of_json ctx ty in
         let* variance = variance_of_json ctx variance in
         Ok ({ place; ty; variance } : place_type_constraint)
+    | _ -> Error "")
+
+and pointer_fragment_of_json (ctx : of_json_ctx) (js : json) :
+    (pointer_fragment, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [ ("provenance", provenance); ("offset", offset); ("index", index) ] ->
+        let* provenance = global_provenance_of_json ctx provenance in
+        let* offset = integer_value_of_json ctx offset in
+        let* index = int_of_json ctx index in
+        Ok ({ provenance; offset; index } : pointer_fragment)
     | _ -> Error "")
 
 and poly_trait_ref_of_json (ctx : of_json_ctx) (js : json) :
@@ -1812,7 +1822,7 @@ and unsizing_metadata_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = constant_expr_of_json ctx _0 in
         Ok (MetaLength _0)
     | `Assoc [ ("VTable", `List [ _0; _1 ]) ] ->
-        let* _0 = poly_trait_ref_of_json ctx _0 in
+        let* _0 = box_of_json poly_trait_ref_of_json ctx _0 in
         let* _1 = constant_expr_of_json ctx _1 in
         Ok (MetaVTable (_0, _1))
     | `Assoc [ ("VTableUpcast", _0) ] ->
@@ -2026,7 +2036,7 @@ module Ullbc = struct
                   ("on_unwind", on_unwind);
                 ] );
           ] ->
-          let* asm = inline_asm_of_json ctx asm in
+          let* asm = box_of_json inline_asm_of_json ctx asm in
           let* fallthrough = option_of_json block_id_of_json ctx fallthrough in
           let* labels =
             index_vec_of_json branch_id_of_json block_id_of_json ctx labels
@@ -2196,7 +2206,7 @@ module Llbc = struct
                   ("on_unwind", on_unwind);
                 ] );
           ] ->
-          let* asm = inline_asm_of_json ctx asm in
+          let* asm = box_of_json inline_asm_of_json ctx asm in
           let* fallthrough = option_of_json block_of_json ctx fallthrough in
           let* labels =
             index_vec_of_json branch_id_of_json block_of_json ctx labels

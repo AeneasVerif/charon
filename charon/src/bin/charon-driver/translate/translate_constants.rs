@@ -56,11 +56,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Ok(match b {
             hax::ConstantByte::Uninit => Byte::Uninit,
             hax::ConstantByte::Value(v) => Byte::Value(*v),
-            hax::ConstantByte::Provenance(prov, offset, i) => Byte::Provenance(
-                self.translate_provenance(span, prov)?,
-                IntegerValue::mk_usize(*offset as u128),
-                *i,
-            ),
+            hax::ConstantByte::Provenance(prov, offset, i) => {
+                Byte::Provenance(Box::new(PointerFragment {
+                    provenance: self.translate_provenance(span, prov)?,
+                    offset: IntegerValue::mk_usize(*offset as u128),
+                    index: *i,
+                }))
+            }
         })
     }
 

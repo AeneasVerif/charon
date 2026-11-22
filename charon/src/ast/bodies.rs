@@ -211,7 +211,7 @@ pub enum FnOperand {
     /// Regular case: call to a top-level function, trait method, etc.
     Regular(FnPtr),
     /// Call through a function pointer, instantiated with the given regions.
-    Dynamic(Operand, RegionArgs),
+    Dynamic(Box<Operand>, RegionArgs),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

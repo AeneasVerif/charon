@@ -268,7 +268,7 @@ fn transform_dyn_trait_call(
         .collect();
 
     // Transform the original call to use the function pointer.
-    call.func = FnOperand::Dynamic(Operand::Read(fn_ptr_place), regions);
+    call.func = FnOperand::Dynamic(Box::new(Operand::Read(fn_ptr_place)), regions);
 
     Ok(())
 }

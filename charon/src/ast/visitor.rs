@@ -158,6 +158,7 @@ use derive_generic_visitor::*;
         PathElem,
         PlaceKind,
         PlaceTypeConstraint,
+        PointerFragment,
         PtrMetadata,
         RawAttribute,
         RefKind,

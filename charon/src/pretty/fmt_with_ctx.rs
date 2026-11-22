@@ -1979,12 +1979,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for Byte {
         match self {
             Byte::Value(x) => write!(f, "{:#04x}", x),
             Byte::Uninit => write!(f, "--"),
-            Byte::Provenance(p, ofs, i) => {
-                write!(f, "&{}", p.with_ctx(ctx))?;
-                if ofs.to_bits() != 0 {
-                    write!(f, "+{}", ofs.to_bits())?;
+            Byte::Provenance(frag) => {
+                write!(f, "&{}", frag.provenance.with_ctx(ctx))?;
+                if frag.offset.to_bits() != 0 {
+                    write!(f, "+{}", frag.offset.to_bits())?;
                 }
-                write!(f, "[{i}]")
+                write!(f, "[{}]", frag.index)
             }
         }
     }
