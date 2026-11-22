@@ -20,8 +20,6 @@ pub struct FullDef<'tcx> {
     pub span: Span,
     /// The span of the whole definition (including e.g. the function body).
     pub source_span: Option<Span>,
-    /// The text of the whole definition.
-    pub source_text: Option<String>,
     /// Attributes on this definition, if applicable.
     pub attributes: &'tcx [hir::Attribute],
     /// Visibility of the definition, for definitions where this makes sense.
@@ -218,14 +216,10 @@ where
 
     let attributes = def_id.attrs(tcx);
     let visibility = def_id.visibility(tcx);
-    let source_text = source_span
-        .filter(|source_span| source_span.ctxt().is_root())
-        .and_then(|source_span| tcx.sess.source_map().span_to_snippet(source_span).ok());
     FullDef {
         this,
         span: def_id.def_span(s),
         source_span: source_span.sinto(s),
-        source_text,
         attributes,
         visibility,
         lang_item,
@@ -1618,6 +1612,13 @@ impl<'tcx> VirtualTraitImpl<'tcx> {
 impl<'tcx> FullDef<'tcx> {
     pub fn def_id(&self) -> &DefId {
         &self.this.def_id
+    }
+
+    /// The text of the whole definition.
+    pub fn source_text(&self, tcx: ty::TyCtxt<'tcx>) -> Option<String> {
+        self.source_span
+            .filter(|source_span| source_span.ctxt().is_root())
+            .and_then(|source_span| tcx.sess.source_map().span_to_snippet(source_span).ok())
     }
 
     /// Reference to the item itself.

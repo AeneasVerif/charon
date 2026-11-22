@@ -271,7 +271,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<Body, Error> {
         // Retrieve the body
         if let Some(body) = self.get_mir(def.this(), span)? {
-            Ok(self.translate_body(span, body, &def.source_text))
+            Ok(self.translate_body(span, body, &def.source_text(self.tcx)))
         } else if let Some(value) =
             def.evaluate(self.hax_state_with_id(), hax::ReadMode::Structured)
         {
