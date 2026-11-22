@@ -197,6 +197,9 @@ impl<'a> GenerateCtx<'a> {
                         if first == "ustr" {
                             first = "string".to_string();
                         }
+                        if first == "non_max_u_16" {
+                            first = "int".to_string();
+                        }
                         if first == "index_map" {
                             // That's the `indexmap::IndexMap` case. Pass something dummy for the
                             // `RandomState` parameter.

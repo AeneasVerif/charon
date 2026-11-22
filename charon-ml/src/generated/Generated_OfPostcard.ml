@@ -639,7 +639,7 @@ and constant_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
 
 and de_bruijn_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (de_bruijn_id, string) result =
-  combine_error_msgs st __FUNCTION__ (usize_of_postcard ctx st)
+  combine_error_msgs st __FUNCTION__ (u16_of_postcard ctx st)
 
 and de_bruijn_var_of_postcard :
     'a0.
