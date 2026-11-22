@@ -153,6 +153,8 @@ pub struct TranslateCtx<'tcx> {
     pub lt_mutability_computer: LifetimeMutabilityComputer,
     /// The layouts of the monomorphic instances of the type declarations, for `--collect-instantiated-layouts`.
     pub monomorphic_layouts: SeqHashMap<TypeDeclRef, Layout>,
+    /// The `DefId`s of the intrinsics we resolved by name.
+    pub intrinsic_def_ids: HashMap<rustc_span::Symbol, RDefId>,
 }
 
 /// The functions exported under a given symbol.

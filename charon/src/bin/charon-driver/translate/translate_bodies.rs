@@ -1664,8 +1664,15 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         args: Vec<Operand>,
     ) -> Result<(), Error> {
         // Sadly rustc doesn't expose a Symbol -> DefId map for intrinsics.
-        let path = NamePattern::parse(&format!("core::intrinsics::{name}")).unwrap();
-        let def_id = self.resolve_single_path(span, &path)?;
+        let def_id = match self.t_ctx.intrinsic_def_ids.get(&name) {
+            Some(&def_id) => def_id,
+            None => {
+                let path = NamePattern::parse(&format!("core::intrinsics::{name}")).unwrap();
+                let def_id = self.resolve_single_path(span, &path)?;
+                self.t_ctx.intrinsic_def_ids.insert(name, def_id);
+                def_id
+            }
+        };
         assert!(self.tcx.is_intrinsic(def_id, name));
         let item = hax::ItemRef::translate(self.hax_state_with_id(), def_id, generic_args);
         let func =

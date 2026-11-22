@@ -1355,6 +1355,7 @@ pub fn translate<'tcx>(
         exported_fns: Default::default(),
         lt_mutability_computer: Default::default(),
         monomorphic_layouts: Default::default(),
+        intrinsic_def_ids: Default::default(),
     };
     ctx.register_target_info();
     ctx.reserve_unit_decl();
