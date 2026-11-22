@@ -13,20 +13,16 @@ impl<S> SInto<S, u64> for rustc_middle::mir::interpret::AllocId {
     }
 }
 
-pub fn name_of_local(
-    local: rustc_middle::mir::Local,
-    var_debug_info: &Vec<mir::VarDebugInfo>,
-) -> Option<String> {
-    var_debug_info
-        .iter()
-        .find(|info| {
-            if let mir::VarDebugInfoContents::Place(place) = info.value {
-                place.projection.is_empty() && place.local == local
-            } else {
-                false
-            }
-        })
-        .map(|dbg| dbg.name.to_string())
+pub fn local_names(body: &mir::Body<'_>) -> rustc_index::IndexVec<mir::Local, Option<String>> {
+    let mut names = rustc_index::IndexVec::from_elem(None, &body.local_decls);
+    for info in &body.var_debug_info {
+        if let mir::VarDebugInfoContents::Place(place) = info.value
+            && place.projection.is_empty()
+        {
+            names[place.local].get_or_insert_with(|| info.name.to_string());
+        }
+    }
+    names
 }
 
 /// Enumerates the kinds of Mir bodies. TODO: use const generics

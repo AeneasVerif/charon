@@ -70,10 +70,10 @@ impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
             ..Default::default()
         };
         let mut locals_map = rustc_index::IndexVec::with_capacity(body.local_decls.len());
+        let mut names = hax::local_names(body);
         // Translate the parameters
         for (index, var) in body.local_decls.iter_enumerated() {
-            // Find the name of the variable
-            let name = hax::name_of_local(index, &body.var_debug_info);
+            let name = names[index].take();
 
             // Translate the type
             let span = i_ctx.translate_span(&var.source_info.span);
@@ -246,11 +246,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let Ok(Some(body)) = self.get_mir(def.this(), span) else {
             return vec![None; n_args];
         };
-        body.local_decls
-            .iter_enumerated()
+        hax::local_names(&body)
+            .into_iter()
             .skip(1)
             .take(body.arg_count)
-            .map(|(index, _)| hax::name_of_local(index, &body.var_debug_info))
             .collect()
     }
 
