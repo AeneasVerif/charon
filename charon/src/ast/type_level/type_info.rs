@@ -20,6 +20,7 @@ bitflags::bitflags! {
         const MENTIONS_UNKNOWN_TRAIT_REF = 1 << 9;
         const MENTIONS_FN_PTR = 1 << 10;
         const MENTIONS_CONSTANT_REPEAT = 1 << 11;
+        const HAS_ERASED_CLAUSE_ARGS = 1 << 12;
     }
 }
 
@@ -132,6 +133,15 @@ impl TypeInfo {
             }
 
             fn enter_trait_ref_kind(&mut self, kind: &TraitRefKind) {
+                if let TraitRefKind::Clause(_, args)
+                | TraitRefKind::ParentClause(_, _, args)
+                | TraitRefKind::ItemClause {
+                    clause_args: args, ..
+                } = kind
+                    && args.regions.iter().any(Region::is_erased)
+                {
+                    self.info.flags.insert(TypeFlags::HAS_ERASED_CLAUSE_ARGS);
+                }
                 match kind {
                     TraitRefKind::ParentClause(..) | TraitRefKind::ItemClause { .. } => {
                         self.info.flags.insert(TypeFlags::POTENTIALLY_NORMALIZABLE)
@@ -247,6 +257,12 @@ impl TypeInfo {
     /// Whether this value contains a `ConstantExprKind::Repeat`.
     pub fn mentions_constant_repeat(&self) -> bool {
         self.flags.contains(TypeFlags::MENTIONS_CONSTANT_REPEAT)
+    }
+
+    /// Whether this value contains a clause-based trait ref (`Clause`, `ParentClause` or
+    /// `ItemClause`) with an erased region argument.
+    pub fn has_erased_clause_args(&self) -> bool {
+        self.flags.contains(TypeFlags::HAS_ERASED_CLAUSE_ARGS)
     }
 
     /// The largest `DeBruijnId` mentioned by this item, if any.
