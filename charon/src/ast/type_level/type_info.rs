@@ -18,6 +18,7 @@ bitflags::bitflags! {
         const HAS_REGIONS = 1 << 7;
         const HAS_NON_EMPTY_BINDER = 1 << 8;
         const MENTIONS_UNKNOWN_TRAIT_REF = 1 << 9;
+        const MENTIONS_FN_PTR = 1 << 10;
     }
 }
 
@@ -89,6 +90,10 @@ impl TypeInfo {
                 if !binder.params.is_empty() {
                     self.info.flags.insert(TypeFlags::HAS_NON_EMPTY_BINDER);
                 }
+            }
+
+            fn enter_fn_ptr(&mut self, _: &FnPtr) {
+                self.info.flags.insert(TypeFlags::MENTIONS_FN_PTR);
             }
 
             fn enter_region(&mut self, region: &Region) {
@@ -229,6 +234,11 @@ impl TypeInfo {
     /// Whether this value contains a `TraitRefKind::Unknown`.
     pub fn mentions_unknown_trait_ref(&self) -> bool {
         self.flags.contains(TypeFlags::MENTIONS_UNKNOWN_TRAIT_REF)
+    }
+
+    /// Whether this value contains a `FnPtr`.
+    pub fn mentions_fn_ptr(&self) -> bool {
+        self.flags.contains(TypeFlags::MENTIONS_FN_PTR)
     }
 
     /// The largest `DeBruijnId` mentioned by this item, if any.

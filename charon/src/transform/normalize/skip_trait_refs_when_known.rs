@@ -19,7 +19,20 @@ impl VisitAstMut for NormalizeFnPtr<'_> {
             *fn_ptr = new_fn_ptr;
         }
     }
+    fn visit_with_cached_type_info<T: AstVisitable + HashConsable>(
+        &mut self,
+        value: &mut HashConsed<WithCachedTypeInfo<T>>,
+    ) -> ControlFlow<Self::Break> {
+        if value.type_info().mentions_fn_ptr() {
+            self.visit_inner(value)
+        } else {
+            Continue(())
+        }
+    }
     fn visit_ty(&mut self, ty: &mut Ty) -> ControlFlow<Self::Break> {
+        if !ty.type_info().mentions_fn_ptr() {
+            return Continue(());
+        }
         if let Some(new_ty) = self.visited_tys.get(ty) {
             *ty = new_ty.clone();
             return Continue(());
