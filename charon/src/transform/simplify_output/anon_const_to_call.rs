@@ -11,15 +11,20 @@ pub struct Transform {
 /// These globals and their initializers must remain available: a constant repeat cannot use a
 /// runtime call to evaluate its elements, as the element type may not be `Copy`/`Clone`.
 pub(super) fn globals_in_constant_repeats(krate: &TranslatedCrate) -> HashSet<GlobalDeclId> {
-    let mut globals = HashSet::new();
-    krate.dyn_visit(|kind: &ConstantExprKind| {
-        if let ConstantExprKind::Repeat { .. } = kind {
-            kind.dyn_visit(|gref: &GlobalDeclRef| {
-                globals.insert(gref.id);
-            });
+    #[derive(Visitor)]
+    struct RepeatedGlobals(HashSet<GlobalDeclId>);
+    impl VisitAst for RepeatedGlobals {
+        fn enter_constant_expr_kind(&mut self, kind: &ConstantExprKind) {
+            if let ConstantExprKind::Repeat { .. } = kind {
+                kind.dyn_visit(|gref: &GlobalDeclRef| {
+                    self.0.insert(gref.id);
+                });
+            }
         }
-    });
-    globals
+    }
+    RepeatedGlobals(HashSet::new())
+        .visit_by_val_infallible(krate)
+        .0
 }
 
 impl Transform {
