@@ -1,0 +1,13 @@
+error: Error during trait resolution: Could not find a clause for `Binder { value: <<<T as Tr>::A as Iter>::Item as Bound>, bound_vars: [] }` in the item parameters
+  --> tests/ui/traits/nested-associated-type-bounds.rs:19:5
+   |
+19 |     needs_bound(&x)
+   |     ^^^^^^^^^^^^^^^
+
+error: Error during trait resolution: Could not find a clause for `Binder { value: <<<T as Tr>::A as Iter>::Item as Bound>, bound_vars: [] }` in the item parameters
+  --> tests/ui/traits/nested-associated-type-bounds.rs:19:5
+   |
+19 |     needs_bound(&x)
+   |     ^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (2 errors)
