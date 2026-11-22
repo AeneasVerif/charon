@@ -16,12 +16,11 @@ pub trait Sized<Self>
 
 struct () {}
 
-static test_crate::{promoted_const}: [u8; 3usize] = [1u8, 2u8, 3u8]
-
-static test_crate::{promoted_const#1}: [u8; 3usize] = [1u8, 2u8, 3u8]
+// Full name: test_crate::{promoted_const}
+static {promoted_const}: [u8; 3usize] = [1u8, 2u8, 3u8]
 
 // Full name: test_crate::TABLE
-const TABLE: &'static [u8; 3usize] = &test_crate::{promoted_const}
+const TABLE: &'static [u8; 3usize] = &{promoted_const}
 
 // Full name: test_crate::generic::<u8>
 fn generic::<u8>() -> &'static [u8; 3usize]
@@ -29,7 +28,7 @@ fn generic::<u8>() -> &'static [u8; 3usize]
     let mut _0: &'1 [u8; 3usize]; // return
 
     storage_live(_0)
-    _0 = &test_crate::{promoted_const#1}
+    _0 = &{promoted_const}
     return
 }
 
@@ -39,7 +38,7 @@ fn generic::<u32>() -> &'static [u8; 3usize]
     let mut _0: &'1 [u8; 3usize]; // return
 
     storage_live(_0)
-    _0 = &test_crate::{promoted_const#1}
+    _0 = &{promoted_const}
     return
 }
 
