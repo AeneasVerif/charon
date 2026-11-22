@@ -1,13 +1,197 @@
-error: Error during trait resolution: Could not find a clause for `Binder { value: <<<T as Tr>::A as Iter>::Item as Bound>, bound_vars: [] }` in the item parameters
-  --> tests/ui/traits/nested-associated-type-bounds.rs:19:5
-   |
-19 |     needs_bound(&x)
-   |     ^^^^^^^^^^^^^^^
+# Final LLBC before serialization:
 
-error: Error during trait resolution: Could not find a clause for `Binder { value: <<<T as Tr>::A as Iter>::Item as Bound>, bound_vars: [] }` in the item parameters
-  --> tests/ui/traits/nested-associated-type-bounds.rs:19:5
-   |
-19 |     needs_bound(&x)
-   |     ^^^^^^^^^^^^^^^
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
 
-ERROR Charon failed to translate this code (2 errors)
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
+    non-dyn-compatible
+}
+
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
+// Full name: test_crate::Bound
+pub trait Bound<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: test_crate::Bound::{vtable}
+}
+
+// Full name: test_crate::Iter
+pub trait Iter<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Item: Sized)
+    type Item
+    vtable: test_crate::Iter::{vtable}<Self::Item>
+}
+
+// Full name: test_crate::Tr
+pub trait Tr<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::A: Sized)
+    proof ImpliedClause2: (Self::A: Iter)
+    proof ImpliedClause3: (Self::ImpliedClause2::Item: Bound)
+    type A
+    vtable: test_crate::Tr::{vtable}<Self::A>
+}
+
+// Full name: test_crate::needs_bound
+fn needs_bound<'_0, X>(_1: &'_0 X)
+where
+    TraitClause0: (X: Sized),
+    TraitClause1: (X: Bound),
+    Outlives0: (X: '_0),
+{
+    let mut _0: (); // return
+    let mut _1: &'1 X; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::needs_sized
+fn needs_sized<X>()
+where
+    TraitClause0: (X: Sized),
+{
+    let mut _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::direct
+pub fn direct<T>(x: TraitClause1::ImpliedClause2::Item)
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Tr),
+{
+    let mut _0: (); // return
+    let x: TraitClause1::ImpliedClause2::Item; // arg #1
+    let mut _2: &'1 TraitClause1::ImpliedClause2::Item; // anonymous local
+    let _3: &'2 TraitClause1::ImpliedClause2::Item; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 = &x
+    _2 = &(*_3) with_metadata(read _3.metadata)
+    _0 = needs_bound<'6, TraitClause1::ImpliedClause2::Item>[TraitClause1::ImpliedClause2::ImpliedClause1, TraitClause1::ImpliedClause3](move _2)
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::ImpliedClause2::Item}::drop_glue<'7>] x
+        ↳⚡ storage_dead(x)
+            unwind_terminate(in_cleanup)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_3)
+    conditional_drop[{built_in impl Destruct for TraitClause1::ImpliedClause2::Item}::drop_glue<'8>] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::with_clause
+pub fn with_clause<T>(x: TraitClause2::Item)
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Tr),
+    TraitClause2: (TraitClause1::A: Iter),
+{
+    let mut _0: (); // return
+    let x: TraitClause2::Item; // arg #1
+    let mut _2: &'1 TraitClause2::Item; // anonymous local
+    let _3: &'2 TraitClause2::Item; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 = &x
+    _2 = &(*_3) with_metadata(read _3.metadata)
+    _0 = needs_bound<'6, TraitClause2::Item>[TraitClause2::ImpliedClause1, TraitClause1::ImpliedClause3](move _2)
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause2::Item}::drop_glue<'7>] x
+        ↳⚡ storage_dead(x)
+            unwind_terminate(in_cleanup)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_3)
+    conditional_drop[{built_in impl Destruct for TraitClause2::Item}::drop_glue<'8>] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::with_clause_after
+pub fn with_clause_after<T>(x: TraitClause2::Item)
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Tr),
+    TraitClause2: (TraitClause1::A: Iter),
+{
+    let mut _0: (); // return
+    let x: TraitClause2::Item; // arg #1
+    let _2: (); // anonymous local
+    let mut _3: &'1 TraitClause2::Item; // anonymous local
+    let _4: &'2 TraitClause2::Item; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = needs_sized<TraitClause1::A>[TraitClause1::ImpliedClause1]()
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause2::Item}::drop_glue<'3>] x
+        ↳⚡ storage_dead(x)
+            unwind_terminate(in_cleanup)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &x
+    _3 = &(*_4) with_metadata(read _4.metadata)
+    _0 = needs_bound<'7, TraitClause2::Item>[TraitClause2::ImpliedClause1, TraitClause1::ImpliedClause3](move _3)
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause2::Item}::drop_glue<'3>] x
+        ↳⚡ storage_dead(x)
+            unwind_terminate(in_cleanup)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_4)
+    conditional_drop[{built_in impl Destruct for TraitClause2::Item}::drop_glue<'8>] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
+    return
+}
+
+
+

@@ -1,4 +1,3 @@
-//@ known-failure
 pub trait Bound {}
 pub trait Iter {
     type Item;

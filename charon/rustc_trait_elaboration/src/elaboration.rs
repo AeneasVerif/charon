@@ -357,6 +357,9 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         else {
             return;
         };
+        // The bounds of `T::Type` can include bounds on the associated types of `T::Type`, so we
+        // add these first.
+        self.add_associated_type_refs(state, ty.rebind(alias.self_ty()));
         let trait_ref = ty.rebind(alias.trait_ref(tcx)).upcast(tcx);
 
         // The predicate we're looking for is is `<T as Trait>::Type: OtherTrait`. We try to solve
