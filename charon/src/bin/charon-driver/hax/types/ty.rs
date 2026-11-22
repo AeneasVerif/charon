@@ -686,9 +686,6 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
 pub struct TyFnSig<'tcx> {
     #[value(self.inputs().sinto(s))]
     pub inputs: Vec<Ty<'tcx>>,
-    /// The inputs tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
-    #[value(ty::Ty::new_tup(s.base().tcx, self.inputs()).sinto(s))]
-    pub tupled_inputs: Ty<'tcx>,
     #[value(self.output().sinto(s))]
     pub output: Ty<'tcx>,
     #[value(self.c_variadic())]
