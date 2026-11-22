@@ -5,6 +5,7 @@ use enum_as_inner::EnumAsInner;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
+use ustr::Ustr;
 
 generate_index_type!(Disambiguator);
 
@@ -23,7 +24,7 @@ pub static BOX_WRITE_PATTERN: &str = "alloc::boxed::_::write"; // `_` matches an
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Pe"))]
 pub enum PathElem {
     #[serde_state(stateless)]
-    Ident(String, Disambiguator),
+    Ident(Ustr, Disambiguator),
     Impl(ImplElem),
     /// This item was obtained by instantiating its parent with the given args. The binder binds
     /// the parameters of the new items. If the binder binds nothing then this is a
@@ -162,7 +163,7 @@ impl Name {
         Name {
             name: path
                 .iter()
-                .map(|elem| PathElem::Ident(elem.to_string(), Disambiguator::ZERO))
+                .map(|elem| PathElem::Ident(Ustr::from(elem), Disambiguator::ZERO))
                 .collect(),
         }
     }
@@ -283,7 +284,7 @@ impl Name {
         self.name
             .iter()
             .map(|path_elem| match path_elem {
-                PathElem::Ident(i, _) => i.clone(),
+                PathElem::Ident(i, _) => i.to_string(),
                 PathElem::Impl(elem) => match elem {
                     ImplElem::Trait(impl_id) => match trait_name(*impl_id) {
                         None => format!("<trait impl#{impl_id}>"),

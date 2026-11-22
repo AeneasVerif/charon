@@ -263,14 +263,14 @@ impl<'tcx> TranslateCtx<'tcx> {
         // Match over the key data
         let path_elem = match path_elem.data {
             DefPathItem::CrateRoot { name, .. } => {
-                Some(PathElem::Ident(name.to_string(), disambiguator))
+                Some(PathElem::Ident(name.as_str().into(), disambiguator))
             }
             // We map the three namespaces onto a single one. We can always disambiguate by looking
             // at the definition.
             DefPathItem::TypeNs(symbol)
             | DefPathItem::ValueNs(symbol)
             | DefPathItem::MacroNs(symbol) => {
-                Some(PathElem::Ident(symbol.to_string(), disambiguator))
+                Some(PathElem::Ident(symbol.as_str().into(), disambiguator))
             }
             DefPathItem::Impl => {
                 // Two cases, depending on whether the impl block is

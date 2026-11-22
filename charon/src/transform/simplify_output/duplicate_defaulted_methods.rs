@@ -23,10 +23,8 @@ impl Transform {
             .translated
             .assoc_item_name(trait_impl.impl_trait.id, method_id);
         let mut name = ctx.translated.item_name(trait_impl.def_id).clone();
-        name.name.push(PathElem::Ident(
-            method_name.to_string(),
-            Disambiguator::ZERO,
-        ));
+        name.name
+            .push(PathElem::Ident(method_name.0, Disambiguator::ZERO));
 
         // Flatten the impl binder and the method binder. The resulting substitution maps the
         // trait default method into the generic context of the duplicated impl method.

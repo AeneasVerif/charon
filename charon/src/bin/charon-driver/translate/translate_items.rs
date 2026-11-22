@@ -907,10 +907,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     item_meta.is_local,
                     item_meta.opacity,
                 );
-                method_item_meta.name.name.push(PathElem::Ident(
-                    method_name.to_string(),
-                    Disambiguator::ZERO,
-                ));
+                method_item_meta
+                    .name
+                    .name
+                    .push(PathElem::Ident(method_name.0, Disambiguator::ZERO));
                 let self_ty = if self.monomorphize() {
                     // FIXME: put something real here
                     Ty::mk_unit()

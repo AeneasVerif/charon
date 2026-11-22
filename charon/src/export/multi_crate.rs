@@ -50,12 +50,12 @@ impl merge::MergeStrategy for MultiCrate {
                 // local to many (e.g. anon consts), prefer the owner's version
                 [(_, &first), ..] => {
                     let owner = match krate.item_name(first).name.first() {
-                        Some(PathElem::Ident(name, _)) => Some(name),
+                        Some(PathElem::Ident(name, _)) => Some(name.as_str()),
                         _ => None,
                     };
                     locals
                         .iter()
-                        .find(|(crate_name, _)| Some(*crate_name) == owner)
+                        .find(|(crate_name, _)| Some(crate_name.as_str()) == owner)
                         .map_or(first, |&(_, &id)| id)
                 }
             };
