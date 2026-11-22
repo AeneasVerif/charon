@@ -1,7 +1,103 @@
+# Final LLBC before serialization:
 
-thread 'main' panicked at src/pretty/fmt_with_ctx.rs:626:9:
-assertion `left == right` failed
-  left: 2
- right: 1
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-ERROR Compilation panicked
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
+    non-dyn-compatible
+}
+
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
+
+// Full name: test_crate::Input
+pub trait Input<Self, Self_Span>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Span: Sized)
+    vtable: test_crate::Input::{vtable}<Self_Span>
+}
+
+struct test_crate::Parser::{vtable}<I> {
+  size: usize,
+  align: usize,
+  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn exists<Clause0_Clause2_Span> Parser<I, Clause0_Clause2_Span>)),
+  method_parse: fn<'_0_1>(&'_0_1 (dyn exists<Clause0_Clause2_Span> Parser<I, Clause0_Clause2_Span>), I),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: test_crate::Parser
+pub trait Parser<Self, I, Self_Clause2_Span>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (I: Sized)
+    proof ImpliedClause2: (I: Input<Self_Clause2_Span>)
+    fn parse<'_0_1, Outlives0: (Self: '_0_1)>;
+    vtable: test_crate::Parser::{vtable}<I>
+}
+
+// Full name: test_crate::use_dyn
+pub fn use_dyn<'_0, I, Clause1_Span>(p: &'_0 (dyn exists<Clause0_Clause2_Span> Parser<I, Clause0_Clause2_Span> + '_0), input: I)
+where
+    TraitClause0: (I: Sized),
+    TraitClause1: (I: Input<Clause1_Span>),
+    Outlives0: (I: '_0),
+{
+    let mut _0: (); // return
+    let p: &'3 (dyn exists<Clause0_Clause2_Span> Parser<I, Clause0_Clause2_Span> + '4); // arg #1
+    let input: I; // arg #2
+    let mut _3: &'5 (dyn exists<Clause0_Clause2_Span> Parser<I, Clause0_Clause2_Span> + '6); // anonymous local
+    let mut _4: I; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_3)
+    _3 = &(*p) with_metadata(read p.metadata)
+    storage_live(_4)
+    _4 = move input
+    _0 = (read (*_3.metadata).method_parse)<'14>(move _3, move _4)
+    ↳⚡ conditional_drop[{built_in impl Destruct for I}::drop_glue<'15>] _4
+        ↳⚡ storage_dead(input)
+            storage_dead(p)
+            unwind_terminate(in_cleanup)
+        conditional_drop[{built_in impl Destruct for I}::drop_glue<'17>] input
+        ↳⚡ storage_dead(input)
+            storage_dead(p)
+            unwind_terminate(in_cleanup)
+        storage_dead(input)
+        storage_dead(p)
+        unwind_continue
+    storage_dead(_4)
+    storage_dead(_3)
+    conditional_drop[{built_in impl Destruct for I}::drop_glue<'16>] input
+    ↳⚡ storage_dead(input)
+        storage_dead(p)
+        unwind_continue
+    storage_dead(input)
+    storage_dead(p)
+    return
+}
+
+
+

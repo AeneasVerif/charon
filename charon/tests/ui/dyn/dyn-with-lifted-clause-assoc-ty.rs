@@ -1,4 +1,3 @@
-//@ known-panic
 //@ charon-args=--lift-associated-types=*
 pub trait Input {
     type Span;

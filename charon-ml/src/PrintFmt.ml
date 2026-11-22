@@ -910,6 +910,11 @@ and pp_dyn_predicate (env : fmt_env) (fmt : Format.formatter)
     List.map (dyn_trait_clause_to_string env constraints) params.trait_clauses
   in
   let outlives = List.filter_map (dyn_outlives_to_string env) params.outlives in
+  (match params.types with
+  | [] | [ _ ] -> ()
+  | _ :: existentials ->
+      Format.fprintf fmt "exists<%s> "
+        (String.concat ", " (List.map type_param_to_string existentials)));
   pp_sep_list " + " pp_string fmt (trait_clauses @ outlives)
 
 (** Return two lists:
