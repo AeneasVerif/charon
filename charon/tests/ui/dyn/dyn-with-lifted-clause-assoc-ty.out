@@ -1,0 +1,7 @@
+
+thread 'main' panicked at src/pretty/fmt_with_ctx.rs:626:9:
+assertion `left == right` failed
+  left: 2
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+ERROR Compilation panicked
