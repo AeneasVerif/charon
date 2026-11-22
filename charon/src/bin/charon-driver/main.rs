@@ -37,6 +37,10 @@ extern crate rustc_trait_selection;
 #[macro_use]
 extern crate charon_lib;
 
+// Enables `jemalloc` -- this also changes the allocator that `rustc` uses!
+#[cfg(all(feature = "jemalloc", not(windows)))]
+use tikv_jemalloc_sys as _;
+
 mod driver;
 #[macro_use]
 pub mod hax;
