@@ -1,4 +1,3 @@
-//@ known-failure
 //@ charon-args=--lift-associated-types=*
 pub trait Trait {
     type Output;
