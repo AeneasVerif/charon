@@ -1,0 +1,165 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+#[lang_item(Sync)]
+#[diagnostic_item("Sync")]
+pub unsafe trait core::marker::Sync<Self>
+
+// Full name: core::mem::maybe_uninit::MaybeUninit
+#[lang_item(MaybeUninit)]
+pub opaque type MaybeUninit<T>
+where
+    TraitClause0: (T: Sized),
+
+struct () {}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+static test_crate::{promoted_const}: [u8; 4usize] = [1u8, 2u8, 3u8, 4u8]
+
+static test_crate::{promoted_const#1}: MaybeUninit<[u8; 4usize]>[{built_in impl Sized for [u8; 4usize]}] = RawMemory(0x05, 0x00, 0x06, 0x00)
+
+static test_crate::{promoted_const#2}: MaybeUninit<[u8; 2usize]>[{built_in impl Sized for [u8; 2usize]}] = RawMemory(0x07, 0x08)
+
+static test_crate::{promoted_const#3}: [u32; 3usize] = [1u32, 2u32, 3u32]
+
+static test_crate::{promoted_const#4}: [u32; 3usize] = [1u32, 2u32, 3u32]
+
+static test_crate::{promoted_const#5}: MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}] = RawMemory(0x01, --, --, --, 0x02, 0x00, 0x00, 0x00)
+
+static test_crate::{promoted_const#6}: MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}] = RawMemory(0x01, --, --, --, 0x02, 0x00, 0x00, 0x00)
+
+struct test_crate::Sync<T>
+where
+    TraitClause0: (T: Sized),
+{
+  _0: T,
+}
+
+// Full name: test_crate::{impl core::marker::Sync for test_crate::Sync<T>[TraitClause0]}
+unsafe impl<T> "impl_Sync_for_Sync" core::marker::Sync for test_crate::Sync<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    vtable: lazy
+}
+
+// Full name: test_crate::BYTES
+static BYTES: &'static [u8; 4usize] = &test_crate::{promoted_const}
+
+// Full name: test_crate::SECOND
+static SECOND: test_crate::Sync<*const u8>[{built_in impl Sized for *const u8}] = test_crate::Sync { _0: &raw const test_crate::{promoted_const}[1usize] }
+
+// Full name: test_crate::HALF
+static HALF: test_crate::Sync<*const u16>[{built_in impl Sized for *const u16}] = test_crate::Sync { _0: cast<*const u16>(&raw const test_crate::{promoted_const#1}) }
+
+// Full name: test_crate::PAIR
+static PAIR: &'static (u16, u16) = cast<&'_ (u16, u16)>(&raw const test_crate::{promoted_const#1})
+
+// Full name: test_crate::RAW
+static RAW: MaybeUninit<&'static (u8, u8)>[{built_in impl Sized for &'static (u8, u8)}] = RawMemory(&test_crate::{promoted_const#2}[0], &test_crate::{promoted_const#2}[1], &test_crate::{promoted_const#2}[2], &test_crate::{promoted_const#2}[3], &test_crate::{promoted_const#2}[4], &test_crate::{promoted_const#2}[5], &test_crate::{promoted_const#2}[6], &test_crate::{promoted_const#2}[7])
+
+// Full name: test_crate::RAW_REF
+static RAW_REF: &'static (u8, u8) = cast<&'_ (u8, u8)>(&raw const test_crate::{promoted_const#2})
+
+const test_crate::first::{promoted_const}: &'_ [u32; 3usize] = &test_crate::{promoted_const#3}
+
+// Full name: test_crate::first
+pub fn first() -> &'static [u32; 3usize]
+{
+    let mut _0: &'1 [u32; 3usize]; // return
+    let _1: &'2 [u32; 3usize]; // anonymous local
+    let mut _2: &'3 [u32; 3usize]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_1)
+    _2 = const test_crate::first::{promoted_const}
+    _1 = &(*_2)
+    _0 = &(*_1)
+    storage_dead(_1)
+    storage_dead(_2)
+    return
+}
+
+const test_crate::second::{promoted_const}: &'_ [u32; 3usize] = &test_crate::{promoted_const#4}
+
+// Full name: test_crate::second
+pub fn second() -> &'static [u32; 3usize]
+{
+    let mut _0: &'1 [u32; 3usize]; // return
+    let _1: &'2 [u32; 3usize]; // anonymous local
+    let mut _2: &'3 [u32; 3usize]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_1)
+    _2 = const test_crate::second::{promoted_const}
+    _1 = &(*_2)
+    _0 = &(*_1)
+    storage_dead(_1)
+    storage_dead(_2)
+    return
+}
+
+const test_crate::third::{promoted_const}: &'_ (u8, u32) = cast<&'_ (u8, u32)>(&raw const test_crate::{promoted_const#5})
+
+// Full name: test_crate::third
+pub fn third() -> &'static (u8, u32)
+{
+    let mut _0: &'1 (u8, u32); // return
+    let _1: &'2 (u8, u32); // anonymous local
+    let mut _2: &'3 (u8, u32); // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_1)
+    _2 = const test_crate::third::{promoted_const}
+    _1 = &(*_2)
+    _0 = &(*_1)
+    storage_dead(_1)
+    storage_dead(_2)
+    return
+}
+
+const test_crate::fourth::{promoted_const}: &'_ (u8, u32) = cast<&'_ (u8, u32)>(&raw const test_crate::{promoted_const#6})
+
+// Full name: test_crate::fourth
+pub fn fourth() -> &'static (u8, u32)
+{
+    let mut _0: &'1 (u8, u32); // return
+    let _1: &'2 (u8, u32); // anonymous local
+    let mut _2: &'3 (u8, u32); // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_1)
+    _2 = const test_crate::fourth::{promoted_const}
+    _1 = &(*_2)
+    _0 = &(*_1)
+    storage_dead(_1)
+    storage_dead(_2)
+    return
+}
+
+
+
