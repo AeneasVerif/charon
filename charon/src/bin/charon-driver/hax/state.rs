@@ -1,6 +1,7 @@
 use crate::hax::prelude::*;
 use annotate_snippets::Level;
 use rustc_middle::ty::{self, TyCtxt};
+use std::cell::RefCell;
 
 mod base {
     use crate::hax::prelude::*;
@@ -34,7 +35,7 @@ mod base {
     #[derive(Default)]
     pub struct GlobalCache<'tcx> {
         /// Per-item cache.
-        pub per_item: HashMap<DefId, ItemCache<'tcx>>,
+        pub per_item: HashMap<DefId, Rc<RefCell<ItemCache<'tcx>>>>,
         /// Map rustc def ids to their hax counterpart.
         pub def_ids: HashMap<RDefId, DefId>,
         /// Data for synthetic items. See the `synthetic_items` module.
@@ -176,7 +177,10 @@ pub trait BaseState<'tcx>: Sized {
         let mut base = self.base().clone();
         base.opt_def_id = owner.as_real_or_promoted();
         State {
-            owner: owner.clone(),
+            owner: Owner {
+                def_id: owner.clone(),
+                cache: self.item_cache(owner),
+            },
             base,
         }
     }
@@ -201,15 +205,20 @@ pub trait BaseState<'tcx>: Sized {
         let mut cache = base.cache.borrow_mut();
         f(&mut cache)
     }
+    /// The cache for a given item.
+    fn item_cache(&self, def_id: &DefId) -> Rc<RefCell<ItemCache<'tcx>>> {
+        self.with_global_cache(|cache| cache.per_item.entry(def_id.clone()).or_default().clone())
+    }
     /// Access the cache for a given item. You must not call `sinto` within this function as this
     /// will likely result in `BorrowMut` panics.
     fn with_item_cache<T>(&self, def_id: &DefId, f: impl FnOnce(&mut ItemCache<'tcx>) -> T) -> T {
-        self.with_global_cache(|cache| f(cache.per_item.entry(def_id.clone()).or_default()))
+        f(&mut self.item_cache(def_id).borrow_mut())
     }
 }
 
 pub trait UnderOwnerState<'tcx>: BaseState<'tcx> {
     fn owner(&self) -> DefId;
+    fn owner_cache(&self) -> &Rc<RefCell<ItemCache<'tcx>>>;
 
     fn param_env(&self) -> ty::ParamEnv<'tcx> {
         self.owner().param_env(self)
@@ -221,14 +230,17 @@ pub trait UnderOwnerState<'tcx>: BaseState<'tcx> {
     fn as_state_with_owner(&self) -> StateWithOwner<'tcx> {
         State {
             base: self.base().clone(),
-            owner: self.owner(),
+            owner: Owner {
+                def_id: self.owner(),
+                cache: self.owner_cache().clone(),
+            },
         }
     }
 
     /// Access the cache for the current item. You must not call `sinto` within this function as
     /// this will likely result in `BorrowMut` panics.
     fn with_cache<T>(&self, f: impl FnOnce(&mut ItemCache<'tcx>) -> T) -> T {
-        self.with_item_cache(&self.owner(), f)
+        f(&mut self.owner_cache().borrow_mut())
     }
     fn with_predicate_searcher<T>(
         &self,
@@ -249,8 +261,16 @@ pub struct State<'tcx, Owner> {
     pub owner: Owner,
 }
 
+/// The item whose context we are in, with its cache.
+// We keep the cache here rather than going through `GlobalCache` for perf reasons.
+#[derive(Clone)]
+pub struct Owner<'tcx> {
+    def_id: DefId,
+    cache: Rc<RefCell<ItemCache<'tcx>>>,
+}
+
 pub type StateWithBase<'tcx> = State<'tcx, ()>;
-pub type StateWithOwner<'tcx> = State<'tcx, DefId>;
+pub type StateWithOwner<'tcx> = State<'tcx, Owner<'tcx>>;
 
 impl<'tcx> StateWithBase<'tcx> {
     pub fn new(
@@ -271,7 +291,10 @@ impl<'tcx, O> BaseState<'tcx> for State<'tcx, O> {
 }
 impl<'tcx> UnderOwnerState<'tcx> for StateWithOwner<'tcx> {
     fn owner(&self) -> DefId {
-        self.owner.clone()
+        self.owner.def_id.clone()
+    }
+    fn owner_cache(&self) -> &Rc<RefCell<ItemCache<'tcx>>> {
+        &self.owner.cache
     }
 }
 
@@ -283,5 +306,8 @@ impl<'tcx, A: BaseState<'tcx>, B> BaseState<'tcx> for (A, B) {
 impl<'tcx, A: UnderOwnerState<'tcx>, B> UnderOwnerState<'tcx> for (A, B) {
     fn owner(&self) -> DefId {
         self.0.owner()
+    }
+    fn owner_cache(&self) -> &Rc<RefCell<ItemCache<'tcx>>> {
+        self.0.owner_cache()
     }
 }
