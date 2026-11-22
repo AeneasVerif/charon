@@ -273,7 +273,6 @@ dependencies = [
  "rustc_apfloat",
  "rustc_const_uneval",
  "rustc_trait_elaboration",
- "rustc_version",
  "serde",
  "serde_json",
  "serde_stacker",

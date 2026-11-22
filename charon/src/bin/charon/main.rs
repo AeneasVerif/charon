@@ -44,7 +44,9 @@ use cli::{Charon, Cli};
 use itertools::Itertools;
 use serde::Deserialize;
 use std::{env, path::PathBuf, process::ExitStatus};
-use toolchain::{CHARON_SYSROOT_VAR, setup_miri_sysroot, toolchain_path, toolchain_version};
+use toolchain::{
+    CHARON_SYSROOT_VAR, HOST_TARGET, setup_miri_sysroot, toolchain_path, toolchain_version,
+};
 
 #[macro_use]
 extern crate charon_lib;
@@ -120,12 +122,9 @@ pub fn main() -> Result<()> {
             ExitStatus::default()
         }
         Charon::PrintSysroot(args) => {
-            let target = match args.target {
-                Some(target) => target,
-                None => get_rustc_version()?.host,
-            };
+            let target = args.target.as_deref().unwrap_or(HOST_TARGET);
             // Mirrors how `charon-driver` picks a sysroot.
-            let sysroot = match miri_sysroot(args.sysroot.as_deref(), &target) {
+            let sysroot = match miri_sysroot(args.sysroot.as_deref(), target) {
                 Some(sysroot) => sysroot,
                 None => match args.sysroot.as_deref() {
                     None | Some("default" | "miri") => toolchain_path()?,
@@ -313,10 +312,9 @@ fn translate_with_cargo(
         [] => {
             // Make sure the build target is explicitly set. This is needed to detect which crates
             // are proc-macro/build-script in `charon-driver`.
-            let host = get_rustc_version()?.host;
             cargo_args.push("--target".to_owned());
-            cargo_args.push(host.clone());
-            host
+            cargo_args.push(HOST_TARGET.to_owned());
+            HOST_TARGET.to_owned()
         }
     };
 
@@ -394,10 +392,9 @@ fn translate_without_cargo(mut options: CliOpts) -> anyhow::Result<ExitStatus> {
         None => {
             // Make sure the build target is explicitly set. This is needed to detect which crates
             // are proc-macro/build-script in `charon-driver`.
-            let host = get_rustc_version()?.host;
             cmd.arg("--target");
-            cmd.arg(&host);
-            host
+            cmd.arg(HOST_TARGET);
+            HOST_TARGET.to_owned()
         }
     };
     if let Some(sysroot) = miri_sysroot(options.sysroot.as_deref(), &target) {
@@ -420,14 +417,6 @@ fn miri_sysroot(sysroot: Option<&str>, target: &str) -> Option<PathBuf> {
         None | Some("miri") => setup_miri_sysroot(target),
         Some(_) => None,
     }
-}
-
-fn get_rustc_version() -> anyhow::Result<rustc_version::VersionMeta> {
-    let cmd = toolchain::driver_cmd()?;
-    let rustc_version = rustc_version::VersionMeta::for_command(cmd).unwrap_or_else(|err| {
-        panic!("failed to determine underlying rustc version of Charon:\\n{err:?}",)
-    });
-    Ok(rustc_version)
 }
 
 /// A sufficiently unique string, used to control cargo caching.

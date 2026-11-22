@@ -29,4 +29,8 @@ fn main() {
         .or_else(|| git(&["rev-parse", "HEAD"]))
         .unwrap_or_else(|| "unknown".to_owned());
     println!("cargo::rustc-env=CHARON_GIT_COMMIT={commit}");
+
+    // Cargo sets the `TARGET` environment variable for build scripts
+    let target = env::var("TARGET").unwrap();
+    println!("cargo::rustc-env=CHARON_HOST_TARGET={target}");
 }

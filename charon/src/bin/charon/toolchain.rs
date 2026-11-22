@@ -5,6 +5,10 @@ use std::{env, ffi::OsStr, path::PathBuf, process::Command};
 // Store the toolchain details directly in the binary.
 static PINNED_TOOLCHAIN: &str = include_str!("../../../rust-toolchain");
 
+/// The target triple charon was compiled for, i.e. the platform it runs on.
+/// This is the default `--target` when the user doesn't pass one.
+pub const HOST_TARGET: &str = env!("CHARON_HOST_TARGET");
+
 /// This struct is used to deserialize the "rust-toolchain" file.
 #[derive(Deserialize)]
 struct ToolchainFile {
