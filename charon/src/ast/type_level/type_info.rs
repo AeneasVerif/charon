@@ -7,7 +7,7 @@ use crate::ast::*;
 
 bitflags::bitflags! {
     #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-    pub struct TypeFlags: u8 {
+    pub struct TypeFlags: u16 {
         const HAS_ERASED_OR_BODY_REGIONS = 1 << 0;
         const MENTIONS_SELF_CLAUSE = 1 << 1;
         const USES_SIZE_METADATA = 1 << 2;
@@ -16,6 +16,7 @@ bitflags::bitflags! {
         const HAS_STATIC_REGION = 1 << 5;
         const HAS_REGION_VAR = 1 << 6;
         const HAS_REGIONS = 1 << 7;
+        const HAS_NON_EMPTY_BINDER = 1 << 8;
     }
 }
 
@@ -74,6 +75,18 @@ impl TypeInfo {
             fn enter_de_bruijn_var<T: AstVisitable + Idx>(&mut self, var: &DeBruijnVar<T>) {
                 if matches!(var, DeBruijnVar::Free(_)) {
                     self.info.flags.insert(TypeFlags::MENTIONS_FREE_VAR);
+                }
+            }
+
+            fn enter_region_binder<T: AstVisitable>(&mut self, binder: &RegionBinder<T>) {
+                if !binder.is_empty() {
+                    self.info.flags.insert(TypeFlags::HAS_NON_EMPTY_BINDER);
+                }
+            }
+
+            fn enter_binder<T: AstVisitable>(&mut self, binder: &Binder<T>) {
+                if !binder.params.is_empty() {
+                    self.info.flags.insert(TypeFlags::HAS_NON_EMPTY_BINDER);
                 }
             }
 
@@ -202,6 +215,11 @@ impl TypeInfo {
 
     pub fn has_region(&self) -> bool {
         self.flags.contains(TypeFlags::HAS_REGIONS)
+    }
+
+    /// Whether this value contains a binder that binds variables or has predicates.
+    pub fn has_non_empty_binder(&self) -> bool {
+        self.flags.contains(TypeFlags::HAS_NON_EMPTY_BINDER)
     }
 
     /// The largest `DeBruijnId` mentioned by this item, if any.

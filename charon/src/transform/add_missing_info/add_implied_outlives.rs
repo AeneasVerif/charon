@@ -38,6 +38,10 @@ struct OutlivesGatherer<'a> {
     trait_decls: &'a IndexMap<TraitDeclId, TraitDecl>,
     item_params: &'a mut GenericParams,
     binders: BindingStack<OutlivesAtBinder>,
+    /// Whether we discard the predicates that reach the outermost level.
+    discard_outermost: bool,
+    /// How many of the binders we're under bind variables or have predicates.
+    non_empty_binders: usize,
 }
 
 impl<'a> OutlivesGatherer<'a> {
@@ -51,7 +55,19 @@ impl<'a> OutlivesGatherer<'a> {
             trait_decls,
             item_params,
             binders: BindingStack::new(OutlivesAtBinder::default()),
+            discard_outermost: false,
+            non_empty_binders: 0,
         }
+    }
+
+    fn discarding_outermost(mut self) -> Self {
+        self.discard_outermost = true;
+        self
+    }
+
+    /// Whether visiting the value would only add predicates at the (discarded) outermost level.
+    fn can_skip(&self, info: TypeInfo) -> bool {
+        self.discard_outermost && self.non_empty_binders == 0 && !info.has_non_empty_binder()
     }
 
     fn finish(mut self) {
@@ -100,8 +116,11 @@ impl VisitAstMut for OutlivesGatherer<'_> {
         &mut self,
         binder: &mut Binder<T>,
     ) -> ControlFlow<Self::Break> {
+        let non_empty = !binder.params.is_empty();
+        self.non_empty_binders += non_empty as usize;
         self.binders.push(OutlivesAtBinder::default());
         let result = self.visit_inner(binder);
+        self.non_empty_binders -= non_empty as usize;
         self.binders
             .pop()
             .unwrap()
@@ -113,13 +132,29 @@ impl VisitAstMut for OutlivesGatherer<'_> {
         &mut self,
         binder: &mut RegionBinder<T>,
     ) -> ControlFlow<Self::Break> {
+        let non_empty = !binder.is_empty();
+        self.non_empty_binders += non_empty as usize;
         self.binders.push(OutlivesAtBinder::default());
         let result = self.visit_inner(binder);
+        self.non_empty_binders -= non_empty as usize;
         self.binders.pop().unwrap().finish(&mut binder.outlives);
         result
     }
 
+    fn visit_with_cached_type_info<T: AstVisitable + HashConsable>(
+        &mut self,
+        value: &mut HashConsed<WithCachedTypeInfo<T>>,
+    ) -> ControlFlow<Self::Break> {
+        if self.can_skip(value.type_info()) {
+            return Continue(());
+        }
+        self.visit_inner(value)
+    }
+
     fn visit_ty(&mut self, ty: &mut Ty) -> ControlFlow<Self::Break> {
+        if self.can_skip(ty.type_info()) {
+            return Continue(());
+        }
         if let TyKind::TraitType(proof, type_id, args) = ty.kind()
             && let Some(decl) = self.trait_decls.get(proof.trait_id())
             && let Some(assoc) = decl.types.get(*type_id)
@@ -271,6 +306,7 @@ impl TransformPass for Transform {
             // only body or signature lifetimes must not be kept; they must be checked by
             // borrow-checking.
             OutlivesGatherer::new(&mut GenericParams::default(), type_decls, trait_decls)
+                .discarding_outermost()
                 .visit(&mut fun_decl.body);
         }
 
