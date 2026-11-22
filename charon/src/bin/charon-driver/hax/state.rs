@@ -153,7 +153,7 @@ mod base {
 pub use self::base::*;
 
 pub trait BaseState<'tcx>: Sized {
-    fn base(&self) -> Base<'tcx>;
+    fn base(&self) -> &Base<'tcx>;
 
     fn tcx(&self) -> TyCtxt<'tcx> {
         self.base().tcx
@@ -173,7 +173,7 @@ pub trait BaseState<'tcx>: Sized {
 
     /// Create a state with the given owner.
     fn with_hax_owner(&self, owner: &DefId) -> StateWithOwner<'tcx> {
-        let mut base = self.base();
+        let mut base = self.base().clone();
         base.opt_def_id = owner.as_real_or_promoted();
         State {
             owner: owner.clone(),
@@ -189,7 +189,7 @@ pub trait BaseState<'tcx>: Sized {
     /// State with only access to the global state.
     fn base_state(&self) -> StateWithBase<'tcx> {
         State {
-            base: self.base(),
+            base: self.base().clone(),
             owner: (),
         }
     }
@@ -220,7 +220,7 @@ pub trait UnderOwnerState<'tcx>: BaseState<'tcx> {
 
     fn as_state_with_owner(&self) -> StateWithOwner<'tcx> {
         State {
-            base: self.base(),
+            base: self.base().clone(),
             owner: self.owner(),
         }
     }
@@ -265,8 +265,8 @@ impl<'tcx> StateWithBase<'tcx> {
     }
 }
 impl<'tcx, O> BaseState<'tcx> for State<'tcx, O> {
-    fn base(&self) -> Base<'tcx> {
-        self.base.clone()
+    fn base(&self) -> &Base<'tcx> {
+        &self.base
     }
 }
 impl<'tcx> UnderOwnerState<'tcx> for StateWithOwner<'tcx> {
@@ -276,7 +276,7 @@ impl<'tcx> UnderOwnerState<'tcx> for StateWithOwner<'tcx> {
 }
 
 impl<'tcx, A: BaseState<'tcx>, B> BaseState<'tcx> for (A, B) {
-    fn base(&self) -> Base<'tcx> {
+    fn base(&self) -> &Base<'tcx> {
         self.0.base()
     }
 }
