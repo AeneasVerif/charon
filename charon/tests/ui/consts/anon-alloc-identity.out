@@ -36,9 +36,9 @@ where
 
 static test_crate::{promoted_const}: [u8; 4usize] = [1u8, 2u8, 3u8, 4u8]
 
-static test_crate::{promoted_const#1}: MaybeUninit<[u8; 4usize]>[{built_in impl Sized for [u8; 4usize]}] = RawMemory(0x05, 0x00, 0x06, 0x00)
+static test_crate::{promoted_const#1}: [u8; 4usize] = [5u8, 0u8, 6u8, 0u8]
 
-static test_crate::{promoted_const#2}: MaybeUninit<[u8; 2usize]>[{built_in impl Sized for [u8; 2usize]}] = RawMemory(0x07, 0x08)
+static test_crate::{promoted_const#2}: [u8; 2usize] = [7u8, 8u8]
 
 static test_crate::{promoted_const#3}: [u32; 3usize] = [1u32, 2u32, 3u32]
 

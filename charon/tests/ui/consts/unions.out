@@ -1,13 +1,23 @@
 # Final LLBC before serialization:
 
-// Full name: core::mem::maybe_uninit::MaybeUninit::<[u8; 4usize]>
-#[lang_item(MaybeUninit)]
-pub opaque type MaybeUninit::<[u8; 4usize]>
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
 
 struct () {}
 
 // Full name: test_crate::{promoted_const}
-static {promoted_const}: MaybeUninit::<[u8; 4usize]> = RawMemory(0x01, 0x00, 0x00, 0x00)
+static {promoted_const}: [u8; 4usize] = [1u8, 0u8, 0u8, 0u8]
 
 // Full name: test_crate::U
 union U {

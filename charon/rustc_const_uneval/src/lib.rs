@@ -32,18 +32,10 @@ pub struct Config {
     pub anon_allocs_as_globals: bool,
 }
 
-/// How we view an anonymous allocation
-#[derive(Clone, Copy, Default)]
-enum AllocView<'tcx> {
-    #[default]
-    Untyped,
-    Typed(Ty<'tcx>),
-}
-
 /// The types at which we view anonymous allocations.
 #[derive(Default, Clone)]
 pub struct AllocTypes<'tcx>(
-    std::rc::Rc<std::cell::RefCell<FxHashMap<interpret::AllocId, AllocView<'tcx>>>>,
+    std::rc::Rc<std::cell::RefCell<FxHashMap<interpret::AllocId, Ty<'tcx>>>>,
 );
 
 /// Evaluates and reads constants in a given typing environment.

@@ -19,12 +19,6 @@ pub trait Sized<Self>
 #[diagnostic_item("Sync")]
 pub unsafe trait Sync<Self>
 
-// Full name: core::mem::maybe_uninit::MaybeUninit
-#[lang_item(MaybeUninit)]
-pub opaque type MaybeUninit<T>
-where
-    TraitClause0: (T: Sized),
-
 struct () {}
 
 // Full name: core::num::{usize}::MAX
@@ -37,7 +31,7 @@ where
     TraitClause0: (T: Sized),
 = <opaque>
 
-static test_crate::{promoted_const}: MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}] = RawMemory(0x00)
+static test_crate::{promoted_const}: [u8; 1usize] = [0u8]
 
 // Full name: test_crate::Wrapper
 pub struct Wrapper {
@@ -49,7 +43,7 @@ unsafe impl "impl_Sync_for_Wrapper" Sync for Wrapper {
     vtable: lazy
 }
 
-const test_crate::HUGE::{promoted_const}: &'_ u8 = cast<&'_ u8>(&raw const test_crate::{promoted_const})
+const test_crate::HUGE::{promoted_const}: &'_ u8 = &test_crate::{promoted_const}[0usize]
 
 // Full name: test_crate::HUGE
 pub fn HUGE() -> Wrapper
