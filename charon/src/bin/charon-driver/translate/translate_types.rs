@@ -521,7 +521,17 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         item: &hax::ItemRef<'tcx>,
     ) -> Result<Vec<Region>, Error> {
-        let def = self.poly_hax_def(&item.def_id)?;
+        // Fast path: only typeck children (closures, coroutine bodies, inline consts) and
+        // anon/promoted consts can have extra early regions somewhere in the soft parent chain
+        if !item.def_id.is_typeck_child(self.hax_state())
+            && !matches!(
+                item.def_id.kind,
+                hax::DefKind::AnonConst | hax::DefKind::PromotedConst
+            )
+        {
+            return Ok(vec![]);
+        }
+        let def = self.hax_def(item)?;
         let Some(param_env) = def.param_env() else {
             return Ok(vec![]);
         };
@@ -537,7 +547,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             let Some(parent) = &env.soft_parent else {
                 return Ok(vec![]);
             };
-            ancestor = self.poly_hax_def(&parent.def_id)?;
+            ancestor = self.hax_def(parent)?;
         }
         let (parent, actual, template) = item.soft_typing_parent(self.hax_state_with_id());
         // Recover parent arguments, in the same order as `push_generics_for_def`.
