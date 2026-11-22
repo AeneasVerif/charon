@@ -51,7 +51,7 @@ pub struct Statement {
 pub enum StatementKind {
     /// Assigns an `Rvalue` to a `Place`. e.g. `let y = x;` could become
     /// `y := move x` which is represented as `Assign(y, Rvalue::Use(Operand::Move(x)))`.
-    Assign(Place, Rvalue),
+    Assign(Place, Box<Rvalue>),
     /// Not used today because we take MIR built.
     SetDiscriminant(Place, VariantId),
     /// Indicates that this local should be allocated; if it is already allocated, this frees
@@ -69,18 +69,18 @@ pub enum StatementKind {
     /// (e.g. because they go out of bounds).
     PlaceMention(Place),
     /// Statements that only affect borrow-checking.
-    Borrowck(BorrowckStatement),
+    Borrowck(Box<BorrowckStatement>),
     /// Drop the value at the given place.
     ///
     /// Depending on `DropKind`, this may be a real call to `drop_glue`, or a conditional call
     /// that should only happen if the place has not been moved out of. See the docs of `DropKind`
     /// for more details; to get precise drops use `--precise-drops`.
     Drop {
-        place: Place,
+        place: Box<Place>,
         /// Reference to the `drop_glue` code to call on drop.
         fn_ptr: FnPtr,
         kind: DropKind,
-        on_unwind: Block,
+        on_unwind: Box<Block>,
     },
     /// Deallocate a `Box` whose pointee has already been moved out/dropped.
     ///
@@ -88,34 +88,34 @@ pub enum StatementKind {
     /// and `--desugar-drops` isn't.
     DropEmptyBox {
         place: Place,
-        on_unwind: Block,
+        on_unwind: Box<Block>,
     },
     Assert {
-        assert: Assert,
+        assert: Box<Assert>,
         on_failure: AbortKind,
-        on_unwind: Block,
+        on_unwind: Box<Block>,
     },
     /// An inline assembly block.
     InlineAsm {
         asm: Box<InlineAsm>,
         /// Next block if the control-flow continues without jumping. Absent for `naked_asm!` and `noreturn`.
-        fallthrough: Option<Block>,
+        fallthrough: Option<Box<Block>>,
         /// Targets of [`AsmOperand::Label`] operands.
-        labels: IndexVec<BranchId, Block>,
+        labels: Box<IndexVec<BranchId, Block>>,
         /// Action to be taken if the inline assembly unwinds.
-        on_unwind: Block,
+        on_unwind: Box<Block>,
     },
     Call {
-        call: Call,
-        dest: Place,
-        on_unwind: Block,
+        call: Box<Call>,
+        dest: Box<Place>,
+        on_unwind: Box<Block>,
     },
     Switch {
-        data: SwitchData,
+        data: Box<SwitchData>,
         branches: IndexVec<BranchId, Block>,
     },
 
-    Loop(Block),
+    Loop(Box<Block>),
     /// Break out of one or more loops.
     /// The `usize` gives the index of the loop to break from, counting inside-out:
     /// * 0: break from the innermost loop (the current loop)
@@ -131,8 +131,8 @@ pub enum StatementKind {
 
     /// Call to a built-in panicking function. Only if `--reconstruct-panic-calls` is passed.
     Panic {
-        call: Call,
-        on_unwind: Block,
+        call: Box<Call>,
+        on_unwind: Box<Block>,
     },
     /// Unwinding must stop for ABI reasons or because cleanup code panicked again. The function is
     /// the lang item that rustc calls in that case.

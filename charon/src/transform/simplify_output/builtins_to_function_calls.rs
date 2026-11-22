@@ -78,14 +78,14 @@ fn index_method_types(
 }
 
 fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mut Statement) {
-    match &statement.kind {
+    let StatementKind::Assign(place, rvalue) = &statement.kind else {
+        return;
+    };
+    match &**rvalue {
         // Transform the ArrayToSlice unop.
-        StatementKind::Assign(
-            place,
-            Rvalue::UnaryOp(
-                UnOp::Cast(CastKind::Unsize(tgt_ty, UnsizingMetadata::Length(_), _)),
-                operand,
-            ),
+        Rvalue::UnaryOp(
+            UnOp::Cast(CastKind::Unsize(tgt_ty, UnsizingMetadata::Length(_), _)),
+            operand,
         ) => {
             if let (TyKind::Ref(_, src_ty, src_kind), TyKind::Ref(_, tgt_ty, tgt_kind)) =
                 (operand.ty().kind(), tgt_ty.kind())
@@ -117,26 +117,23 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
                         .collect(),
                 );
                 statement.kind = StatementKind::Call {
-                    call: Call {
+                    call: Box::new(Call {
                         func: FnOperand::Regular(mk_fn_ptr(ctx, fun_id, generics)),
                         args: vec![operand.clone()],
                         safety: CallSafety::Inherit,
-                    },
-                    dest: place.clone(),
-                    on_unwind: Block::new_unreachable(statement.span),
+                    }),
+                    dest: Box::new(place.clone()),
+                    on_unwind: Box::new(Block::new_unreachable(statement.span)),
                 };
             }
         }
         // Transform the array aggregates to function calls.
-        StatementKind::Assign(
-            place,
-            Rvalue::Repeat {
-                operand,
-                count,
-                elem_is_sized,
-                elem_is_copy,
-            },
-        ) => {
+        Rvalue::Repeat {
+            operand,
+            count,
+            elem_is_sized,
+            elem_is_copy,
+        } => {
             // We could avoid the clone operations below if we take the content of
             // the statement. In practice, this shouldn't have much impact.
             let Some(&fun_id) = std_items.item_map.get(&StdItem::ArrayRepeat) else {
@@ -163,13 +160,13 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
                     .collect(),
             );
             statement.kind = StatementKind::Call {
-                call: Call {
+                call: Box::new(Call {
                     func: FnOperand::Regular(mk_fn_ptr(ctx, fun_id, generics)),
                     args: vec![operand.clone()],
                     safety: CallSafety::Inherit,
-                },
-                dest: place.clone(),
-                on_unwind: Block::new_unreachable(statement.span),
+                }),
+                dest: Box::new(place.clone()),
+                on_unwind: Box::new(Block::new_unreachable(statement.span)),
             };
         }
         _ => {}
@@ -405,9 +402,9 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
                 safety: CallSafety::Inherit,
             };
             let kind = StatementKind::Call {
-                call: index_call,
-                dest: output_var.clone(),
-                on_unwind: Block::new_unreachable(self.ctx.span),
+                call: Box::new(index_call),
+                dest: Box::new(output_var.clone()),
+                on_unwind: Box::new(Block::new_unreachable(self.ctx.span)),
             };
             self.ctx
                 .statements

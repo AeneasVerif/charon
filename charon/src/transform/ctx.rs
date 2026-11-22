@@ -564,7 +564,7 @@ impl BodyTransformCtx for LlbcStatementTransformCtx<'_> {
     fn insert_assn_stmt(&mut self, place: Place, rvalue: Rvalue) {
         self.statements.push(llbc_ast::Statement::new(
             self.span,
-            llbc_ast::StatementKind::Assign(place, rvalue),
+            llbc_ast::StatementKind::Assign(place, Box::new(rvalue)),
         ));
     }
 
