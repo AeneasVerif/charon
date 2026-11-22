@@ -41,6 +41,9 @@ struct CommentsCtx {
 }
 impl CommentsCtx {
     fn visit<St: IsStatement>(&mut self, st: &mut St) {
+        if self.comments.is_empty() {
+            return;
+        }
         let st_line = st.get_span().data().beg.line;
         self.comments = mem::take(&mut self.comments)
             .into_iter()
