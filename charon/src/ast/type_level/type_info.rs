@@ -17,6 +17,7 @@ bitflags::bitflags! {
         const HAS_REGION_VAR = 1 << 6;
         const HAS_REGIONS = 1 << 7;
         const HAS_NON_EMPTY_BINDER = 1 << 8;
+        const MENTIONS_UNKNOWN_TRAIT_REF = 1 << 9;
     }
 }
 
@@ -130,11 +131,14 @@ impl TypeInfo {
                         self.info.flags.insert(TypeFlags::POTENTIALLY_NORMALIZABLE)
                     }
                     TraitRefKind::SelfId => self.info.flags.insert(TypeFlags::MENTIONS_SELF_CLAUSE),
+                    TraitRefKind::Unknown(_) => self
+                        .info
+                        .flags
+                        .insert(TypeFlags::MENTIONS_UNKNOWN_TRAIT_REF),
                     TraitRefKind::TraitImpl(..)
                     | TraitRefKind::Clause(..)
                     | TraitRefKind::BuiltinOrAuto { .. }
-                    | TraitRefKind::Dyn
-                    | TraitRefKind::Unknown(_) => {}
+                    | TraitRefKind::Dyn => {}
                 }
             }
 
@@ -220,6 +224,11 @@ impl TypeInfo {
     /// Whether this value contains a binder that binds variables or has predicates.
     pub fn has_non_empty_binder(&self) -> bool {
         self.flags.contains(TypeFlags::HAS_NON_EMPTY_BINDER)
+    }
+
+    /// Whether this value contains a `TraitRefKind::Unknown`.
+    pub fn mentions_unknown_trait_ref(&self) -> bool {
+        self.flags.contains(TypeFlags::MENTIONS_UNKNOWN_TRAIT_REF)
     }
 
     /// The largest `DeBruijnId` mentioned by this item, if any.
