@@ -19,6 +19,7 @@ bitflags::bitflags! {
         const HAS_NON_EMPTY_BINDER = 1 << 8;
         const MENTIONS_UNKNOWN_TRAIT_REF = 1 << 9;
         const MENTIONS_FN_PTR = 1 << 10;
+        const MENTIONS_CONSTANT_REPEAT = 1 << 11;
     }
 }
 
@@ -159,6 +160,9 @@ impl TypeInfo {
                     | ConstantExprKind::OffsetOf(..) => {
                         self.info.flags.insert(TypeFlags::POTENTIALLY_NORMALIZABLE);
                     }
+                    ConstantExprKind::Repeat { .. } => {
+                        self.info.flags.insert(TypeFlags::MENTIONS_CONSTANT_REPEAT);
+                    }
                     ConstantExprKind::Var(..)
                     | ConstantExprKind::Bool(..)
                     | ConstantExprKind::Integer(..)
@@ -166,7 +170,6 @@ impl TypeInfo {
                     | ConstantExprKind::Float(..)
                     | ConstantExprKind::Adt(..)
                     | ConstantExprKind::Array(..)
-                    | ConstantExprKind::Repeat { .. }
                     | ConstantExprKind::Ref(..)
                     | ConstantExprKind::Ptr(..)
                     | ConstantExprKind::Str(..)
@@ -239,6 +242,11 @@ impl TypeInfo {
     /// Whether this value contains a `FnPtr`.
     pub fn mentions_fn_ptr(&self) -> bool {
         self.flags.contains(TypeFlags::MENTIONS_FN_PTR)
+    }
+
+    /// Whether this value contains a `ConstantExprKind::Repeat`.
+    pub fn mentions_constant_repeat(&self) -> bool {
+        self.flags.contains(TypeFlags::MENTIONS_CONSTANT_REPEAT)
     }
 
     /// The largest `DeBruijnId` mentioned by this item, if any.

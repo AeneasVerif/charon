@@ -14,6 +14,16 @@ pub(super) fn globals_in_constant_repeats(krate: &TranslatedCrate) -> HashSet<Gl
     #[derive(Visitor)]
     struct RepeatedGlobals(HashSet<GlobalDeclId>);
     impl VisitAst for RepeatedGlobals {
+        fn visit_with_cached_type_info<T: AstVisitable + HashConsable>(
+            &mut self,
+            value: &HashConsed<WithCachedTypeInfo<T>>,
+        ) -> ControlFlow<Self::Break> {
+            if value.type_info().mentions_constant_repeat() {
+                self.visit_inner(value)
+            } else {
+                ControlFlow::Continue(())
+            }
+        }
         fn enter_constant_expr_kind(&mut self, kind: &ConstantExprKind) {
             if let ConstantExprKind::Repeat { .. } = kind {
                 kind.dyn_visit(|gref: &GlobalDeclRef| {
