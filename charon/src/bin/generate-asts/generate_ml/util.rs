@@ -154,7 +154,7 @@ impl<'a> GenerateCtx<'a> {
                                 );
                                 name.short_str().unwrap().to_lowercase()
                             };
-                        if base_ty == "vec" {
+                        if base_ty == "vec" || base_ty == "thin_vec" {
                             base_ty = "list".to_string();
                         }
                         if base_ty == "ustr" {

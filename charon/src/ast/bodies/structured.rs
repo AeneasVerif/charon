@@ -7,6 +7,7 @@ use enum_as_inner::EnumAsInner;
 use serde_state::{DeserializeState, SerializeState};
 use std::mem;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use thin_vec::ThinVec;
 
 use crate::ast::*;
 
@@ -40,7 +41,8 @@ pub struct Statement {
     pub kind: StatementKind,
     /// Comments that precede this statement.
     // This is filled in a late pass after all the control-flow manipulation.
-    pub comments_before: Vec<String>,
+    #[serde_state(stateless)]
+    pub comments_before: ThinVec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -296,7 +298,7 @@ impl Statement {
             span,
             id: StatementId::fresh(),
             kind,
-            comments_before: vec![],
+            comments_before: ThinVec::new(),
         }
     }
 
