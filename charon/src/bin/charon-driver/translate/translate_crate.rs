@@ -1349,6 +1349,7 @@ pub fn translate<'tcx>(
         containment_graph: Default::default(),
         translate_stack: Default::default(),
         cached_spans: Default::default(),
+        cached_span_datas: Default::default(),
         cached_file_ids: Default::default(),
         cached_names: Default::default(),
         cached_item_metas: Default::default(),

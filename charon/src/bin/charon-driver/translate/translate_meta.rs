@@ -130,11 +130,11 @@ impl<'tcx> TranslateCtx<'tcx> {
     }
 
     pub fn translate_span_data(&mut self, span: rustc_span::Span) -> meta::SpanData {
-        if let Some(data) = self.cached_spans.get(&span) {
+        if let Some(data) = self.cached_span_datas.get(&span) {
             return *data;
         }
         let data = self.translate_span_data_uncached(span);
-        self.cached_spans.insert(span, data);
+        self.cached_span_datas.insert(span, data);
         data
     }
 
@@ -195,6 +195,15 @@ impl<'tcx> TranslateCtx<'tcx> {
     }
 
     pub(crate) fn translate_span(&mut self, span: &rustc_span::Span) -> Span {
+        if let Some(translated) = self.cached_spans.get(span) {
+            return *translated;
+        }
+        let translated = self.translate_span_uncached(span);
+        self.cached_spans.insert(*span, translated);
+        translated
+    }
+
+    fn translate_span_uncached(&mut self, span: &rustc_span::Span) -> Span {
         // If the span comes from a macro expansion, point to the outermost macro call and record
         // the span inside the macro as `generated_from_span`. We skip compiler desugarings
         // `ExpnKind::Desugaring` since their spans already point to user code.
