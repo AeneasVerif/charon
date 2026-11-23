@@ -7,6 +7,7 @@
 extern crate rustc_abi;
 extern crate rustc_attr_ir;
 extern crate rustc_const_eval;
+extern crate rustc_data_structures;
 extern crate rustc_hir;
 extern crate rustc_middle;
 extern crate rustc_span;
@@ -32,18 +33,35 @@ pub struct Config {
     pub anon_allocs_as_globals: bool,
 }
 
-/// The types at which we view anonymous allocations.
+/// What we decided about anonymous allocations.
 #[derive(Default, Clone)]
-pub struct AllocTypes<'tcx>(
-    std::rc::Rc<std::cell::RefCell<FxHashMap<interpret::AllocId, Ty<'tcx>>>>,
-);
+pub struct ReaderState<'tcx>(std::rc::Rc<std::cell::RefCell<Allocs<'tcx>>>);
+
+#[derive(Default)]
+struct Allocs<'tcx> {
+    /// The global we emit for the anonymous allocations of each key: the allocation it stands
+    /// for, and the type at which we view it.
+    globals: FxHashMap<AllocKey, (interpret::AllocId, Ty<'tcx>)>,
+    /// Cache of the key of each allocation, to avoid rehashing possibly large contents.
+    keys: FxHashMap<interpret::AllocId, AllocKey>,
+}
+
+/// What identifies the global of an anonymous allocation.
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+enum AllocKey {
+    /// A unique allocation whose identity is itself.
+    Unique(interpret::AllocId),
+    /// Immutable anon consts are identified by their content. This lets us deduplicate anon consts
+    /// that have the same contents, which is sound given they have no guarantee of address identity.
+    Deduplicatable(rustc_data_structures::fingerprint::Fingerprint),
+}
 
 /// Evaluates and reads constants in a given typing environment.
 pub struct ConstReader<'tcx> {
     pub tcx: TyCtxt<'tcx>,
     pub typing_env: ty::TypingEnv<'tcx>,
     pub config: Config,
-    pub alloc_types: AllocTypes<'tcx>,
+    pub state: ReaderState<'tcx>,
 }
 
 /// A constant that we can ask rustc to evaluate.

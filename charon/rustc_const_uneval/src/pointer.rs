@@ -72,30 +72,25 @@ impl<'tcx> ConstReader<'tcx> {
         }
 
         let (alloc_id, offset, _) = ecx.ptr_get_alloc_id(place.ptr(), 0)?;
-        // A pointer into the allocation of a `TypeId` can only be expressed as bytes.
-        if let AllocTarget::TypeId(_) = self.alloc_target(alloc_id) {
-            let kind = ConstKind::Memory(self.read_raw_bytes(ecx, op)?);
-            return interp_ok(Const { ty: ptr_ty, kind });
-        }
-
-        let alloc_target = self.alloc_target(alloc_id);
         let alloc_size = ecx.get_alloc_info(alloc_id).size;
         // A pointer outside of its allocation (one-past-the-end is fine) needs a wrapping offset.
         let in_bounds = offset <= alloc_size;
 
-        // Decide how we view the allocation, if this is the first reference to it.
-        if let AllocTarget::Global(GlobalRef::Alloc(alloc_id)) = alloc_target {
-            // the sized type we will try reading with
-            let pointee_ty = match unsize {
-                None if place.layout.is_sized() => Some(ty),
-                Some(unsize) if ty == unsize.to => Some(unsize.from),
-                _ => None,
-            };
-            // We only read the whole allocation at that type if it fits exactly.
-            let pointee_ty = pointee_ty.filter(|&ty| {
-                offset == Size::ZERO && ecx.layout_of(ty).is_ok_and(|l| l.size == alloc_size)
-            });
-            self.alloc_types.view(tcx, alloc_id, pointee_ty);
+        // the sized type we will try reading with
+        let pointee_ty = match unsize {
+            None if place.layout.is_sized() => Some(ty),
+            Some(unsize) if ty == unsize.to => Some(unsize.from),
+            _ => None,
+        };
+        // We only read the whole allocation at that type if it fits exactly.
+        let pointee_ty = pointee_ty.filter(|&ty| {
+            offset == Size::ZERO && ecx.layout_of(ty).is_ok_and(|l| l.size == alloc_size)
+        });
+        let alloc_target = self.alloc_target(alloc_id, pointee_ty);
+        // A pointer into the allocation of a `TypeId` can only be expressed as bytes.
+        if let AllocTarget::TypeId(_) = alloc_target {
+            let kind = ConstKind::Memory(self.read_raw_bytes(ecx, op)?);
+            return interp_ok(Const { ty: ptr_ty, kind });
         }
 
         let kind = if !in_bounds || self.should_use_pointer(alloc_target) {

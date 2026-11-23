@@ -3,6 +3,7 @@
 use crate::*;
 use rustc_attr_ir::LangItem;
 use rustc_const_eval::const_eval;
+use rustc_data_structures::stable_hash::{StableHash, StableHasher};
 use rustc_middle::ty::TypeVisitableExt;
 use rustc_span::Span;
 use rustc_trait_elaboration::normalize;
@@ -41,19 +42,34 @@ impl GlobalRef {
     }
 }
 
-impl<'tcx> AllocTypes<'tcx> {
-    /// The type at which we view the allocation `alloc_id`, trying to use `ty` if possible.
+impl<'tcx> ReaderState<'tcx> {
+    /// How we view the allocation `alloc_id`, trying to use `ty` if possible.
+    /// Returns the deduplicated `AllocId` and the type it's read at.
     pub(crate) fn view(
         &self,
         tcx: TyCtxt<'tcx>,
         alloc_id: interpret::AllocId,
         ty: Option<Ty<'tcx>>,
-    ) -> Ty<'tcx> {
-        *self.0.borrow_mut().entry(alloc_id).or_insert_with(|| {
+    ) -> (interpret::AllocId, Ty<'tcx>) {
+        let allocs = &mut *self.0.borrow_mut();
+        let key = *allocs.keys.entry(alloc_id).or_insert_with(|| {
+            let interpret::GlobalAlloc::Memory(alloc) = tcx.global_alloc(alloc_id) else {
+                return AllocKey::Unique(alloc_id);
+            };
+            if alloc.inner().mutability.is_mut() {
+                return AllocKey::Unique(alloc_id);
+            }
+            AllocKey::Deduplicatable(tcx.with_stable_hashing_context(|mut hcx| {
+                let mut hasher = StableHasher::new();
+                alloc_id.stable_hash(&mut hcx, &mut hasher);
+                hasher.finish()
+            }))
+        });
+        *allocs.globals.entry(key).or_insert_with(|| {
             if let Some(ty) = ty
                 && ConstReader::ty_covers_alloca(tcx, alloc_id, ty)
             {
-                return ty;
+                return (alloc_id, ty);
             }
             let size = GlobalRef::Alloc(alloc_id)
                 .memory(tcx)
@@ -63,16 +79,18 @@ impl<'tcx> AllocTypes<'tcx> {
             let bytes = Ty::new_array(tcx, tcx.types.u8, size.bytes());
             // try avoiding `MaybeUninit<[u8; N]>` if `[u8; N]` suffices
             if ConstReader::ty_covers_alloca(tcx, alloc_id, bytes) {
-                return bytes;
+                return (alloc_id, bytes);
             }
             let maybe_uninit = tcx.require_lang_item(LangItem::MaybeUninit, rustc_span::DUMMY_SP);
-            Ty::new_adt(tcx, tcx.adt_def(maybe_uninit), tcx.mk_args(&[bytes.into()]))
+            let maybe_uninit =
+                Ty::new_adt(tcx, tcx.adt_def(maybe_uninit), tcx.mk_args(&[bytes.into()]));
+            (alloc_id, maybe_uninit)
         })
     }
 
     /// The type at which we view the allocation `alloc_id`.
     pub fn ty(&self, tcx: TyCtxt<'tcx>, alloc_id: interpret::AllocId) -> Ty<'tcx> {
-        self.view(tcx, alloc_id, None)
+        self.view(tcx, alloc_id, None).1
     }
 }
 
@@ -259,7 +277,7 @@ impl<'tcx> ConstReader<'tcx> {
                     .instantiate_identity()
                     .skip_normalization(),
             ),
-            GlobalRef::Alloc(alloc_id) => self.alloc_types.ty(tcx, alloc_id),
+            GlobalRef::Alloc(alloc_id) => self.state.ty(tcx, alloc_id),
         }
     }
 

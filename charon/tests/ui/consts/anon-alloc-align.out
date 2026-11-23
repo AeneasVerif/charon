@@ -34,9 +34,7 @@ static test_crate::{promoted_const#4}: u128 = 5u128
 
 static test_crate::{promoted_const#5}: [u32; 3usize] = [1u32, 2u32, 3u32]
 
-static test_crate::{promoted_const#6}: [u32; 3usize] = [1u32, 2u32, 3u32]
-
-static test_crate::{promoted_const#7}: MaybeUninit<[u8; 16usize]>[{built_in impl Sized for [u8; 16usize]}] = RawMemory(0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, --, --, --, --, --, --, --)
+static test_crate::{promoted_const#6}: MaybeUninit<[u8; 16usize]>[{built_in impl Sized for [u8; 16usize]}] = RawMemory(0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, --, --, --, --, --, --, --)
 
 // Full name: test_crate::S
 struct S {
@@ -63,13 +61,13 @@ static U128: &'static u128 = &test_crate::{promoted_const#4}
 static ARR: &'static [u32; 3usize] = &test_crate::{promoted_const#5}
 
 // Full name: test_crate::SLICE
-static SLICE: &'static [u32] = &test_crate::{promoted_const#6} with_metadata(3usize)
+static SLICE: &'static [u32] = &test_crate::{promoted_const#5} with_metadata(3usize)
 
 // Full name: test_crate::STRUCT
-static STRUCT: &'static S = cast<&'_ S>(&raw const test_crate::{promoted_const#7})
+static STRUCT: &'static S = cast<&'_ S>(&raw const test_crate::{promoted_const#6})
 
 // Full name: test_crate::INNER
-static INNER: &'static u64 = cast<&'_ u64>(&raw const test_crate::{promoted_const#7})
+static INNER: &'static u64 = cast<&'_ u64>(&raw const test_crate::{promoted_const#6})
 
 // Full name: test_crate::main
 fn main()
