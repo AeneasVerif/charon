@@ -141,7 +141,7 @@ where
 }
 
 // Full name: {impl Fn<(A,), B> for fn(A) -> B}::call
-extern "rust-call" fn {impl Fn<(A,), B> for fn(A) -> B}::call<'_0, A, B>(fn_ptr: &'_0 fn(A) -> B, args: (A,)) -> B
+extern "rust-call" fn {impl Fn<(A,), B> for fn(A) -> B}::call<'_0, A, B>(_1: &'_0 fn(A) -> B, _2: (A,)) -> B
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
@@ -149,21 +149,21 @@ where
     Outlives1: (B: '_0),
 {
     let mut _0: B; // return
-    let mut fn_ptr: &'_0 fn(A) -> B; // arg #1
-    let mut args: (A,); // arg #2
+    let _1: &'1 fn(A) -> B; // arg #1
+    let _2: (A,); // arg #2
 
     storage_live(_0)
-    _0 = (copy (*fn_ptr))(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(fn_ptr)
+    _0 = (move (*_1))(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(fn_ptr)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
 // Full name: {impl FnMut<(A,), B> for fn(A) -> B}::call_mut
-extern "rust-call" fn {impl FnMut<(A,), B> for fn(A) -> B}::call_mut<'_0, A, B>(fn_ptr: &'_0 mut fn(A) -> B, args: (A,)) -> B
+extern "rust-call" fn {impl FnMut<(A,), B> for fn(A) -> B}::call_mut<'_0, A, B>(_1: &'_0 mut fn(A) -> B, _2: (A,)) -> B
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
@@ -171,36 +171,36 @@ where
     Outlives1: (B: '_0),
 {
     let mut _0: B; // return
-    let mut fn_ptr: &'_0 mut fn(A) -> B; // arg #1
-    let mut args: (A,); // arg #2
+    let _1: &'1 mut fn(A) -> B; // arg #1
+    let _2: (A,); // arg #2
 
     storage_live(_0)
-    _0 = (copy (*fn_ptr))(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(fn_ptr)
+    _0 = (move (*_1))(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(fn_ptr)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
 // Full name: {impl FnOnce<(A,), B> for fn(A) -> B}::call_once
-extern "rust-call" fn {impl FnOnce<(A,), B> for fn(A) -> B}::call_once<A, B>(fn_ptr: fn(A) -> B, args: (A,)) -> B
+extern "rust-call" fn {impl FnOnce<(A,), B> for fn(A) -> B}::call_once<A, B>(_1: fn(A) -> B, _2: (A,)) -> B
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
 {
     let mut _0: B; // return
-    let mut fn_ptr: fn(A) -> B; // arg #1
-    let mut args: (A,); // arg #2
+    let _1: fn(A) -> B; // arg #1
+    let _2: (A,); // arg #2
 
     storage_live(_0)
-    _0 = (copy fn_ptr)(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(fn_ptr)
+    _0 = (move _1)(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(fn_ptr)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -284,53 +284,53 @@ pub fn incr_u32(x: u32) -> u32
 }
 
 // Full name: test_crate::{impl Fn<(u32,), u32> for incr_u32}::call
-pub extern "rust-call" fn {impl Fn<(u32,), u32> for incr_u32}::call<'_0>(state: &'_0 incr_u32, args: (u32,)) -> u32
+pub extern "rust-call" fn {impl Fn<(u32,), u32> for incr_u32}::call<'_0>(_1: &'_0 incr_u32, _2: (u32,)) -> u32
 {
     let mut _0: u32; // return
-    let mut state: &'_0 incr_u32; // arg #1
-    let mut args: (u32,); // arg #2
+    let _1: &'1 incr_u32; // arg #1
+    let _2: (u32,); // arg #2
 
     storage_live(_0)
-    _0 = incr_u32(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(state)
+    _0 = incr_u32(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(state)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
 // Full name: test_crate::{impl FnMut<(u32,), u32> for incr_u32}::call_mut
-pub extern "rust-call" fn {impl FnMut<(u32,), u32> for incr_u32}::call_mut<'_0>(state: &'_0 mut incr_u32, args: (u32,)) -> u32
+pub extern "rust-call" fn {impl FnMut<(u32,), u32> for incr_u32}::call_mut<'_0>(_1: &'_0 mut incr_u32, _2: (u32,)) -> u32
 {
     let mut _0: u32; // return
-    let mut state: &'_0 mut incr_u32; // arg #1
-    let mut args: (u32,); // arg #2
+    let _1: &'1 mut incr_u32; // arg #1
+    let _2: (u32,); // arg #2
 
     storage_live(_0)
-    _0 = incr_u32(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(state)
+    _0 = incr_u32(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(state)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
 // Full name: test_crate::{impl FnOnce<(u32,), u32> for incr_u32}::call_once
-pub extern "rust-call" fn {impl FnOnce<(u32,), u32> for incr_u32}::call_once(state: incr_u32, args: (u32,)) -> u32
+pub extern "rust-call" fn {impl FnOnce<(u32,), u32> for incr_u32}::call_once(_1: incr_u32, _2: (u32,)) -> u32
 {
     let mut _0: u32; // return
-    let mut state: incr_u32; // arg #1
-    let mut args: (u32,); // arg #2
+    let _1: incr_u32; // arg #1
+    let _2: (u32,); // arg #2
 
     storage_live(_0)
-    _0 = incr_u32(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(state)
+    _0 = incr_u32(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(state)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -1400,61 +1400,61 @@ where
 }
 
 // Full name: test_crate::{impl Fn<(T,), T> for id<T>[TraitClause0]}::call
-pub extern "rust-call" fn {impl Fn<(T,), T> for id<T>[TraitClause0]}::call<'_0, T>(state: &'_0 id<T>[TraitClause0], args: (T,)) -> T
+pub extern "rust-call" fn {impl Fn<(T,), T> for id<T>[TraitClause0]}::call<'_0, T>(_1: &'_0 id<T>[TraitClause0], _2: (T,)) -> T
 where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
     let mut _0: T; // return
-    let mut state: &'_0 id<T>[TraitClause0]; // arg #1
-    let mut args: (T,); // arg #2
+    let _1: &'1 id<T>[TraitClause0]; // arg #1
+    let _2: (T,); // arg #2
 
     storage_live(_0)
-    _0 = id<T>[TraitClause0](move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(state)
+    _0 = id<T>[TraitClause0](move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(state)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
 // Full name: test_crate::{impl FnMut<(T,), T> for id<T>[TraitClause0]}::call_mut
-pub extern "rust-call" fn {impl FnMut<(T,), T> for id<T>[TraitClause0]}::call_mut<'_0, T>(state: &'_0 mut id<T>[TraitClause0], args: (T,)) -> T
+pub extern "rust-call" fn {impl FnMut<(T,), T> for id<T>[TraitClause0]}::call_mut<'_0, T>(_1: &'_0 mut id<T>[TraitClause0], _2: (T,)) -> T
 where
     TraitClause0: (T: Sized),
     Outlives0: (T: '_0),
 {
     let mut _0: T; // return
-    let mut state: &'_0 mut id<T>[TraitClause0]; // arg #1
-    let mut args: (T,); // arg #2
+    let _1: &'1 mut id<T>[TraitClause0]; // arg #1
+    let _2: (T,); // arg #2
 
     storage_live(_0)
-    _0 = id<T>[TraitClause0](move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(state)
+    _0 = id<T>[TraitClause0](move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(state)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
 // Full name: test_crate::{impl FnOnce<(T,), T> for id<T>[TraitClause0]}::call_once
-pub extern "rust-call" fn {impl FnOnce<(T,), T> for id<T>[TraitClause0]}::call_once<T>(state: id<T>[TraitClause0], args: (T,)) -> T
+pub extern "rust-call" fn {impl FnOnce<(T,), T> for id<T>[TraitClause0]}::call_once<T>(_1: id<T>[TraitClause0], _2: (T,)) -> T
 where
     TraitClause0: (T: Sized),
 {
     let mut _0: T; // return
-    let mut state: id<T>[TraitClause0]; // arg #1
-    let mut args: (T,); // arg #2
+    let _1: id<T>[TraitClause0]; // arg #1
+    let _2: (T,); // arg #2
 
     storage_live(_0)
-    _0 = id<T>[TraitClause0](move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(state)
+    _0 = id<T>[TraitClause0](move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(state)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -1572,66 +1572,66 @@ where
 
 // Full name: test_crate::{impl Fn<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call
 #[allow(clippy::redundant_clone)]
-pub extern "rust-call" fn {impl Fn<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call<'_0, T>(state: &'_0 id_clone<T>[TraitClause0, TraitClause1], args: (T,)) -> T
+pub extern "rust-call" fn {impl Fn<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call<'_0, T>(_1: &'_0 id_clone<T>[TraitClause0, TraitClause1], _2: (T,)) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
     Outlives0: (T: '_0),
 {
     let mut _0: T; // return
-    let mut state: &'_0 id_clone<T>[TraitClause0, TraitClause1]; // arg #1
-    let mut args: (T,); // arg #2
+    let _1: &'1 id_clone<T>[TraitClause0, TraitClause1]; // arg #1
+    let _2: (T,); // arg #2
 
     storage_live(_0)
-    _0 = id_clone<T>[TraitClause0, TraitClause1](move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(state)
+    _0 = id_clone<T>[TraitClause0, TraitClause1](move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(state)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
 // Full name: test_crate::{impl FnMut<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_mut
 #[allow(clippy::redundant_clone)]
-pub extern "rust-call" fn {impl FnMut<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_mut<'_0, T>(state: &'_0 mut id_clone<T>[TraitClause0, TraitClause1], args: (T,)) -> T
+pub extern "rust-call" fn {impl FnMut<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_mut<'_0, T>(_1: &'_0 mut id_clone<T>[TraitClause0, TraitClause1], _2: (T,)) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
     Outlives0: (T: '_0),
 {
     let mut _0: T; // return
-    let mut state: &'_0 mut id_clone<T>[TraitClause0, TraitClause1]; // arg #1
-    let mut args: (T,); // arg #2
+    let _1: &'1 mut id_clone<T>[TraitClause0, TraitClause1]; // arg #1
+    let _2: (T,); // arg #2
 
     storage_live(_0)
-    _0 = id_clone<T>[TraitClause0, TraitClause1](move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(state)
+    _0 = id_clone<T>[TraitClause0, TraitClause1](move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(state)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
 // Full name: test_crate::{impl FnOnce<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_once
 #[allow(clippy::redundant_clone)]
-pub extern "rust-call" fn {impl FnOnce<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_once<T>(state: id_clone<T>[TraitClause0, TraitClause1], args: (T,)) -> T
+pub extern "rust-call" fn {impl FnOnce<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_once<T>(_1: id_clone<T>[TraitClause0, TraitClause1], _2: (T,)) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
 {
     let mut _0: T; // return
-    let mut state: id_clone<T>[TraitClause0, TraitClause1]; // arg #1
-    let mut args: (T,); // arg #2
+    let _1: id_clone<T>[TraitClause0, TraitClause1]; // arg #1
+    let _2: (T,); // arg #2
 
     storage_live(_0)
-    _0 = id_clone<T>[TraitClause0, TraitClause1](move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(state)
+    _0 = id_clone<T>[TraitClause0, TraitClause1](move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(state)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 

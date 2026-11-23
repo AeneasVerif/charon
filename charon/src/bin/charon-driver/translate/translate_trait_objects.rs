@@ -1282,7 +1282,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             );
         };
 
-        let borrow_region = self.drop_glue_region();
+        let borrow_region = self.self_borrow_region();
 
         let dyn_self = self.translate_ty(span, &dyn_self)?;
         // `&mut dyn Trait -> ()`
@@ -1347,7 +1347,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 })?;
                 bound_sig.apply(
                     self.the_only_binder()
-                        .closure_call_method_region
+                        .self_borrow_region
                         .iter()
                         .map(|r| Region::Var(DeBruijnVar::new_at_zero(*r)))
                         .collect(),
@@ -1363,7 +1363,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 match target_kind {
                     ClosureKind::FnOnce => state_ty,
                     ClosureKind::Fn | ClosureKind::FnMut => {
-                        let rid = self.the_only_binder().closure_call_method_region.unwrap();
+                        let rid = self.the_only_binder().self_borrow_region.unwrap();
                         let region = Region::Var(DeBruijnVar::new_at_zero(rid));
                         let mutability = RefKind::mutable(target_kind == ClosureKind::FnMut);
                         TyKind::Ref(region, state_ty, mutability).into_ty()

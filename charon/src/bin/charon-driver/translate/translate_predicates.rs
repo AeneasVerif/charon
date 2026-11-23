@@ -61,6 +61,49 @@ impl<'tcx> TranslateCtx<'tcx> {
 }
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
+    /// If this trait proof is a built-in impl for which we generate a trait impl, return
+    /// the item the impl is attached to and the impl's kind.
+    pub fn recognize_generated_impl_proof(
+        &self,
+        trait_proof: &hax::TraitProof<'tcx>,
+    ) -> Option<(hax::ItemRef<'tcx>, VirtualImplKind)> {
+        let hax::TraitProofKind::Builtin { trait_data, .. } = &trait_proof.kind else {
+            return None;
+        };
+        match trait_data {
+            hax::BuiltinTraitData::Destruct(hax::DestructData::Glue { ty }) => {
+                let item = match ty.kind() {
+                    hax::TyKind::Adt(adt) => &adt.item,
+                    hax::TyKind::Closure(closure) => &closure.item,
+                    hax::TyKind::Array(array) => &array.item,
+                    hax::TyKind::Slice(slice) => &slice.item,
+                    hax::TyKind::Tuple(tuple) => &tuple.item,
+                    _ => return None,
+                };
+                Some((item.clone(), VirtualImplKind::Destruct))
+            }
+            hax::BuiltinTraitData::Other(lang_item) => {
+                let kind = match lang_item {
+                    hax::SolverTraitLangItem::FnOnce => ClosureKind::FnOnce,
+                    hax::SolverTraitLangItem::FnMut => ClosureKind::FnMut,
+                    hax::SolverTraitLangItem::Fn => ClosureKind::Fn,
+                    _ => return None,
+                };
+                // We skip the binder and erase regions to avoid bound vars escaping.
+                let callable_ty = trait_proof
+                    .pred
+                    .hax_skip_binder_ref()
+                    .generic_args
+                    .first()?
+                    .as_type()?;
+                let item = callable_ty.callable_item()?;
+                let item = item.erase(self.hax_state_with_id());
+                Some((item, VirtualImplKind::Callable(kind)))
+            }
+            _ => None,
+        }
+    }
+
     /// Translates the given predicates and stores them as resuired preciates of the innermost
     /// binder.
     ///
@@ -279,7 +322,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         trait_decl_ref: PolyTraitDeclRef,
     ) -> Result<PolyTraitRef, Error> {
         trace!("trait_proof: {:#?}", impl_source);
-        use crate::hax::DestructData;
         use crate::hax::TraitProofKind;
 
         let kind = match &impl_source.kind {
@@ -376,32 +418,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             self.translate_trait_proofs(span, trait_proofs)?;
                         TraitRefKind::TraitImpl(impl_ref)
                     }
-                    hax::BuiltinTraitData::Destruct(DestructData::Glue { ty, .. }) => {
-                        let item = match ty.kind() {
-                            hax::TyKind::Adt(adt) => &adt.item,
-                            hax::TyKind::Closure(closure) => &closure.item,
-                            hax::TyKind::Array(array) => &array.item,
-                            hax::TyKind::Slice(slice) => &slice.item,
-                            hax::TyKind::Tuple(tuple) => &tuple.item,
-                            _ => raise_error!(
-                                self,
-                                span,
-                                "failed to translate drop glue for type {ty:?}"
-                            ),
-                        };
+                    _ if let Some((item, kind)) =
+                        self.recognize_generated_impl_proof(impl_source) =>
+                    {
                         TraitRefKind::TraitImpl(self.translate_trait_impl_ref(
                             span,
-                            item,
-                            TransImplSource::Virtual(VirtualImplKind::Destruct),
-                        )?)
-                    }
-                    _ if let Some((item, closure_kind)) =
-                        self.recognize_callable_impl_proof(impl_source) =>
-                    {
-                        TraitRefKind::TraitImpl(self.translate_callable_impl_ref(
-                            span,
                             &item,
-                            closure_kind,
+                            TransImplSource::Virtual(kind),
                         )?)
                     }
                     _ if let Some(builtin_data) = self.recognize_builtin_impl(trait_data) => {

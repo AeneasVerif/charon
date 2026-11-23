@@ -7,19 +7,19 @@ struct (_,)::<&'_ u8> {
 }
 
 // Full name: {impl FnOnce<(&'_ u8,)> for fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8}::call_once::<u8, u8>
-extern "rust-call" fn call_once::<u8, u8><'_0>(fn_ptr: fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8, args: (&'_ u8,)) -> &'_0 u8
+extern "rust-call" fn call_once::<u8, u8><'_0>(_1: fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8, _2: (&'_ u8,)) -> &'_0 u8
 {
-    let mut _0: &'_0 u8; // return
-    let mut fn_ptr: fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8; // arg #1
-    let mut args: (&'_ u8,); // arg #2
+    let mut _0: &'1 u8; // return
+    let _1: fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8; // arg #1
+    let _2: (&'_ u8,); // arg #2
 
     storage_live(_0)
-    _0 = (copy fn_ptr)<'_0>(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(fn_ptr)
+    _0 = (move _1)<'2>(move _2._0)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
-    storage_dead(args)
-    storage_dead(fn_ptr)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 

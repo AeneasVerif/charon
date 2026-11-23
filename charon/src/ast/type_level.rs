@@ -233,6 +233,19 @@ impl GenericArgs {
         self.trait_refs.clone_extend_from_other(trait_refs);
         self
     }
+
+    /// Replace the last regions with the identity regions of `params`. Useful for
+    /// items whose trailing regions are bound by an enclosing binder.
+    pub fn set_trailing_regions_to_identity(&mut self, params: &GenericParams) {
+        assert!(self.regions.len() >= params.regions.len());
+        let identity = params
+            .regions
+            .indices()
+            .map(|id| Region::Var(DeBruijnVar::new_at_zero(id)));
+        for (a, b) in self.regions.iter_mut().rev().zip(identity.rev()) {
+            *a = b;
+        }
+    }
 }
 
 impl RegionArgs {
