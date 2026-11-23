@@ -35,26 +35,13 @@ impl "impl_Clone_for_u8" Clone for u8 {
     non-dyn-compatible
 }
 
-struct () {}
-
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
-    non-dyn-compatible
-}
-
 // Full name: core::mem::maybe_uninit::MaybeUninit
 #[lang_item(MaybeUninit)]
 pub opaque type MaybeUninit<T>
 where
     TraitClause0: (T: Sized),
 
-// Full name: core::panicking::panic_in_cleanup
-#[lang_item(PanicInCleanup)]
-fn panic_in_cleanup() -> !
-= <opaque>
+struct () {}
 
 struct (_, _)<A, B>
 where
@@ -68,7 +55,7 @@ struct (_,)<A> {
   _0: A,
 }
 
-// Full name: (_, _)::{impl Clone for (A, B)}::clone
+// Full name: core::clone::{impl Clone for (A, B)}::clone
 fn impl_Clone_for_tuple::clone<'_0, A, B>(_1: &'_0 (A, B)) -> (A, B)
 where
     TraitClause0: (A: Sized),
@@ -77,37 +64,7 @@ where
     TraitClause3: (B: Clone),
     Outlives0: (A: '_0),
     Outlives1: (B: '_0),
-{
-    let mut _0: (A, B); // return
-    let _1: &'1 (A, B); // arg #1
-    let _2: &'3 A; // anonymous local
-    let _3: &'5 B; // anonymous local
-
-    storage_live(_0)
-    storage_live(_2)
-    storage_live(_3)
-    _2 = &(*_1)._0
-    _0._0 = TraitClause2::clone<'7>(move _2)
-    ↳⚡ storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    _3 = &(*_1)._1
-    _0._1 = TraitClause3::clone<'9>(move _3)
-    ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'10>] _0._0
-        ↳⚡ storage_dead(_3)
-            storage_dead(_2)
-            storage_dead(_1)
-            unwind_terminate(in_cleanup)
-        storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    storage_dead(_3)
-    storage_dead(_2)
-    storage_dead(_1)
-    return
-}
+= <opaque>
 
 // Full name: {impl Fn<(A,)> for fn(A) -> B}::call
 extern "rust-call" fn {impl Fn<(A,)> for fn(A) -> B}::call<'_0, A, B>(_1: &'_0 fn(A) -> B, _2: (A,)) -> B

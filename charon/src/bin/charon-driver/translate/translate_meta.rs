@@ -246,13 +246,15 @@ impl<'tcx> TranslateCtx<'tcx> {
         let def_id = item.def_id();
         if let Some(synthetic) = def_id.as_synthetic(&self.hax_state) {
             return Ok(match synthetic {
-                hax::SyntheticItem::Tuple(n) | hax::SyntheticItem::TupleClone(n) => Some(
-                    PathElem::Builtin(BuiltinPathElem::Tuple(n), Disambiguator::ZERO),
-                ),
+                hax::SyntheticItem::Tuple(n) => Some(PathElem::Builtin(
+                    BuiltinPathElem::Tuple(n),
+                    Disambiguator::ZERO,
+                )),
                 hax::SyntheticItem::Str => {
                     Some(PathElem::Builtin(BuiltinPathElem::Str, Disambiguator::ZERO))
                 }
                 hax::SyntheticItem::Array
+                | hax::SyntheticItem::TupleClone(_)
                 | hax::SyntheticItem::Slice
                 | hax::SyntheticItem::FnPtr(_) => None,
             });
@@ -402,8 +404,15 @@ impl<'tcx> TranslateCtx<'tcx> {
         let def_id = item.def_id();
         trace!("Computing name for `{def_id:?}`");
 
-        let is_builtin = def_id.as_synthetic(&self.hax_state).is_some();
-        let parent_name = if !is_builtin && let Some(parent_id) = def_id.parent(&self.hax_state) {
+        let synthetic = def_id.as_synthetic(&self.hax_state);
+        let parent_name = if let Some(hax::SyntheticItem::TupleClone(_)) = synthetic {
+            // rustc has no `DefId` for this impl; we put it in the module of the `Clone` trait.
+            let clone_trait = self.tcx.lang_items().clone_trait().unwrap();
+            let clone_mod = self.tcx.parent(clone_trait).sinto(&self.hax_state);
+            self.name_for_item(&RustcItem::Poly(clone_mod))?
+        } else if synthetic.is_none()
+            && let Some(parent_id) = def_id.parent(&self.hax_state)
+        {
             // FIXME: We have lost the real context in which `item_ref` was defined; it may have
             // trait proofs that refer to it, or conversely `def_id` may have clauses that shadow
             // some impls. So it's incorrect to use `def_id` as owner here.

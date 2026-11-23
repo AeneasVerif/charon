@@ -35,6 +35,7 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+#[lang_item(CloneFromFn)]
 pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(_1: &'_0 mut Self, _2: &'_1 Self)
 where
     TraitClause0: (Self: Clone),
@@ -44,6 +45,7 @@ where
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u32}::clone_from
+#[lang_item(CloneFromFn)]
 pub fn impl_Clone_for_u32::clone_from<'_0, '_1>(_1: &'_0 mut u32, _2: &'_1 u32)
 where
     TraitClause0: (u32: Destruct),
@@ -62,6 +64,7 @@ impl "impl_Clone_for_u32" Clone for u32 {
 }
 
 // Full name: core::clone::impls::{impl Clone for u8}::clone_from
+#[lang_item(CloneFromFn)]
 pub fn impl_Clone_for_u8::clone_from<'_0, '_1>(_1: &'_0 mut u8, _2: &'_1 u8)
 where
     TraitClause0: (u8: Destruct),
@@ -92,7 +95,7 @@ where
   _1: B,
 }
 
-// Full name: (_, _)::{impl Clone for (A, B)}::clone
+// Full name: core::clone::{impl Clone for (A, B)}::clone
 fn impl_Clone_for_tuple::clone<'_0, A, B>(_1: &'_0 (A, B)) -> (A, B)
 where
     TraitClause0: (A: Sized),
@@ -101,39 +104,10 @@ where
     TraitClause3: (B: Clone),
     Outlives0: (A: '_0),
     Outlives1: (B: '_0),
-{
-    let mut _0: (A, B); // return
-    let _1: &'1 (A, B); // arg #1
-    let _2: &'3 A; // anonymous local
-    let _3: &'5 B; // anonymous local
+= <opaque>
 
-    storage_live(_0)
-    storage_live(_2)
-    storage_live(_3)
-    _2 = &(*_1)._0
-    _0._0 = TraitClause2::clone<'7>(move _2)
-    ↳⚡ storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    _3 = &(*_1)._1
-    _0._1 = TraitClause3::clone<'9>(move _3)
-    ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'10>] _0._0
-        ↳⚡ storage_dead(_3)
-            storage_dead(_2)
-            storage_dead(_1)
-            unwind_terminate(in_cleanup)
-        storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    storage_dead(_3)
-    storage_dead(_2)
-    storage_dead(_1)
-    return
-}
-
-// Full name: (_, _)::{impl Clone for (A, B)}::clone_from
+// Full name: core::clone::{impl Clone for (A, B)}::clone_from
+#[lang_item(CloneFromFn)]
 pub fn impl_Clone_for_tuple::clone_from<'_0, '_1, A, B>(_1: &'_0 mut (A, B), _2: &'_1 (A, B))
 where
     TraitClause0: (A: Sized),
@@ -152,6 +126,7 @@ struct test_crate::closure::{closure} {
 }
 
 // Full name: test_crate::closure::{closure}::{impl Clone for test_crate::closure::{closure}}::clone_from
+#[lang_item(CloneFromFn)]
 pub fn {impl Clone for test_crate::closure::{closure}}::clone_from<'_0, '_1>(_1: &'_0 mut test_crate::closure::{closure}, _2: &'_1 test_crate::closure::{closure})
 where
     TraitClause0: (test_crate::closure::{closure}: Destruct),
@@ -190,7 +165,6 @@ pub fn closure(x: u32)
     let _8: &'5 test_crate::closure::{closure}; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(f)
     f = test_crate::closure::{closure} { _0: copy x }
     fake_read(f)
@@ -256,10 +230,10 @@ where
     let _1: &'1 mut test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_1)._0
     ↳⚡ storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_1)
     return
 }
@@ -300,7 +274,6 @@ where
     let mut _4: &'1 test_crate::closure_generic::{closure}<T>[TraitClause0, TraitClause1]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(f)
     f = test_crate::closure_generic::{closure} { _0: move x }
     fake_read(f)
