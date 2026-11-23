@@ -15,7 +15,7 @@
 - [Output Choices]()
   - [Overflow and Bound Checks]()
   - [Structured vs Unstructured Control-Flow](output-choices/control-flow.md)
-  - [Polymorphic vs Monomorphic Code]()
+  - [Polymorphic vs Monomorphic Code](output-choices/mono.md)
   - [Explicit Drops]()
   - [Constant (Un)evaluation]()
   - [Treating `Box` as a Builtin]()
