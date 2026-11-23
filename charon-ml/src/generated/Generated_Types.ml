@@ -456,10 +456,13 @@ and constant_expr_kind =
 (** The contents of a [dyn Trait] type. *)
 and dyn_predicate = {
   binder : ty binder;
-      (** This binder binds a single type [T], which is considered existentially
-          quantified. The predicates in the binder apply to [T] and represent
-          the [dyn Trait] constraints. E.g. [dyn Iterator<Item=u32> + Send] is
-          represented as [exists<T: Iterator<Item=u32> + Send> T].
+      (** The first type this binder binds is [T], which is considered
+          existentially quantified. The predicates in the binder apply to [T]
+          and represent the [dyn Trait] constraints. E.g.
+          [dyn Iterator<Item=u32> + Send] is represented as
+          [exists<T: Iterator<Item=u32> + Send> T]. It may bind more types if
+          [--lift-associated-types] is used; these types are also existentially
+          quantified.
 
           Only the first trait clause may have methods. We use the vtable of
           this trait in the [dyn Trait] pointer metadata. *)

@@ -623,7 +623,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for DynPredicate {
         assert!(regions.is_empty());
         assert!(const_generics.is_empty());
         assert!(outlives.iter().all(|pred| pred.skip_binder.0.is_lub()));
-        assert_eq!(types.len(), 1);
+        assert!(!types.is_empty());
 
         // Format the clauses with their assoc types, e.g. `Iterator<Item = ...>`.
         let mut cstrs_per_clause: IndexVec<TraitClauseId, Vec<String>> =
@@ -688,6 +688,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for DynPredicate {
             .filter(|x| !x.skip_binder.1.is_erased())
             .map(|x| x.fmt_as_for_with(ctx, |ctx, outlives| outlives.1.to_string_with_ctx(ctx)));
         let clauses = trait_clauses.chain(outlives).format(" + ");
+        if types.len() > 1 {
+            let existentials = types.iter().skip(1).map(|ty| ty.with_ctx(ctx)).format(", ");
+            write!(f, "exists<{existentials}> ")?;
+        }
         write!(f, "{clauses}")
     }
 }
