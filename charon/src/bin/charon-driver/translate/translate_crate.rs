@@ -1097,10 +1097,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
-    /// In mono mode, trait impls have no methods. So a call to a method of an impl we generate
-    /// (e.g. `call` of a closure's `Fn` impl) points directly to the method we generate. Only
-    /// required methods are generated; provided ones use the trait default.
-    fn translate_generated_method_fn_ptr(
+    /// In mono mode, we need to resolve all method calls directly to the implemented method;
+    /// generated methods don't have their own DefId however, so normal trait resolution will
+    /// not resolve them. We do this resolution here instead.
+    fn try_resolve_generated_method_ref(
         &mut self,
         span: Span,
         item: &hax::ItemRef<'tcx>,
@@ -1198,7 +1198,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: TransItemSourceKind,
         enqueue: bool,
     ) -> Result<RegionBinder<FnPtr>, Error> {
-        if let Some(fn_ptr) = self.translate_generated_method_fn_ptr(span, item)? {
+        if let Some(fn_ptr) = self.try_resolve_generated_method_ref(span, item)? {
             return Ok(fn_ptr);
         }
         if let Some(fn_ptr) = self.translate_method_decl_fn_ptr(span, item)? {

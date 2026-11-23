@@ -62,7 +62,7 @@ impl<'tcx> TranslateCtx<'tcx> {
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// If this trait proof is a built-in impl for which we generate a trait impl, return
-    /// the item the impl is attached to with regions erased, and the impl's kind.
+    /// the item the impl is attached to and the impl's kind.
     pub fn recognize_generated_impl_proof(
         &self,
         trait_proof: &hax::TraitProof<'tcx>,
@@ -72,7 +72,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         };
         match trait_data {
             hax::BuiltinTraitData::Destruct(hax::DestructData::Glue { ty }) => {
-                // The type comes erased from hax.
                 let item = match ty.kind() {
                     hax::TyKind::Adt(adt) => &adt.item,
                     hax::TyKind::Closure(closure) => &closure.item,

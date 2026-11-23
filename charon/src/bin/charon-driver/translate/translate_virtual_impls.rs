@@ -1,5 +1,5 @@
-//! Virtual impls are trait impls that rustc provides without source code. We manually generate
-//! a trait impl with a single method of our own, whose body we get from rustc.
+//! Virtual impls are trait impls that rustc considers to exist but which don't have a `DefId`. We generate
+//! a `TraitImpl` and method ourselves, as if they had been normal source-code impls.
 use super::translate_ctx::*;
 use crate::hax;
 use crate::translate::translate_crate::{TransItemSourceKind, VirtualImplKind};
@@ -35,7 +35,6 @@ impl VirtualImplKind {
 }
 
 impl<'tcx> ItemTransCtx<'tcx, '_> {
-    /// The id of the method we generate, within the implemented trait.
     fn virtual_method_id(
         &mut self,
         kind: VirtualImplKind,
@@ -43,7 +42,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         trait_id: TraitDeclId,
     ) -> Result<TraitMethodId, Error> {
         match kind {
-            // we only special-case Destruct, as we fake a method for it.
+            // Destruct doesn't have a method but we give it a fake one.
             VirtualImplKind::Destruct => {
                 self.translate_drop_glue_method_id(&vimpl.trait_pred.trait_ref.def_id, trait_id)
             }
@@ -63,7 +62,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             .self_borrow_region
             .map(|rid| Region::Var(DeBruijnVar::new_at_zero(rid)));
         Ok(match kind {
-            // we only special-case Destruct, as we fake a method for it.
+            // Destruct doesn't have a method but we give it a fake one.
             VirtualImplKind::Destruct => {
                 self.drop_glue_method_sig(self_ty, self_borrow_region.unwrap())
             }
