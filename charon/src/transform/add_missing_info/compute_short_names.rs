@@ -72,7 +72,7 @@ impl TransformPass for Transform {
             // several thanks to monomorphizations).
             let candidate = match name_slice {
                 [.., PathElem::Ident(ident, _)] => {
-                    Some(PathElem::Ident(ident.clone(), Disambiguator::ZERO))
+                    Some(PathElem::Ident(*ident, Disambiguator::ZERO))
                 }
                 // Tuples and `str` are excluded: those are types with a syntax of their own.
                 [.., PathElem::Builtin(builtin, _)] if !builtin.is_tuple() && !builtin.is_str() => {
@@ -82,7 +82,7 @@ impl TransformPass for Transform {
                     if let Some(trait_impl) = ctx.translated.trait_impls.get(*impl_id) =>
                 {
                     trait_impl_short_name(&ctx.translated.item_names, trait_impl)
-                        .map(|short| PathElem::Ident(short, Disambiguator::ZERO))
+                        .map(|short| PathElem::Ident(short.into(), Disambiguator::ZERO))
                 }
 
                 _ => None,

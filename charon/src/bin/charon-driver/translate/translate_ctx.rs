@@ -138,14 +138,14 @@ pub struct TranslateCtx<'tcx> {
     pub containment_graph: DiGraphMap<ContainmentNode, (), rustc_hash::FxBuildHasher>,
     /// Stack of the translations currently happening. Used to avoid accidental cycles.
     pub translate_stack: Vec<ItemOrModuleId>,
-    /// Cache of the translated span, as translating one is costly
-    pub cached_spans: HashMap<rustc_span::Span, meta::SpanData>,
+    /// Cache of the translated spans, as translating one is costly.
+    pub cached_spans: HashMap<rustc_span::Span, Span>,
+    /// Cache of the translated span datas.
+    pub cached_span_datas: HashMap<rustc_span::Span, meta::SpanData>,
     /// Cache of file ids per rustc source file, to avoid recomputing file names for every span.
     pub cached_file_ids: HashMap<rustc_span::StableSourceFileId, FileId>,
     /// Cache the names to compute them only once each.
     pub cached_names: HashMap<RustcItem<'tcx>, Name>,
-    /// Cache the `ItemMeta`s to compute them only once each.
-    pub cached_item_metas: HashMap<TransItemSource<'tcx>, ItemMeta>,
     /// The functions that extern functions can link to, by symbol.
     /// Computed lazily by `exported_fns`.
     pub exported_fns: Option<HashMap<String, ExportedFns<'tcx>>>,

@@ -46,7 +46,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
 
         let body = def.this().drop_glue_shim(self.hax_state());
-        Ok(self.translate_body(span, body, &def.source_text))
+        Ok(self.translate_body(span, body, &def.source_text(self.tcx)))
     }
 
     // Small helper to deduplicate. Generates the signature `&'a mut self_ty -> ()`.

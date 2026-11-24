@@ -28,7 +28,7 @@ impl VirtualImplKind {
                 PathElem::Builtin(BuiltinPathElem::DropGlue, Disambiguator::ZERO)
             }
             VirtualImplKind::Callable(kind) => {
-                PathElem::Ident(kind.method_name().to_string(), Disambiguator::ZERO)
+                PathElem::Ident(kind.method_name().into(), Disambiguator::ZERO)
             }
         }
     }
