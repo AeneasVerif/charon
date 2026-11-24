@@ -1,6 +1,6 @@
 use crate::hax::prelude::*;
 use annotate_snippets::Level;
-use rustc_middle::ty::{self, TyCtxt};
+use rustc_middle::ty::{self, TyCtxt, TypeVisitableExt};
 
 mod base {
     use crate::hax::prelude::*;
@@ -30,11 +30,19 @@ mod base {
         }
     }
 
+    /// Used for [`GlobalCache::per_item`]
+    #[derive(PartialEq, Eq, Hash)]
+    pub struct CachedId {
+        pub id: DefId,
+        pub is_instantiated: bool,
+    }
+
     /// Global caches
     #[derive(Default)]
     pub struct GlobalCache<'tcx> {
-        /// Per-item cache.
-        pub per_item: HashMap<DefId, ItemCache<'tcx>>,
+        /// Per-item cache. We cache instantiated items separately, as those should be resolved
+        /// in the empty environment.
+        pub per_item: HashMap<CachedId, ItemCache<'tcx>>,
         /// Map rustc def ids to their hax counterpart.
         pub def_ids: HashMap<RDefId, DefId>,
         /// Data for synthetic items. See the `synthetic_items` module.
@@ -173,10 +181,27 @@ pub trait BaseState<'tcx>: Sized {
 
     /// Create a state with the given owner.
     fn with_hax_owner(&self, owner: &DefId) -> StateWithOwner<'tcx> {
+        self.with_hax_owner_for(owner, None)
+    }
+    /// Create a state with the given owner, instantiated with `args` if `Some` (see
+    /// [`StateOwner::args`]). This must be the args the owner's `FullDef` was created with: use
+    /// e.g. `FullDef::owner_state` rather than calling this directly.
+    fn with_hax_owner_for(
+        &self,
+        owner: &DefId,
+        args: Option<ty::GenericArgsRef<'tcx>>,
+    ) -> StateWithOwner<'tcx> {
+        debug_assert!(
+            args.is_none_or(|args| !args.has_non_region_param()),
+            "instantiated owners must have concrete args, got {args:?} for {owner:?}"
+        );
         let mut base = self.base();
         base.opt_def_id = owner.as_real_or_promoted();
         State {
-            owner: owner.clone(),
+            owner: StateOwner {
+                def_id: owner.clone(),
+                args,
+            },
             base,
         }
     }
@@ -204,31 +229,52 @@ pub trait BaseState<'tcx>: Sized {
     /// Access the cache for a given item. You must not call `sinto` within this function as this
     /// will likely result in `BorrowMut` panics.
     fn with_item_cache<T>(&self, def_id: &DefId, f: impl FnOnce(&mut ItemCache<'tcx>) -> T) -> T {
-        self.with_global_cache(|cache| f(cache.per_item.entry(def_id.clone()).or_default()))
+        self.with_global_cache(|cache| {
+            f(cache
+                .per_item
+                .entry(CachedId {
+                    id: def_id.clone(),
+                    is_instantiated: false,
+                })
+                .or_default())
+        })
     }
 }
 
 pub trait UnderOwnerState<'tcx>: BaseState<'tcx> {
     fn owner(&self) -> DefId;
+    fn owner_args(&self) -> Option<ty::GenericArgsRef<'tcx>>;
+    fn owner_is_instantiated(&self) -> bool {
+        self.owner_args().is_some()
+    }
 
     fn param_env(&self) -> ty::ParamEnv<'tcx> {
-        self.owner().param_env(self)
+        if self.owner_is_instantiated() {
+            ty::ParamEnv::empty()
+        } else {
+            self.owner().param_env(self)
+        }
     }
     fn typing_env(&self) -> ty::TypingEnv<'tcx> {
-        self.owner().typing_env(self)
+        if self.owner_is_instantiated() {
+            ty::TypingEnv::fully_monomorphized()
+        } else {
+            self.owner().typing_env(self)
+        }
     }
 
     fn as_state_with_owner(&self) -> StateWithOwner<'tcx> {
-        State {
-            base: self.base(),
-            owner: self.owner(),
-        }
+        self.with_hax_owner_for(&self.owner(), self.owner_args())
     }
 
     /// Access the cache for the current item. You must not call `sinto` within this function as
     /// this will likely result in `BorrowMut` panics.
     fn with_cache<T>(&self, f: impl FnOnce(&mut ItemCache<'tcx>) -> T) -> T {
-        self.with_item_cache(&self.owner(), f)
+        let key = CachedId {
+            id: self.owner(),
+            is_instantiated: self.owner_is_instantiated(),
+        };
+        self.with_global_cache(|cache| f(cache.per_item.entry(key).or_default()))
     }
     fn with_predicate_searcher<T>(
         &self,
@@ -238,7 +284,11 @@ pub trait UnderOwnerState<'tcx>: BaseState<'tcx> {
         let base = s.base();
         let owner = s.owner();
         let base_state = s.base_state();
-        let mut predicate_searcher = base.elab_ctx.predicate_searcher_for(&base_state, owner);
+        let mut predicate_searcher = if s.owner_is_instantiated() {
+            base.elab_ctx.monomorphic_predicate_searcher()
+        } else {
+            base.elab_ctx.predicate_searcher_for(&base_state, owner)
+        };
         f(&mut predicate_searcher, &base_state)
     }
 }
@@ -249,8 +299,19 @@ pub struct State<'tcx, Owner> {
     pub owner: Owner,
 }
 
+/// The item in whose context we translate.
+#[derive(Clone, Debug)]
+pub struct StateOwner<'tcx> {
+    pub def_id: DefId,
+    /// `None` when translating the polymorphic item: its generics and predicates are in scope.
+    /// `Some(args)` when translating the item instantiated with `args`, as in mono mode. Its
+    /// predicates are then concrete and hold, and the instantiated item doesn't have them as
+    /// clauses, so we resolve traits in the empty environment.
+    pub args: Option<ty::GenericArgsRef<'tcx>>,
+}
+
 pub type StateWithBase<'tcx> = State<'tcx, ()>;
-pub type StateWithOwner<'tcx> = State<'tcx, DefId>;
+pub type StateWithOwner<'tcx> = State<'tcx, StateOwner<'tcx>>;
 
 impl<'tcx> StateWithBase<'tcx> {
     pub fn new(
@@ -271,7 +332,10 @@ impl<'tcx, O> BaseState<'tcx> for State<'tcx, O> {
 }
 impl<'tcx> UnderOwnerState<'tcx> for StateWithOwner<'tcx> {
     fn owner(&self) -> DefId {
-        self.owner.clone()
+        self.owner.def_id.clone()
+    }
+    fn owner_args(&self) -> Option<ty::GenericArgsRef<'tcx>> {
+        self.owner.args
     }
 }
 
@@ -283,5 +347,8 @@ impl<'tcx, A: BaseState<'tcx>, B> BaseState<'tcx> for (A, B) {
 impl<'tcx, A: UnderOwnerState<'tcx>, B> UnderOwnerState<'tcx> for (A, B) {
     fn owner(&self) -> DefId {
         self.0.owner()
+    }
+    fn owner_args(&self) -> Option<ty::GenericArgsRef<'tcx>> {
+        self.0.owner_args()
     }
 }

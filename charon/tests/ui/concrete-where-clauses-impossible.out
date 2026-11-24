@@ -1,0 +1,20 @@
+# Final LLBC before serialization:
+
+struct () {}
+
+// Full name: test_crate::Env
+pub struct Env {}
+
+// Full name: test_crate::holds
+pub fn holds()
+{
+    let mut _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+
+

@@ -45,7 +45,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             return Ok(Body::Missing);
         };
 
-        let body = def.this().drop_glue_shim(self.hax_state());
+        let body = def.drop_glue_shim(self.hax_state());
         Ok(self.translate_body(span, body, &def.source_text))
     }
 

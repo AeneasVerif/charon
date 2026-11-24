@@ -5,7 +5,7 @@ use rustc_hir::attrs::LangItem;
 use rustc_hir::def::DefKind as RDefKind;
 use rustc_middle::mir;
 use rustc_middle::ty;
-use rustc_middle::ty::Interner;
+use rustc_middle::ty::{Interner, TypeVisitableExt};
 use rustc_span::def_id::DefId as RDefId;
 use std::cell::OnceCell;
 use std::sync::Arc;
@@ -16,6 +16,8 @@ pub struct FullDef<'tcx> {
     /// A reference to the current item. If the item was provided with generic args, they are
     /// stored here; otherwise the args are the identity_args for this item.
     pub this: ItemRef<'tcx>,
+    /// The args this definition was instantiated with, if any.
+    args: Option<ty::GenericArgsRef<'tcx>>,
     /// The span of the definition of this item (e.g. for a function this is is signature).
     pub span: Span,
     /// The span of the whole definition (including e.g. the function body).
@@ -223,6 +225,7 @@ where
         .and_then(|source_span| tcx.sess.source_map().span_to_snippet(source_span).ok());
     FullDef {
         this,
+        args,
         span: def_id.def_span(s),
         source_span: source_span.sinto(s),
         source_text,
@@ -253,7 +256,7 @@ impl DefId {
     where
         S: BaseState<'tcx>,
     {
-        let s = &s.with_hax_owner(self);
+        let s = &s.with_hax_owner_for(self, args);
         let cache_key = (self.promoted_id(), args);
         if let Some(def) = s.with_cache(|cache| cache.full_defs.get(&cache_key).cloned()) {
             return def;
@@ -275,16 +278,6 @@ impl<'tcx> ItemRef<'tcx> {
         let args = self.rustc_args(s);
         self.def_id.full_def_maybe_instantiated(s, Some(args))
     }
-
-    /// Get the drop glue shim for this. Panics if the `DefKind` isn't appropriate.
-    pub fn drop_glue_shim<S>(&self, s: &S) -> mir::Body<'tcx>
-    where
-        S: BaseState<'tcx>,
-    {
-        let s = &s.with_hax_owner(&self.def_id);
-        let args = self.rustc_args(s);
-        crate::hax::drop_glue_shim(s, &self.def_id, Some(args))
-    }
 }
 
 impl<'tcx> FullDef<'tcx> {
@@ -296,7 +289,7 @@ impl<'tcx> FullDef<'tcx> {
         vtrait: VirtualTrait,
     ) -> &VirtualTraitImpl<'tcx> {
         self.virtual_impls[vtrait as usize].get_or_init(|| {
-            let s = &s.with_hax_owner(&self.this.def_id);
+            let s = &self.owner_state(s);
             let tcx = s.base().tcx;
             let trait_def_id = tcx.require_lang_item(vtrait.lang_item(), rustc_span::DUMMY_SP);
             let self_ty = match self.kind() {
@@ -578,7 +571,7 @@ impl<'tcx> AssocTy<'tcx> {
     /// we're in a trait decl, this has a value iff the type has a default; if we're in a trait
     /// impl, this has a value iff the impl provides its own value for it.
     pub fn value(&self, s: &impl BaseState<'tcx>) -> Option<(Ty<'tcx>, Vec<TraitProof<'tcx>>)> {
-        let s = &s.with_hax_owner(&self.def_id);
+        let s = &s.with_hax_owner_for(&self.def_id, self.args);
         let tcx = s.base().tcx;
         let def_id = self.def_id.real_rust_def_id();
         if tcx.defaultness(def_id).has_value() {
@@ -621,7 +614,7 @@ impl<'tcx> Trait<'tcx> {
     /// traits like `Sized`.
     pub fn implied_trait_proofs(&self, s: &impl BaseState<'tcx>) -> &[TraitProof<'tcx>] {
         self.implied_trait_proofs.get_or_init(|| {
-            let s = &s.with_hax_owner(&self.def_id);
+            let s = &s.with_hax_owner_for(&self.def_id, self.args);
             let args = self.args.unwrap_or_else(|| self.def_id.identity_args(s));
             solve_item_implied_traits(s, self.def_id.real_rust_def_id(), args)
         })
@@ -632,8 +625,9 @@ impl<'tcx> Trait<'tcx> {
     }
     /// Associated items, in definition order.
     pub fn items(&self, s: &impl BaseState<'tcx>) -> &[AssocItem<'tcx>] {
-        self.items
-            .get_or_init(|| assoc_items_of(&s.with_hax_owner(&self.def_id), self.args))
+        self.items.get_or_init(|| {
+            assoc_items_of(&s.with_hax_owner_for(&self.def_id, self.args), self.args)
+        })
     }
     /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for this trait. This is `Some` iff this
     /// trait is dyn-compatible.
@@ -711,7 +705,7 @@ impl<'tcx> TraitImpl<'tcx> {
     /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for the implemented trait. This is
     /// `Some` iff the trait is dyn-compatible.
     pub fn dyn_self(&self, s: &impl BaseState<'tcx>) -> Option<Ty<'tcx>> {
-        let s = &s.with_hax_owner(&self.this.def_id);
+        let s = &s.with_hax_owner_for(&self.this.def_id, self.args);
         dyn_self_ty(s.base().tcx, s.typing_env(), self.trait_ref).sinto(s)
     }
     /// The trait proofs required to satisfy the predicates on the trait declaration. E.g.:
@@ -730,7 +724,7 @@ impl<'tcx> TraitImpl<'tcx> {
     fn compute_items(&self, s: &impl BaseState<'tcx>) -> Vec<ImplAssocItem<'tcx>> {
         use rustc_trait_elaboration::ItemId;
         let this = &self.this;
-        let s = &s.with_hax_owner(&this.def_id);
+        let s = &s.with_hax_owner_for(&this.def_id, self.args);
         let tcx = s.base().tcx;
         let def_id = this.def_id.real_rust_def_id();
         let trait_ref = self.trait_ref;
@@ -747,9 +741,13 @@ impl<'tcx> TraitImpl<'tcx> {
                     let virtual_item =
                         VirtualImplAssocItem::new(trait_impl_id, decl_def_id, impl_assoc_rdef_id);
                     let virtual_item_def_id = DefId::make_assoc_item_impl(s, virtual_item);
-                    let s = &s.with_hax_owner(&virtual_item_def_id);
                     let item_decl_args = virtual_item.args_for_item_decl(s, trait_ref.args);
                     let item_impl_args = virtual_item.args_for_item_impl(s, impl_args);
+                    let owner_args = self
+                        .args
+                        .and(Some(item_impl_args))
+                        .filter(|args| !args.has_non_region_param());
+                    let s = &s.with_hax_owner_for(&virtual_item_def_id, owner_args);
                     let assoc_ty_value = matches!(decl_assoc.kind, ty::AssocKind::Type { .. })
                         .then(|| {
                             inst_binder(
@@ -815,8 +813,9 @@ impl<'tcx> InherentImpl<'tcx> {
     }
     /// Associated items, in definition order.
     pub fn items(&self, s: &impl BaseState<'tcx>) -> &[AssocItem<'tcx>] {
-        self.items
-            .get_or_init(|| assoc_items_of(&s.with_hax_owner(&self.def_id), self.args))
+        self.items.get_or_init(|| {
+            assoc_items_of(&s.with_hax_owner_for(&self.def_id, self.args), self.args)
+        })
     }
 }
 
@@ -890,13 +889,14 @@ impl<'tcx> AssocFn<'tcx> {
     /// vtable safe. `Some(sig)` if it is vtable safe, where `sig` is the trait method declaration's
     /// signature with `Self` replaced by `dyn Trait` and associated types normalized.
     pub fn vtable_sig(&self, s: &impl BaseState<'tcx>) -> Option<PolyFnSig<'tcx>> {
-        let (s, sig) = gen_vtable_sig(&s.with_hax_owner(&self.def_id), self.args)?;
+        let (s, sig) = gen_vtable_sig(&s.with_hax_owner_for(&self.def_id, self.args), self.args)?;
         Some(sig.sinto(&s))
     }
     /// For a vtable-safe method, the fields to follow from its vtable receiver to the built-in
     /// pointer that carries the vtable.
     pub fn vtable_receiver_path(&self, s: &impl BaseState<'tcx>) -> Vec<FieldIdx> {
-        let Some((s, vtable_sig)) = gen_vtable_sig(&s.with_hax_owner(&self.def_id), self.args)
+        let Some((s, vtable_sig)) =
+            gen_vtable_sig(&s.with_hax_owner_for(&self.def_id, self.args), self.args)
         else {
             return vec![];
         };
@@ -1166,11 +1166,8 @@ fn gen_vtable_sig<'tcx>(
     }
 
     // Move into the context of the container (trait decl or impl) instead of the method.
-    let s = &s.with_rustc_owner(container_id);
-    let args = {
-        let container_generics = s.owner().generics_of(s);
-        args.map(|args| args.truncate_to(tcx, container_generics))
-    };
+    let args = args.map(|args| args.truncate_to(tcx, tcx.generics_of(container_id)));
+    let s = &s.with_hax_owner_for(&container_id.sinto(s), args);
 
     let dyn_self = match assoc_item.container {
         ty::AssocContainer::Trait => get_trait_decl_dyn_self_ty(s, args),
@@ -1237,7 +1234,7 @@ where
     S: BaseState<'tcx>,
 {
     let hax_def_id = &this.def_id;
-    let s = &s.with_hax_owner(hax_def_id);
+    let s = &s.with_hax_owner_for(hax_def_id, args);
     let def_id = hax_def_id.real_rust_def_id();
     let tcx = s.base().tcx;
 
@@ -1543,7 +1540,7 @@ pub struct VirtualTraitImpl<'tcx> {
     /// The methods, in definition order.
     pub methods: Vec<VirtualTraitMethod<'tcx>>,
     /// The item under which this impl was built.
-    owner: DefId,
+    owner: StateOwner<'tcx>,
     /// The trait ref of the implemented trait, for `dyn_data`.
     trait_ref: ty::TraitRef<'tcx>,
     /// Computed on demand, see [`VirtualTraitImpl::dyn_self`].
@@ -1564,7 +1561,7 @@ impl<'tcx> VirtualTraitImpl<'tcx> {
     fn dyn_data(&self, s: &impl BaseState<'tcx>) -> Option<&(Ty<'tcx>, Vec<PolyFnSig<'tcx>>)> {
         self.dyn_data
             .get_or_init(|| {
-                let s = &s.with_hax_owner(&self.owner);
+                let s = &s.with_hax_owner_for(&self.owner.def_id, self.owner.args);
                 let tcx = s.base().tcx;
                 let trait_ref = self.trait_ref;
                 // The environment may lack the predicates needed to prove the trait holds;
@@ -1588,7 +1585,7 @@ impl<'tcx> VirtualTraitImpl<'tcx> {
     /// The body that rustc generates for the given method of this impl, if that is a shim (e.g.
     /// `call_once` for a `Fn` closure). Returns `None` if the method resolves to a normal item.
     pub fn method_shim(&self, s: &impl BaseState<'tcx>, method: &DefId) -> Option<mir::Body<'tcx>> {
-        let s = &s.with_hax_owner(&self.owner);
+        let s = &s.with_hax_owner_for(&self.owner.def_id, self.owner.args);
         let tcx = s.base().tcx;
         let method = method.real_rust_def_id();
         let instance =
@@ -1647,13 +1644,25 @@ impl<'tcx> FullDef<'tcx> {
         })
     }
 
+    /// The state in which to translate the contents of this definition.
+    pub fn owner_state(&self, s: &impl BaseState<'tcx>) -> StateWithOwner<'tcx> {
+        s.with_hax_owner_for(self.def_id(), self.args)
+    }
+
+    /// Get the drop glue shim for this. Panics if the `DefKind` isn't appropriate.
+    pub fn drop_glue_shim(&self, s: &impl BaseState<'tcx>) -> mir::Body<'tcx> {
+        let s = &self.owner_state(s);
+        let args = self.this.rustc_args(s);
+        crate::hax::drop_glue_shim(s, self.def_id(), Some(args))
+    }
+
     /// Evaluate the value of a `Const`, `AssocConst` or `Static` item. Returns `None` for other
     /// items, or if the item can't be evaluated (see [`read_const`]).
     pub fn evaluate<S>(&self, s: &S, mode: ReadMode) -> Option<ConstantExpr<'tcx>>
     where
         S: BaseState<'tcx>,
     {
-        let s = &s.with_hax_owner(self.def_id());
+        let s = &self.owner_state(s);
         let tcx = s.base().tcx;
         let (src, span) = match (self.kind(), self.def_id().base) {
             (FullDefKind::Const(_) | FullDefKind::AssocConst(_), DefIdBase::Real(def_id)) => {
@@ -1890,7 +1899,10 @@ where
         implied_trait_proofs: required_trait_proofs,
         types,
         methods,
-        owner: s.owner(),
+        owner: StateOwner {
+            def_id: s.owner(),
+            args: s.owner_args(),
+        },
         trait_ref,
         dyn_data: Default::default(),
     })

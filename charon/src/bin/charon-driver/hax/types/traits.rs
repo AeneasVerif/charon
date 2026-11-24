@@ -1,6 +1,6 @@
 use crate::hax::prelude::*;
 
-use rustc_middle::ty;
+use rustc_middle::ty::{self, TypeVisitableExt};
 
 /// Reflects [`ty::TraitRef`]
 /// Contains the def_id and arguments passed to the trait. The first type argument is the `Self`
@@ -42,7 +42,8 @@ impl<'tcx> AssocItem<'tcx> {
         let tcx = s.base().tcx;
         // We want to solve traits in the context of this item.
         let item_def_id = item.def_id.sinto(s);
-        let s = &s.with_hax_owner(&item_def_id);
+        let owner_args = item_args.filter(|args| !args.has_non_region_param());
+        let s = &s.with_hax_owner_for(&item_def_id, owner_args);
         let item_args = item_args.unwrap_or_else(|| item_def_id.identity_args(s));
         let container_id = item.container_id(tcx);
         let container_args = item_args.truncate_to(tcx, tcx.generics_of(container_id));

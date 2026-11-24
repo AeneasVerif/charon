@@ -394,12 +394,12 @@ impl<'tcx> TranslateCtx<'tcx> {
 
         let is_builtin = def_id.as_synthetic(&self.hax_state).is_some();
         let parent_name = if !is_builtin && let Some(parent_id) = def_id.parent(&self.hax_state) {
-            // FIXME: We have lost the real context in which `item_ref` was defined; it may have
-            // trait proofs that refer to it, or conversely `def_id` may have clauses that shadow
-            // some impls. So it's incorrect to use `def_id` as owner here.
+            // The parent of a monomorphic item is monomorphic, so its trait proofs don't depend on
+            // the context we resolve them in.
             if let RustcItem::Mono(item_ref) = item
+                && let args = item_ref.rustc_args(&self.hax_state)
                 && let Some(parent_item) =
-                    item_ref.typing_parent(&self.hax_state.with_hax_owner(def_id))
+                    item_ref.typing_parent(&self.hax_state.with_hax_owner_for(def_id, Some(args)))
             {
                 self.name_for_item(&RustcItem::Mono(parent_item))?
             } else {

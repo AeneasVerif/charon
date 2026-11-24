@@ -1,0 +1,197 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: test_crate::Tr
+pub trait Tr<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    fn method<'_0_1, Outlives0: (Self: '_0_1)>;
+    vtable: test_crate::Tr::{vtable}
+}
+
+// Full name: test_crate::{impl Tr for u32}::method
+pub fn impl_Tr_for_u32::method<'_0>(self: &'_0 u32)
+{
+    let mut _0: (); // return
+    let self: &'1 u32; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::{impl Tr for u32}
+impl "impl_Tr_for_u32" Tr for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    fn method<'_0_1> = impl_Tr_for_u32::method<'_0_1>
+    vtable: lazy
+}
+
+// Full name: test_crate::{impl Tr for &'a u8}::method
+pub fn {impl Tr for &'a u8}::method<'a, '_1>(self: &'_1 &'a u8)
+where
+    Outlives0: ('a: '_1),
+{
+    let mut _0: (); // return
+    let self: &'3 &'4 u8; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::{impl Tr for &'a u8}
+impl<'a> Tr for &'a u8 {
+    proof ImpliedClause0: (&'a u8: MetaSized) = {built_in impl MetaSized for &'a u8}
+    fn method<'_0_1> = {impl Tr for &'a u8}::method<'a, '_0_1>
+    vtable: lazy
+}
+
+// Full name: test_crate::Wrap
+pub struct Wrap<T>
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Tr),
+{
+  _0: T,
+}
+
+// Full name: test_crate::before
+pub fn before(x: Wrap<u32>[{built_in impl Sized for u32}, impl_Tr_for_u32])
+{
+    let mut _0: (); // return
+    let x: Wrap<u32>[{built_in impl Sized for u32}, impl_Tr_for_u32]; // arg #1
+    let mut _2: &'1 u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = &x._0
+    _0 = impl_Tr_for_u32::method<'5>(move _2)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::with_clause
+pub fn with_clause(x: Wrap<u32>[{built_in impl Sized for u32}, TraitClause0])
+where
+    TraitClause0: (u32: Tr),
+{
+    let mut _0: (); // return
+    let x: Wrap<u32>[{built_in impl Sized for u32}, TraitClause0]; // arg #1
+    let mut _2: &'1 u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = &x._0
+    _0 = TraitClause0::method<'3>(move _2)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::after
+pub fn after(x: Wrap<u32>[{built_in impl Sized for u32}, impl_Tr_for_u32])
+{
+    let mut _0: (); // return
+    let x: Wrap<u32>[{built_in impl Sized for u32}, impl_Tr_for_u32]; // arg #1
+    let mut _2: &'1 u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = &x._0
+    _0 = impl_Tr_for_u32::method<'5>(move _2)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::ref_before
+pub fn ref_before<'a>(x: &'a u8)
+{
+    let mut _0: (); // return
+    let x: &'1 u8; // arg #1
+    let mut _2: &'4 &'5 u8; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = &x
+    _0 = {impl Tr for &'a u8}::method<'8, '12>(move _2)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::ref_with_clause
+pub fn ref_with_clause<'a>(x: &'a u8)
+where
+    TraitClause0: (&'a u8: Tr),
+{
+    let mut _0: (); // return
+    let x: &'1 u8; // arg #1
+    let mut _2: &'4 &'5 u8; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = &x
+    _0 = TraitClause0::method<'12>(move _2)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::ref_after
+pub fn ref_after<'a>(x: &'a u8)
+{
+    let mut _0: (); // return
+    let x: &'1 u8; // arg #1
+    let mut _2: &'4 &'5 u8; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = &x
+    _0 = {impl Tr for &'a u8}::method<'8, '12>(move _2)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+
+
