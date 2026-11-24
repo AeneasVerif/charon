@@ -25,7 +25,7 @@ impl<'tcx> ConstReader<'tcx> {
                 AllocTarget::Global(GlobalRef::Static(def_id))
             }
             GlobalAlloc::Static(_) | GlobalAlloc::Memory(_) => {
-                AllocTarget::Global(GlobalRef::Alloc(self.state.view(tcx, alloc_id, ty).0))
+                AllocTarget::Global(GlobalRef::Alloc(self.state.register(tcx, alloc_id, ty).0))
             }
             GlobalAlloc::VTable(ty, preds) => AllocTarget::VTable(ty, preds),
             GlobalAlloc::TypeId { ty } => AllocTarget::TypeId(ty),

@@ -45,7 +45,7 @@ impl GlobalRef {
 impl<'tcx> ReaderState<'tcx> {
     /// How we view the allocation `alloc_id`, trying to use `ty` if possible.
     /// Returns the deduplicated `AllocId` and the type it's read at.
-    pub(crate) fn view(
+    pub(crate) fn register(
         &self,
         tcx: TyCtxt<'tcx>,
         alloc_id: interpret::AllocId,
@@ -61,6 +61,7 @@ impl<'tcx> ReaderState<'tcx> {
             }
             AllocKey::Deduplicatable(tcx.with_stable_hashing_context(|mut hcx| {
                 let mut hasher = StableHasher::new();
+                // this hashes the contents of the allocation
                 alloc_id.stable_hash(&mut hcx, &mut hasher);
                 hasher.finish()
             }))
@@ -88,9 +89,10 @@ impl<'tcx> ReaderState<'tcx> {
         })
     }
 
-    /// The type at which we view the allocation `alloc_id`.
-    pub fn ty(&self, tcx: TyCtxt<'tcx>, alloc_id: interpret::AllocId) -> Ty<'tcx> {
-        self.view(tcx, alloc_id, None).1
+    /// The type at which we view the allocation `alloc_id`. If no type has been decided,
+    /// picks the default: `[u8; N]` or `MaybeUninit<[u8; N]>`.
+    pub fn ty_or_default(&self, tcx: TyCtxt<'tcx>, alloc_id: interpret::AllocId) -> Ty<'tcx> {
+        self.register(tcx, alloc_id, None).1
     }
 }
 
@@ -277,7 +279,7 @@ impl<'tcx> ConstReader<'tcx> {
                     .instantiate_identity()
                     .skip_normalization(),
             ),
-            GlobalRef::Alloc(alloc_id) => self.state.ty(tcx, alloc_id),
+            GlobalRef::Alloc(alloc_id) => self.state.ty_or_default(tcx, alloc_id),
         }
     }
 
