@@ -974,9 +974,6 @@ impl<'tcx> TranslateCtx<'tcx> {
         name: Name,
         name_opacity: ItemOpacity,
     ) -> ItemMeta {
-        if let Some(item_meta) = self.cached_item_metas.get(item_src) {
-            return item_meta.clone();
-        }
         let span = def.source_span.as_ref().unwrap_or(&def.span);
         let span = self.translate_span(span);
         let is_local = def.def_id().is_local();
@@ -1024,7 +1021,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             name_opacity
         };
 
-        let item_meta = ItemMeta {
+        ItemMeta {
             name,
             span,
             source_text: def.source_text.clone(),
@@ -1037,9 +1034,6 @@ impl<'tcx> TranslateCtx<'tcx> {
             lang_item,
             diagnostic_item,
             has_errors: false,
-        };
-        self.cached_item_metas
-            .insert(item_src.clone(), item_meta.clone());
-        item_meta
+        }
     }
 }

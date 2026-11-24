@@ -1352,7 +1352,6 @@ pub fn translate<'tcx>(
         cached_span_datas: Default::default(),
         cached_file_ids: Default::default(),
         cached_names: Default::default(),
-        cached_item_metas: Default::default(),
         exported_fns: Default::default(),
         lt_mutability_computer: Default::default(),
         monomorphic_layouts: Default::default(),
