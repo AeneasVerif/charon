@@ -186,14 +186,22 @@ fn transform_constant_expr(
                 (None, Some(metadata)) => {
                     let sized_ref = ctx.borrow_to_new_var(place, BorrowKind::Shared, None);
                     Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::Unsize(val.ty().clone(), metadata, vec![])),
+                        UnOp::Cast(CastKind::Unsize(
+                            val.ty().clone(),
+                            metadata,
+                            MetadataPath::new(),
+                        )),
                         Operand::Move(sized_ref),
                     )
                 }
                 (Some(rk), Some(metadata)) => {
                     let sized_raw_ref = ctx.raw_borrow_to_new_var(place, rk, None);
                     Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::Unsize(val.ty().clone(), metadata, vec![])),
+                        UnOp::Cast(CastKind::Unsize(
+                            val.ty().clone(),
+                            metadata,
+                            MetadataPath::new(),
+                        )),
                         Operand::Move(sized_raw_ref),
                     )
                 }

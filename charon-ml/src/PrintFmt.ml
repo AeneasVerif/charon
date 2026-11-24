@@ -506,7 +506,7 @@ and pp_byte (env : fmt_env) (fmt : Format.formatter) (cv : byte) : unit =
   match cv with
   | Uninit -> pp_string fmt "--"
   | Value b -> Format.fprintf fmt "0x%02x" b
-  | Provenance (p, ofs, i) ->
+  | Provenance { provenance = p; offset = ofs; index = i } ->
       let ofs = Scalars.get_val ofs in
       if Z.equal ofs Z.zero then
         Format.fprintf fmt "%a[%d]" (pp_provenance env) p i

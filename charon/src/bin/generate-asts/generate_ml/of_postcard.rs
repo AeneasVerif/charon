@@ -191,7 +191,7 @@ impl<'a> GenerateCtx<'a> {
                         } else {
                             format!("missing_type_{}", tref.id)
                         };
-                        if first == "vec" {
+                        if first == "vec" || first == "thin_vec" {
                             first = "list".to_string();
                         }
                         if first == "ustr" {

@@ -250,10 +250,20 @@ pub enum Byte {
     Uninit,
     /// A concrete byte value
     Value(u8),
-    /// A byte that is part of a pointer with provenance, at the given offset into the pointee.
-    /// The u8 is the index of this byte within the pointer. Note that we do not have an actual
-    /// value for this pointer byte, unlike MiniRust, as that is non-deterministic.
-    Provenance(GlobalProvenance, IntegerValue, u8),
+    /// A byte that is part of a pointer with provenance.
+    Provenance(Box<PointerFragment>),
+}
+
+/// A byte that is part of a pointer with provenance. Note that we do not have an actual value for
+/// this pointer byte, unlike MiniRust, as that is non-deterministic.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+pub struct PointerFragment {
+    pub provenance: GlobalProvenance,
+    /// The offset into the pointee.
+    pub offset: IntegerValue,
+    /// The index of this byte within the pointer.
+    pub index: u8,
 }
 
 macro_rules! static_constant {

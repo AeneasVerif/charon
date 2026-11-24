@@ -1,5 +1,6 @@
 //! Take all the comments found in the original body and assign them to statements.
 use std::mem;
+use thin_vec::ThinVec;
 
 use crate::ast::*;
 use crate::transform::TransformCtx;
@@ -8,14 +9,14 @@ use crate::transform::ctx::TransformPass;
 
 trait IsStatement {
     fn get_span(&self) -> Span;
-    fn get_comments_before(&mut self) -> &mut Vec<String>;
+    fn get_comments_before(&mut self) -> &mut ThinVec<String>;
 }
 
 impl IsStatement for llbc_ast::Statement {
     fn get_span(&self) -> Span {
         self.span
     }
-    fn get_comments_before(&mut self) -> &mut Vec<String> {
+    fn get_comments_before(&mut self) -> &mut ThinVec<String> {
         &mut self.comments_before
     }
 }
@@ -23,7 +24,7 @@ impl IsStatement for ullbc_ast::Statement {
     fn get_span(&self) -> Span {
         self.span
     }
-    fn get_comments_before(&mut self) -> &mut Vec<String> {
+    fn get_comments_before(&mut self) -> &mut ThinVec<String> {
         &mut self.comments_before
     }
 }
@@ -31,7 +32,7 @@ impl IsStatement for ullbc_ast::Terminator {
     fn get_span(&self) -> Span {
         self.span
     }
-    fn get_comments_before(&mut self) -> &mut Vec<String> {
+    fn get_comments_before(&mut self) -> &mut ThinVec<String> {
         &mut self.comments_before
     }
 }

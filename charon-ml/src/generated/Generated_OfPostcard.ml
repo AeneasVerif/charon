@@ -415,10 +415,8 @@ and byte_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _0 = u8_of_postcard ctx st in
          Ok (Value _0)
      | 2 ->
-         let* _0 = global_provenance_of_postcard ctx st in
-         let* _1 = integer_value_of_postcard ctx st in
-         let* _2 = u8_of_postcard ctx st in
-         Ok (Provenance (_0, _1, _2))
+         let* _0 = box_of_postcard pointer_fragment_of_postcard ctx st in
+         Ok (Provenance _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and call_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -723,7 +721,7 @@ and fn_operand_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _0 = fn_ptr_of_postcard ctx st in
          Ok (FnOpRegular _0)
      | 1 ->
-         let* _0 = operand_of_postcard ctx st in
+         let* _0 = box_of_postcard operand_of_postcard ctx st in
          let* _1 = region_args_of_postcard ctx st in
          Ok (FnOpDynamic (_0, _1))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
@@ -1038,11 +1036,11 @@ and place_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _0 = local_id_of_postcard ctx st in
          Ok (PlaceLocal _0)
      | 1 ->
-         let* _0 = box_of_postcard place_of_postcard ctx st in
+         let* _0 = place_of_postcard ctx st in
          let* _1 = projection_elem_of_postcard ctx st in
          Ok (PlaceProjection (_0, _1))
      | 2 ->
-         let* _0 = global_decl_ref_of_postcard ctx st in
+         let* _0 = box_of_postcard global_decl_ref_of_postcard ctx st in
          Ok (PlaceGlobal _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
@@ -1053,6 +1051,14 @@ and place_type_constraint_of_postcard (ctx : of_postcard_ctx)
      let* ty = ty_of_postcard ctx st in
      let* variance = variance_of_postcard ctx st in
      Ok ({ place; ty; variance } : place_type_constraint))
+
+and pointer_fragment_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (pointer_fragment, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* provenance = global_provenance_of_postcard ctx st in
+     let* offset = integer_value_of_postcard ctx st in
+     let* index = u8_of_postcard ctx st in
+     Ok ({ provenance; offset; index } : pointer_fragment))
 
 and poly_trait_ref_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (poly_trait_ref, string) result =
@@ -1540,7 +1546,7 @@ and unsizing_metadata_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* _0 = constant_expr_of_postcard ctx st in
          Ok (MetaLength _0)
      | 1 ->
-         let* _0 = poly_trait_ref_of_postcard ctx st in
+         let* _0 = box_of_postcard poly_trait_ref_of_postcard ctx st in
          let* _1 = constant_expr_of_postcard ctx st in
          Ok (MetaVTable (_0, _1))
      | 2 ->
@@ -1687,7 +1693,7 @@ module Ullbc = struct
            let* on_unwind = block_id_of_postcard ctx st in
            Ok (DropEmptyBox (place, target, on_unwind))
        | 5 ->
-           let* asm = inline_asm_of_postcard ctx st in
+           let* asm = box_of_postcard inline_asm_of_postcard ctx st in
            let* fallthrough = option_of_postcard block_id_of_postcard ctx st in
            let* labels =
              index_vec_of_postcard branch_id_of_postcard block_id_of_postcard
@@ -1763,7 +1769,7 @@ module Llbc = struct
        match __tag with
        | 0 ->
            let* _0 = place_of_postcard ctx st in
-           let* _1 = rvalue_of_postcard ctx st in
+           let* _1 = box_of_postcard rvalue_of_postcard ctx st in
            Ok (Assign (_0, _1))
        | 1 ->
            let* _0 = place_of_postcard ctx st in
@@ -1779,46 +1785,49 @@ module Llbc = struct
            let* _0 = place_of_postcard ctx st in
            Ok (PlaceMention _0)
        | 5 ->
-           let* _0 = borrowck_statement_of_postcard ctx st in
+           let* _0 = box_of_postcard borrowck_statement_of_postcard ctx st in
            Ok (Borrowck _0)
        | 6 ->
-           let* place = place_of_postcard ctx st in
+           let* place = box_of_postcard place_of_postcard ctx st in
            let* fn_ptr = fn_ptr_of_postcard ctx st in
            let* kind = drop_kind_of_postcard ctx st in
-           let* on_unwind = block_of_postcard ctx st in
+           let* on_unwind = box_of_postcard block_of_postcard ctx st in
            Ok (Drop (place, fn_ptr, kind, on_unwind))
        | 7 ->
            let* place = place_of_postcard ctx st in
-           let* on_unwind = block_of_postcard ctx st in
+           let* on_unwind = box_of_postcard block_of_postcard ctx st in
            Ok (DropEmptyBox (place, on_unwind))
        | 8 ->
-           let* assert_ = assertion_of_postcard ctx st in
+           let* assert_ = box_of_postcard assertion_of_postcard ctx st in
            let* on_failure = abort_kind_of_postcard ctx st in
-           let* on_unwind = block_of_postcard ctx st in
+           let* on_unwind = box_of_postcard block_of_postcard ctx st in
            Ok (Assert (assert_, on_failure, on_unwind))
        | 9 ->
-           let* asm = inline_asm_of_postcard ctx st in
-           let* fallthrough = option_of_postcard block_of_postcard ctx st in
-           let* labels =
-             index_vec_of_postcard branch_id_of_postcard block_of_postcard ctx
-               st
+           let* asm = box_of_postcard inline_asm_of_postcard ctx st in
+           let* fallthrough =
+             option_of_postcard (box_of_postcard block_of_postcard) ctx st
            in
-           let* on_unwind = block_of_postcard ctx st in
+           let* labels =
+             box_of_postcard
+               (index_vec_of_postcard branch_id_of_postcard block_of_postcard)
+               ctx st
+           in
+           let* on_unwind = box_of_postcard block_of_postcard ctx st in
            Ok (InlineAsm (asm, fallthrough, labels, on_unwind))
        | 10 ->
-           let* call = call_of_postcard ctx st in
-           let* dest = place_of_postcard ctx st in
-           let* on_unwind = block_of_postcard ctx st in
+           let* call = box_of_postcard call_of_postcard ctx st in
+           let* dest = box_of_postcard place_of_postcard ctx st in
+           let* on_unwind = box_of_postcard block_of_postcard ctx st in
            Ok (Call (call, dest, on_unwind))
        | 11 ->
-           let* data = switch_data_of_postcard ctx st in
+           let* data = box_of_postcard switch_data_of_postcard ctx st in
            let* branches =
              index_vec_of_postcard branch_id_of_postcard block_of_postcard ctx
                st
            in
            Ok (Switch (data, branches))
        | 12 ->
-           let* _0 = block_of_postcard ctx st in
+           let* _0 = box_of_postcard block_of_postcard ctx st in
            Ok (Loop _0)
        | 13 ->
            let* _0 = usize_of_postcard ctx st in
@@ -1827,8 +1836,8 @@ module Llbc = struct
            let* _0 = usize_of_postcard ctx st in
            Ok (Continue _0)
        | 15 ->
-           let* call = call_of_postcard ctx st in
-           let* on_unwind = block_of_postcard ctx st in
+           let* call = box_of_postcard call_of_postcard ctx st in
+           let* on_unwind = box_of_postcard block_of_postcard ctx st in
            Ok (Panic (call, on_unwind))
        | 16 ->
            let* _0 = unwind_terminate_reason_of_postcard ctx st in

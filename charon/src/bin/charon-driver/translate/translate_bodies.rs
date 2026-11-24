@@ -337,7 +337,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             hax::UnsizingMetadata::DirectVTable(trait_proof) => {
                 let tref = self.translate_trait_proof(span, trait_proof)?;
                 let vtable = self.translate_vtable_instance_const(span, trait_proof)?;
-                UnsizingMetadata::VTable(tref, vtable)
+                UnsizingMetadata::VTable(Box::new(tref), vtable)
             }
             hax::UnsizingMetadata::NestedVTable(dyn_trait_proof) => {
                 // This binds a fake `T: SrcTrait` variable.
@@ -356,7 +356,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     target_tref = tref;
                 }
 
-                let mut field_path = vec![];
+                let mut field_path = thin_vec::ThinVec::new();
                 for &(trait_id, clause_id) in &clause_path {
                     if let Ok(ItemRef::TraitDecl(tdecl)) = self.get_or_translate(trait_id.into())
                         && let vtable_decl_id = tdecl.vtable.as_ref().unwrap().id
@@ -1916,12 +1916,12 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     .map(|target| self.translate_basic_block_id(*target))
                     .collect();
                 let on_unwind = self.translate_unwind_action(span, unwind)?;
-                let asm = InlineAsm {
+                let asm = Box::new(InlineAsm {
                     kind,
                     template,
                     operands,
                     options,
-                };
+                });
                 ullbc_ast::TerminatorKind::InlineAsm {
                     asm,
                     fallthrough,
@@ -2025,7 +2025,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     sig.regions
                         .map_ref_indexed(|_, _| self.translate_erased_region()),
                 );
-                FnOperand::Dynamic(op, regions)
+                FnOperand::Dynamic(Box::new(op), regions)
             }
             _ => raise_error!(
                 self,

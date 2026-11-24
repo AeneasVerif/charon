@@ -465,11 +465,9 @@ and byte_of_json (ctx : of_json_ctx) (js : json) : (byte, string) result =
     | `Assoc [ ("Value", _0) ] ->
         let* _0 = int_of_json ctx _0 in
         Ok (Value _0)
-    | `Assoc [ ("Provenance", `List [ _0; _1; _2 ]) ] ->
-        let* _0 = global_provenance_of_json ctx _0 in
-        let* _1 = integer_value_of_json ctx _1 in
-        let* _2 = int_of_json ctx _2 in
-        Ok (Provenance (_0, _1, _2))
+    | `Assoc [ ("Provenance", _0) ] ->
+        let* _0 = box_of_json pointer_fragment_of_json ctx _0 in
+        Ok (Provenance _0)
     | _ -> Error "")
 
 and call_of_json (ctx : of_json_ctx) (js : json) : (call, string) result =
@@ -799,7 +797,7 @@ and fn_operand_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = fn_ptr_of_json ctx _0 in
         Ok (FnOpRegular _0)
     | `Assoc [ ("Dynamic", `List [ _0; _1 ]) ] ->
-        let* _0 = operand_of_json ctx _0 in
+        let* _0 = box_of_json operand_of_json ctx _0 in
         let* _1 = region_args_of_json ctx _1 in
         Ok (FnOpDynamic (_0, _1))
     | _ -> Error "")
@@ -1168,11 +1166,11 @@ and place_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = local_id_of_json ctx _0 in
         Ok (PlaceLocal _0)
     | `Assoc [ ("Projection", `List [ _0; _1 ]) ] ->
-        let* _0 = box_of_json place_of_json ctx _0 in
+        let* _0 = place_of_json ctx _0 in
         let* _1 = projection_elem_of_json ctx _1 in
         Ok (PlaceProjection (_0, _1))
     | `Assoc [ ("Global", _0) ] ->
-        let* _0 = global_decl_ref_of_json ctx _0 in
+        let* _0 = box_of_json global_decl_ref_of_json ctx _0 in
         Ok (PlaceGlobal _0)
     | _ -> Error "")
 
@@ -1185,6 +1183,18 @@ and place_type_constraint_of_json (ctx : of_json_ctx) (js : json) :
         let* ty = ty_of_json ctx ty in
         let* variance = variance_of_json ctx variance in
         Ok ({ place; ty; variance } : place_type_constraint)
+    | _ -> Error "")
+
+and pointer_fragment_of_json (ctx : of_json_ctx) (js : json) :
+    (pointer_fragment, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [ ("provenance", provenance); ("offset", offset); ("index", index) ] ->
+        let* provenance = global_provenance_of_json ctx provenance in
+        let* offset = integer_value_of_json ctx offset in
+        let* index = int_of_json ctx index in
+        Ok ({ provenance; offset; index } : pointer_fragment)
     | _ -> Error "")
 
 and poly_trait_ref_of_json (ctx : of_json_ctx) (js : json) :
@@ -1812,7 +1822,7 @@ and unsizing_metadata_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = constant_expr_of_json ctx _0 in
         Ok (MetaLength _0)
     | `Assoc [ ("VTable", `List [ _0; _1 ]) ] ->
-        let* _0 = poly_trait_ref_of_json ctx _0 in
+        let* _0 = box_of_json poly_trait_ref_of_json ctx _0 in
         let* _1 = constant_expr_of_json ctx _1 in
         Ok (MetaVTable (_0, _1))
     | `Assoc [ ("VTableUpcast", _0) ] ->
@@ -2026,7 +2036,7 @@ module Ullbc = struct
                   ("on_unwind", on_unwind);
                 ] );
           ] ->
-          let* asm = inline_asm_of_json ctx asm in
+          let* asm = box_of_json inline_asm_of_json ctx asm in
           let* fallthrough = option_of_json block_id_of_json ctx fallthrough in
           let* labels =
             index_vec_of_json branch_id_of_json block_id_of_json ctx labels
@@ -2129,7 +2139,7 @@ module Llbc = struct
       (match js with
       | `Assoc [ ("Assign", `List [ _0; _1 ]) ] ->
           let* _0 = place_of_json ctx _0 in
-          let* _1 = rvalue_of_json ctx _1 in
+          let* _1 = box_of_json rvalue_of_json ctx _1 in
           Ok (Assign (_0, _1))
       | `Assoc [ ("SetDiscriminant", `List [ _0; _1 ]) ] ->
           let* _0 = place_of_json ctx _0 in
@@ -2145,7 +2155,7 @@ module Llbc = struct
           let* _0 = place_of_json ctx _0 in
           Ok (PlaceMention _0)
       | `Assoc [ ("Borrowck", _0) ] ->
-          let* _0 = borrowck_statement_of_json ctx _0 in
+          let* _0 = box_of_json borrowck_statement_of_json ctx _0 in
           Ok (Borrowck _0)
       | `Assoc
           [
@@ -2158,10 +2168,10 @@ module Llbc = struct
                   ("on_unwind", on_unwind);
                 ] );
           ] ->
-          let* place = place_of_json ctx place in
+          let* place = box_of_json place_of_json ctx place in
           let* fn_ptr = fn_ptr_of_json ctx fn_ptr in
           let* kind = drop_kind_of_json ctx kind in
-          let* on_unwind = block_of_json ctx on_unwind in
+          let* on_unwind = box_of_json block_of_json ctx on_unwind in
           Ok (Drop (place, fn_ptr, kind, on_unwind))
       | `Assoc
           [
@@ -2169,7 +2179,7 @@ module Llbc = struct
               `Assoc [ ("place", place); ("on_unwind", on_unwind) ] );
           ] ->
           let* place = place_of_json ctx place in
-          let* on_unwind = block_of_json ctx on_unwind in
+          let* on_unwind = box_of_json block_of_json ctx on_unwind in
           Ok (DropEmptyBox (place, on_unwind))
       | `Assoc
           [
@@ -2181,9 +2191,9 @@ module Llbc = struct
                   ("on_unwind", on_unwind);
                 ] );
           ] ->
-          let* assert_ = assertion_of_json ctx assert_ in
+          let* assert_ = box_of_json assertion_of_json ctx assert_ in
           let* on_failure = abort_kind_of_json ctx on_failure in
-          let* on_unwind = block_of_json ctx on_unwind in
+          let* on_unwind = box_of_json block_of_json ctx on_unwind in
           Ok (Assert (assert_, on_failure, on_unwind))
       | `Assoc
           [
@@ -2196,12 +2206,16 @@ module Llbc = struct
                   ("on_unwind", on_unwind);
                 ] );
           ] ->
-          let* asm = inline_asm_of_json ctx asm in
-          let* fallthrough = option_of_json block_of_json ctx fallthrough in
-          let* labels =
-            index_vec_of_json branch_id_of_json block_of_json ctx labels
+          let* asm = box_of_json inline_asm_of_json ctx asm in
+          let* fallthrough =
+            option_of_json (box_of_json block_of_json) ctx fallthrough
           in
-          let* on_unwind = block_of_json ctx on_unwind in
+          let* labels =
+            box_of_json
+              (index_vec_of_json branch_id_of_json block_of_json)
+              ctx labels
+          in
+          let* on_unwind = box_of_json block_of_json ctx on_unwind in
           Ok (InlineAsm (asm, fallthrough, labels, on_unwind))
       | `Assoc
           [
@@ -2209,19 +2223,19 @@ module Llbc = struct
               `Assoc
                 [ ("call", call); ("dest", dest); ("on_unwind", on_unwind) ] );
           ] ->
-          let* call = call_of_json ctx call in
-          let* dest = place_of_json ctx dest in
-          let* on_unwind = block_of_json ctx on_unwind in
+          let* call = box_of_json call_of_json ctx call in
+          let* dest = box_of_json place_of_json ctx dest in
+          let* on_unwind = box_of_json block_of_json ctx on_unwind in
           Ok (Call (call, dest, on_unwind))
       | `Assoc [ ("Switch", `Assoc [ ("data", data); ("branches", branches) ]) ]
         ->
-          let* data = switch_data_of_json ctx data in
+          let* data = box_of_json switch_data_of_json ctx data in
           let* branches =
             index_vec_of_json branch_id_of_json block_of_json ctx branches
           in
           Ok (Switch (data, branches))
       | `Assoc [ ("Loop", _0) ] ->
-          let* _0 = block_of_json ctx _0 in
+          let* _0 = box_of_json block_of_json ctx _0 in
           Ok (Loop _0)
       | `Assoc [ ("Break", _0) ] ->
           let* _0 = int_of_json ctx _0 in
@@ -2231,8 +2245,8 @@ module Llbc = struct
           Ok (Continue _0)
       | `Assoc
           [ ("Panic", `Assoc [ ("call", call); ("on_unwind", on_unwind) ]) ] ->
-          let* call = call_of_json ctx call in
-          let* on_unwind = block_of_json ctx on_unwind in
+          let* call = box_of_json call_of_json ctx call in
+          let* on_unwind = box_of_json block_of_json ctx on_unwind in
           Ok (Panic (call, on_unwind))
       | `Assoc [ ("UnwindTerminate", `List [ _0; _1 ]) ] ->
           let* _0 = unwind_terminate_reason_of_json ctx _0 in

@@ -20,10 +20,10 @@ pub enum PlaceKind {
     /// A local variable in a function body.
     Local(LocalId),
     /// A subplace of a place.
-    Projection(Box<Place>, ProjectionElem),
+    Projection(Box<(Place, ProjectionElem)>),
     /// A global (const or static).
     /// Not present in MIR; introduced in [simplify_constants.rs].
-    Global(GlobalDeclRef),
+    Global(Box<GlobalDeclRef>),
 }
 
 /// Projects a place to a subplace.
@@ -85,7 +85,7 @@ impl Place {
 
     pub fn new_global(global: GlobalDeclRef, ty: Ty) -> Place {
         Place {
-            kind: PlaceKind::Global(global),
+            kind: PlaceKind::Global(Box::new(global)),
             ty,
         }
     }
@@ -105,7 +105,8 @@ impl Place {
     }
 
     pub fn as_projection(&self) -> Option<(&Self, &ProjectionElem)> {
-        self.kind.as_projection().map(|(pl, pj)| (pl.as_ref(), pj))
+        let (place, proj) = &**self.kind.as_projection()?;
+        Some((place, proj))
     }
 
     #[deprecated(note = "use `local_id` instead")]
@@ -115,14 +116,14 @@ impl Place {
     pub fn local_id(&self) -> Option<LocalId> {
         match &self.kind {
             PlaceKind::Local(var_id) => Some(*var_id),
-            PlaceKind::Projection(subplace, _) => subplace.local_id(),
+            PlaceKind::Projection(proj) => proj.0.local_id(),
             PlaceKind::Global(_) => None,
         }
     }
 
     pub fn project(self, elem: ProjectionElem, ty: Ty) -> Self {
         Self {
-            kind: PlaceKind::Projection(Box::new(self), elem),
+            kind: PlaceKind::Projection(Box::new((self, elem))),
             ty,
         }
     }
@@ -130,7 +131,7 @@ impl Place {
     pub fn project_auto_ty(self, krate: &TranslatedCrate, proj: ProjectionElem) -> Option<Self> {
         Some(Place {
             ty: proj.project_type(krate, &self.ty)?,
-            kind: PlaceKind::Projection(Box::new(self), proj),
+            kind: PlaceKind::Projection(Box::new((self, proj))),
         })
     }
 
@@ -147,7 +148,7 @@ impl Place {
         };
         Place {
             ty: proj_ty,
-            kind: PlaceKind::Projection(Box::new(self), ProjectionElem::Deref),
+            kind: PlaceKind::Projection(Box::new((self, ProjectionElem::Deref))),
         }
     }
 
@@ -161,8 +162,8 @@ impl Place {
         match (&self.kind, &other.kind) {
             (PlaceKind::Local(left), PlaceKind::Local(right)) => left == right,
             (PlaceKind::Global(left), PlaceKind::Global(right)) => left == right,
-            (PlaceKind::Projection(left, left_proj), PlaceKind::Projection(right, right_proj)) => {
-                left_proj == right_proj && left.same_place(right)
+            (PlaceKind::Projection(left), PlaceKind::Projection(right)) => {
+                left.1 == right.1 && left.0.same_place(&right.0)
             }
             _ => false,
         }

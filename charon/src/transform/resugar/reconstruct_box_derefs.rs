@@ -85,10 +85,10 @@ impl VisitBody for LocalStatusCollector {
     fn visit_place(&mut self, place: &Place) -> ControlFlow<Self::Break> {
         match &place.kind {
             // Skip uses of a local where the last projection is a deref or a metadata access.
-            PlaceKind::Projection(
-                subplace,
-                ProjectionElem::Deref | ProjectionElem::PtrMetadata,
-            ) if subplace.is_local() => {
+            _ if let Some((subplace, ProjectionElem::Deref | ProjectionElem::PtrMetadata)) =
+                place.as_projection()
+                && subplace.is_local() =>
+            {
                 return ControlFlow::Continue(());
             }
             // This didn't get caught by the branch above, so it's an invalid use.
@@ -150,14 +150,12 @@ impl UllbcPass for Transform {
         let local_status = collect_local_status(body);
 
         body.body.dyn_visit_in_body_mut(|place: &mut Place| {
-            if let PlaceKind::Projection(
-                subplace,
-                ProjectionElem::Deref | ProjectionElem::PtrMetadata,
-            ) = &mut place.kind
+            if let PlaceKind::Projection(proj) = &mut place.kind
+                && let (subplace, ProjectionElem::Deref | ProjectionElem::PtrMetadata) = &mut **proj
                 && let Some(local) = subplace.as_local()
                 && let Some((_, box_place)) = local_status[local].rewritable_box()
             {
-                **subplace = box_place.clone();
+                *subplace = box_place.clone();
             }
         });
 

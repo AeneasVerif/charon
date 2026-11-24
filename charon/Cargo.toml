@@ -26,7 +26,7 @@ tracing = { version = "0.1", features = ["max_level_trace"] }
 
 [package]
 name = "charon"
-version = "0.1.324"
+version = "0.1.325"
 authors.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -113,6 +113,7 @@ syn.workspace = true
 take_mut = "0.2.2"
 tar = { version = "0.4.42", optional = true }
 tempfile = "3"
+thin-vec = { version = "0.2", features = ["serde"] }
 toml = { version = "0.8", features = ["parse"] }
 tracing-subscriber = { version = "0.3", features = [ "env-filter", "std", "fmt", ] }
 tracing-tree = { git = "https://github.com/Nadrieril/tracing-tree", features = [ "time", ] } # Fork with improved formating and timing info.

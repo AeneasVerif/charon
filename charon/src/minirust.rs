@@ -632,7 +632,8 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 };
                 mb::deref(pointer, self.ty(span, &place.ty)?)
             }
-            PlaceKind::Projection(subplace, projection) => {
+            PlaceKind::Projection(proj) => {
+                let (subplace, projection) = &**proj;
                 let subplace_expr = self.place(span, subplace)?;
                 match projection {
                     ProjectionElem::Deref => {
@@ -686,11 +687,9 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             Operand::Copy(place, _) | Operand::Read(place) | Operand::Move(place) => {
                 // Charon translates dyn dispatch to a vtable-field read. MiniRust vtables are
                 // opaque, so read the method through its lookup operation.
-                if let PlaceKind::Projection(vtable, ProjectionElem::Field(None, field)) =
-                    &place.kind
-                    && let PlaceKind::Projection(metadata, ProjectionElem::Deref) = &vtable.kind
-                    && let PlaceKind::Projection(pointer, ProjectionElem::PtrMetadata) =
-                        &metadata.kind
+                if let Some((vtable, ProjectionElem::Field(None, field))) = place.as_projection()
+                    && let Some((metadata, ProjectionElem::Deref)) = vtable.as_projection()
+                    && let Some((pointer, ProjectionElem::PtrMetadata)) = metadata.as_projection()
                     && let Some(tref) = vtable.ty.as_adt()
                     && let TypeSource::VTable { field_map, .. } =
                         &self.krate.type_decls[tref.id].src
@@ -703,9 +702,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                         mb::get_metadata(mb::load(self.place(span, pointer)?)),
                         self.method_name(*field),
                     )
-                } else if let PlaceKind::Projection(pointer, ProjectionElem::PtrMetadata) =
-                    &place.kind
-                {
+                } else if let Some((pointer, ProjectionElem::PtrMetadata)) = place.as_projection() {
                     mb::get_metadata(mb::load(self.place(span, pointer)?))
                 } else {
                     mb::load(self.place(span, place)?)
@@ -1150,17 +1147,17 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 Byte::Uninit => bytes.push(None),
                 Byte::Value(value) => bytes.push(Some(*value)),
                 // MiniRust doesn't have TypeId provenance so we lower it to a hash of the type.
-                Byte::Provenance(GlobalProvenance::TypeId(ty), ptr_offset, i) => {
-                    let val = self.type_id_val(span, ty, ptr_offset.to_bits() as u64)?;
+                Byte::Provenance(frag) if let GlobalProvenance::TypeId(ty) = &frag.provenance => {
+                    let val = self.type_id_val(span, ty, frag.offset.to_bits() as u64)?;
                     let val_bytes = if T::ENDIANNESS == mini::LittleEndian {
                         val.to_le_bytes()
                     } else {
                         val.to_be_bytes()
                     };
-                    bytes.push(Some(val_bytes[*i as usize]));
+                    bytes.push(Some(val_bytes[frag.index as usize]));
                 }
-                Byte::Provenance(provenance, ptr_offset, pointer_byte) => {
-                    let name = match provenance {
+                Byte::Provenance(frag) => {
+                    let name = match &frag.provenance {
                         GlobalProvenance::Global(gref)
                             if self
                                 .krate
@@ -1177,13 +1174,13 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                         GlobalProvenance::TypeId(_) => unreachable!(),
                     };
                     // FIXME(minirust): MiniRust does not seem to support pointer fragments
-                    if *pointer_byte == 0 {
+                    if frag.index == 0 {
                         relocations.push((
                             mini_size(u64::try_from(offset).context(span)?),
                             mini::Relocation {
                                 name,
                                 offset: mini_size(
-                                    u64::try_from(ptr_offset.to_bits()).context(span)?,
+                                    u64::try_from(frag.offset.to_bits()).context(span)?,
                                 ),
                             },
                         ));
