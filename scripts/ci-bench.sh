@@ -23,6 +23,10 @@ for crate_name in "${!crates[@]}"; do
   git clone --depth 1 "$repo_url" "$crate_dir"
   manifest="$crate_dir/${subdir:+$subdir/}Cargo.toml"
 
+  # We run charon twice: once to get everything compiled, and a second time
+  # under perf to count instructions spent on the root crate only.
+  charon cargo --preset=fast --no-serialize -- --manifest-path "$manifest" || true
+
   for preset in "${presets[@]}"; do
     bench_name="$crate_name ($preset)"
     echo "::group::$bench_name"
@@ -33,11 +37,6 @@ for crate_name in "${!crates[@]}"; do
 
     # Charon exits nonzero when it emits errors, which some presets may do on these crates. We
     # still want to measure them, so we ignore the exit code.
-
-    # We run charon twice: once to get everything compiled, and a second time
-    # under perf to count instructions spent on the root crate only.
-    charon cargo --preset="$preset" --no-serialize -- --manifest-path "$manifest" || true
-
     # perf stat --inherit (the default) counts all child processes, so this
     # captures charon + cargo + charon_driver. We use GNU time for max RSS.
     command time -v -o "$time_file" \
