@@ -632,7 +632,8 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 };
                 mb::deref(pointer, self.ty(span, &place.ty)?)
             }
-            PlaceKind::Projection(subplace, projection) => {
+            PlaceKind::Projection(proj) => {
+                let (subplace, projection) = &**proj;
                 let subplace_expr = self.place(span, subplace)?;
                 match projection {
                     ProjectionElem::Deref => {
@@ -686,11 +687,9 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             Operand::Copy(place, _) | Operand::Read(place) | Operand::Move(place) => {
                 // Charon translates dyn dispatch to a vtable-field read. MiniRust vtables are
                 // opaque, so read the method through its lookup operation.
-                if let PlaceKind::Projection(vtable, ProjectionElem::Field(None, field)) =
-                    &place.kind
-                    && let PlaceKind::Projection(metadata, ProjectionElem::Deref) = &vtable.kind
-                    && let PlaceKind::Projection(pointer, ProjectionElem::PtrMetadata) =
-                        &metadata.kind
+                if let Some((vtable, ProjectionElem::Field(None, field))) = place.as_projection()
+                    && let Some((metadata, ProjectionElem::Deref)) = vtable.as_projection()
+                    && let Some((pointer, ProjectionElem::PtrMetadata)) = metadata.as_projection()
                     && let Some(tref) = vtable.ty.as_adt()
                     && let TypeSource::VTable { field_map, .. } =
                         &self.krate.type_decls[tref.id].src
@@ -703,9 +702,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                         mb::get_metadata(mb::load(self.place(span, pointer)?)),
                         self.method_name(*field),
                     )
-                } else if let PlaceKind::Projection(pointer, ProjectionElem::PtrMetadata) =
-                    &place.kind
-                {
+                } else if let Some((pointer, ProjectionElem::PtrMetadata)) = place.as_projection() {
                     mb::get_metadata(mb::load(self.place(span, pointer)?))
                 } else {
                     mb::load(self.place(span, place)?)

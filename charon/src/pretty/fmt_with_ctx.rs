@@ -1666,7 +1666,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
         match &self.kind {
             PlaceKind::Local(var_id) => write!(f, "{}", var_id.with_ctx(ctx)),
             PlaceKind::Global(global_ref) => global_ref.fmt_with_ctx(ctx, f),
-            PlaceKind::Projection(subplace, projection) => {
+            PlaceKind::Projection(proj) => {
+                let (subplace, projection) = &**proj;
                 let sub = subplace.with_ctx(ctx);
                 match projection {
                     ProjectionElem::Deref => write!(f, "(*{sub})"),

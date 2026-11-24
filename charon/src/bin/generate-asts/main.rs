@@ -70,6 +70,38 @@ fn use_serialized_span(crate_data: &mut TranslatedCrate) -> Result<()> {
     Ok(())
 }
 
+/// Transform a variant `Foo(Box<(A, B, ..)>)` into `Foo(A, B, ..)` (they serialize the same!)
+fn flatten_boxed_tuple_variants(crate_data: &mut TranslatedCrate) {
+    use charon_lib::ast::*;
+    for decl in crate_data.type_decls.iter_mut() {
+        let TypeDeclKind::Enum(variants) = &mut decl.kind else {
+            continue;
+        };
+        for variant in variants.iter_mut() {
+            if let [field] = variant.fields.as_raw_slice()
+                && field.is_positional
+                && let TyKind::Adt(boxed) = field.ty.kind()
+                && let Some(BuiltinAdt::Box) = boxed.as_builtin()
+                && let TyKind::Adt(tuple) = boxed.generics.types[0].kind()
+                && let Some(BuiltinAdt::Tuple) = tuple.as_builtin()
+            {
+                let fields = tuple
+                    .generics
+                    .types
+                    .iter()
+                    .enumerate()
+                    .map(|(i, ty)| Field {
+                        name: format!("_{i}"),
+                        ty: ty.clone(),
+                        ..field.clone()
+                    })
+                    .collect();
+                variant.fields = fields;
+            }
+        }
+    }
+}
+
 fn main() -> Result<()> {
     let dir = PathBuf::from("src/bin/generate-asts");
     let generated_dir = dir.join("generated");
@@ -79,6 +111,7 @@ fn main() -> Result<()> {
     let rustc_datatypes = generate_rust::RustcDatatypes::new();
     let mut crate_data = translate_charon_itself(&generated_dir, &rustc_datatypes)?;
     use_serialized_span(&mut crate_data)?;
+    flatten_boxed_tuple_variants(&mut crate_data);
 
     let ml_output_dir = if std::env::var("IN_CI").as_deref() == Ok("1") {
         generated_dir

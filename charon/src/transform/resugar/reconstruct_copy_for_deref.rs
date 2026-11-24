@@ -140,14 +140,12 @@ impl UllbcPass for Transform {
         body.body.dyn_visit_in_body_mut(|place: &mut Place| {
             // Keep the projection and replace only its base; the visitor reaches
             // inner projections on its own.
-            if let PlaceKind::Projection(
-                subplace,
-                ProjectionElem::Deref | ProjectionElem::PtrMetadata,
-            ) = &mut place.kind
+            if let PlaceKind::Projection(proj) = &mut place.kind
+                && let (subplace, ProjectionElem::Deref | ProjectionElem::PtrMetadata) = &mut **proj
                 && let Some(local) = subplace.as_local()
                 && let Some(source) = replacements.get(local)
             {
-                **subplace = source.clone();
+                *subplace = source.clone();
             }
         });
     }

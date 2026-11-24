@@ -353,7 +353,7 @@ pub trait BodyTransformCtx: Sized {
                     let global = ctx.get_crate().global_decls.get(gref.id)?;
                     return Some(Operand::Const(global.ptr_metadata.clone()));
                 }
-                PlaceKind::Projection(subplace, proj) => (subplace, proj),
+                PlaceKind::Projection(proj) => (&proj.0, &proj.1),
             };
             match proj {
                 // The outermost deref we encountered gives us the metadata of the place.

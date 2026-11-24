@@ -117,7 +117,7 @@ impl Place {
                 };
             }
             PlaceKind::Local(_) => return Safety::Safe,
-            PlaceKind::Projection(sub, proj) => (sub, proj),
+            PlaceKind::Projection(proj) => (&proj.0, &proj.1),
         };
         match proj {
             // `safety.unsafe-deref`, ignoring VTable reads (guaranteed safe)
@@ -183,7 +183,9 @@ impl HasSafety for Rvalue {
                 // outermost accesses: `&raw const *ptr` is ok, but `&raw const (*ptr).field` isn't.
                 let accessed = match &place.kind {
                     PlaceKind::Global(_) => None,
-                    PlaceKind::Projection(sub, ProjectionElem::Deref) => Some(&**sub),
+                    _ if let Some((sub, ProjectionElem::Deref)) = place.as_projection() => {
+                        Some(sub)
+                    }
                     _ => place.subplaces().find(|place| {
                         !matches!(place.as_projection(), Some((_, ProjectionElem::Field(..))))
                             || !place.shallow_safety(krate).is_unsafe()

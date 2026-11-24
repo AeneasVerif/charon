@@ -64,16 +64,17 @@ impl<'a> PythonTranspiler<'a> {
                 .short_str()
                 .unwrap()
                 .to_owned(),
-            PlaceKind::Projection(place, ProjectionElem::Field(_, field)) => {
+            _ if let Some((place, ProjectionElem::Field(_, field))) = place.as_projection() => {
                 format!("{}[{}]", self.place(place), field.index())
             }
-            PlaceKind::Projection(
+            _ if let Some((
                 place,
                 ProjectionElem::Index {
                     offset,
                     from_end: false,
                 },
-            ) => {
+            )) = place.as_projection() =>
+            {
                 format!("{}[{}]", self.place(place), self.operand(offset))
             }
             projection => panic!("unsupported place: {projection:?}"),

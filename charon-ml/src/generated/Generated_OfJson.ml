@@ -1166,7 +1166,7 @@ and place_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = local_id_of_json ctx _0 in
         Ok (PlaceLocal _0)
     | `Assoc [ ("Projection", `List [ _0; _1 ]) ] ->
-        let* _0 = box_of_json place_of_json ctx _0 in
+        let* _0 = place_of_json ctx _0 in
         let* _1 = projection_elem_of_json ctx _1 in
         Ok (PlaceProjection (_0, _1))
     | `Assoc [ ("Global", _0) ] ->
