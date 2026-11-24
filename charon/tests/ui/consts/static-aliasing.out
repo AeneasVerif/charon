@@ -28,12 +28,6 @@ pub unsafe trait core::marker::Sync<Self>
 
 vtable core::marker::Sync::{vtable}<Self>: core::marker::Sync::{vtable} = Opaque(VTable was chosen to be opaque)
 
-// Full name: core::mem::maybe_uninit::MaybeUninit
-#[lang_item(MaybeUninit)]
-pub opaque type MaybeUninit<T>
-where
-    TraitClause0: (T: Sized),
-
 struct (_, _)<A, B>
 where
     TraitClause0: (A: Sized),
@@ -42,9 +36,9 @@ where
   _1: B,
 }
 
-static test_crate::{promoted_const}: MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}] = RawMemory(0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00)
+static test_crate::{promoted_const}: [u8; 8usize] = [1u8, 0u8, 0u8, 0u8, 2u8, 0u8, 0u8, 0u8]
 
-static test_crate::{promoted_const#1}: MaybeUninit<[u8; 2usize]>[{built_in impl Sized for [u8; 2usize]}] = RawMemory(0x2a, 0x0c)
+static test_crate::{promoted_const#1}: [u8; 2usize] = [42u8, 12u8]
 
 struct test_crate::Sync<T>
 where
@@ -140,7 +134,7 @@ impl "impl_Trait_for_u8" Trait for u8 {
 }
 
 // Full name: test_crate::ANON_DYN
-static ANON_DYN: &'static (dyn Trait + 'static) = &test_crate::{promoted_const#1}.offset!(1isize * size_of::<u8>()) with_metadata(&impl_Trait_for_u8::{vtable})
+static ANON_DYN: &'static (dyn Trait + 'static) = &test_crate::{promoted_const#1}[1usize] with_metadata(&impl_Trait_for_u8::{vtable})
 
 // Full name: test_crate::foo
 fn foo()

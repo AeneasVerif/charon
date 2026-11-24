@@ -11,7 +11,11 @@ use rustc_hir::def::DefKind;
 
 impl<'tcx> ConstReader<'tcx> {
     /// Classify the given allocation.
-    pub(crate) fn alloc_target(&self, alloc_id: interpret::AllocId) -> AllocTarget<'tcx> {
+    pub(crate) fn alloc_target(
+        &self,
+        alloc_id: interpret::AllocId,
+        ty: Option<Ty<'tcx>>,
+    ) -> AllocTarget<'tcx> {
         let tcx = self.tcx;
         match tcx.global_alloc(alloc_id) {
             GlobalAlloc::Function { instance } => AllocTarget::Fn(FnTarget::new(instance, None)),
@@ -21,7 +25,7 @@ impl<'tcx> ConstReader<'tcx> {
                 AllocTarget::Global(GlobalRef::Static(def_id))
             }
             GlobalAlloc::Static(_) | GlobalAlloc::Memory(_) => {
-                AllocTarget::Global(GlobalRef::Alloc(alloc_id))
+                AllocTarget::Global(GlobalRef::Alloc(self.state.register(tcx, alloc_id, ty).0))
             }
             GlobalAlloc::VTable(ty, preds) => AllocTarget::VTable(ty, preds),
             GlobalAlloc::TypeId { ty } => AllocTarget::TypeId(ty),
@@ -57,7 +61,7 @@ impl<'tcx> ConstReader<'tcx> {
                 }
                 interpret::Scalar::Ptr(ptr, size) => {
                     let (prov, ptr_offset) = ptr.into_raw_parts();
-                    let target = self.alloc_target(prov.alloc_id());
+                    let target = self.alloc_target(prov.alloc_id(), None);
                     for i in 0..size.get() {
                         bytes[offset.bytes_usize() + i as usize] =
                             self.ptr_byte(target, ptr_offset, i);
@@ -106,7 +110,7 @@ impl<'tcx> ConstReader<'tcx> {
         // A pointer may straddle the boundaries of `range`.
         let ptr_size = self.tcx.data_layout.pointer_size();
         for (prov_range, prov) in alloc.provenance().get_range(range, ecx) {
-            let target = self.alloc_target(prov.alloc_id());
+            let target = self.alloc_target(prov.alloc_id(), None);
             // This is either a whole pointer, or a single byte of one whose index and pointer
             // bytes are stored with its provenance.
             let (first_idx, ptr_bytes) = if prov_range.size == ptr_size {

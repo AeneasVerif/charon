@@ -666,7 +666,7 @@ impl DefId {
             DefIdBase::Synthetic(synthetic) => synthetic.type_of(s),
             DefIdBase::ImplAssocItem(id) => tcx.type_of(id.item_decl_id),
             DefIdBase::Alloc(alloc_id) => s.with_global_cache(|cache| {
-                ty::EarlyBinder::bind(tcx, cache.alloc_types.ty(tcx, alloc_id))
+                ty::EarlyBinder::bind(tcx, cache.const_reader_state.ty_or_default(tcx, alloc_id))
             }),
         }
     }

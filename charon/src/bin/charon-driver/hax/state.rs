@@ -42,8 +42,8 @@ mod base {
         /// Anonymous allocations we turned into globals, in encounter order. Used to keep
         /// the order of globals stable across runs.
         pub anon_allocs: indexmap::IndexSet<RAllocId>,
-        /// The types at which we view anonymous allocations.
-        pub alloc_types: rustc_const_uneval::AllocTypes<'tcx>,
+        /// The state shared by the constant readers.
+        pub const_reader_state: rustc_const_uneval::ReaderState<'tcx>,
         /// Cached names and disambiguators for crate names.
         pub disambiguated_crate_names: Option<FxHashMap<CrateNum, (Symbol, u32)>>,
     }

@@ -25,14 +25,8 @@ vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable
 #[diagnostic_item("Sync")]
 pub unsafe trait Sync<Self>
 
-// Full name: core::mem::maybe_uninit::MaybeUninit
-#[lang_item(MaybeUninit)]
-pub opaque type MaybeUninit<T>
-where
-    TraitClause0: (T: Sized),
-
 // Full name: test_crate::{promoted_const}
-static {promoted_const}: MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}] = RawMemory(0x00)
+static {promoted_const}: [u8; 1usize] = RawMemory(0x00)
 
 struct test_crate::Trait::{vtable} {
   size: usize,
