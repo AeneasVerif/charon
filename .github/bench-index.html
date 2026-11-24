@@ -27,11 +27,22 @@
       font-size: 1.2em;
     }
     canvas { max-height: 350px; }
+    #range { margin-bottom: 16px; }
+    #range button {
+      font: inherit;
+      padding: 4px 12px;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+    }
+    #range button.active { background: #0969da; color: #fff; border-color: #0969da; }
   </style>
 </head>
 <body>
   <h1>Charon Benchmarks</h1>
   <p class="subtitle">Performance tracking across commits (lower is better)</p>
+  <div id="range"></div>
   <div id="charts"></div>
 
   <script src="data.js"></script>
@@ -46,7 +57,8 @@
     for (const run of allRuns) {
       for (const bench of run.benches) {
         const unit = bench.unit;
-        const crate = bench.name;
+        // Benches used to only run with `--preset=fast` and weren't suffixed with the preset.
+        const crate = bench.name.includes(" (") ? bench.name : `${bench.name} (fast)`;
         if (!metrics.has(unit)) metrics.set(unit, new Map());
         const byUnit = metrics.get(unit);
         if (!byUnit.has(crate)) byUnit.set(crate, []);
@@ -67,8 +79,32 @@
     const chartsDiv = document.getElementById("charts");
 
     // Assign a color to each crate.
-    const allCrates = [...new Set(allRuns.flatMap(r => r.benches.map(b => b.name)))].sort();
+    const allCrates = [...new Set([...metrics.values()].flatMap(m => [...m.keys()]))].sort();
     const crateColor = new Map(allCrates.map((c, i) => [c, COLORS[i % COLORS.length]]));
+
+    // Time range selection. We filter the points instead of just setting the x-axis bounds so that
+    // the y-axis rescales to the visible data.
+    const DAY = 24 * 3600 * 1000;
+    const RANGES = { "1w": 7 * DAY, "1m": 30 * DAY, "3m": 90 * DAY, "all": Infinity };
+    const charts = [];   // [{chart, series: [all points of each dataset]}]
+    let range = "1m";
+    function applyRange() {
+      const cutoff = allRuns.at(-1).date - RANGES[range];
+      for (const { chart, series } of charts) {
+        chart.data.datasets.forEach((ds, i) => { ds.data = series[i].filter(p => p.x >= cutoff); });
+        chart.update();
+      }
+      for (const b of document.querySelectorAll("#range button")) {
+        b.classList.toggle("active", b.textContent === range);
+      }
+    }
+    const rangeDiv = document.getElementById("range");
+    for (const r of Object.keys(RANGES)) {
+      const b = document.createElement("button");
+      b.textContent = r;
+      b.onclick = () => { range = r; applyRange(); };
+      rangeDiv.appendChild(b);
+    }
 
     for (const [metric, cratesMap] of metrics) {
       const container = document.createElement("div");
@@ -100,7 +136,8 @@
         });
       }
 
-      new Chart(canvas, {
+      const series = datasets.map(ds => ds.data);
+      const chart = new Chart(canvas, {
         type: "line",
         data: { datasets },
         options: {
@@ -146,7 +183,9 @@
           },
         },
       });
+      charts.push({ chart, series });
     }
+    applyRange();
 
     if (metrics.size === 0) {
       chartsDiv.innerHTML = "<p>No benchmark data yet.</p>";
