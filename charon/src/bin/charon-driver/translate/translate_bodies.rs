@@ -4,7 +4,6 @@
 //! independently.
 
 use itertools::Itertools;
-use rustc_hash::FxHashMap as HashMap;
 use rustc_hir::attrs::LangItem;
 use std::borrow::Cow;
 use std::collections::VecDeque;
@@ -43,13 +42,13 @@ pub(crate) struct BodyTransCtx<'tcx, 'tctx, 'ictx> {
     /// The (regular) variables in the current function body.
     pub locals: Locals,
     /// The map from rust variable indices to translated variables indices.
-    pub locals_map: HashMap<usize, LocalId>,
+    pub locals_map: rustc_index::IndexVec<mir::Local, LocalId>,
     /// The translated blocks.
     pub blocks: IndexMap<BlockId, BlockData>,
     /// The map from rust blocks to translated blocks.
     /// Note that when translating terminators like DropAndReplace, we might have
     /// to introduce new blocks which don't appear in the original MIR.
-    pub blocks_map: HashMap<mir::BasicBlock, BlockId>,
+    pub blocks_map: rustc_index::IndexVec<mir::BasicBlock, Option<BlockId>>,
     /// We register the blocks to translate in a stack, so as to avoid
     /// writing the translation functions as recursive functions. We do
     /// so because we had stack overflows in the past.
@@ -70,11 +69,11 @@ impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
             arg_count: body.arg_count,
             ..Default::default()
         };
-        let mut locals_map = HashMap::default();
+        let mut locals_map = rustc_index::IndexVec::with_capacity(body.local_decls.len());
+        let mut names = hax::local_names(body);
         // Translate the parameters
         for (index, var) in body.local_decls.iter_enumerated() {
-            // Find the name of the variable
-            let name = hax::name_of_local(index, &body.var_debug_info);
+            let name = names[index].take();
 
             // Translate the type
             let span = i_ctx.translate_span(&var.source_info.span);
@@ -95,7 +94,7 @@ impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
                 borrowck_constraints,
                 drop_flag_for: None,
             });
-            locals_map.insert(index.as_usize(), local_id);
+            locals_map.push(local_id);
         }
 
         Ok(BodyTransCtx {
@@ -106,7 +105,7 @@ impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
             locals,
             locals_map,
             blocks: Default::default(),
-            blocks_map: Default::default(),
+            blocks_map: rustc_index::IndexVec::from_elem_n(None, body.basic_blocks.len()),
             blocks_stack: Default::default(),
         })
     }
@@ -247,11 +246,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let Ok(Some(body)) = self.get_mir(def.this(), span) else {
             return vec![None; n_args];
         };
-        body.local_decls
-            .iter_enumerated()
+        hax::local_names(&body)
+            .into_iter()
             .skip(1)
             .take(body.arg_count)
-            .map(|(index, _)| hax::name_of_local(index, &body.var_debug_info))
             .collect()
     }
 
@@ -631,20 +629,20 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
 impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
     pub(crate) fn translate_local(&self, local: &mir::Local) -> Option<LocalId> {
-        self.locals_map.get(&local.index()).copied()
+        self.locals_map.get(*local).copied()
     }
 
     /// Translate a basic block id and register it, if it hasn't been done.
     fn translate_basic_block_id(&mut self, block_id: mir::BasicBlock) -> BlockId {
-        match self.blocks_map.get(&block_id) {
-            Some(id) => *id,
+        match self.blocks_map[block_id] {
+            Some(id) => id,
             // Generate a fresh id - this also registers the block
             None => {
                 // Push to the stack of blocks awaiting translation
                 self.blocks_stack.push_back(block_id);
                 let id = self.blocks.reserve_slot();
                 // Insert in the map
-                self.blocks_map.insert(block_id, id);
+                self.blocks_map[block_id] = Some(id);
                 id
             }
         }
@@ -1665,8 +1663,15 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         args: Vec<Operand>,
     ) -> Result<(), Error> {
         // Sadly rustc doesn't expose a Symbol -> DefId map for intrinsics.
-        let path = NamePattern::parse(&format!("core::intrinsics::{name}")).unwrap();
-        let def_id = self.resolve_single_path(span, &path)?;
+        let def_id = match self.t_ctx.intrinsic_def_ids.get(&name) {
+            Some(&def_id) => def_id,
+            None => {
+                let path = NamePattern::parse(&format!("core::intrinsics::{name}")).unwrap();
+                let def_id = self.resolve_single_path(span, &path)?;
+                self.t_ctx.intrinsic_def_ids.insert(name, def_id);
+                def_id
+            }
+        };
         assert!(self.tcx.is_intrinsic(def_id, name));
         let item = hax::ItemRef::translate(self.hax_state_with_id(), def_id, generic_args);
         let func =

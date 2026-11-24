@@ -674,10 +674,9 @@ pub fn get_method_sig<'tcx>(
     def_id: RDefId,
     method_args: Option<ty::GenericArgsRef<'tcx>>,
 ) -> ty::PolyFnSig<'tcx> {
-    let real_sig = inst_binder(tcx, typing_env, method_args, tcx.fn_sig(def_id));
     let item = tcx.associated_item(def_id);
     let ty::AssocContainer::TraitImpl(Ok(decl_method_id)) = item.container else {
-        return real_sig;
+        return inst_binder(tcx, typing_env, method_args, tcx.fn_sig(def_id));
     };
     let declared_sig = tcx.fn_sig(decl_method_id);
 
