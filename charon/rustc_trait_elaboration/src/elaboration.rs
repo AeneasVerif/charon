@@ -294,8 +294,16 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             }
         }
         if !new_candidates.is_empty() {
+            let self_tys = new_candidates
+                .iter()
+                .map(|c| c.pred.self_ty())
+                .collect_vec();
             // Insert the parents all at once.
             self.insert_candidate_parents(state, new_candidates);
+            // Also insert the bounds of the associated types.
+            for ty in self_tys {
+                self.add_associated_type_refs(state, ty);
+            }
         }
     }
 
