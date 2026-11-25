@@ -1,6 +1,6 @@
 # Final LLBC before serialization:
 
-// Full name: alloc::boxed::Box::<u32, Global>
+// Full name: alloc::boxed::Box::<u32>
 #[fundamental]
 #[lang_item(OwnedBox)]
 pub opaque type Box::<u32, Global>
@@ -18,7 +18,9 @@ pub fn deref_box(b: Box::<u32, Global>) -> u32
     storage_live(_0)
     _0 = copy (*b)
     drop[drop_glue::<u32, Global><'0>] b
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(b)
+        unwind_continue
+    storage_dead(b)
     return
 }
 
