@@ -510,9 +510,9 @@ fn transmute(x: u8) -> E
     let mut _0: E; // return
     let x: u8; // arg #1
     let mut _2: u8; // anonymous local
-    let mut _3: u8; // anonymous local
+    let mut _3: u128; // anonymous local
     let mut _4: u8; // anonymous local
-    let mut _5: u128; // anonymous local
+    let mut _5: u8; // anonymous local
     let mut _6: u128; // anonymous local
 
     bb0: {
@@ -523,11 +523,11 @@ fn transmute(x: u8) -> E
         storage_live(_6);
         storage_live(_2);
         _2 = copy x;
-        _3 = transmute<u8>(copy _2);
-        _4 = cast<u8>(copy _3);
-        _5 = cast<u128>(copy _4);
-        _6 = copy _5 & const 255u128;
-        switch copy _6 -> 1u128: bb2, otherwise: bb1;
+        _4 = transmute<u8>(copy _2);
+        _5 = cast<u8>(copy _4);
+        _6 = cast<u128>(copy _5);
+        _3 = copy _6 & const 255u128;
+        switch copy _3 -> 1u128: bb2, otherwise: bb1;
     }
 
     bb1: {

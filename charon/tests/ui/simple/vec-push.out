@@ -147,9 +147,6 @@ fn panic_in_cleanup() -> !
 #[lang_item(NonNull)]
 pub opaque type NonNull<T>
 
-// Full name: core::ptr::unique::Unique
-pub opaque type Unique<T>
-
 // Full name: alloc::alloc::Global
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
@@ -254,7 +251,7 @@ where
     storage_dead(_4)
     storage_live(self_9)
     storage_live(_12)
-    _12 = copy (*self_1).buf.0.0.0
+    _12 = copy (*self_1).buf.0.0
     self_9 = transmute<*mut T>(copy _12)
     storage_dead(_12)
     storage_live(_13)
@@ -291,13 +288,13 @@ where
     let mut _3: &'3 mut T; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     _3 = push_mut<'7, T, A>[TraitClause0, TraitClause1, TraitClause2](move self, move value)
     ↳⚡ storage_dead(value)
         storage_dead(self)
         unwind_continue
     storage_dead(_3)
+    _0 = ()
     storage_dead(value)
     storage_dead(self)
     return
@@ -311,7 +308,6 @@ fn vec<'_0>(x: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl S
     let mut _2: &'2 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = &two-phase-mut (*x)
     _0 = push<'6, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for Global}](move _2, const 42u32)

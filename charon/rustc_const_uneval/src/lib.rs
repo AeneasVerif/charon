@@ -70,12 +70,12 @@ pub enum ConstSource<'tcx> {
     /// A `const` item or associated const.
     Item {
         def_id: DefId,
-        args: ty::GenericArgsRef<'tcx>,
+        args: ty::GenericArgs<'tcx>,
     },
     /// A promoted constant in the body of `def_id`.
     Promoted {
         def_id: DefId,
-        args: ty::GenericArgsRef<'tcx>,
+        args: ty::GenericArgs<'tcx>,
         promoted: mir::Promoted,
     },
     /// The contents of a global, viewed at type [`ConstReader::global_ty`].
@@ -145,7 +145,7 @@ pub enum ConstKind<'tcx> {
     /// A function item. This is a ZST, unlike `FnPtr`.
     FnDef {
         def: DefId,
-        args: ty::GenericArgsRef<'tcx>,
+        args: ty::GenericArgs<'tcx>,
     },
     /// A function pointer.
     FnPtr(FnTarget<'tcx>),
@@ -266,7 +266,7 @@ pub enum FnTarget<'tcx> {
     Instance(ty::Instance<'tcx>),
     /// A stateless closure, with the given def id and generic arguments, coerced to a function
     /// pointer. The function is then a shim that has no `DefId`.
-    ClosureAsFn(DefId, ty::GenericArgsRef<'tcx>),
+    ClosureAsFn(DefId, ty::GenericArgs<'tcx>),
 }
 
 impl<'tcx> FnTarget<'tcx> {

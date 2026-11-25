@@ -115,7 +115,6 @@ where
     let mut _5: &'3 T; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &y
@@ -189,7 +188,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -209,7 +207,6 @@ where
     let mut _5: &'3 Option<T>[TraitClause0]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &y
@@ -281,7 +278,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -301,7 +297,6 @@ where
     let mut _5: &'3 Option<T>[TraitClause0]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &y

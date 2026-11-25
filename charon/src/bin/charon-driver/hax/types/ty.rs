@@ -114,10 +114,10 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TyKind<'tcx>> for ty::TyKind<'tcx>
                 })
             }
             Self::Closure(def_id, generics) => {
-                TyKind::Closure(ClosureTy::sfrom(s, *def_id, generics))
+                TyKind::Closure(ClosureTy::sfrom(s, *def_id, *generics))
             }
             Self::Adt(adt_def, generics) => TyKind::Adt(AdtTy {
-                item: translate_item_ref(s, adt_def.did(), generics),
+                item: translate_item_ref(s, adt_def.did(), *generics),
             }),
             Self::Foreign(def_id) => TyKind::Foreign(ForeignTy {
                 item: translate_item_ref(s, *def_id, Default::default()),
@@ -176,7 +176,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TyKind<'tcx>> for ty::TyKind<'tcx>
                 region: region.sinto(s),
             }),
             Self::Coroutine(def_id, generics) => TyKind::Coroutine(CoroutineTy {
-                item: translate_item_ref(s, *def_id, generics),
+                item: translate_item_ref(s, *def_id, *generics),
             }),
             Self::Never => TyKind::Never,
             Self::Alias(_, alias_ty) => Alias::from(s, alias_ty),
@@ -227,7 +227,7 @@ impl<'tcx> ClosureTy<'tcx> {
     }
 
     // Manual implementation because we need the `def_id` of the closure.
-    pub fn sfrom<S>(s: &S, def_id: RDefId, from: ty::GenericArgsRef<'tcx>) -> Self
+    pub fn sfrom<S>(s: &S, def_id: RDefId, from: ty::GenericArgs<'tcx>) -> Self
     where
         S: UnderOwnerState<'tcx>,
     {
@@ -616,8 +616,8 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
                 let ty::adjustment::CustomCoerceUnsized::Struct(i) = info.custom_kind.unwrap();
                 let field = &def.non_enum_variant().fields[i];
                 let typing_env = s.typing_env();
-                let src_ty = normalize(tcx, typing_env, field.ty(tcx, src_args));
-                let tgt_ty = normalize(tcx, typing_env, field.ty(tcx, tgt_args));
+                let src_ty = normalize(tcx, typing_env, field.ty(tcx, *src_args));
+                let tgt_ty = normalize(tcx, typing_env, field.ty(tcx, *tgt_args));
                 let (mut path, meta) = compute_unsizing_metadata(s, src_ty, tgt_ty);
                 path.insert(0, i);
                 (path, meta)
@@ -625,7 +625,7 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
             (ty::Pat(a, _), ty::Pat(b, _)) => compute_unsizing_metadata(s, *a, *b),
             _ => {
                 let coerce_trait =
-                    tcx.require_lang_item(rustc_hir::attrs::LangItem::CoerceUnsized, DUMMY_SP);
+                    tcx.require_lang_item(rustc_attr_ir::LangItem::CoerceUnsized, DUMMY_SP);
                 let tref = ty::TraitRef::new(tcx, coerce_trait, [src_ty, tgt_ty]);
                 let proof = solve_trait(s, ty::Binder::dummy(tref));
                 (vec![], UnsizingMetadata::CoerceUnsizedClause(proof))
@@ -671,7 +671,7 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
             UnsizingMetadata::DirectVTable(trait_proof)
         }
         _ => {
-            let unsize_trait = tcx.require_lang_item(rustc_hir::attrs::LangItem::Unsize, DUMMY_SP);
+            let unsize_trait = tcx.require_lang_item(rustc_attr_ir::LangItem::Unsize, DUMMY_SP);
             let tref = ty::TraitRef::new(tcx, unsize_trait, [src_ty, tgt_ty]);
             UnsizingMetadata::UnsizeClause(solve_trait(s, ty::Binder::dummy(tref)))
         }

@@ -14,7 +14,6 @@ pub fn g()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -24,7 +23,6 @@ fn h()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = g()
     ↳⚡ unwind_continue
     return
@@ -36,7 +34,6 @@ fn in_g()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -59,7 +56,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(self)
     return
 }
@@ -69,7 +65,6 @@ fn test_crate::Foo::f::in_default()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -81,7 +76,6 @@ fn impl_Foo_for_unit::f<'_0>(self: &'_0 ())
     let self: &'1 (); // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(self)
     return
@@ -100,7 +94,6 @@ fn impl_Foo_for_unit::f::in_impl()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -122,7 +115,6 @@ pub fn impl_Trait_for_unit::VALUE()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -136,7 +128,6 @@ pub fn required()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -146,7 +137,6 @@ pub fn impl_Trait_for_unit::defaulted()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -167,7 +157,6 @@ fn impl_Trait_for_unit::required::in_impl()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -177,7 +166,6 @@ fn in_impl_const()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -190,7 +178,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -199,7 +186,6 @@ fn test_crate::outer::inner::Trait::defaulted::in_default()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -211,7 +197,6 @@ where
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -227,7 +212,6 @@ fn in_default_const()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }

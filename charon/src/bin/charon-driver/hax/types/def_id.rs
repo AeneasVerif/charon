@@ -13,6 +13,7 @@ use charon_lib::ast::HashConsed;
 use itertools::Itertools;
 pub use rustc_middle::mir::Promoted as PromotedId;
 pub use rustc_middle::mir::interpret::AllocId as RAllocId;
+use rustc_middle::ty::CallerBoundsIterator;
 use rustc_span::DUMMY_SP;
 use rustc_trait_elaboration::param_env_from_clauses;
 use {rustc_hir as hir, rustc_hir::def_id::DefId as RDefId, rustc_middle::ty};
@@ -142,8 +143,8 @@ impl VirtualImplAssocItem {
     pub fn args_for_item_decl<'tcx>(
         &self,
         s: &impl BaseState<'tcx>,
-        trait_args: ty::GenericArgsRef<'tcx>,
-    ) -> ty::GenericArgsRef<'tcx> {
+        trait_args: ty::GenericArgs<'tcx>,
+    ) -> ty::GenericArgs<'tcx> {
         let tcx = s.base().tcx;
         tcx.mk_args_from_iter(trait_args.iter().chain(self.own_args(s)))
     }
@@ -152,8 +153,8 @@ impl VirtualImplAssocItem {
     pub fn args_for_item_impl<'tcx>(
         &self,
         s: &impl BaseState<'tcx>,
-        impl_args: ty::GenericArgsRef<'tcx>,
-    ) -> ty::GenericArgsRef<'tcx> {
+        impl_args: ty::GenericArgs<'tcx>,
+    ) -> ty::GenericArgs<'tcx> {
         let tcx = s.base().tcx;
         tcx.mk_args_from_iter(impl_args.iter().chain(self.own_args(s)))
     }
@@ -162,7 +163,7 @@ impl VirtualImplAssocItem {
     pub fn identity_args_for_item_decl<'tcx>(
         &self,
         s: &impl BaseState<'tcx>,
-    ) -> ty::GenericArgsRef<'tcx> {
+    ) -> ty::GenericArgs<'tcx> {
         let tcx = s.base().tcx;
         let impl_trait_ref = tcx
             .impl_trait_ref(self.trait_impl_id)
@@ -278,8 +279,8 @@ impl rustc_trait_elaboration::ItemId for DefId {
         s: &Self::State<'tcx>,
         typing_env: ty::TypingEnv<'tcx>,
         trait_impl: &Self,
-        impl_generics: ty::GenericArgsRef<'tcx>,
-    ) -> Option<(Self, ty::GenericArgsRef<'tcx>, bool)> {
+        impl_generics: ty::GenericArgs<'tcx>,
+    ) -> Option<(Self, ty::GenericArgs<'tcx>, bool)> {
         let tcx = s.base().tcx;
         let trait_impl = trait_impl.as_real_def_id()?;
         match self.base {
@@ -547,6 +548,7 @@ impl DefId {
                     own_params: Default::default(),
                     param_def_id_to_index: Default::default(),
                     has_self: false,
+                    has_arg_pos_consts: false,
                     has_late_bound_regions: None,
                 }));
                 cache.virtual_generics = Some(generics);
@@ -557,11 +559,10 @@ impl DefId {
                     return generics;
                 }
                 // We build a custom environment here.
-                let item_id = id.item_impl_id;
-                let decl_generics = tcx.generics_of(item_id);
+                let impl_generics = tcx.generics_of(id.item_impl_id);
+                let decl_generics = tcx.generics_of(id.item_decl_id);
                 let parent_count = tcx.generics_of(id.trait_impl_id).count();
-                let own_params = tcx
-                    .generics_of(id.item_decl_id)
+                let own_params = decl_generics
                     .own_params
                     .iter()
                     .cloned()
@@ -580,8 +581,9 @@ impl DefId {
                     parent_count,
                     own_params,
                     param_def_id_to_index,
-                    has_self: decl_generics.has_self,
-                    has_late_bound_regions: decl_generics.has_late_bound_regions,
+                    has_self: impl_generics.has_self,
+                    has_arg_pos_consts: decl_generics.has_arg_pos_consts,
+                    has_late_bound_regions: impl_generics.has_late_bound_regions,
                 }));
                 cache.virtual_generics = Some(generics);
                 generics
@@ -589,18 +591,18 @@ impl DefId {
         }
     }
 
-    pub fn identity_args<'tcx>(&self, s: &impl BaseState<'tcx>) -> ty::GenericArgsRef<'tcx> {
+    pub fn identity_args<'tcx>(&self, s: &impl BaseState<'tcx>) -> ty::GenericArgs<'tcx> {
         let tcx = s.base().tcx;
         match self.base {
             DefIdBase::Real(def_id) | DefIdBase::Promoted(def_id, ..) => {
                 if can_have_generics(tcx, def_id) {
                     identity_args_with_inferred(tcx, def_id)
                 } else {
-                    ty::GenericArgsRef::default()
+                    ty::GenericArgs::default()
                 }
             }
             DefIdBase::Synthetic(synthetic) => synthetic.identity_args(s),
-            DefIdBase::Alloc(..) => ty::GenericArgsRef::default(),
+            DefIdBase::Alloc(..) => ty::GenericArgs::default(),
             DefIdBase::ImplAssocItem(_) => panic!(
                 "virtual trait impl associated items do not have a \
                 sensible `identity_args`. consider `identity_args_for_item_decl`"
@@ -612,7 +614,7 @@ impl DefId {
     pub fn identity_args_with_extra_regions<'tcx>(
         &self,
         s: &impl UnderOwnerState<'tcx>,
-    ) -> (ty::GenericArgsRef<'tcx>, Vec<ty::PlaceholderRegion<'tcx>>) {
+    ) -> (ty::GenericArgs<'tcx>, Vec<ty::PlaceholderRegion<'tcx>>) {
         let args = self.identity_args(s);
         // Only typeck children have erased regions in their identity args.
         if self.is_typeck_child(s) {
@@ -628,7 +630,11 @@ impl DefId {
         match self.base {
             DefIdBase::ImplAssocItem(id) => {
                 let item_args = id.identity_args_for_item_decl(s);
-                let impl_predicates = tcx.param_env(id.trait_impl_id).caller_bounds();
+                let impl_predicates = tcx
+                    .param_env(id.trait_impl_id)
+                    .caller_bounds()
+                    .all_clauses_interned(tcx)
+                    .iter();
                 let item_predicates = tcx
                     .clauses_of(id.item_decl_id)
                     .instantiate_own(tcx, item_args)
@@ -719,7 +725,7 @@ impl DefId {
     }
 
     /// Gets the attributes of the definition.
-    pub fn attrs<'tcx>(&self, tcx: ty::TyCtxt<'tcx>) -> &'tcx [rustc_hir::Attribute] {
+    pub fn attrs<'tcx>(&self, tcx: ty::TyCtxt<'tcx>) -> &'tcx [rustc_attr_ir::Attribute] {
         use DefKind::*;
         let Some(def_id) = self.as_real_def_id() else {
             return &[];
@@ -746,7 +752,7 @@ impl DefId {
 
             // Restore the attributes that aren't encoded in crate metadata.
             let restored = if matches!(self.kind, Fn | AssocFn) {
-                use rustc_hir::attrs::AttributeKind::*;
+                use rustc_attr_ir::AttributeKind::*;
                 let codegen_attrs = tcx.codegen_fn_attrs(def_id);
                 let span = tcx.def_span(def_id);
 
@@ -785,7 +791,7 @@ impl DefId {
 
                 allocator_flags
                     .chain(target_features)
-                    .map(hir::Attribute::Parsed)
+                    .map(rustc_attr_ir::Attribute::Parsed)
                     .collect_vec()
             } else {
                 vec![]

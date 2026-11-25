@@ -220,7 +220,7 @@ impl<'tcx> TranslateCtx<'tcx> {
         match macro_call {
             Some(expn) => {
                 // Code that already points to the macro call doesn't need a `generated_from_span`.
-                if expn.call_site.source_equal(*span) {
+                if expn.call_site.lo_hi() == span.lo_hi() {
                     Span::new(data, None)
                 } else {
                     Span::new(self.translate_span_data(expn.call_site), Some(data))
@@ -862,27 +862,29 @@ impl<'tcx> TranslateCtx<'tcx> {
     pub(crate) fn translate_attribute(
         &mut self,
         def_id: &hax::DefId,
-        attr: &rustc_hir::Attribute,
+        attr: &rustc_attr_ir::Attribute,
     ) -> Option<Attribute> {
-        use rustc_hir as hir;
-        use rustc_hir::attrs as hir_attrs;
+        use rustc_attr_ir as hir_attrs;
         match attr {
-            hir::Attribute::Parsed(hir_attrs::AttributeKind::DocComment { comment, .. }) => {
+            hir_attrs::Attribute::Parsed(hir_attrs::AttributeKind::DocComment {
+                comment, ..
+            }) => {
                 (!self.options.no_doc_comments).then(|| Attribute::DocComment(comment.to_string()))
             }
-            hir::Attribute::Parsed(attr) => self
+            hir_attrs::Attribute::Parsed(attr) => self
                 .translate_rustc_attribute_kind(attr)
                 .ok()
                 .map(Attribute::Builtin),
-            hir::Attribute::Unparsed(attr) => {
+            hir_attrs::Attribute::Tool { item: attr, .. }
+            | hir_attrs::Attribute::DeriveHelper(attr) => {
                 let raw_attr = RawAttribute {
                     path: attr.path.to_string(),
                     args: match &attr.args {
-                        hir::AttrArgs::Empty => None,
-                        hir::AttrArgs::Delimited(args) => {
+                        hir_attrs::AttrArgs::Empty => None,
+                        hir_attrs::AttrArgs::Delimited(args) => {
                             Some(rustc_ast_pretty::pprust::tts_to_string(&args.tokens))
                         }
-                        hir::AttrArgs::Eq { expr, .. } => {
+                        hir_attrs::AttrArgs::Eq { expr, .. } => {
                             self.tcx.sess.source_map().span_to_snippet(expr.span).ok()
                         }
                     },
@@ -1091,7 +1093,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     // For weak lang items (e.g. `panic_impl`), rustc only maps the lang item to its
                     // definition, so we look at the `#[lang]` attribute of their `extern` declaration.
                     self.is_extern_item(def)
-                        .then(|| rustc_hir::attrs::find_attr!(def.attributes, Lang(item) => *item))
+                        .then(|| rustc_attr_ir::find_attr!(def.attributes, Lang(item, _) => *item))
                         .flatten()
                 })
                 .map(|lang_item| {

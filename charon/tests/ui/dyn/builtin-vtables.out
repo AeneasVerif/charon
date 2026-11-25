@@ -115,7 +115,6 @@ fn takes_fn<'_0>(_1: &'_0 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -860,7 +859,6 @@ fn main()
     storage_live(_13)
     storage_live(_14)
     storage_live(_15)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)

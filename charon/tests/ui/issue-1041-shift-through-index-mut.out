@@ -129,7 +129,6 @@ pub fn shr_into_index<'_0>(x: u64, out: &'_0 mut Wrap)
     bb0: {
         storage_live(_6);
         storage_live(_0);
-        _0 = ();
         storage_live(_3);
         _3 = copy x;
         _6 = move _3 panic.>> const 20i32;
@@ -169,7 +168,6 @@ pub fn shl_into_index_by_var<'_0>(x: u64, n: u32, out: &'_0 mut Wrap)
     bb0: {
         storage_live(_8);
         storage_live(_0);
-        _0 = ();
         storage_live(_4);
         _4 = copy x;
         storage_live(_5);

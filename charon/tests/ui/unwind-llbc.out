@@ -107,7 +107,6 @@ pub fn impl_Drop_for_Foo::drop<'_0>(self: &'_0 mut Foo)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -122,10 +121,10 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut Foo)
     storage_live(_0)
     storage_live(_2)
     storage_live(_3)
-    _0 = ()
     _2 = &mut (*_1)
     _3 = impl_Drop_for_Foo::drop<'6>(move _2)
     ↳⚡ unwind_continue
+    _0 = ()
     return
 }
 
@@ -143,7 +142,6 @@ fn may_unwind()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -159,7 +157,6 @@ fn main()
 
     storage_live(_0)
     storage_live(_4)
-    _0 = ()
     storage_live(f)
     f = Foo {  }
     fake_read(f)

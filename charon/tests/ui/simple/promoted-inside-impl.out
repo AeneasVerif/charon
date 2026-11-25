@@ -45,7 +45,6 @@ where
     _3 = move _4
     storage_live(_0)
     storage_live(_2)
-    _0 = ()
     storage_live(_promoted)
     _2 = move _3
     _promoted = &(*_2)

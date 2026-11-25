@@ -342,7 +342,6 @@ fn main()
     let mut _16: {closure}<'28, '29>; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(v)
     v = const 5u8
     fake_read(v)

@@ -332,6 +332,7 @@ impl<'tcx> ConstReader<'tcx> {
             }
             ty::Foreign(..)
             | ty::UnsafeBinder(..)
+            | ty::View(..)
             | ty::CoroutineClosure(..)
             | ty::Coroutine(..)
             | ty::CoroutineWitness(..) => ConstKind::Unsupported("Unhandled constant type"),

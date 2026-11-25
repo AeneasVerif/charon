@@ -7,7 +7,6 @@ extern "C" fn coff_ctor()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 

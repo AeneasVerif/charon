@@ -46,7 +46,6 @@ fn main()
     let mut _2: &'1 Foo::<bool>; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_b)
     storage_live(_2)
     _2 = &FooBool

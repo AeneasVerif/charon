@@ -1,4 +1,3 @@
-#![feature(pattern_type_macro)]
 #![feature(pattern_types)]
 #![allow(internal_features)]
 

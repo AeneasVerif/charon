@@ -110,7 +110,6 @@ fn move_values(flag: bool)
     let mut _20: Box<[NoCopy; 1usize]>[{built_in impl MetaSized for [NoCopy; 1usize]}, {built_in impl Sized for Global}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(x_2)
     x_2 = NoCopy { _0: const 4u8 }
     fake_read(x_2)

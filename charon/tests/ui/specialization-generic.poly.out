@@ -48,7 +48,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(self)
     return
 }
@@ -64,7 +63,6 @@ where
     let self: &'1 S; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(self)
     return
@@ -94,7 +92,6 @@ where
     let self: &'13 Pair<&'14 T, bool>[{built_in impl Sized for &'14 T}, {built_in impl Sized for bool}]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(self)
     return
@@ -149,7 +146,6 @@ fn main()
     storage_live(_0)
     storage_live(_7)
     storage_live(_8)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)

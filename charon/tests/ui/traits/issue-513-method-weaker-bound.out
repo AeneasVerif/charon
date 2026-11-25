@@ -54,7 +54,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -71,7 +70,6 @@ fn main()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = method<()>[{built_in impl Sized for ()}, {built_in impl Clone for ()}]()
     ↳⚡ unwind_continue
     return

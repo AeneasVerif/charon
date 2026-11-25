@@ -71,7 +71,6 @@ where
     let mut _3: &'5 TraitClause1::LifetimeGat<'6>; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &x
@@ -109,7 +108,6 @@ where
     let mut _3: &'1 TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &x
@@ -147,7 +145,6 @@ where
     let mut _3: &'1 TraitClause1::ConstGat<4usize>; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &x

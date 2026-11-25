@@ -13,7 +13,6 @@ fn next_u64<'_0>(self: &'_0 mut Rng)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(self)
     return
 }
@@ -32,7 +31,6 @@ fn new<'_0>(rng: &'_0 mut Rng)
     let mut _3: &'4 mut Rng; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &uniq (*rng)
@@ -56,7 +54,6 @@ where
     let mut _4: &'4 mut Rng; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &two-phase-mut (*(*_1)._0)

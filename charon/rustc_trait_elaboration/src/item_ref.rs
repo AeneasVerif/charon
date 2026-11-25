@@ -1,7 +1,7 @@
 use std::{fmt::Debug, hash::Hash, ops::Deref, sync::Arc};
 
 use rustc_hir::{def::DefKind, def_id::DefId};
-use rustc_middle::ty::{self, GenericArg, GenericArgsRef, TypeVisitableExt};
+use rustc_middle::ty::{self, GenericArg, GenericArgs, TypeVisitableExt};
 
 use crate::{
     ItemPredicates, PredicateDirection, PredicateSearcher, TraitProof, TraitProofKind,
@@ -57,8 +57,8 @@ pub trait ItemId: Clone + Debug + Hash + PartialEq + Eq {
         state: &Self::State<'tcx>,
         typing_env: ty::TypingEnv<'tcx>,
         trait_impl: &Self,
-        impl_generics: GenericArgsRef<'tcx>,
-    ) -> Option<(Self, GenericArgsRef<'tcx>, bool)>;
+        impl_generics: GenericArgs<'tcx>,
+    ) -> Option<(Self, GenericArgs<'tcx>, bool)>;
 }
 
 impl ItemId for DefId {
@@ -126,8 +126,8 @@ impl ItemId for DefId {
         tcx: &Self::State<'tcx>,
         typing_env: ty::TypingEnv<'tcx>,
         trait_impl: &Self,
-        impl_generics: GenericArgsRef<'tcx>,
-    ) -> Option<(Self, GenericArgsRef<'tcx>, bool)> {
+        impl_generics: GenericArgs<'tcx>,
+    ) -> Option<(Self, GenericArgs<'tcx>, bool)> {
         use rustc_infer::infer::TyCtxtInferExt;
         use rustc_middle::traits::specialization_graph::{self, Node};
         let trait_id = tcx.impl_trait_ref(*trait_impl).skip_binder().def_id;
@@ -182,7 +182,7 @@ pub struct ItemRefContents<'tcx, Id: ItemId = DefId> {
     /// The item being refered to.
     pub def_id: Id,
     /// The arguments provided to this item.
-    pub generic_args: ty::GenericArgsRef<'tcx>,
+    pub generic_args: ty::GenericArgs<'tcx>,
     /// Witnesses of the trait clauses required by the item, e.g. `T: Sized` for `Option<T>`.
     pub trait_proofs: Vec<TraitProof<'tcx, Id>>,
     /// If we're referring to a trait associated item, this gives the trait clause/impl we're
@@ -232,7 +232,7 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         &mut self,
         state: &Id::State<'tcx>,
         def_id: Id,
-        generics: ty::GenericArgsRef<'tcx>,
+        generics: ty::GenericArgs<'tcx>,
         assoc_item_resolution: AssocItemResolution,
     ) -> ItemRef<'tcx, Id> {
         let key = (def_id.clone(), generics, assoc_item_resolution);
@@ -260,7 +260,7 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         &mut self,
         state: &Id::State<'tcx>,
         mut def_id: Id,
-        generics: ty::GenericArgsRef<'tcx>,
+        generics: ty::GenericArgs<'tcx>,
         assoc_item_resolution: AssocItemResolution,
     ) -> ItemRef<'tcx, Id> {
         use rustc_infer::infer::canonical::ir::TypeVisitableExt;
@@ -345,7 +345,7 @@ impl<'tcx, Id: ItemId> ItemRef<'tcx, Id> {
     }
 
     /// The generics passed to the item.
-    pub fn generics(&self) -> GenericArgsRef<'tcx> {
+    pub fn generics(&self) -> GenericArgs<'tcx> {
         self.generic_args
     }
     /// The trait proofs passed to the item.
@@ -355,13 +355,13 @@ impl<'tcx, Id: ItemId> ItemRef<'tcx, Id> {
     /// The generics passed to the item, except for trait associated items these are only the
     /// generics of the method/type/const itself; generics for the trait are available in
     /// `self.in_trait`.
-    pub fn assoc_generics(&self) -> &'tcx [GenericArg<'tcx>] {
+    pub fn assoc_generics(&self) -> &[GenericArg<'tcx>] {
         let start = if let Some((tinfo, _)) = &self.in_trait {
             tinfo.pred.skip_binder().args.len()
         } else {
             0
         };
-        &self.generic_args[start..]
+        &self.generic_args.as_slice()[start..]
     }
     /// The trait proofs passed to the item, except for trait associated items these are only the
     /// proofs of the method/type/const itself.

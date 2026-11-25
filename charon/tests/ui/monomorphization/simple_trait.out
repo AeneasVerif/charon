@@ -34,7 +34,6 @@ fn comsume<'_0>(self: &'_0 i32)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(self)
     return
 }
@@ -47,7 +46,6 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn Trait))
     let mut _2: &'_0 i32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 i32>(move _1)
     _0 = comsume<'_0>(move _2)
@@ -109,7 +107,6 @@ fn main()
     _8 = move _9
     storage_live(_0)
     storage_live(_6)
-    _0 = ()
     set '1: '0
     set '3: '2
     storage_live(b)

@@ -190,7 +190,6 @@ pub fn main()
     _7 = move _8
     storage_live(_0)
     storage_live(_6)
-    _0 = ()
     set '1: '0
     set '3: '2
     storage_live(b)

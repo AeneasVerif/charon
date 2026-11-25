@@ -592,7 +592,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             .or_else(|| {
                 let def_id = item.def_id.as_real_def_id()?;
                 self.tcx
-                    .is_lang_item(def_id, rustc_hir::attrs::LangItem::OwnedBox)
+                    .is_lang_item(def_id, rustc_attr_ir::LangItem::OwnedBox)
                     .then_some(BuiltinAdt::Box)
             })
     }
@@ -623,7 +623,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             Ok(ty) if ty.is_usize() => PtrMetadata::Length,
             Ok(ty)
                 if let ty::Adt(def, args) = ty.kind()
-                    && tcx.is_lang_item(def.did(), rustc_hir::attrs::LangItem::DynMetadata) =>
+                    && tcx.is_lang_item(def.did(), rustc_attr_ir::LangItem::DynMetadata) =>
             {
                 let rustc_dyn_ty = args.type_at(0);
                 let hax_ty = self.t_ctx.catch_sinto(hax_state, span, &rustc_dyn_ty)?;
@@ -731,7 +731,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             if layout.is_sized() {
                 return Some((
                     constant(layout.size.bytes()),
-                    constant(layout.align.abi.bytes()),
+                    constant(layout.align.bytes()),
                 ));
             }
 
@@ -748,13 +748,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             ConstantExpr::mk_usize(u128::from(unit.size.bytes())),
                         )
                         .into_expr(),
-                        constant(unit.align.abi.bytes()),
+                        constant(unit.align.bytes()),
                     ))
                 }
                 ty::Adt(..) | ty::Tuple(..) => {
                     let tail_idx = layout.fields.count() - 1;
                     let tail_offset = constant(layout.fields.offset(tail_idx).bytes());
-                    let sized_align = constant(layout.align.abi.bytes());
+                    let sized_align = constant(layout.align.bytes());
                     let tail_layout = layout.field(cx, tail_idx);
                     let (tail_size, mut tail_align) = chosen_size_and_align(cx, tail_layout)?;
 
@@ -841,7 +841,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             ty::Adt(adt, args) if adt.is_enum() => adt
                 .variant(id)
                 .inhabited_predicate(tcx)
-                .instantiate(tcx, args),
+                .instantiate(tcx, *args),
             _ => ty.inhabited_predicate(tcx),
         };
         let inhabited = self
@@ -898,6 +898,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let tag_offset_expr = OffsetExpr::new(tag_offset);
 
                 let tag_ty = match tag.primitive() {
+                    // A `bool` tag is a `u8` that only takes the values 0 and 1.
+                    r_abi::Primitive::Bool => IntegerTy::Unsigned(UIntTy::U8),
                     r_abi::Primitive::Int(int_ty, signed) => {
                         translate_primitive_int(int_ty, signed)
                     }

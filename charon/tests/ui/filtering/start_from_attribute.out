@@ -15,7 +15,6 @@ fn do_translate()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -26,7 +25,6 @@ fn also_translate()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -41,7 +39,6 @@ fn method()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }

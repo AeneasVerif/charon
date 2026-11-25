@@ -1294,7 +1294,7 @@ let pp_rustc_attribute_kind (fmt : Format.formatter)
   | RustcAttributeKindAutomaticallyDerived ->
       pp_string fmt "automatically_derived"
   | RustcAttributeKindCold -> pp_string fmt "cold"
-  | RustcAttributeKindDeprecated (deprecation, _) ->
+  | RustcAttributeKindDeprecated (deprecation, _, _) ->
       pp_string fmt "deprecated";
       let since =
         match deprecation.since with
@@ -1331,7 +1331,6 @@ let pp_rustc_attribute_kind (fmt : Format.formatter)
       let linkage =
         match linkage with
         | RustcLinkageAvailableExternally -> "available_externally"
-        | RustcLinkageCommon -> "common"
         | RustcLinkageExternalWeak -> "extern_weak"
         | RustcLinkageExternal -> "external"
         | RustcLinkageInternal -> "internal"
@@ -1360,7 +1359,9 @@ let pp_rustc_attribute_kind (fmt : Format.formatter)
   | RustcAttributeKindRustcAllocatorZeroedVariant name ->
       Format.fprintf fmt "rustc_allocator_zeroed_variant = \"%s\"" name
   | RustcAttributeKindRustcDeallocator -> pp_string fmt "rustc_deallocator"
-  | RustcAttributeKindRustcIntrinsic -> pp_string fmt "rustc_intrinsic"
+  | RustcAttributeKindRustcIntrinsic llvm ->
+      pp_string fmt "rustc_intrinsic";
+      Option.iter (fun llvm -> Format.fprintf fmt "(llvm = \"%s\")" llvm) llvm
   | RustcAttributeKindRustcNoWritable -> pp_string fmt "rustc_no_writable"
   | RustcAttributeKindRustcReallocator -> pp_string fmt "rustc_reallocator"
   | RustcAttributeKindShouldPanic reason ->

@@ -33,7 +33,6 @@ fn foo<'_0>(x: &'_0 (dyn Trait + '_0))
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(x)
     return
 }

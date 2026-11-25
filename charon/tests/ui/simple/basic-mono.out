@@ -9,7 +9,6 @@ fn foo::<10usize>()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -19,7 +18,6 @@ fn bar::<u32>()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -32,7 +30,6 @@ fn main()
     let _2: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = foo::<10usize>()
     ↳⚡ unwind_continue

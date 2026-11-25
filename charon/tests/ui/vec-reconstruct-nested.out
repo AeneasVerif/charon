@@ -107,7 +107,6 @@ fn nested_vecs()
     let mut _22: Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_nested)
     storage_live(_2)
     storage_live(_3)
@@ -316,7 +315,6 @@ fn nested_single()
     let mut _15: Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_nested)
     storage_live(_2)
     storage_live(_3)

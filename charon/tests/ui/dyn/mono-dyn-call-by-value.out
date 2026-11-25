@@ -99,7 +99,6 @@ fn by_val(self: ())
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -111,7 +110,6 @@ fn impl_T_for_unit::by_val::{vtable_method}(_1: *mut (dyn T))
     let mut _2: *mut (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = concretize<*mut ()>(move _1)
     _0 = by_val(move (*_2))
@@ -127,7 +125,6 @@ fn by_ref<'_0>(self: &'_0 ())
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -139,7 +136,6 @@ fn impl_T_for_unit::by_ref::{vtable_method}<'_0>(_1: &'_0 (dyn T))
     let mut _2: &'_0 (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 ()>(move _1)
     _0 = by_ref<'_0>(move _2)
@@ -206,7 +202,6 @@ fn main()
     let mut _21: fn(*mut (dyn T + '38)); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(b)
     storage_live(_2)
     storage_live(_3)

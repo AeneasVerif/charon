@@ -179,7 +179,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     conditional_drop[{built_in impl Destruct for F}::drop_glue<'0>] _1
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -194,7 +193,6 @@ pub fn flibidi()
     let _1: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = test_crate::call<'10, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {impl Fn<(&'a (),), &'a ()> for for<'a> flabada<'a>}<'10>](const flabada<'25>)
     ↳⚡ unwind_continue

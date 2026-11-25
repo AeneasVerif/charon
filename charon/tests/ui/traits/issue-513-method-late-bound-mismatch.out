@@ -33,7 +33,6 @@ fn method(self: (), _other: &'static u32)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_other)
     storage_dead(self)
     return
@@ -67,7 +66,6 @@ fn main()
     _6 = move _7
     storage_live(_0)
     storage_live(_5)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = ()

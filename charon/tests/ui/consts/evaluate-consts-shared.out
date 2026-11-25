@@ -51,7 +51,6 @@ pub fn use_generic()
     let mut _3: &'3 [u8; 3usize]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = generic::<u8>()
     ↳⚡ unwind_continue

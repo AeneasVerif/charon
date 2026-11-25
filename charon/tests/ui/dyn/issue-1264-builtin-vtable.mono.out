@@ -10,6 +10,7 @@ struct {vtable} {
 }
 
 // Full name: core::marker::Send
+#[lang_item(Send)]
 #[diagnostic_item("Send")]
 pub unsafe trait Send<Self>
 
@@ -54,7 +55,6 @@ fn main()
     _5 = move _6
     storage_live(_0)
     storage_live(_4)
-    _0 = ()
     set '1: '0
     set '3: '2
     storage_live(_x)

@@ -35,6 +35,7 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+#[lang_item(CloneFromFn)]
 pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(self: &'_0 mut Self, source: &'_1 Self)
 where
     TraitClause0: (Self: Clone),
@@ -49,7 +50,6 @@ where
     let mut _4: &'4 Self; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source) with_metadata(read source.metadata)
@@ -84,6 +84,7 @@ pub fn impl_Clone_for_u8::clone<'_0>(self: &'_0 u8) -> u8
 }
 
 // Full name: core::clone::impls::{impl Clone for u8}::clone_from
+#[lang_item(CloneFromFn)]
 pub fn impl_Clone_for_u8::clone_from<'_0, '_1>(self: &'_0 mut u8, source: &'_1 u8)
 where
     TraitClause0: (u8: Destruct),
@@ -95,7 +96,6 @@ where
     let mut _4: &'4 u8; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source)
@@ -261,7 +261,6 @@ fn main()
     let mut _3: u8; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = wrapping_add(const 255u8, const 1u8)
     ↳⚡ unwind_continue

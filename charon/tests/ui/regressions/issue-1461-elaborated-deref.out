@@ -123,9 +123,9 @@ where
     let _1: &'1 mut (A,); // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
     ↳⚡ unwind_continue
+    _0 = ()
     return
 }
 
@@ -138,7 +138,6 @@ where
     let arr: (&'6 mut (&'7 mut (u64,),),); // arg #1
 
     storage_live(_0)
-    _0 = ()
     (*(*arr._0)._0)._0 = const 0u64
     _0 = ()
     return
@@ -154,7 +153,6 @@ where
     let _2: u64; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = copy (*(*arr._0)._0)._0
     storage_dead(_2)
@@ -169,7 +167,6 @@ pub fn boxed(arr: (Box<(Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}
     let mut arr: (Box<(Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],), Global>[{built_in impl MetaSized for (Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],); // arg #1
 
     storage_live(_0)
-    _0 = ()
     (*(*arr._0)._0)._0 = const 0u64
     _0 = ()
     drop[drop_glue<'0, Box<(Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],), Global>[{built_in impl MetaSized for (Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>] arr
@@ -189,7 +186,6 @@ pub fn f<'_0>(ctx: &'_0 mut [u64])
     let mut _6: &'_ mut u64; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(acc)
     storage_live(_3)
     _3 = &two-phase-mut (*ctx) with_metadata(read ctx.metadata)

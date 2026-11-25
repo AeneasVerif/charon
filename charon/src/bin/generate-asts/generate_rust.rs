@@ -195,8 +195,7 @@ impl RustcDatatypes {
             loop {
                 match (elems.next(), parts.next()) {
                     (None, None) => return true,
-                    (Some(PathElem::Ident(name, disambiguator)), Some(part))
-                        if disambiguator.is_zero() && name == part => {}
+                    (Some(PathElem::Ident(name, _)), Some(part)) if name == part => {}
                     _ => return false,
                 }
             }
@@ -210,16 +209,14 @@ impl RustcDatatypes {
                 .filter(|decl| name_matches_path(&decl.item_meta.name, path))
                 .map(|decl| decl.def_id)
                 .collect_vec();
-            match ids.as_slice() {
-                [] => {
-                    if datatype.is_copy() {
-                        bail!("could not find translated `{path}`")
-                    }
-                }
-                [id] => {
-                    datatypes.insert(*id, *datatype);
-                }
-                _ => bail!("ambiguous translated path `{path}`"),
+            if datatype.is_copy() && ids.len() != 1 {
+                bail!(
+                    "expected exactly one translated `{path}`, found {}",
+                    ids.len()
+                )
+            }
+            for id in ids {
+                datatypes.insert(id, *datatype);
             }
         }
         Ok(datatypes)

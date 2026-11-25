@@ -193,7 +193,6 @@ fn core::ptr::write_bytes::precondition_check(addr: *const (), align: usize, zer
     let mut _11: &'4 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_4)
     storage_live(_5)
     _5 = copy addr
@@ -425,7 +424,6 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
     let mut _7: &'4 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy align
@@ -635,7 +633,6 @@ where
     let mut _14: usize; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_4)
     _4 = check_language_ub()
     ↳⚡ unwind_continue
@@ -698,7 +695,6 @@ where
     let mut _6: usize; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_4)
     _4 = copy self
     storage_live(_5)
@@ -883,7 +879,6 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut 
     let mut _28: &'4 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_6)
     storage_live(zero_size)
     storage_live(_8)
@@ -1019,7 +1014,6 @@ where
 
     storage_live(_0)
     storage_live(_16)
-    _0 = ()
     storage_live(_4)
     _4 = check_language_ub()
     ↳⚡ unwind_continue
@@ -1062,6 +1056,7 @@ where
     _15 = copy count
     _16 = core::intrinsics::copy_nonoverlapping<T>[TraitClause0](move _13, move _14, move _15)
     ↳⚡ undefined_behavior
+    _0 = ()
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_13)
@@ -1669,7 +1664,6 @@ where
     let mut _3: T; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = move t
@@ -1853,7 +1847,6 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr: *mu
     let mut _7: &'4 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy ptr
@@ -1916,41 +1909,20 @@ pub unsafe fn core::ptr::non_null::{NonNull<T>}::new_unchecked<T>(ptr: *mut T) -
     return
 }
 
-// Full name: core::ptr::unique::Unique
-pub struct Unique<T> {
+// Full name: alloc::boxed::BoxRaw
+struct BoxRaw<T>
+where
+    TraitClause0: (T: MetaSized),
+{
   pointer: NonNull<T>,
   _marker: PhantomData<T>,
 }
 
-pub fn core::ptr::unique::{Unique<T>}::as_non_null_ptr<T>(self: Unique<T>) -> NonNull<T>
+unsafe fn alloc::boxed::{BoxRaw<T>[TraitClause0]}::new_unchecked<T>(ptr: *mut T) -> BoxRaw<T>[TraitClause0]
+where
+    TraitClause0: (T: MetaSized),
 {
-    let mut _0: NonNull<T>; // return
-    let self: Unique<T>; // arg #1
-
-    storage_live(_0)
-    _0 = copy self.pointer
-    return
-}
-
-// Full name: core::ptr::non_null::{impl From<Unique<T>> for NonNull<T>}::from
-pub fn from<T>(unique: Unique<T>) -> NonNull<T>
-{
-    let mut _0: NonNull<T>; // return
-    let unique: Unique<T>; // arg #1
-    let mut _2: Unique<T>; // anonymous local
-
-    storage_live(_0)
-    storage_live(_2)
-    _2 = copy unique
-    _0 = core::ptr::unique::{Unique<T>}::as_non_null_ptr<T>(move _2)
-    ↳⚡ unwind_continue
-    storage_dead(_2)
-    return
-}
-
-pub unsafe fn core::ptr::unique::{Unique<T>}::new_unchecked<T>(ptr: *mut T) -> Unique<T>
-{
-    let mut _0: Unique<T>; // return
+    let mut _0: BoxRaw<T>[TraitClause0]; // return
     let ptr: *mut T; // arg #1
     let mut _2: NonNull<T>; // anonymous local
     let mut _3: *mut T; // anonymous local
@@ -1965,16 +1937,56 @@ pub unsafe fn core::ptr::unique::{Unique<T>}::new_unchecked<T>(ptr: *mut T) -> U
     storage_dead(_3)
     storage_live(_4)
     _4 = PhantomData {  }
-    _0 = Unique { pointer: move _2, _marker: move _4 }
+    _0 = BoxRaw { pointer: move _2, _marker: move _4 }
     storage_dead(_4)
     storage_dead(_2)
     return
 }
 
-pub fn core::ptr::unique::{Unique<T>}::as_ptr<T>(self: Unique<T>) -> *mut T
+fn alloc::boxed::{BoxRaw<T>[TraitClause0]}::cast<T, U>(self: BoxRaw<T>[TraitClause0]) -> BoxRaw<U>[TraitClause1::ImpliedClause0]
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (U: Sized),
+{
+    let mut _0: BoxRaw<U>[TraitClause1::ImpliedClause0]; // return
+    let self: BoxRaw<T>[TraitClause0]; // arg #1
+    let mut _2: NonNull<U>; // anonymous local
+    let mut _3: NonNull<T>; // anonymous local
+    let mut _4: PhantomData<U>; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy self.pointer
+    _2 = core::ptr::non_null::{NonNull<T>}::cast<T, U>[TraitClause1](move _3)
+    ↳⚡ unwind_continue
+    storage_dead(_3)
+    storage_live(_4)
+    _4 = PhantomData {  }
+    _0 = BoxRaw { pointer: move _2, _marker: move _4 }
+    storage_dead(_4)
+    storage_dead(_2)
+    return
+}
+
+fn alloc::boxed::{BoxRaw<T>[TraitClause0]}::as_non_null_ptr<T>(self: BoxRaw<T>[TraitClause0]) -> NonNull<T>
+where
+    TraitClause0: (T: MetaSized),
+{
+    let mut _0: NonNull<T>; // return
+    let self: BoxRaw<T>[TraitClause0]; // arg #1
+
+    storage_live(_0)
+    _0 = copy self.pointer
+    return
+}
+
+fn alloc::boxed::{BoxRaw<T>[TraitClause0]}::as_ptr<T>(self: BoxRaw<T>[TraitClause0]) -> *mut T
+where
+    TraitClause0: (T: MetaSized),
 {
     let mut _0: *mut T; // return
-    let self: Unique<T>; // arg #1
+    let self: BoxRaw<T>[TraitClause0]; // arg #1
     let mut _2: NonNull<T>; // anonymous local
 
     storage_live(_0)
@@ -1986,27 +1998,20 @@ pub fn core::ptr::unique::{Unique<T>}::as_ptr<T>(self: Unique<T>) -> *mut T
     return
 }
 
-pub fn core::ptr::unique::{Unique<T>}::cast<T, U>(self: Unique<T>) -> Unique<U>
+// Full name: alloc::boxed::{impl From<BoxRaw<T>[TraitClause0]> for NonNull<T>}::from
+pub fn from<T>(value: BoxRaw<T>[TraitClause0]) -> NonNull<T>
 where
-    TraitClause0: (U: Sized),
+    TraitClause0: (T: MetaSized),
 {
-    let mut _0: Unique<U>; // return
-    let self: Unique<T>; // arg #1
-    let mut _2: NonNull<U>; // anonymous local
-    let mut _3: NonNull<T>; // anonymous local
-    let mut _4: PhantomData<U>; // anonymous local
+    let mut _0: NonNull<T>; // return
+    let value: BoxRaw<T>[TraitClause0]; // arg #1
+    let mut _2: BoxRaw<T>[TraitClause0]; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
-    storage_live(_3)
-    _3 = copy self.pointer
-    _2 = core::ptr::non_null::{NonNull<T>}::cast<T, U>[TraitClause0](move _3)
+    _2 = copy value
+    _0 = alloc::boxed::{BoxRaw<T>[TraitClause0]}::as_non_null_ptr<T>[TraitClause0](move _2)
     ↳⚡ unwind_continue
-    storage_dead(_3)
-    storage_live(_4)
-    _4 = PhantomData {  }
-    _0 = Unique { pointer: move _2, _marker: move _4 }
-    storage_dead(_4)
     storage_dead(_2)
     return
 }
@@ -2020,7 +2025,7 @@ where
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
 {
-  _0: Unique<T>,
+  _0: BoxRaw<T>[TraitClause0],
   _1: A,
 }
 
@@ -2035,23 +2040,22 @@ where
 {
     let mut _0: (); // return
     let self: &'1 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
-    let ptr: Unique<T>; // local
+    let ptr: BoxRaw<T>[TraitClause0]; // local
     let layout: Layout; // local
     let mut _4: *const T; // anonymous local
     let mut _5: *mut T; // anonymous local
-    let mut _6: Unique<T>; // anonymous local
+    let mut _6: BoxRaw<T>[TraitClause0]; // anonymous local
     let mut _7: bool; // anonymous local
     let mut _8: usize; // anonymous local
     let mut _9: &'3 Layout; // anonymous local
     let _10: (); // anonymous local
     let mut _11: &'5 A; // anonymous local
     let mut _12: NonNull<u8>; // anonymous local
-    let mut _13: Unique<u8>; // anonymous local
-    let mut _14: Unique<T>; // anonymous local
+    let mut _13: BoxRaw<u8>[{built_in impl MetaSized for u8}]; // anonymous local
+    let mut _14: BoxRaw<T>[TraitClause0]; // anonymous local
     let mut _15: Layout; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(ptr)
     ptr = copy (*self)._0
     storage_live(layout)
@@ -2059,7 +2063,7 @@ where
     storage_live(_5)
     storage_live(_6)
     _6 = copy ptr
-    _5 = core::ptr::unique::{Unique<T>}::as_ptr<T>(move _6)
+    _5 = alloc::boxed::{BoxRaw<T>[TraitClause0]}::as_ptr<T>[TraitClause0](move _6)
     ↳⚡ unwind_continue
     _4 = cast<*const T>(move _5)
     storage_dead(_6)
@@ -2092,10 +2096,10 @@ where
     storage_live(_13)
     storage_live(_14)
     _14 = copy ptr
-    _13 = core::ptr::unique::{Unique<T>}::cast<T, u8>[{built_in impl Sized for u8}](move _14)
+    _13 = alloc::boxed::{BoxRaw<T>[TraitClause0]}::cast<T, u8>[TraitClause0, {built_in impl Sized for u8}](move _14)
     ↳⚡ unwind_continue
     storage_dead(_14)
-    _12 = from<u8>(move _13)
+    _12 = from<u8>[{built_in impl MetaSized for u8}](move _13)
     ↳⚡ unwind_continue
     storage_dead(_13)
     storage_live(_15)
@@ -2136,7 +2140,6 @@ where
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _0 = ()
     _6 = transmute<*const T>(copy (*_1)._0.pointer)
     drop[{built_in impl Destruct for T}::drop_glue<'4>] (*_6)
     ↳⚡ _4 = &mut (*_1)
@@ -2152,6 +2155,7 @@ where
         unwind_continue
     drop[{built_in impl Destruct for A}::drop_glue<'13>] (*_1)._1
     ↳⚡ unwind_continue
+    _0 = ()
     return
 }
 
@@ -2177,52 +2181,82 @@ fn box_new_uninit(layout: Layout) -> *mut u8
 {
     let mut _0: *mut u8; // return
     let layout: Layout; // arg #1
-    let mut _2: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
-    let mut _3: &'1 Global; // anonymous local
-    let mut _4: Layout; // anonymous local
-    let mut _5: isize; // anonymous local
-    let ptr: NonNull<[u8]>; // local
-    let mut _7: NonNull<[u8]>; // anonymous local
-    let mut _8: !; // anonymous local
+    let mut _2: bool; // anonymous local
+    let mut _3: usize; // anonymous local
+    let mut _4: &'1 Layout; // anonymous local
+    let mut _5: NonNull<u8>; // anonymous local
+    let mut _6: &'2 Layout; // anonymous local
+    let mut _7: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let mut _8: &'4 Global; // anonymous local
     let mut _9: Layout; // anonymous local
-    let mut _10: &'2 Global; // anonymous local
+    let mut _10: isize; // anonymous local
+    let ptr: NonNull<[u8]>; // local
+    let mut _12: NonNull<[u8]>; // anonymous local
+    let mut _13: !; // anonymous local
+    let mut _14: Layout; // anonymous local
+    let mut _15: &'5 Global; // anonymous local
 
     storage_live(_0)
-    storage_live(_5)
     storage_live(_10)
+    storage_live(_15)
     storage_live(_2)
     storage_live(_3)
-    _10 = read {promoted_const}
-    _3 = &(*_10) with_metadata(read _10.metadata)
     storage_live(_4)
-    _4 = copy layout
-    _2 = allocate<'7>(move _3, move _4)
+    _4 = &layout
+    _3 = size<'9>(move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)
-    storage_dead(_3)
-    _5 = @discriminant(_2)
-    switch move _5 {
-        0isize => {
-        },
-        1isize => {
-            storage_live(_8)
-            storage_live(_9)
-            _9 = copy layout
-            _8 = handle_alloc_error(move _9)
-            ↳⚡ unwind_continue
-        },
-        _ => {
-            undefined_behavior
-        },
+    _2 = move _3 == const 0usize
+    if move _2 {
+    } else {
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_live(_7)
+        storage_live(_8)
+        _15 = read {promoted_const}
+        _8 = &(*_15) with_metadata(read _15.metadata)
+        storage_live(_9)
+        _9 = copy layout
+        _7 = allocate<'18>(move _8, move _9)
+        ↳⚡ unwind_continue
+        storage_dead(_9)
+        storage_dead(_8)
+        _10 = @discriminant(_7)
+        switch move _10 {
+            0isize => {
+            },
+            1isize => {
+                storage_live(_13)
+                storage_live(_14)
+                _14 = copy layout
+                _13 = handle_alloc_error(move _14)
+                ↳⚡ unwind_continue
+            },
+            _ => {
+                undefined_behavior
+            },
+        }
+        storage_live(ptr)
+        ptr = copy (_7 as variant Result::Ok)._0
+        storage_live(_12)
+        _12 = copy ptr
+        _0 = as_mut_ptr<u8>[{built_in impl Sized for u8}](move _12)
+        ↳⚡ unwind_continue
+        storage_dead(_12)
+        storage_dead(ptr)
+        storage_dead(_7)
+        return
     }
-    storage_live(ptr)
-    ptr = copy (_2 as variant Result::Ok)._0
-    storage_live(_7)
-    _7 = copy ptr
-    _0 = as_mut_ptr<u8>[{built_in impl Sized for u8}](move _7)
+    storage_dead(_3)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = &layout
+    _5 = dangling_ptr<'13>(move _6)
     ↳⚡ unwind_continue
-    storage_dead(_7)
-    storage_dead(ptr)
+    storage_dead(_6)
+    _0 = core::ptr::non_null::{NonNull<T>}::as_ptr<u8>(move _5)
+    ↳⚡ unwind_continue
+    storage_dead(_5)
     storage_dead(_2)
     return
 }
@@ -2283,7 +2317,7 @@ where
     let mut _0: Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // return
     let raw: *mut T; // arg #1
     let alloc: A; // arg #2
-    let mut _3: Unique<T>; // anonymous local
+    let mut _3: BoxRaw<T>[TraitClause0]; // anonymous local
     let mut _4: *mut T; // anonymous local
     let mut _5: A; // anonymous local
 
@@ -2291,7 +2325,7 @@ where
     storage_live(_3)
     storage_live(_4)
     _4 = copy raw
-    _3 = core::ptr::unique::{Unique<T>}::new_unchecked<T>(move _4)
+    _3 = alloc::boxed::{BoxRaw<T>[TraitClause0]}::new_unchecked<T>[TraitClause0](move _4)
     ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'0>] alloc
         ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
@@ -2525,7 +2559,6 @@ unsafe fn foo()
     storage_live(_0)
     storage_live(_9)
     storage_live(_10)
-    _0 = ()
     storage_live(b_1)
     b_1 = alloc::boxed::{Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl#0}]}::new<i32>[{built_in impl Sized for i32}](const 42i32)
     ↳⚡ unwind_continue

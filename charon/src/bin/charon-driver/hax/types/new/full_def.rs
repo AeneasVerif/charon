@@ -1,7 +1,7 @@
 use crate::hax::prelude::*;
 
+use rustc_attr_ir::LangItem;
 use rustc_hir as hir;
-use rustc_hir::attrs::LangItem;
 use rustc_hir::def::DefKind as RDefKind;
 use rustc_middle::mir;
 use rustc_middle::ty;
@@ -21,7 +21,7 @@ pub struct FullDef<'tcx> {
     /// The span of the whole definition (including e.g. the function body).
     pub source_span: Option<Span>,
     /// Attributes on this definition, if applicable.
-    pub attributes: &'tcx [hir::Attribute],
+    pub attributes: &'tcx [rustc_attr_ir::Attribute],
     /// Visibility of the definition, for definitions where this makes sense.
     pub visibility: Option<bool>,
     /// If this definition is a lang item, we store the identifier, e.g. `sized`.
@@ -60,7 +60,7 @@ impl VirtualTrait {
 fn translate_full_def<'tcx, S>(
     s: &S,
     def_id: &DefId,
-    args: Option<ty::GenericArgsRef<'tcx>>,
+    args: Option<ty::GenericArgs<'tcx>>,
 ) -> FullDef<'tcx>
 where
     S: UnderOwnerState<'tcx>,
@@ -242,7 +242,7 @@ impl DefId {
     pub fn full_def_maybe_instantiated<'tcx, S>(
         &self,
         s: &S,
-        args: Option<ty::GenericArgsRef<'tcx>>,
+        args: Option<ty::GenericArgs<'tcx>>,
     ) -> Arc<FullDef<'tcx>>
     where
         S: BaseState<'tcx>,
@@ -425,10 +425,10 @@ pub enum ConstKind {
     PromotedConst,
 }
 
-/// Reflects [`rustc_hir::attrs::InlineAttr`]
+/// Reflects [`rustc_attr_ir::InlineAttr`]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[derive(AdtInto)]
-#[args(<'tcx, S: BaseState<'tcx>>, from: rustc_hir::attrs::InlineAttr, state: S as _s)]
+#[args(<'tcx, S: BaseState<'tcx>>, from: rustc_attr_ir::InlineAttr, state: S as _s)]
 pub enum InlineAttr {
     None,
     Hint,
@@ -564,7 +564,7 @@ impl<'tcx> TyAlias<'tcx> {
 #[derive(Debug, Clone)]
 pub struct AssocTy<'tcx> {
     def_id: DefId,
-    args: Option<ty::GenericArgsRef<'tcx>>,
+    args: Option<ty::GenericArgs<'tcx>>,
     param_env: ParamEnv<'tcx>,
     implied_predicates: GenericPredicates<'tcx>,
     associated_item: AssocItem<'tcx>,
@@ -601,7 +601,7 @@ impl<'tcx> AssocTy<'tcx> {
 #[derive(Debug, Clone)]
 pub struct Trait<'tcx> {
     def_id: DefId,
-    args: Option<ty::GenericArgsRef<'tcx>>,
+    args: Option<ty::GenericArgs<'tcx>>,
     param_env: ParamEnv<'tcx>,
     implied_predicates: GenericPredicates<'tcx>,
     is_unsafe: bool,
@@ -691,7 +691,7 @@ impl<'tcx> TraitAlias<'tcx> {
 #[derive(Debug, Clone)]
 pub struct TraitImpl<'tcx> {
     this: ItemRef<'tcx>,
-    args: Option<ty::GenericArgsRef<'tcx>>,
+    args: Option<ty::GenericArgs<'tcx>>,
     /// The implemented trait, instantiated with `args` if relevant.
     trait_ref: ty::TraitRef<'tcx>,
     param_env: ParamEnv<'tcx>,
@@ -812,7 +812,7 @@ impl<'tcx> TraitImpl<'tcx> {
 #[derive(Debug, Clone)]
 pub struct InherentImpl<'tcx> {
     def_id: DefId,
-    args: Option<ty::GenericArgsRef<'tcx>>,
+    args: Option<ty::GenericArgs<'tcx>>,
     param_env: ParamEnv<'tcx>,
     /// The type to which this block applies.
     ty: Ty<'tcx>,
@@ -838,7 +838,7 @@ impl<'tcx> InherentImpl<'tcx> {
 /// The associated items of the trait or inherent impl that owns `s`, in definition order.
 fn assoc_items_of<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
-    args: Option<ty::GenericArgsRef<'tcx>>,
+    args: Option<ty::GenericArgs<'tcx>>,
 ) -> Vec<AssocItem<'tcx>> {
     let tcx = s.base().tcx;
     let def_id = s.owner().real_rust_def_id();
@@ -848,8 +848,7 @@ fn assoc_items_of<'tcx, S: UnderOwnerState<'tcx>>(
             let item_args = args.map(|args| {
                 let item_def_id: DefId = assoc.def_id.sinto(s);
                 let item_identity_args = item_def_id.identity_args(s);
-                let item_args = item_identity_args.rebase_onto(tcx, def_id, args);
-                tcx.mk_args(item_args)
+                item_identity_args.rebase_onto(tcx, def_id, args)
             });
             AssocItem::sfrom_instantiated(s, assoc, item_args)
         })
@@ -882,7 +881,7 @@ impl<'tcx> Fn<'tcx> {
 #[derive(Debug, Clone)]
 pub struct AssocFn<'tcx> {
     def_id: DefId,
-    args: Option<ty::GenericArgsRef<'tcx>>,
+    args: Option<ty::GenericArgs<'tcx>>,
     /// The signature, instantiated with `args` if relevant.
     rustc_sig: ty::PolyFnSig<'tcx>,
     param_env: ParamEnv<'tcx>,
@@ -1152,7 +1151,7 @@ fn adjust_by_value_vtable_receiver<'tcx>(
 fn gen_vtable_sig<'tcx>(
     // The state that owns the method DefId
     s: &impl UnderOwnerState<'tcx>,
-    args: Option<ty::GenericArgsRef<'tcx>>,
+    args: Option<ty::GenericArgs<'tcx>>,
 ) -> Option<(StateWithOwner<'tcx>, ty::PolyFnSig<'tcx>)> {
     let method_def_id = s.owner().as_real_def_id().unwrap();
     let tcx = s.base().tcx;
@@ -1237,7 +1236,7 @@ fn vtable_sig_with_dyn_self<'tcx>(
 fn translate_full_def_kind<'tcx, S>(
     s: &S,
     this: &ItemRef<'tcx>,
-    args: Option<ty::GenericArgsRef<'tcx>>,
+    args: Option<ty::GenericArgs<'tcx>>,
     param_env: ParamEnv<'tcx>,
 ) -> FullDefKind<'tcx>
 where
@@ -1488,7 +1487,7 @@ where
 fn late_bound_for_def<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     def_id: RDefId,
-    args: Option<ty::GenericArgsRef<'tcx>>,
+    args: Option<ty::GenericArgs<'tcx>>,
 ) -> Binder<()> {
     if matches!(
         s.base().tcx.def_kind(def_id),
@@ -1825,7 +1824,7 @@ impl<'tcx> ImplAssocItem<'tcx> {
 
 fn get_self_predicate<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
-    args: Option<ty::GenericArgsRef<'tcx>>,
+    args: Option<ty::GenericArgs<'tcx>>,
 ) -> TraitPredicate<'tcx> {
     use ty::Upcast;
     let tcx = s.base().tcx;
@@ -1835,7 +1834,7 @@ fn get_self_predicate<'tcx, S: UnderOwnerState<'tcx>>(
 
 fn self_trait_ref<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
-    args: Option<ty::GenericArgsRef<'tcx>>,
+    args: Option<ty::GenericArgs<'tcx>>,
 ) -> ty::PolyTraitRef<'tcx> {
     let tcx = s.base().tcx;
     let def_id = s.owner().as_real_def_id().unwrap();
@@ -1847,7 +1846,7 @@ fn self_trait_ref<'tcx, S: UnderOwnerState<'tcx>>(
 /// Generates a `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` type for this trait.
 fn get_trait_decl_dyn_self_ty<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
-    args: Option<ty::GenericArgsRef<'tcx>>,
+    args: Option<ty::GenericArgs<'tcx>>,
 ) -> Option<ty::Ty<'tcx>> {
     let tcx = s.base().tcx;
     let typing_env = s.typing_env();
@@ -1920,7 +1919,7 @@ where
 
 fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
-    args: Option<ty::GenericArgsRef<'tcx>>,
+    args: Option<ty::GenericArgs<'tcx>>,
     parent: Option<ItemRef<'tcx>>,
 ) -> ParamEnv<'tcx> {
     let owner = s.owner();
@@ -1954,7 +1953,7 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
 
 fn get_implied_predicates<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
-    args: Option<ty::GenericArgsRef<'tcx>>,
+    args: Option<ty::GenericArgs<'tcx>>,
 ) -> GenericPredicates<'tcx> {
     let tcx = s.base().tcx;
     let owner = s.owner();

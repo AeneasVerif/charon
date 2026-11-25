@@ -1,9 +1,9 @@
 # Final LLBC before serialization:
 
-// Full name: core::intrinsics::abort
+// Full name: core::intrinsics::abort_immediate
 #[rustc_intrinsic]
-pub fn abort() -> !
-= <intrinsic:abort>
+pub fn abort_immediate() -> !
+= <intrinsic:abort_immediate>
 
 // Full name: core::marker::MetaSized
 #[fundamental]
@@ -78,18 +78,16 @@ where
     let _1: &'1 mut Option<T>[TraitClause0]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     match (*_1) {
         Option::None => {
-            storage_dead(_1)
-            return
         },
         _ => {
+            drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1) as variant Option::Some)._0
+            ↳⚡ storage_dead(_1)
+                unwind_continue
         },
     }
-    drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1) as variant Option::Some)._0
-    ↳⚡ storage_dead(_1)
-        unwind_continue
+    _0 = ()
     storage_dead(_1)
     return
 }
@@ -233,7 +231,7 @@ fn core::panicking::panic_nounwind_fmt::runtime<'_0>(fmt: Arguments<'_0>, force_
             unwind_continue
     }
     storage_live(_4)
-    _4 = abort()
+    _4 = abort_immediate()
     ↳⚡ undefined_behavior
 }
 

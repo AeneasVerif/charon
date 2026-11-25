@@ -23,7 +23,6 @@ fn main()
     _6 = move _7
     storage_live(_0)
     storage_live(_5)
-    _0 = ()
     storage_live(x)
     storage_live(_2)
     _5 = move _6

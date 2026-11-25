@@ -213,7 +213,6 @@ fn instances(_1: GenericStruct::<u8>, _2: Reordered::<u32>, _3: PolyReprC::<u32>
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 

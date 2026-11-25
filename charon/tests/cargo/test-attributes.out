@@ -70,6 +70,7 @@ pub fn from_str<'a>(_1: &'static str) -> Arguments<'a>
 = <opaque>
 
 // Full name: core::marker::Send
+#[lang_item(Send)]
 #[diagnostic_item("Send")]
 pub unsafe trait Send<Self>
 
@@ -221,6 +222,14 @@ where
   Owned { _0: TraitClause1::Owned },
 }
 
+// Full name: alloc::rcs::arc::Arc
+#[diagnostic_item("Arc")]
+pub opaque type Arc<T, A>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
+
 // Full name: alloc::string::String
 #[lang_item(String)]
 pub opaque type String
@@ -250,14 +259,6 @@ impl "impl_ToOwned_for_str" ToOwned for str {
     fn to_owned<'_0_1> = to_owned<'_0_1>
     non-dyn-compatible
 }
-
-// Full name: alloc::sync::Arc
-#[diagnostic_item("Arc")]
-pub opaque type Arc<T, A>
-where
-    TraitClause0: (T: MetaSized),
-    TraitClause1: (A: Sized),
-    TraitClause2: (A: Allocator),
 
 // Full name: test::bench::Bencher
 pub opaque type Bencher
@@ -327,7 +328,7 @@ pub struct TestDescAndFn {
 }
 
 // Full name: test::test_main_env_args
-pub fn test_main_env_args<'_0, '_1>(_1: &'_0 [&'_1 TestDescAndFn])
+pub fn test_main_env_args<'_0, '_1>(_1: &'_0 [&'_1 TestDescAndFn]) -> ExitCode
 where
     Outlives0: ('_1: '_0),
 = <opaque>
@@ -358,7 +359,6 @@ fn foo()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -372,7 +372,6 @@ fn test_attributes::tests::test_ignore#1()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -519,7 +518,6 @@ fn test_attributes::tests::test_should_panic#1()
     let mut _3: &'7 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)
@@ -667,7 +665,6 @@ fn test_attributes::tests::test_foo#1()
     let _1: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = foo()
     ↳⚡ unwind_continue
@@ -804,9 +801,9 @@ pub fn test_attributes::tests::test_foo() -> TestDescAndFn
 pub static test_attributes::tests::test_foo: TestDescAndFn = test_attributes::tests::test_foo()
 
 // Full name: test_attributes::main
-pub fn main()
+pub fn main() -> ExitCode
 {
-    let mut _0: (); // return
+    let mut _0: ExitCode; // return
     let mut _1: &'13 [&'14 TestDescAndFn]; // anonymous local
     let mut _2: &'30 [&'31 TestDescAndFn; 3usize]; // anonymous local
     let _3: &'35 [&'36 TestDescAndFn; 3usize]; // anonymous local
@@ -822,7 +819,6 @@ pub fn main()
     let _13: &'52 TestDescAndFn; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)

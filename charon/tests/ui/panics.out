@@ -40,6 +40,7 @@ where
 }
 
 // Full name: core::marker::Send
+#[lang_item(Send)]
 #[diagnostic_item("Send")]
 pub unsafe trait Send<Self>
 
@@ -82,6 +83,21 @@ struct str {
 pub fn panic(_1: &'static str) -> !
 = <opaque>
 
+// Full name: core::panicking::panic_default_msg
+#[track_caller]
+pub fn panic_default_msg() -> !
+= <opaque>
+
+// Full name: core::panicking::unreachable_default_msg
+#[track_caller]
+pub fn unreachable_default_msg() -> !
+= <opaque>
+
+// Full name: core::panicking::todo_default_msg
+#[track_caller]
+pub fn todo_default_msg() -> !
+= <opaque>
+
 // Full name: std::panicking::begin_panic
 #[track_caller]
 #[lang_item(BeginPanic)]
@@ -94,21 +110,14 @@ where
 
 struct () {}
 
-pub const test_crate::panic1::{promoted_const}: str = "explicit panic" with_metadata(14usize)
-
 // Full name: test_crate::panic1
 fn panic1()
 {
     let mut _0: (); // return
-    let mut _1: &'1 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
-    storage_live(_1)
-    _1 = &test_crate::panic1::{promoted_const} with_metadata(const 14usize)
-    panic(panic(move _1))
-    ↳⚡ storage_dead(_1)
-        unwind_continue
+    panic(panic_default_msg())
+    ↳⚡ unwind_continue
 }
 
 pub const test_crate::panic2::{promoted_const}: str = "O no!" with_metadata(5usize)
@@ -121,7 +130,6 @@ fn panic2()
     let mut _2: &'7 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = &test_crate::panic2::{promoted_const} with_metadata(const 5usize)
@@ -145,7 +153,6 @@ fn panic3()
     let mut _2: &'7 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = &test_crate::panic3::{promoted_const} with_metadata(const 5usize)
@@ -169,7 +176,6 @@ fn panic4()
     let mut _2: &'1 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = const false
     storage_live(_2)
@@ -194,7 +200,6 @@ fn panic5()
     let mut _3: &'7 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = const false
     if move _1 {
@@ -218,21 +223,14 @@ fn panic5()
     return
 }
 
-pub const test_crate::panic6::{promoted_const}: str = "internal error: entered unreachable code" with_metadata(40usize)
-
 // Full name: test_crate::panic6
 fn panic6()
 {
     let mut _0: (); // return
-    let mut _1: &'1 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
-    storage_live(_1)
-    _1 = &test_crate::panic6::{promoted_const} with_metadata(const 40usize)
-    panic(panic(move _1))
-    ↳⚡ storage_dead(_1)
-        unwind_continue
+    panic(unreachable_default_msg())
+    ↳⚡ unwind_continue
 }
 
 pub const test_crate::panic7::{promoted_const}: str = "internal error: entered unreachable code: can't reach this" with_metadata(58usize)
@@ -245,7 +243,6 @@ fn panic7()
     let mut _2: &'7 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = &test_crate::panic7::{promoted_const} with_metadata(const 58usize)
@@ -259,21 +256,14 @@ fn panic7()
         unwind_continue
 }
 
-pub const test_crate::panic8::{promoted_const}: str = "not yet implemented" with_metadata(19usize)
-
 // Full name: test_crate::panic8
 fn panic8()
 {
     let mut _0: (); // return
-    let mut _1: &'1 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
-    storage_live(_1)
-    _1 = &test_crate::panic8::{promoted_const} with_metadata(const 19usize)
-    panic(panic(move _1))
-    ↳⚡ storage_dead(_1)
-        unwind_continue
+    panic(todo_default_msg())
+    ↳⚡ unwind_continue
 }
 
 pub const test_crate::panic9::{promoted_const}: str = "explicit panic" with_metadata(14usize)
@@ -285,7 +275,6 @@ fn panic9()
     let mut _1: &'47 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = &test_crate::panic9::{promoted_const} with_metadata(const 14usize)
     panic(begin_panic<&'18 str>[{built_in impl Sized for &'18 str}, impl_Any_for_T<&'18 str>[{built_in impl MetaSized for &'18 str}], {impl Send for &'_0 T}<'18, str>[{built_in impl Sync for str}]](move _1))

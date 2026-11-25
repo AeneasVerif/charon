@@ -73,7 +73,7 @@ fn read_ref<'a>(b: Box<&'a u32>[{built_in impl MetaSized for &'a u32}, {built_in
 
     storage_live(_0)
     _0 = copy (*b)
-    drop[impl_Destruct_for_Box::drop_glue<'37, &'32 u32, Global>[{built_in impl MetaSized for &'32 u32}, {built_in impl Sized for Global}]] b
+    drop[impl_Destruct_for_Box::drop_glue<'53, &'48 u32, Global>[{built_in impl MetaSized for &'48 u32}, {built_in impl Sized for Global}]] b
     ↳⚡ storage_dead(b)
         unwind_continue
     storage_dead(b)
@@ -89,7 +89,6 @@ fn write(b: Box<String>[{built_in impl MetaSized for String}, {built_in impl Siz
     let mut _3: String; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     _3 = move s
     drop[impl_Destruct_for_String::drop_glue<'0>] (*b)
@@ -121,7 +120,6 @@ fn borrow(b: Box<String>[{built_in impl MetaSized for String}, {built_in impl Si
     let mut _2: &'1 mut String; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = &mut (*b)
     storage_dead(_2)

@@ -29,7 +29,6 @@ fn do_something()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -40,7 +39,6 @@ fn do_something_else()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -50,7 +48,6 @@ fn do_something_at_the_end()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -64,7 +61,6 @@ fn main()
     let mut _3: bool; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     // `&&` inside `if` is treated specially by Rust: must like for `if let && let`, it is
@@ -109,7 +105,6 @@ fn main2()
     let mut _9: bool; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     x = const 0i32
     fake_read(x)

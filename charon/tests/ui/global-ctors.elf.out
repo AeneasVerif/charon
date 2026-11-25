@@ -21,7 +21,6 @@ extern "C" fn elf_ctor()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -32,7 +31,6 @@ extern "C" fn elf_ctor_a()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -42,7 +40,6 @@ extern "C" fn elf_ctor_b()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }

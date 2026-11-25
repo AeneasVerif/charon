@@ -24,7 +24,6 @@ pub fn impl_Trait_for_unit::VALUE()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -38,7 +37,6 @@ pub fn required()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -48,7 +46,6 @@ pub fn impl_Trait_for_unit::defaulted()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -69,7 +66,6 @@ fn in_impl()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -79,7 +75,6 @@ fn in_impl_const()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -92,7 +87,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -103,7 +97,6 @@ where
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }

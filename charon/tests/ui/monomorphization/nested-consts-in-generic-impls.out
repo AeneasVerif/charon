@@ -54,7 +54,6 @@ fn main()
     let _2: u8; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = inherent::<u8>()
     ↳⚡ unwind_continue

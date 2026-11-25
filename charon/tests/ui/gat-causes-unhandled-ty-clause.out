@@ -14,14 +14,9 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-struct str {
-  _0: [u8],
-}
-
-// Full name: core::panicking::panic
+// Full name: core::panicking::todo_default_msg
 #[track_caller]
-#[lang_item(Panic)]
-pub fn panic(_1: &'static str) -> !
+pub fn todo_default_msg() -> !
 = <opaque>
 
 // Full name: test_crate::HasAssoc
@@ -47,8 +42,6 @@ trait HasGAT<Self>
     non-dyn-compatible
 }
 
-pub const test_crate::floatify::{promoted_const}: str = "not yet implemented" with_metadata(19usize)
-
 // Full name: test_crate::floatify
 fn floatify<C>() -> TraitClause1::ImpliedClause2::Assoc
 where
@@ -56,14 +49,10 @@ where
     TraitClause1: (C: HasGAT),
 {
     let mut _0: TraitClause1::ImpliedClause2::Assoc; // return
-    let mut _1: &'1 str; // anonymous local
 
     storage_live(_0)
-    storage_live(_1)
-    _1 = &test_crate::floatify::{promoted_const} with_metadata(const 19usize)
-    panic(panic(move _1))
-    ↳⚡ storage_dead(_1)
-        unwind_continue
+    panic(todo_default_msg())
+    ↳⚡ unwind_continue
 }
 
 

@@ -122,7 +122,6 @@ pub fn foo<'a>(_1: &'a u32)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -136,7 +135,6 @@ where
     let mut _1: T; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     drop[{built_in impl Destruct for T}::drop_glue<'0>] _1
     ↳⚡ storage_dead(_1)
@@ -159,7 +157,6 @@ pub fn explicit_arguments(value: &'static u32)
     let mut _8: &'15 u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy value
@@ -211,7 +208,6 @@ pub fn function_values(value: &'static u32)
     let mut _13: &'27 u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(f_2)
     f_2 = const foo<'29>
     storage_live(_3)
@@ -271,7 +267,6 @@ pub fn named_arguments<'a, 'b>(value: &'a u32, other: &'b u32)
     let mut _6: &'17 u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
@@ -324,7 +319,6 @@ where
     let mut _3: u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy value
@@ -375,7 +369,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     drop[{built_in impl Destruct for U}::drop_glue<'0>] _2
     ↳⚡ drop[{built_in impl Destruct for T}::drop_glue<'2>] _1
         ↳⚡ storage_dead(_2)
@@ -404,7 +397,6 @@ pub fn associated_items(value: &'static u32)
     let mut _5: &'14 u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     x = read NONE<&'19 u32>[{built_in impl Sized for &'21 u32}]
     storage_live(_3)
@@ -443,7 +435,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     drop[{built_in impl Destruct for T}::drop_glue<'0>] _2
     ↳⚡ storage_dead(_2)
         storage_dead(self)
@@ -470,7 +461,6 @@ pub fn trait_method(value: &'static u32)
     let mut _4: &'2 u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = ()
@@ -526,7 +516,6 @@ pub fn explicit_aggregates(value: &'static u32)
     let mut _10: &'48 u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(record)
     storage_live(_3)
     _3 = copy value
@@ -572,7 +561,6 @@ pub fn named_aggregate<'a, 'b>(value: &'a u32, other: &'b u32)
     let mut _7: &'30 u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(record)
     storage_live(_4)
     // Infer the second argument while preserving the explicit lifetime.
@@ -608,7 +596,6 @@ where
     let mut _5: u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(record)
     storage_live(_4)
     // Normalizing the argument must also preserve the constraint `'b: 'a`.

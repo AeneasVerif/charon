@@ -324,7 +324,6 @@ fn from_fn_ptr(f: fn<'a, 'b>(&'a u8, &'b u8) -> &'a u8)
     let mut _3: fn<'a, 'b>(&'a u8, &'b u8) -> &'a u8; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy f
@@ -346,7 +345,6 @@ fn nested_binder(f: fn<'a>(fn<'b>(&'a u8, &'b u8)))
     let mut _3: fn<'a>(fn<'b>(&'a u8, &'b u8)); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy f
@@ -368,7 +366,6 @@ fn nested_binder_swapped(f: fn<'a, 'b>(fn<'c>(&'a (), &'b (), &'c ())))
     let mut _3: fn<'a, 'b>(fn<'c>(&'a (), &'b (), &'c ())); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy f
@@ -390,7 +387,6 @@ fn doubly_nested_binder(f: fn<'a>(fn<'b>(fn<'c>(&'a (), &'b (), &'c ()))))
     let mut _3: fn<'a>(fn<'b>(fn<'c>(&'a (), &'b (), &'c ()))); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy f

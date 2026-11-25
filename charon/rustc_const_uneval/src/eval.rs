@@ -216,8 +216,7 @@ impl<'tcx> ConstReader<'tcx> {
             // Evaluate these only if they represent anon consts that don't show up in the type
             // system (e.g. through `adt_const_params`).
             ConstSource::TyConst(uv)
-                if let Some(def_id) = uv.kind.opt_def_id()
-                    && let rustc_hir::def::DefKind::AnonConst = tcx.def_kind(def_id)
+                if let ty::AliasConstKind::Anon { def_id } = uv.kind
                     && let ty::AnonConstKind::NonTypeSystemInline = tcx.anon_const_kind(def_id)
                     && !uv.has_opaque_types() =>
             {
@@ -242,19 +241,17 @@ impl<'tcx> ConstReader<'tcx> {
     /// its evaluation fails, or if its type has no valtree representation.
     fn eval_to_valtree(&self, span: Span, uv: ty::AliasConst<'tcx>) -> Option<ty::Value<'tcx>> {
         let tcx = self.tcx;
-        if uv.has_non_region_param() {
+        // Normalization replaces `InherentSelf` consts with their value, so we only see one if
+        // normalization failed or was skipped.
+        if uv.has_non_region_param() || matches!(uv.kind, ty::AliasConstKind::InherentSelf { .. }) {
             return None;
         }
-        let def = uv.kind.opt_def_id()?;
         let erased_uv = tcx.erase_and_anonymize_regions(uv);
         let valtree = tcx
             .const_eval_resolve_for_typeck(self.eval_typing_env(erased_uv), erased_uv, span)
             .ok()?
             .ok()?;
-        let ty = tcx
-            .type_of(def)
-            .instantiate(tcx, uv.args)
-            .skip_normalization();
+        let ty = uv.type_of(tcx).skip_normalization();
         Some(ty::Value {
             ty: self.normalize(ty),
             valtree,

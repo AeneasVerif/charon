@@ -20,7 +20,6 @@ fn impl_Tr_for_u8::f()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -37,7 +36,6 @@ fn impl_Tr_for_unit::f()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }

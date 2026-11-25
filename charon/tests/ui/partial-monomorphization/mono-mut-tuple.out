@@ -92,7 +92,6 @@ where
     let _1: &'1 mut (&'_1 mut T0, T1); // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[{built_in impl core::marker::Destruct::<&_ mut _><'_1> for T0}::drop_glue<'2>] (*_1)._0
     ↳⚡ drop[{built_in impl Destruct for T1}::drop_glue<'4>] (*_1)._1
         ↳⚡ storage_dead(_1)
@@ -102,6 +101,7 @@ where
     drop[{built_in impl Destruct for T1}::drop_glue<'3>] (*_1)._1
     ↳⚡ storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_1)
     return
 }

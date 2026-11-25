@@ -193,7 +193,6 @@ fn main()
     storage_live(_8)
     storage_live(_9)
     storage_live(_10)
-    _0 = ()
     set '1: '0
     storage_live(_1)
     storage_live(_2)

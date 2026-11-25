@@ -350,7 +350,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     && match trait_ref.self_ty().kind() {
                         ty::Uint(ty::UintTy::Usize) => true,
                         ty::Adt(def, args) => {
-                            tcx.is_lang_item(def.did(), rustc_hir::attrs::LangItem::Range)
+                            tcx.is_lang_item(def.did(), rustc_attr_ir::LangItem::Range)
                                 && args.type_at(0) == tcx.types.usize
                         }
                         _ => false,
@@ -436,7 +436,7 @@ impl<'tcx> TranslateCtx<'tcx> {
     /// The functions exported under `symbol`.
     pub(crate) fn exported_fns(&mut self, symbol: &str) -> ExportedFns<'tcx> {
         use rustc_ast::expand::allocator::*;
-        use rustc_hir::attrs::Linkage;
+        use rustc_attr_ir::Linkage;
         use rustc_hir::def::DefKind;
         use rustc_middle::middle::exported_symbols::ExportedSymbol;
         use rustc_symbol_mangling::mangle_internal_symbol;
@@ -784,9 +784,9 @@ impl<'tcx> TranslateCtx<'tcx> {
         let triple = self.get_target_triple();
 
         let mut primitive_alignments = SeqHashMap::new();
-        primitive_alignments.insert(ScalarTy::Bool, target_data.i8_align.bytes());
+        primitive_alignments.insert(ScalarTy::Bool, rustc_abi::Align::ONE.bytes());
         for (ty, alignment) in [
-            (IntegerTy::Signed(IntTy::I8), target_data.i8_align.bytes()),
+            (IntegerTy::Signed(IntTy::I8), rustc_abi::Align::ONE.bytes()),
             (IntegerTy::Signed(IntTy::I16), target_data.i16_align.bytes()),
             (IntegerTy::Signed(IntTy::I32), target_data.i32_align.bytes()),
             (IntegerTy::Signed(IntTy::I64), target_data.i64_align.bytes()),
@@ -800,7 +800,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             ),
             (
                 IntegerTy::Unsigned(UIntTy::U8),
-                target_data.i8_align.bytes(),
+                rustc_abi::Align::ONE.bytes(),
             ),
             (
                 IntegerTy::Unsigned(UIntTy::U16),
@@ -1384,7 +1384,10 @@ pub fn translate<'tcx>(
                 let mut add_if_attr_matches = |def_id: DefId| {
                     let def_id: hax::DefId = def_id.sinto(&ctx.hax_state);
                     if !matches!(def_id.kind, hax::DefKind::Mod)
-                        && def_id.attrs(tcx).iter().any(|a| a.path_matches(&attr_path))
+                        && def_id.attrs(tcx).iter().any(|a| {
+                            matches!(a, rustc_attr_ir::Attribute::Tool { item, .. }
+                                if *item.path.segments == *attr_path)
+                        })
                     {
                         ctx.enqueue_module_item(&def_id, ContainmentNode::Start);
                     }

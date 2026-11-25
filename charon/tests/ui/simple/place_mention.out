@@ -42,7 +42,6 @@ fn main()
     _3 = move _4
     storage_live(_0)
     storage_live(_2)
-    _0 = ()
     storage_live(x)
     _2 = move _3
     x = &(*_2)

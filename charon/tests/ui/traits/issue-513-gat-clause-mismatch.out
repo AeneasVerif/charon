@@ -53,7 +53,7 @@ impl "impl_Trait_for_unit" Trait for () {
     type Type = ()
     where
         TraitClause0_1: ((): Copy),
-        proof ImpliedClause0: ((): Sized) = TraitClause0_1::ImpliedClause1::ImpliedClause0;
+        proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()};
     non-dyn-compatible
 }
 
@@ -70,7 +70,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -83,7 +82,6 @@ fn main()
         where _1 :< ();
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = ()
     storage_dead(_1)

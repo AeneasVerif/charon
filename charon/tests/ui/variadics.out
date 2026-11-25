@@ -135,7 +135,6 @@ pub fn call()
     let mut _5: unsafe extern "C" fn(u32, u64, ...); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = sum(const 1i32, const 2i32)
     ↳⚡ unwind_continue

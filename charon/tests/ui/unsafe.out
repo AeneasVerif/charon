@@ -34,6 +34,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::Eq
+#[lang_item(Eq)]
 #[diagnostic_item("Eq")]
 pub trait Eq<Self>
 {
@@ -161,6 +162,7 @@ pub unsafe fn core::intrinsics::assume(b_1: bool)
 = <intrinsic:assume> with fallback {fallback}
 
 // Full name: core::marker::Send
+#[lang_item(Send)]
 #[diagnostic_item("Send")]
 pub unsafe trait Send<Self>
 
@@ -229,7 +231,6 @@ fn call_unsafe_fn()
     let mut _3: *const u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     x = null<u32>[{impl#7}<u32>[{built_in impl Pointee for u32 where Metadata  = ()}]]()
     ↳⚡ unwind_continue
@@ -256,7 +257,6 @@ fn deref_raw_ptr()
     let mut _2: u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     x = null<u32>[{impl#7}<u32>[{built_in impl Pointee for u32 where Metadata  = ()}]]()
     ↳⚡ unwind_continue
@@ -303,7 +303,6 @@ fn access_mutable_static()
 
     storage_live(_0)
     storage_live(_1)
-    _0 = ()
     _1 = copy COUNTER panic.+ const 1usize
     COUNTER = move _1
     _0 = ()
@@ -325,7 +324,6 @@ fn access_union_field()
     let _two: [u32; 2usize]; // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(one)
     one = Foo { one: const 42u64 }
     fake_read(one)
@@ -343,7 +341,6 @@ fn test_crate::assume()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = core::intrinsics::assume(const true)
     ↳⚡ unwind_continue
     return

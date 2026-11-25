@@ -55,7 +55,6 @@ where
     let mut _3: &'2 Self; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self) with_metadata(read self.metadata)
@@ -80,7 +79,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(self)
     return
 }
@@ -97,7 +95,6 @@ where
     let mut _3: &'2 (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self)

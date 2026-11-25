@@ -34,6 +34,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::Eq
+#[lang_item(Eq)]
 #[diagnostic_item("Eq")]
 pub trait Eq<Self>
 {
@@ -153,6 +154,7 @@ impl "impl_Hash_for_unit" Hash for () {
 }
 
 // Full name: core::marker::Send
+#[lang_item(Send)]
 #[diagnostic_item("Send")]
 pub unsafe trait Send<Self>
 
@@ -261,7 +263,6 @@ fn main()
         where ptr := *const ();
 
     storage_live(_0)
-    _0 = ()
     storage_live(ptr)
     ptr = null<()>[impl_Thin_for_T<()>[{built_in impl Pointee for () where Metadata  = ()}]]()
     ↳⚡ unwind_continue

@@ -194,7 +194,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, GenericArg<'tcx>> for ty::GenericA
     }
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Vec<GenericArg<'tcx>>> for ty::GenericArgsRef<'tcx> {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Vec<GenericArg<'tcx>>> for ty::GenericArgs<'tcx> {
     fn sinto(&self, s: &S) -> Vec<GenericArg<'tcx>> {
         self.iter().map(|v| v.kind().sinto(s)).collect()
     }

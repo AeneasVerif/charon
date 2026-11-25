@@ -82,7 +82,6 @@ pub fn incr<'_0>(x: &'_0 mut u32)
 
     storage_live(_0)
     storage_live(_2)
-    _0 = ()
     _2 = copy (*x) panic.+ const 1u32
     (*x) = move _2
     _0 = ()
@@ -719,7 +718,6 @@ fn index_slice_ignore_value<'_0>(x: &'_0 [u32])
     let mut _4: &'_ u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     // FIXME: Bug: the bound check is removed but the place is not mentioned, so the translated
     // function doesn't panic on empty slices anymore.
@@ -965,7 +963,6 @@ fn div_unsigned_to_slice<'_0>(result: &'_0 mut [u32], x: u32)
     let mut _6: &'_ mut u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     _3 = copy x
     storage_live(_4)
@@ -998,7 +995,6 @@ fn div_signed_to_slice<'_0>(result: &'_0 mut [i32], x: i32)
     let mut _6: &'_ mut i32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     _3 = copy x
     storage_live(_4)
@@ -1033,7 +1029,6 @@ fn add_to_slice<'_0>(result: &'_0 mut [u32], x: u32)
 
     storage_live(_0)
     storage_live(_4)
-    _0 = ()
     storage_live(_3)
     _3 = copy x
     _4 = copy _3 panic.+ const 1u32
@@ -1074,7 +1069,6 @@ fn add_to_slice2<'_0>(result: &'_0 mut [u8], i: usize, x: u8)
     storage_live(_0)
     storage_live(_5)
     storage_live(_8)
-    _0 = ()
     storage_live(_4)
     _4 = copy x
     _5 = copy _4 panic.* const 7u8

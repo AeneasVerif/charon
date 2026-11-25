@@ -47,7 +47,6 @@ fn main()
     let d: *mut u8; // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(f)
     f = copy weak_fn
     fake_read(f)

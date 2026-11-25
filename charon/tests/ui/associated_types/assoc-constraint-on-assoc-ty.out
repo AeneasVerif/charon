@@ -48,7 +48,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     conditional_drop[{built_in impl Destruct for I}::drop_glue<'0>] it
     ↳⚡ storage_dead(it)
         unwind_continue
@@ -76,7 +75,6 @@ where
     let mut _2: Clause1_IntoIter; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = move it
     _0 = takes_trait<Clause1_IntoIter, ()>[TraitClause1::ImpliedClause1, TraitClause1::ImpliedClause2](move _2)

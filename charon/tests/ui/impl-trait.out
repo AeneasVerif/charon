@@ -132,7 +132,6 @@ fn mk_foo()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -147,7 +146,6 @@ fn use_foo()
     let mut _5: &'4 (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(foo)
     foo = mk_foo()
     ↳⚡ unwind_continue
@@ -190,7 +188,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -200,7 +197,6 @@ pub fn impl_RPITIT_for_unit::make_foo()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -229,7 +225,6 @@ where
     let mut _5: &'4 TraitClause1::make_foo_ty; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(foo)
     foo = TraitClause1::make_foo()
     ↳⚡ unwind_continue
@@ -333,7 +328,6 @@ pub fn use_wrap()
 
     storage_live(_0)
     storage_live(_7)
-    _0 = ()
     storage_live(f)
     f = wrap<u32>[{built_in impl Sized for u32}]()
     ↳⚡ storage_dead(_7)

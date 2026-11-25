@@ -73,7 +73,6 @@ fn bar()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -107,7 +106,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -131,7 +129,6 @@ where
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -158,7 +155,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -182,7 +178,6 @@ where
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -260,7 +255,6 @@ fn use_generic()
     let mut _5: &'37 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_int_generic)
     _int_generic = new<i32>[{built_in impl Sized for i32}](const 42i32)
     ↳⚡ unwind_continue

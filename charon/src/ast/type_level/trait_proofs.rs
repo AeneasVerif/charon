@@ -168,6 +168,7 @@ pub enum BuiltinImplData {
     Fn,
     FnMut,
     FnOnce,
+    FnAddr,
     FnPtr,
     AsyncFn,
     AsyncFnMut,

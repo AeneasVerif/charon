@@ -48,7 +48,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -59,7 +58,6 @@ fn fixed_lifetime<'a>()
     let _1: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = require<fn(&'a ())>[{built_in impl Sized for fn(&'a ())}, {impl Trait for fn(T)}<&'8 ()>[{built_in impl Sized for &'8 ()}]]()
     ↳⚡ unwind_continue
@@ -75,7 +73,6 @@ fn nested_binder()
     let _1: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = require<fn(fn<'a>(&'a ()))>[{built_in impl Sized for fn(fn<'a>(&'a ()))}, {impl Trait for fn(T)}<fn<'_0_2>(&'_0_2 ())>[{built_in impl Sized for fn<'_0_3>(&'_0_3 ())}]]()
     ↳⚡ unwind_continue
@@ -91,7 +88,6 @@ fn higher_ranked_impl()
     let _1: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = require<fn<'b>(&'b (), &'b ())>[{built_in impl Sized for fn<'b>(&'b (), &'b ())}, {impl Trait for fn<'a>(&'a (), &'a ())}]()
     ↳⚡ unwind_continue

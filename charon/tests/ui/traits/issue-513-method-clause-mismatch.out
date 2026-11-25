@@ -63,7 +63,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _other
     ↳⚡ storage_dead(_other)
         storage_dead(self)
@@ -88,7 +87,6 @@ fn main()
     let mut _2: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = ()

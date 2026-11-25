@@ -26,7 +26,6 @@ fn use_result(_1: MyResult::<Never, u8>)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -38,7 +37,6 @@ fn use_uninhabited_result(_1: MyResult::<Never, Never>)
     let mut _1: MyResult::<Never, Never>; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(_1)
     return

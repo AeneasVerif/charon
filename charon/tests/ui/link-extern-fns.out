@@ -1,9 +1,9 @@
 # Final LLBC before serialization:
 
-// Full name: core::intrinsics::abort
+// Full name: core::intrinsics::abort_immediate
 #[rustc_intrinsic]
-pub fn abort() -> !
-= <intrinsic:abort>
+pub fn abort_immediate() -> !
+= <intrinsic:abort_immediate>
 
 // Full name: core::mem::alignment::Alignment
 pub opaque type Alignment
@@ -101,7 +101,7 @@ pub fn panic_fmt<'_0>(fmt: Arguments<'_0>) -> !
             unwind_continue
     }
     storage_live(_3)
-    _3 = abort()
+    _3 = abort_immediate()
     ↳⚡ undefined_behavior
 }
 

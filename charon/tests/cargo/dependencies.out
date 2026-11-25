@@ -62,6 +62,7 @@ where
 }
 
 // Full name: core::fmt::Debug
+#[lang_item(Debug)]
 #[diagnostic_item("Debug")]
 pub trait Debug<Self>
 {
@@ -252,7 +253,6 @@ fn silly_incr<'_0>(x: &'_0 mut u32)
     let mut _4: {closure}; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &two-phase-mut (*x)
@@ -295,7 +295,6 @@ fn main()
 
     storage_live(_0)
     storage_live(_21)
-    _0 = ()
     storage_live(x)
     x = const 0u32
     fake_read(x)

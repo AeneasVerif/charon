@@ -137,12 +137,12 @@ unsafe fn impl_Destruct_for_A::drop_glue<'_0>(_1: &'_0 mut A)
     let mut drop_ret: (); // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(drop_arg)
     drop_arg = &mut (*_1)._0 with_metadata(read _1.metadata)
     storage_live(drop_ret)
     drop_ret = (read (*drop_arg.metadata).drop)<'4>(move drop_arg)
     ↳⚡ unwind_continue
+    _0 = ()
     return
 }
 
@@ -161,7 +161,6 @@ fn f(_1: Box<A, Global>[{built_in impl MetaSized for A}, {built_in impl Sized fo
     let mut drop_ret: (); // local
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_live(drop_arg)
     drop_arg = &mut _1

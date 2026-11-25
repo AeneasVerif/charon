@@ -83,7 +83,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -96,7 +95,6 @@ pub fn hrtb_fn_pointer(_1: fn<'a>(&'a (dyn Fn<(&'a u8,), ImpliedClause1::Implied
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -108,7 +106,6 @@ pub fn hrtb_dyn_fn<'_0>(_1: &'_0 (dyn for<'a, '_1_2 where 'a: '_1_2> Fn<(&'_1_2 
     let mut _1: &'113 (dyn for<'a, '_1_2 where 'a: '_1_2> Fn<(&'_1_2 (dyn Fn<(&'a i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '_1_2),), ImpliedClause1::ImpliedClause1::Output = ()> + '117); // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(_1)
     return
@@ -140,7 +137,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -151,7 +147,6 @@ fn main()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }

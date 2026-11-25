@@ -222,7 +222,7 @@ pub fn solve_trait<'tcx, S: UnderOwnerState<'tcx>>(
 pub fn translate_item_ref<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     def_id: RDefId,
-    generics: ty::GenericArgsRef<'tcx>,
+    generics: ty::GenericArgs<'tcx>,
 ) -> ItemRef<'tcx> {
     ItemRef::translate(s, def_id, generics)
 }
@@ -233,7 +233,7 @@ pub fn translate_item_ref<'tcx, S: UnderOwnerState<'tcx>>(
 pub fn solve_item_implied_traits<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     def_id: RDefId,
-    generics: ty::GenericArgsRef<'tcx>,
+    generics: ty::GenericArgs<'tcx>,
 ) -> Vec<TraitProof<'tcx>> {
     let predicates = ItemPredicates::implied(s.base().elab_ctx, &s.base_state(), def_id.sinto(s));
     solve_item_traits_inner(s, generics, predicates)
@@ -243,7 +243,7 @@ pub fn solve_item_implied_traits<'tcx, S: UnderOwnerState<'tcx>>(
 /// current context.
 fn solve_item_traits_inner<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
-    generics: ty::GenericArgsRef<'tcx>,
+    generics: ty::GenericArgs<'tcx>,
     predicates: ItemPredicates<'tcx, DefId>,
 ) -> Vec<TraitProof<'tcx>> {
     let tcx = s.base().tcx;
@@ -262,7 +262,7 @@ fn solve_item_traits_inner<'tcx, S: UnderOwnerState<'tcx>>(
 pub fn self_clause_for_item<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     def_id: RDefId,
-    generics: rustc_middle::ty::GenericArgsRef<'tcx>,
+    generics: rustc_middle::ty::GenericArgs<'tcx>,
 ) -> Option<TraitProof<'tcx>> {
     let tcx = s.base().tcx;
 

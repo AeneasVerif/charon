@@ -39,7 +39,6 @@ pub fn impl_Drop_for_Guard::drop<'_0>(self: &'_0 mut Guard)
     bb0: {
         storage_live(_0);
         _0 = ();
-        _0 = ();
         storage_dead(self);
         return;
     }
@@ -57,12 +56,12 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut Guard)
         storage_live(_0);
         storage_live(_2);
         storage_live(_3);
-        _0 = ();
         _2 = &mut (*_1);
         _3 = impl_Drop_for_Guard::drop<'6>(move _2) -> bb1 (unwind: bb2);
     }
 
     bb1: {
+        _0 = ();
         storage_dead(_3);
         storage_dead(_2);
         storage_dead(_1);
@@ -92,7 +91,6 @@ fn may_panic()
     bb0: {
         storage_live(_0);
         _0 = ();
-        _0 = ();
         return;
     }
 }
@@ -108,7 +106,6 @@ fn shared_cleanup()
 
     bb0: {
         storage_live(_0);
-        _0 = ();
         storage_live(_first);
         _first = Guard {  };
         fake_read(_first);

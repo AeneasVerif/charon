@@ -358,7 +358,6 @@ where
     let mut _13: u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -594,7 +593,6 @@ where
     storage_live(_0)
     storage_live(_18)
     storage_live(_19)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _19 = move _20
@@ -838,7 +836,6 @@ fn use_foo<'_0>(_1: test_crate::Foo3::<&_ mut _><'_0, u32>[{built_in impl core::
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -883,7 +880,6 @@ where
     let mut _1: test_crate::Triple::<_, &_ mut &_ mut _, core::option::Option::<&_ mut _><_, _>[TraitClause3]><'68, '69, '70, u32, T, bool>[{built_in impl Sized for u32}, {built_in impl core::marker::Sized::<&_ mut &_ mut _><'68, '69> for T}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'70>[{built_in impl core::marker::Sized::<&_ mut _><'70> for bool}] for bool}, {built_in impl core::marker::Sized::<&_ mut _><'70> for bool}]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(_1)
     return
@@ -933,7 +929,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -958,7 +953,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -975,7 +969,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -990,7 +983,6 @@ where
     let mut _1: core::option::Option::<IterWrapper<_, _>[TraitClause1]><'8, bool>[{built_in impl core::marker::Sized::<IterWrapper<_, _>[TraitClause0]><'8>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(_1)
     return
@@ -1027,7 +1019,6 @@ fn use_const_generic<'_0, '_1>(_1: test_crate::ArrayWrapper::<&_ mut _, 1usize><
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -1045,7 +1036,6 @@ where
     let mut _3: IterMut<'3, bool>[{built_in impl Sized for bool}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = move x

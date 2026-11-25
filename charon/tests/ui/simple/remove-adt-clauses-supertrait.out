@@ -81,7 +81,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(tupled_args)
     storage_dead(_1)
     return

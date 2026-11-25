@@ -41,7 +41,6 @@ fn do_something()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -52,7 +51,6 @@ fn do_something_else()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -62,7 +60,6 @@ fn do_something_at_the_end()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -162,7 +159,6 @@ fn diamond_with_diagonal(opt: Option<u32>[{built_in impl Sized for u32}])
 
     storage_live(_0)
     storage_live(_3)
-    _0 = ()
     storage_live(_2)
     match opt {
         Option::Some => {

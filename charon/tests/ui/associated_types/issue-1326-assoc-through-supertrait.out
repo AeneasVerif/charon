@@ -68,7 +68,6 @@ where
     let mut _2: &'1 F; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = &f
     _0 = TraitClause2::ImpliedClause1::ImpliedClause1::method<'3>(move _2)

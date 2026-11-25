@@ -84,7 +84,6 @@ pub fn construct()
     let mut _1: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = Option::None {  }
     storage_dead(_1)

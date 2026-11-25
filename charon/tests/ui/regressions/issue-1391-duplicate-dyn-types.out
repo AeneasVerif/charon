@@ -66,7 +66,6 @@ fn generic_context1::<u8>(_1: Wrapper::<(dyn Sub)>)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -79,7 +78,6 @@ fn generic_context2::<u8, u8>(_1: Wrapper::<(dyn Sub)>)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -91,7 +89,6 @@ fn generic_context3::<u8, u8, u8>(_1: Wrapper::<(dyn Sub)>)
     let mut _1: Wrapper::<(dyn Sub)>; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(_1)
     return
@@ -128,7 +125,6 @@ fn main()
     let _22: &'17 D; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(d)
     d = D {  }
     fake_read(d)

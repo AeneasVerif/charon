@@ -11,7 +11,10 @@ pub struct Transform {
 
 impl Transform {
     pub fn new(ctx: &TransformCtx) -> CowBox<dyn UllbcPass> {
-        let explicit_panic = Name::from_path(names::EXPLICIT_PANIC_NAME);
+        let default_msg_panics = names::DEFAULT_MSG_PANIC_NAMES
+            .iter()
+            .map(|path| Name::from_path(path))
+            .collect::<Vec<_>>();
         let assert_failed = Name::from_path(&["core", "panicking", "assert_failed"]);
         let panic_fns = ctx
             .translated
@@ -29,7 +32,7 @@ impl Transform {
                     )
                 );
                 (is_panic_lang_item
-                    || decl.item_meta.name == explicit_panic
+                    || default_msg_panics.contains(&decl.item_meta.name)
                     || decl.item_meta.name == assert_failed)
                     .then_some(id)
             })

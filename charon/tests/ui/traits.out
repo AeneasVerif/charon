@@ -91,19 +91,14 @@ where
     Outlives0: (T: '_0),
 = <opaque>
 
-struct str {
-  _0: [u8],
-}
-
-// Full name: core::panicking::panic
-#[track_caller]
-#[lang_item(Panic)]
-pub fn panic(_1: &'static str) -> !
-= <opaque>
-
 // Full name: core::panicking::panic_in_cleanup
 #[lang_item(PanicInCleanup)]
 fn panic_in_cleanup() -> !
+= <opaque>
+
+// Full name: core::panicking::todo_default_msg
+#[track_caller]
+pub fn todo_default_msg() -> !
 = <opaque>
 
 // Full name: core::result::Result
@@ -144,7 +139,6 @@ where
     let _1: &'1 mut (A, B); // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
     ↳⚡ drop[{built_in impl Destruct for B}::drop_glue<'4>] (*_1)._1
         ↳⚡ storage_dead(_1)
@@ -154,6 +148,7 @@ where
     drop[{built_in impl Destruct for B}::drop_glue<'3>] (*_1)._1
     ↳⚡ storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_1)
     return
 }
@@ -564,10 +559,10 @@ where
     let _1: &'1 mut Wrapper<T>[TraitClause0]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_1).x
     ↳⚡ storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_1)
     return
 }
@@ -976,7 +971,6 @@ pub fn impl_WithConstTy_for_bool::f<'_0, '_1>(_1: &'_0 mut u64, _2: &'_1 [u8; 32
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -1033,7 +1027,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     conditional_drop[{built_in impl Destruct for TraitClause1::W}::drop_glue<'0>] _1
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -1082,7 +1075,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_x)
     return
 }
@@ -1098,7 +1090,6 @@ where
     let _x: u32; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(_x)
     return
@@ -1187,7 +1178,6 @@ where
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -1542,21 +1532,15 @@ impl "impl_RecursiveImpl_for_unit" RecursiveImpl for () {
     vtable: lazy
 }
 
-pub const test_crate::flabada::{promoted_const}: str = "not yet implemented" with_metadata(19usize)
-
 // Full name: test_crate::flabada
 pub fn flabada<'a>(_x: &'a ()) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
 {
     let mut _0: Wrapper<(bool, &'12 ())>[{built_in impl Sized for (bool, &'12 ())}]; // return
     let _x: &'16 (); // arg #1
-    let mut _2: &'18 str; // anonymous local
 
     storage_live(_0)
-    storage_live(_2)
-    _2 = &test_crate::flabada::{promoted_const} with_metadata(const 19usize)
-    panic(panic(move _2))
+    panic(todo_default_msg())
     ↳⚡ storage_dead(_x)
-        storage_dead(_2)
         unwind_continue
 }
 
@@ -1653,7 +1637,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     conditional_drop[{built_in impl Destruct for F}::drop_glue<'0>] _1
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -1668,7 +1651,6 @@ pub fn flibidi()
     let _1: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = test_crate::call<'10, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {impl Fn<(&'a (),)> for for<'a> flabada<'a>}<'10>](const flabada<'25>)
     ↳⚡ unwind_continue
@@ -1685,22 +1667,16 @@ trait test_crate::assoc_ty_trait_ref::SliceIndex<Self>
     vtable: test_crate::assoc_ty_trait_ref::SliceIndex::{vtable}<Self::Output>
 }
 
-pub const test_crate::assoc_ty_trait_ref::index::{promoted_const}: str = "not yet implemented" with_metadata(19usize)
-
 fn test_crate::assoc_ty_trait_ref::index<I>() -> TraitClause1::Output
 where
     TraitClause0: (I: Sized),
     TraitClause1: (I: test_crate::assoc_ty_trait_ref::SliceIndex),
 {
     let mut _0: TraitClause1::Output; // return
-    let mut _1: &'1 str; // anonymous local
 
     storage_live(_0)
-    storage_live(_1)
-    _1 = &test_crate::assoc_ty_trait_ref::index::{promoted_const} with_metadata(const 19usize)
-    panic(panic(move _1))
-    ↳⚡ storage_dead(_1)
-        unwind_continue
+    panic(todo_default_msg())
+    ↳⚡ unwind_continue
 }
 
 

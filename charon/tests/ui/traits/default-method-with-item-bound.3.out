@@ -58,7 +58,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(self)
     return
 }
@@ -85,7 +84,6 @@ where
     let self: &'1 Empty<T>[TraitClause0]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(self)
     return

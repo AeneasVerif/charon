@@ -1,13 +1,8 @@
 # Final LLBC before serialization:
 
-struct str {
-  _0: [u8],
-}
-
-// Full name: core::panicking::panic
+// Full name: core::panicking::todo_default_msg
 #[track_caller]
-#[lang_item(Panic)]
-pub fn panic(_1: &'static str) -> !
+pub fn todo_default_msg() -> !
 = <opaque>
 
 struct () {}
@@ -26,8 +21,6 @@ trait Trait<Self>
     non-dyn-compatible
 }
 
-pub const test_crate::Trait::default_method::{promoted_const}: str = "not yet implemented" with_metadata(19usize)
-
 // Full name: test_crate::Trait::default_method
 fn default_method<Self, T>() -> TraitClause1::Assoc
 where
@@ -36,13 +29,10 @@ where
 {
     let mut _0: TraitClause1::Assoc; // return
     let mut _1: !; // anonymous local
-    let mut _2: &'1 str; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
-    storage_live(_2)
-    _2 = &test_crate::Trait::default_method::{promoted_const} with_metadata(const 19usize)
-    _1 = panic(move _2)
+    _1 = todo_default_msg()
     ↳⚡ unwind_continue
 }
 
@@ -58,7 +48,6 @@ fn main()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }

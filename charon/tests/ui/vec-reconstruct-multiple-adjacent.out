@@ -118,9 +118,9 @@ where
     Outlives1: (A: '_0),
 = <opaque>
 
-// Full name: alloc::vec::from_elem
+// Full name: alloc::vec::from_elem_global
 #[diagnostic_item("vec_from_elem")]
-pub fn from_elem<T>(_1: T, _2: usize) -> Vec<T>[TraitClause0, {built_in impl Sized for Global}]
+pub fn from_elem_global<T>(_1: T, _2: usize) -> Vec<T>[TraitClause0, {built_in impl Sized for Global}]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
@@ -153,7 +153,6 @@ fn multiple_adjacent()
     let mut _21: Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_a)
     storage_live(_2)
     storage_live(_16)
@@ -354,7 +353,6 @@ fn multiple_values()
     let mut _7: Box<[u8; 3usize]>[{built_in impl MetaSized for [u8; 3usize]}, {built_in impl Sized for Global}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_a)
     storage_live(_2)
     storage_live(_6)
@@ -408,7 +406,6 @@ fn repeated_value()
     let mut _7: Box<[i32; 3usize]>[{built_in impl MetaSized for [i32; 3usize]}, {built_in impl Sized for Global}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_a)
     storage_live(_2)
     storage_live(_6)
@@ -476,7 +473,6 @@ fn with_fn_calls()
     let mut _10: Box<[u8; 2usize]>[{built_in impl MetaSized for [u8; 2usize]}, {built_in impl Sized for Global}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_a)
     storage_live(_2)
     storage_live(_3)
@@ -542,9 +538,8 @@ fn repeated()
     let _a: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_a)
-    _a = from_elem<u8>[{built_in impl Sized for u8}, impl_Clone_for_u8](const 1u8, const 3usize)
+    _a = from_elem_global<u8>[{built_in impl Sized for u8}, impl_Clone_for_u8](const 1u8, const 3usize)
     ↳⚡ unwind_continue
     fake_read(_a)
     _0 = ()

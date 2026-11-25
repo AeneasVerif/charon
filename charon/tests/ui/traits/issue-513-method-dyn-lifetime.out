@@ -26,7 +26,6 @@ fn method<'a>(context: &'a (dyn Trait + 'static))
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(context)
     return
 }

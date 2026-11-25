@@ -38,7 +38,6 @@ fn f0()
     let x: u8; // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = const 0i32 < const 1i32
     if move _1 {
@@ -79,7 +78,6 @@ fn f1<'_0>(serialized: &'_0 [u8; 1usize])
     let x: u8; // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(previous_true_hints_seen)
     previous_true_hints_seen = const 0usize
     fake_read(previous_true_hints_seen)

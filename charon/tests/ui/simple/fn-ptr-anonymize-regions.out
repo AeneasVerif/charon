@@ -101,7 +101,6 @@ fn simple(_1: NeedsFn<fn<'a>(&'a u8), &'static u8>[{built_in impl Sized for fn<'
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_2)
     storage_dead(_1)
     return

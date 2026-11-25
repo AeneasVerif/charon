@@ -52,6 +52,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::Eq
+#[lang_item(Eq)]
 #[diagnostic_item("Eq")]
 pub trait Eq<Self>
 {
@@ -171,6 +172,7 @@ impl "impl_Hash_for_unit" Hash for () {
 }
 
 // Full name: core::marker::Send
+#[lang_item(Send)]
 #[diagnostic_item("Send")]
 pub unsafe trait Send<Self>
 
@@ -232,7 +234,6 @@ fn main()
     let mut _3: *const [u32; 2usize]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(a)
     a = repeat<u32, 2usize>[{built_in impl Sized for u32}, impl_Clone_for_u32](const 1u32)
     ↳⚡ undefined_behavior

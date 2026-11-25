@@ -255,10 +255,10 @@ where
     let _1: &'1 mut (A,); // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
     ↳⚡ storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_1)
     return
 }
@@ -365,7 +365,6 @@ impl Fn<(u32,), u32> for incr_u32 {
 }
 
 // Full name: test_crate::map_option
-#[allow(clippy::manual_map)]
 pub fn map_option<T, F>(x_1: Option<T>[TraitClause0], f: F) -> Option<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
@@ -494,7 +493,6 @@ where
 }
 
 // Full name: test_crate::map_option_pointer_ref
-#[allow(clippy::manual_map, clippy::needless_lifetimes)]
 pub fn map_option_pointer_ref<'a, T, F>(x_1: &'a Option<T>[TraitClause0], f: fn<'_0_1 where T: '_0_1>(&'_0_1 T) -> T) -> Option<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
@@ -914,7 +912,6 @@ fn test_crate::test_closure_ref_u32::{closure}::{as_fn}<'_0>(arg1: &'_0 u32) -> 
 }
 
 // Full name: test_crate::test_closure_ref_u32
-#[allow(clippy::needless_lifetimes)]
 pub fn test_closure_ref_u32<'a>(x: &'a u32) -> &'a u32
 {
     let mut _0: &'1 u32; // return
@@ -1543,7 +1540,6 @@ pub fn test_map_option_id2(x: Option<u32>[{built_in impl Sized for u32}]) -> Opt
 }
 
 // Full name: test_crate::id_clone
-#[allow(clippy::redundant_clone)]
 pub fn id_clone<T>(x: T) -> T
 where
     TraitClause0: (T: Sized),
@@ -1571,7 +1567,6 @@ where
 }
 
 // Full name: test_crate::{impl Fn<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call
-#[allow(clippy::redundant_clone)]
 pub extern "rust-call" fn {impl Fn<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call<'_0, T>(_1: &'_0 id_clone<T>[TraitClause0, TraitClause1], _2: (T,)) -> T
 where
     TraitClause0: (T: Sized),
@@ -1593,7 +1588,6 @@ where
 }
 
 // Full name: test_crate::{impl FnMut<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_mut
-#[allow(clippy::redundant_clone)]
 pub extern "rust-call" fn {impl FnMut<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_mut<'_0, T>(_1: &'_0 mut id_clone<T>[TraitClause0, TraitClause1], _2: (T,)) -> T
 where
     TraitClause0: (T: Sized),
@@ -1615,7 +1609,6 @@ where
 }
 
 // Full name: test_crate::{impl FnOnce<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_once
-#[allow(clippy::redundant_clone)]
 pub extern "rust-call" fn {impl FnOnce<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_once<T>(_1: id_clone<T>[TraitClause0, TraitClause1], _2: (T,)) -> T
 where
     TraitClause0: (T: Sized),
@@ -2378,7 +2371,6 @@ where
     storage_live(_0)
     storage_live(x)
     storage_live(_5)
-    _0 = ()
     x = noretag move tupled_args._0
     storage_live(_4)
     _4 = copy (*x)
@@ -2418,7 +2410,6 @@ fn test_fnmut_with_ref()
     _10 = move _11
     storage_live(_0)
     storage_live(_9)
-    _0 = ()
     storage_live(sum)
     sum = const 0usize
     fake_read(sum)

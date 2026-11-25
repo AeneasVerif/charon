@@ -41,6 +41,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::Eq
+#[lang_item(Eq)]
 #[diagnostic_item("Eq")]
 pub trait Eq<Self>
 {
@@ -96,35 +97,25 @@ pub fn eq<'_0, '_1>(self: &'_0 Foo, other: &'_1 Foo) -> bool
     let mut _0: bool; // return
     let self: &'1 Foo; // arg #1
     let other: &'2 Foo; // arg #2
-    let __self_discr: isize; // local
+    let mut _3: isize; // anonymous local
     let mut _4: &'3 Foo; // anonymous local
-    let __arg1_discr: isize; // local
+    let mut _5: isize; // anonymous local
     let mut _6: &'4 Foo; // anonymous local
-    let mut _7: isize; // anonymous local
-    let mut _8: isize; // anonymous local
 
     storage_live(_0)
-    storage_live(__self_discr)
+    storage_live(_3)
     storage_live(_4)
     _4 = &(*self)
-    __self_discr = @discriminant((*_4))
+    _3 = @discriminant((*_4))
     storage_dead(_4)
-    fake_read(__self_discr)
-    storage_live(__arg1_discr)
+    storage_live(_5)
     storage_live(_6)
     _6 = &(*other)
-    __arg1_discr = @discriminant((*_6))
+    _5 = @discriminant((*_6))
     storage_dead(_6)
-    fake_read(__arg1_discr)
-    storage_live(_7)
-    _7 = copy __self_discr
-    storage_live(_8)
-    _8 = copy __arg1_discr
-    _0 = move _7 == move _8
-    storage_dead(_8)
-    storage_dead(_7)
-    storage_dead(__arg1_discr)
-    storage_dead(__self_discr)
+    _0 = move _3 == move _5
+    storage_dead(_5)
+    storage_dead(_3)
     storage_dead(other)
     storage_dead(self)
     return
@@ -230,7 +221,6 @@ fn bar<const N : usize>()
     let mut _2: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = ()

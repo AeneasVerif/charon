@@ -36,8 +36,7 @@ pub fn param_env_from_clauses<'tcx>(
     use rustc_middle::traits::ObligationCause;
     use rustc_trait_selection::traits::normalize_param_env_or_error;
 
-    let param_env = ParamEnv::new(tcx, predicates);
-    normalize_param_env_or_error(tcx, param_env, ObligationCause::dummy())
+    normalize_param_env_or_error(tcx, predicates.collect(), ObligationCause::dummy())
 }
 
 /// Make the opaque types in `value` non-rigid, so that normalizing reveals them.

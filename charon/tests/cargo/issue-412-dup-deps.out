@@ -62,6 +62,7 @@ where
 }
 
 // Full name: core::fmt::Debug
+#[lang_item(Debug)]
 #[diagnostic_item("Debug")]
 pub trait Debug<Self>
 {
@@ -215,7 +216,6 @@ fn main()
     storage_live(_0)
     storage_live(_8)
     storage_live(_23)
-    _0 = ()
     storage_live(a)
     a = mydup::hello()
     ↳⚡ unwind_continue

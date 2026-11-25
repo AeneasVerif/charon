@@ -217,7 +217,6 @@ fn main()
     let mut _11: test_crate::main::{closure#2}; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(z_1)
     z_1 = const 1u8
     fake_read(z_1)

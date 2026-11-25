@@ -44,6 +44,7 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+#[lang_item(CloneFromFn)]
 pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(self: &'_0 mut Self, source: &'_1 Self)
 where
     TraitClause0: (Self: Clone),
@@ -58,7 +59,6 @@ where
     let mut _4: &'4 Self; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source) with_metadata(read source.metadata)
@@ -93,6 +93,7 @@ pub fn impl_Clone_for_usize::clone<'_0>(self: &'_0 usize) -> usize
 }
 
 // Full name: core::clone::impls::{impl Clone for usize}::clone_from
+#[lang_item(CloneFromFn)]
 pub fn impl_Clone_for_usize::clone_from<'_0, '_1>(self: &'_0 mut usize, source: &'_1 usize)
 where
     TraitClause0: (usize: Destruct),
@@ -104,7 +105,6 @@ where
     let mut _4: &'4 usize; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source)
@@ -134,10 +134,10 @@ impl "impl_Clone_for_usize" Clone for usize {
     non-dyn-compatible
 }
 
-// Full name: core::intrinsics::abort
+// Full name: core::intrinsics::abort_immediate
 #[rustc_intrinsic]
-pub fn abort() -> !
-= <intrinsic:abort>
+pub fn abort_immediate() -> !
+= <intrinsic:abort_immediate>
 
 struct str {
   _0: [u8],
@@ -336,9 +336,24 @@ pub fn is_power_of_two(self: usize) -> bool
 fn core::ub_checks::check_language_ub::runtime() -> bool
 {
     let mut _0: bool; // return
+    let mut _1: bool; // anonymous local
+    let mut _2: bool; // anonymous local
 
     storage_live(_0)
-    _0 = ~(const true)
+    storage_live(_1)
+    _1 = const true
+    if move _1 {
+    } else {
+        storage_live(_2)
+        _2 = ub_checks
+        _0 = move _2
+        storage_dead(_1)
+        storage_dead(_2)
+        return
+    }
+    _0 = const false
+    storage_dead(_1)
+    storage_dead(_2)
     return
 }
 
@@ -346,26 +361,10 @@ fn core::ub_checks::check_language_ub::runtime() -> bool
 fn check_language_ub() -> bool
 {
     let mut _0: bool; // return
-    let mut _1: bool; // anonymous local
-    let mut _2: bool; // anonymous local
 
     storage_live(_0)
-    storage_live(_1)
-    _1 = core::ub_checks::check_language_ub::runtime()
-    ↳⚡ storage_dead(_2)
-        unwind_continue
-    if move _1 {
-    } else {
-        _0 = const false
-        storage_dead(_1)
-        storage_dead(_2)
-        return
-    }
-    storage_live(_2)
-    _2 = ub_checks
-    _0 = move _2
-    storage_dead(_1)
-    storage_dead(_2)
+    _0 = core::ub_checks::check_language_ub::runtime()
+    ↳⚡ unwind_continue
     return
 }
 
@@ -508,7 +507,7 @@ fn core::panicking::panic_nounwind_fmt::runtime<'_0>(fmt: Arguments<'_0>, force_
             unwind_continue
     }
     storage_live(_4)
-    _4 = abort()
+    _4 = abort_immediate()
     ↳⚡ undefined_behavior
 }
 
@@ -591,7 +590,6 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
     let mut _7: &'4 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy align
@@ -889,7 +887,7 @@ pub fn panic_fmt<'_0>(fmt: Arguments<'_0>) -> !
             unwind_continue
     }
     storage_live(_3)
-    _3 = abort()
+    _3 = abort_immediate()
     ↳⚡ undefined_behavior
 }
 
@@ -1101,7 +1099,6 @@ where
 
     storage_live(_0)
     storage_live(_16)
-    _0 = ()
     storage_live(_4)
     _4 = check_language_ub()
     ↳⚡ storage_dead(_16)
@@ -1156,6 +1153,7 @@ where
     _15 = copy count
     _16 = core::intrinsics::copy_nonoverlapping<T>[TraitClause0](move _13, move _14, move _15)
     ↳⚡ undefined_behavior
+    _0 = ()
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_13)
@@ -1181,7 +1179,6 @@ where
     let mut _5: *mut T; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &raw const (*y)

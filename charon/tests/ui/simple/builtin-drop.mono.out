@@ -48,7 +48,6 @@ unsafe fn impl_Destruct_for_slice::drop_glue::<String><'_0>(_1: &'_0 mut [String
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _0 = ()
     _2 = noretag copy _1.metadata
     _3 = const 0usize
     loop {
@@ -89,6 +88,7 @@ unsafe fn impl_Destruct_for_slice::drop_glue::<String><'_0>(_1: &'_0 mut [String
             continue 0
         }
     }
+    _0 = ()
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
@@ -133,12 +133,12 @@ unsafe fn impl_Destruct_for_array::drop_glue::<String, 4usize><'_0>(_1: &'_0 mut
 
     storage_live(_0)
     storage_live(_2)
-    _0 = ()
     _2 = unsize_cast<&'4 mut [String], 4usize>(move _1)
     _0 = drop_glue::<[String]><'8>(move _2)
     ↳⚡ storage_dead(_2)
         storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -156,7 +156,6 @@ unsafe fn {impl Destruct for (String, String)}::drop_glue::<String, String><'_0>
     let _1: &'1 mut (String, String); // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[impl_Destruct_for_String::drop_glue<'2>] (*_1)._0
     ↳⚡ drop[impl_Destruct_for_String::drop_glue<'4>] (*_1)._1
         ↳⚡ storage_dead(_1)
@@ -166,6 +165,7 @@ unsafe fn {impl Destruct for (String, String)}::drop_glue::<String, String><'_0>
     drop[impl_Destruct_for_String::drop_glue<'3>] (*_1)._1
     ↳⚡ storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_1)
     return
 }
@@ -177,7 +177,6 @@ fn drop_array(_1: [String; 4usize])
     let mut _1: [String; 4usize]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     drop[impl_Destruct_for_array::drop_glue::<String, 4usize><'0>] _1
     ↳⚡ storage_dead(_1)
@@ -194,7 +193,6 @@ fn drop_slice(_1: Box::<[String], Global>)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     drop[{impl Destruct for Box::<[String], Global>}::drop_glue::<[String], Global><'0>] _1
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -209,7 +207,6 @@ fn drop_tuple_string(_1: (String, String))
     let mut _1: (String, String); // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     drop[{impl Destruct for (String, String)}::drop_glue::<String, String><'0>] _1
     ↳⚡ storage_dead(_1)

@@ -63,13 +63,13 @@ where
     let _1: &'1 mut (A, B); // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
     ↳⚡ drop[{built_in impl Destruct for B}::drop_glue<'4>] (*_1)._1
         ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     drop[{built_in impl Destruct for B}::drop_glue<'3>] (*_1)._1
     ↳⚡ unwind_continue
+    _0 = ()
     return
 }
 
@@ -83,7 +83,6 @@ pub fn impl_Drop_for_NeedsDrop::drop<'_0>(self: &'_0 mut NeedsDrop)
     let self: &'1 mut NeedsDrop; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -99,10 +98,10 @@ unsafe fn impl_Destruct_for_NeedsDrop::drop_glue<'_0>(_1: &'_0 mut NeedsDrop)
     storage_live(_0)
     storage_live(_2)
     storage_live(_3)
-    _0 = ()
     _2 = &mut (*_1)
     _3 = impl_Drop_for_NeedsDrop::drop<'6>(move _2)
     ↳⚡ unwind_continue
+    _0 = ()
     return
 }
 
@@ -123,7 +122,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     drop[{built_in impl Destruct for T}::drop_glue<'0>] _x
     ↳⚡ unwind_continue
     return
@@ -140,7 +138,6 @@ pub fn conditional(x: NeedsDrop, move_x: bool)
     let mut _5: NeedsDrop; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     _3 = copy move_x
     if move _3 {
@@ -171,7 +168,6 @@ fn pair1(pair: (NeedsDrop, NeedsDrop))
     let _x_4: NeedsDrop; // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = const true
     if move _2 {
@@ -212,7 +208,6 @@ fn pair2(pair: (NeedsDrop, NeedsDrop))
 
     storage_live(_0)
     storage_live(_6)
-    _0 = ()
     _6 = const false
     _6 = const true
     storage_live(_2)
@@ -283,7 +278,6 @@ pub fn pair3(pair: (NeedsDrop, NeedsDrop), move_pair: bool, move_first: bool)
     let _x_7: NeedsDrop; // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_4)
     _4 = copy move_pair
     if move _4 {
@@ -336,7 +330,6 @@ pub fn re_assign(x: NeedsDrop)
     let mut _6: NeedsDrop; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = const true
     if move _2 {
@@ -386,7 +379,6 @@ pub fn in_loop(x: NeedsDrop)
     let mut _6: NeedsDrop; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     loop {
         storage_live(_2)
         _2 = const true
@@ -457,7 +449,6 @@ fn partial_enum_move(value: EnumWithTwoDrops, b: bool)
     storage_live(_10)
     storage_live(_11)
     storage_live(_12)
-    _0 = ()
     _9 = const false
     _10 = const false
     _9 = const true

@@ -52,10 +52,10 @@ where
     let _1: &'1 mut test_crate::foo::{closure}<T>[TraitClause0, TraitClause1]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[TraitClause1::drop_glue<'2>] (*_1)._0
     ↳⚡ storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_1)
     return
 }
@@ -71,7 +71,6 @@ where
     let mut _2: test_crate::foo::{closure}<T>[TraitClause0, TraitClause1]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = test_crate::foo::{closure} { _0: move x }
     drop[impl_Destruct_for_closure::drop_glue<'0, T>[TraitClause0, TraitClause1]] _2
@@ -95,7 +94,6 @@ where
     let mut _3: T; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     _3 = move _1._0
     _0 = drop<T>[TraitClause0, TraitClause1, TraitClause1](move _3)
@@ -117,7 +115,6 @@ fn bar()
     let x: test_crate::bar::{closure}; // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     x = test_crate::bar::{closure} {  }
     _0 = ()
@@ -133,7 +130,6 @@ extern "rust-call" fn call<'_0>(_1: &'_0 test_crate::bar::{closure}, tupled_args
     let mut tupled_args: (); // arg #2
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(tupled_args)
     storage_dead(_1)

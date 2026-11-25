@@ -1256,7 +1256,6 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(
     let mut _13: &'4 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_4)
     storage_live(_5)
     _5 = copy end
@@ -1416,7 +1415,6 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(star
     let mut _13: &'4 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_4)
     storage_live(_5)
     _5 = copy end
@@ -1791,7 +1789,6 @@ fn main()
     let mut _11: &'_ i32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(array)
     array = [const 1i32, const 2i32, const 3i32, const 4i32, const 5i32, const 6i32]
     fake_read(array)

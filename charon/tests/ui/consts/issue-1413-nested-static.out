@@ -18,7 +18,6 @@ fn main()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     (*FOO) = const 43u32
     _0 = ()
     return

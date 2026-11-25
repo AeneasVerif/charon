@@ -34,6 +34,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::Eq
+#[lang_item(Eq)]
 #[diagnostic_item("Eq")]
 pub trait Eq<Self>
 {
@@ -100,6 +101,7 @@ pub trait Hash<Self>
 }
 
 // Full name: core::marker::Send
+#[lang_item(Send)]
 #[diagnostic_item("Send")]
 pub unsafe trait Send<Self>
 
@@ -153,7 +155,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -165,7 +166,6 @@ where
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = assert_copy<{built_in impl Pointee for T}::Metadata>[{built_in impl Pointee for T}::ImpliedClause0, {built_in impl Pointee for T}::ImpliedClause2]()
     ↳⚡ unwind_continue
     return

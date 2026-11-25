@@ -85,7 +85,6 @@ fn mk_unit()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 

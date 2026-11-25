@@ -19,7 +19,6 @@ extern "rust-call" fn call::<()><'_0>(_1: &'_0 {closure}::<()>, tupled_args: (()
 
     storage_live(_0)
     storage_live(x)
-    _0 = ()
     x = noretag move tupled_args._0
     _0 = ()
     storage_dead(x)
@@ -37,7 +36,6 @@ extern "rust-call" fn call_mut::<()><'_0>(state: &'_0 mut {closure}::<()>, args:
     let mut _3: &'0 {closure}::<()>; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     _3 = &(*state)
     _0 = call::<()><'2>(move _3, move args)
@@ -61,7 +59,6 @@ extern "rust-call" fn call_once::<()>(_1: {closure}::<()>, _2: ((),))
 
     storage_live(_0)
     storage_live(_3)
-    _0 = ()
     _3 = &mut _1
     _0 = call_mut::<()><'5>(move _3, move _2)
     ↳⚡ storage_dead(_3)
@@ -83,7 +80,6 @@ fn {as_fn}::<()>(arg1: ())
     let mut state: {closure}::<()>; // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(args)
     storage_live(state)
     args = (move arg1,)
@@ -111,7 +107,6 @@ fn foo::<()>(x: ())
     let mut _4: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(f)
     f = fn_def_to_fn_ptr(const {as_fn}::<()>)
     fake_read(f)
@@ -137,7 +132,6 @@ pub fn main()
     let mut _2: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = ()

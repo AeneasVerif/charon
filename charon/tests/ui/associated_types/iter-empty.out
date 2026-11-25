@@ -67,7 +67,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     conditional_drop[{built_in impl Destruct for F}::drop_glue<'2>] _f
     ↳⚡ storage_dead(_f)
         storage_dead(self)
@@ -100,7 +99,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     conditional_drop[{built_in impl Destruct for F}::drop_glue<'2>] _f
     ↳⚡ storage_dead(_f)
         storage_dead(self)
@@ -132,7 +130,6 @@ fn g()
     let mut _5: F; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)

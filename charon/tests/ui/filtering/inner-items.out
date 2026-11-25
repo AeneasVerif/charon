@@ -14,7 +14,6 @@ fn foo()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -24,7 +23,6 @@ fn inner1()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -53,7 +51,6 @@ fn bar<'_0>(self: &'_0 Bar)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(self)
     return
 }
@@ -65,7 +62,6 @@ fn inner2()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -75,7 +71,6 @@ fn _()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -90,7 +85,6 @@ fn inner3()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -101,7 +95,6 @@ fn baz()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -111,7 +104,6 @@ fn inner4()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }

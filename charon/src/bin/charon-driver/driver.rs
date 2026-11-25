@@ -12,7 +12,8 @@ use rustc_interface::Config;
 use rustc_interface::interface::Compiler;
 use rustc_middle::ty::{InstanceKind, TyCtxt};
 use rustc_middle::util::Providers;
-use rustc_session::config::{OutputType, OutputTypes};
+use rustc_session::config::JobsMode;
+use rustc_session::output::{OutputType, OutputTypes};
 use rustc_span::{ErrorGuaranteed, Symbol};
 use std::num::NonZero;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -23,7 +24,7 @@ fn run_compiler_with_callbacks(
     args: Vec<String>,
     callbacks: &mut (dyn Callbacks + Send),
 ) -> Result<(), CharonFailure> {
-    rustc_driver::catch_fatal_errors(|| rustc_driver::run_compiler(&args, callbacks))
+    rustc_driver::catch_fatal_errors(|| rustc_driver::compiler_entrypoint(&args, callbacks))
         .map_err(|_| CharonFailure::RustcError)
 }
 
@@ -44,13 +45,15 @@ fn set_mir_options(config: &mut Config) {
 
 /// Enable rustc's parallel front-end.
 fn set_parallel_frontend(config: &mut Config) {
-    if config.opts.jobs.frontend.is_none() {
+    if !config.opts.jobs.frontend.is_parallel() {
         // Match rustc's `--jobs-frontend=0` behavior.
         const RUSTC_MAX_THREADS_CAP: usize = u8::MAX as usize;
         let threads = std::thread::available_parallelism()
             .map_or(1, |n| n.get())
             .min(RUSTC_MAX_THREADS_CAP);
-        config.opts.jobs.frontend = NonZero::new(threads).filter(|n| n.get() > 1);
+        if let Some(threads) = NonZero::new(threads).filter(|n| n.get() > 1) {
+            config.opts.jobs.frontend = JobsMode::Parallel(threads);
+        }
     }
 }
 
@@ -148,7 +151,10 @@ fn precheck_rustc_errors(tcx: TyCtxt<'_>) -> bool {
 /// etc.
 fn check_late_rustc_errors(tcx: TyCtxt<'_>) {
     tcx.par_hir_body_owners(|def_id| {
-        let _ = tcx.instance_mir(InstanceKind::Item(def_id.to_def_id()));
+        // These have no MIR body that we can check.
+        if !tcx.is_intrinsic_that_must_be_overridden(def_id) {
+            let _ = tcx.instance_mir(InstanceKind::Item(def_id.to_def_id()));
+        }
     });
 
     if tcx.dcx().err_count() == 0 {

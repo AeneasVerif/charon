@@ -235,7 +235,6 @@ fn precondition_check(this: *const (), count: isize, size: usize)
     let mut _11: &'4 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_4)
     storage_live(_5)
     _5 = copy this
@@ -377,7 +376,6 @@ fn main()
     let mut _9: &'10 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(s)
     s = [const 11i32, const 42i32]
     fake_read(s)

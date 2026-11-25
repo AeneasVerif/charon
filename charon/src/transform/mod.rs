@@ -5,7 +5,6 @@ pub mod utils;
 /// Passes that finish translation, i.e. required for the output to be a valid output.
 pub mod finish_translation {
     pub mod filter_invisible_trait_impls;
-    pub mod insert_assign_return_unit;
     pub mod insert_ptr_metadata;
     pub mod insert_storage_statements;
 }
@@ -152,12 +151,6 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         CowBox::Borrowed(&resugar::resugar_drops::Transform),
         // Compute the metadata & insert for Rvalue
         CowBox::Borrowed(&finish_translation::insert_ptr_metadata::Transform),
-        // Add the missing assignments to the return value.
-        // When the function return type is unit, the generated MIR doesn't set the return value to
-        // `()`. This can be a concern: in the case of Aeneas, it means the return variable
-        // contains ⊥ upon returning. For this reason, when the function has return type unit, we
-        // insert an extra assignment just before returning.
-        CowBox::Borrowed(&finish_translation::insert_assign_return_unit::Transform),
         // Insert storage markers for locals that don't have them (that's allowed in MIR).
         CowBox::Borrowed(&finish_translation::insert_storage_statements::Transform),
         // Transform Drops into Calls to drop_glue.

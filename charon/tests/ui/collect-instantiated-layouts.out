@@ -329,7 +329,6 @@ fn instances<'_0, '_1, '_2>(_1: Wrap<bool>[{built_in impl Sized for bool}], _2: 
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
@@ -347,7 +346,6 @@ where
     let mut _1: Option<T>[TraitClause0]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     conditional_drop[drop_glue<'0, T>[TraitClause0]] _1
     ↳⚡ storage_dead(_1)
@@ -374,7 +372,6 @@ fn uses_opaque()
     let mut _2: u8; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = opaque()
@@ -393,7 +390,6 @@ fn const_block()
     let mut _1: usize; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = const 8usize
     storage_dead(_1)
@@ -421,7 +417,6 @@ fn doc_example()
     let _1: usize; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = foo<&'0 u8>[{built_in impl Sized for &'0 u8}]()
     ↳⚡ unwind_continue
@@ -452,7 +447,6 @@ where
     ↳⚡ undefined_behavior
     _4 = move _5
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy size
@@ -480,7 +474,6 @@ fn do_check()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = check_equal<Option<&'0 u64>[{built_in impl Sized for &'0 u64}]>[{built_in impl Sized for Option<&'0 u64>[{built_in impl Sized for &'0 u64}]}](const 8usize)
     ↳⚡ unwind_continue
     return
@@ -524,18 +517,30 @@ where
 //         },
 //     ],
 //     repr(Rust),
+// layout of `S<u8>[{built_in impl Sized for u8}, impl_Tr_for_u8]`:
+//     size: 8usize,
+//     align: 8usize,
+//     discriminator: _,
+//     inhabited: (false || if_inhabited(u64)),
+//     variants: [
+//         _: {
+//             offset of _0: 0,
+//             inhabited: (false || if_inhabited(u64)),
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
 
 // Full name: test_crate::trivial_clause
-fn trivial_clause(_1: S<u8>[{built_in impl Sized for u8}, TraitClause0])
+fn trivial_clause(_1: S<u8>[{built_in impl Sized for u8}, impl_Tr_for_u8])
 where
     TraitClause0: (u8: Tr),
-    TypeConstraint0: TraitClause0::A = u64,
+    TypeConstraint0: impl_Tr_for_u8::A = u64,
 {
     let mut _0: (); // return
-    let mut _1: S<u8>[{built_in impl Sized for u8}, TraitClause0]; // arg #1
+    let mut _1: S<u8>[{built_in impl Sized for u8}, impl_Tr_for_u8]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(_1)
     return

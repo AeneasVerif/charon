@@ -109,7 +109,6 @@ where
     let mut _2: u64; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = copy x
     _0 = TraitClause0::ImpliedClause2::g(move _2)

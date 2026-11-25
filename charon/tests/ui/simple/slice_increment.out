@@ -45,7 +45,6 @@ pub fn incr<'_0>(s: &'_0 mut [u32])
 
     storage_live(_0)
     storage_live(_3)
-    _0 = ()
     storage_live(_2)
     _2 = const 0usize
     storage_live(_4)

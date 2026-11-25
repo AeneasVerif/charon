@@ -31,7 +31,6 @@ fn method()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -48,7 +47,6 @@ pub fn main()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = method()
     ↳⚡ unwind_continue
     return

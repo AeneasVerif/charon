@@ -10,8 +10,13 @@ use ustr::Ustr;
 generate_index_type!(Disambiguator);
 
 // Some known names we may refer to.
-/// We treat this one specially in the `inline_local_panic_functions` pass. See there for details.
-pub static EXPLICIT_PANIC_NAME: &[&str] = &["core", "panicking", "panic_explicit"];
+/// We treat these ones specially in the `reconstruct_panic_calls` pass. See there for details.
+pub static DEFAULT_MSG_PANIC_NAMES: &[&[&str]] = &[
+    &["core", "panicking", "panic_default_msg"],
+    &["core", "panicking", "unreachable_default_msg"],
+    &["core", "panicking", "unimplemented_default_msg"],
+    &["core", "panicking", "todo_default_msg"],
+];
 pub static BOX_ASSUME_INIT_INTO_VEC_UNSAFE: &str = "box_assume_init_into_vec_unsafe";
 pub static BOX_NEW: &str = "alloc::boxed::Box::new";
 pub static BOX_WRITE: &str = "alloc::boxed::Box::write";

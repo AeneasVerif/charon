@@ -306,7 +306,6 @@ fn call_fn()
     let mut _2: Option<&'34 bool>[{built_in impl Sized for &'34 bool}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     set '21: '21
     storage_live(_1)
     storage_live(_2)

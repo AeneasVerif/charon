@@ -46,10 +46,42 @@ struct str {
 
 pub const core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap::{promoted_const}: str = "called `Result::unwrap()` on an `Err` value" with_metadata(43usize)
 
+// Full name: core::result::unwrap_failed::unwrap_failed_inner
+#[track_caller]
+fn unwrap_failed_inner<'_0, '_1>(_1: &'_0 str, _2: &'_1 (dyn Debug + '_1)) -> !
+= <missing>
+
 // Full name: core::result::unwrap_failed
 #[track_caller]
-fn unwrap_failed<'_0, '_1>(_1: &'_0 str, _2: &'_1 (dyn Debug + '_1)) -> !
-= <missing>
+fn unwrap_failed<'_0, T>(msg: &'_0 str, error: T) -> !
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Debug),
+{
+    let mut _0: !; // return
+    let msg: &'1 str; // arg #1
+    let error: T; // arg #2
+    let mut _3: &'5 (dyn Debug + '6); // anonymous local
+    let _4: &'8 T; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &error
+    _3 = unsize_cast<&'9 (dyn Debug + '10), &vtable_of(TraitClause1)>(copy _4)
+    _0 = unwrap_failed_inner<'20, '21>(move msg, move _3)
+    ↳⚡ drop[{built_in impl Destruct for T}::drop_glue<'22>] error
+        ↳⚡ storage_dead(_4)
+            storage_dead(_3)
+            storage_dead(error)
+            storage_dead(msg)
+            unwind_terminate(in_cleanup)
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(error)
+        storage_dead(msg)
+        unwind_continue
+}
 
 #[track_caller]
 pub fn core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap<T, E>(self: Result<T, E>[TraitClause0, TraitClause1]) -> T
@@ -62,9 +94,7 @@ where
     let self: Result<T, E>[TraitClause0, TraitClause1]; // arg #1
     let e: E; // local
     let mut _3: !; // anonymous local
-    let mut _4: &'3 (dyn Debug + '4); // anonymous local
-    let _5: &'6 E; // anonymous local
-    let mut _6: &'21 str; // anonymous local
+    let mut _4: &'5 str; // anonymous local
 
     storage_live(t)
     storage_live(_3)
@@ -75,36 +105,20 @@ where
             storage_live(e)
             e = move (self as variant Result::Err)._0
             storage_live(_4)
-            storage_live(_5)
-            _5 = &e
-            _4 = unsize_cast<&'7 (dyn Debug + '8), &vtable_of(TraitClause2)>(copy _5)
-            storage_live(_6)
-            _6 = &core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap::{promoted_const} with_metadata(const 43usize)
-            _3 = unwrap_failed<'18, '19>(move _6, move _4)
-            ↳⚡ drop[{built_in impl Destruct for E}::drop_glue<'22>] e
-                ↳⚡ storage_dead(_5)
-                    storage_dead(_4)
-                    storage_dead(_3)
-                    storage_dead(e)
-                    storage_dead(self)
-                    storage_dead(_6)
-                    unwind_terminate(in_cleanup)
-                storage_dead(_5)
-                storage_dead(_4)
-                storage_dead(_3)
+            _4 = &core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap::{promoted_const} with_metadata(const 43usize)
+            _3 = unwrap_failed<'3, E>[TraitClause1, TraitClause2](move _4, move e)
+            ↳⚡ storage_dead(_3)
                 storage_dead(e)
                 storage_dead(self)
-                storage_dead(_6)
+                storage_dead(_4)
                 unwind_continue
         },
     }
     t = move (self as variant Result::Ok)._0
-    storage_dead(_5)
-    storage_dead(_4)
     storage_dead(_3)
     storage_dead(e)
     storage_dead(self)
-    storage_dead(_6)
+    storage_dead(_4)
     return
 }
 

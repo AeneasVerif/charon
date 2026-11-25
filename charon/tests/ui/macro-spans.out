@@ -160,16 +160,6 @@ where
   end: Idx,
 }
 
-struct () {}
-
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
-    non-dyn-compatible
-}
-
 // Full name: core::iter::traits::iterator::Iterator
 #[lang_item(Iterator)]
 #[diagnostic_item("Iterator")]
@@ -187,7 +177,6 @@ pub fn next<'_0, A>(_1: &'_0 mut Range<A>[TraitClause0]) -> Option<A>[TraitClaus
 where
     TraitClause0: (A: Sized),
     TraitClause1: (A: Step),
-    TraitClause2: (A: Destruct),
     Outlives0: (A: '_0),
 = <opaque>
 
@@ -196,12 +185,11 @@ impl<A> "impl_Iterator_for_Range" Iterator for Range<A>[TraitClause0]
 where
     TraitClause0: (A: Sized),
     TraitClause1: (A: Step),
-    TraitClause2: (A: Destruct),
 {
     proof ImpliedClause0: (Range<A>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Range<A>[TraitClause0]}
     proof ImpliedClause1: (A: Sized) = TraitClause0
     type Item = A
-    fn next<'_0_1> = next<'_0_1, A>[TraitClause0, TraitClause1, TraitClause2]
+    fn next<'_0_1> = next<'_0_1, A>[TraitClause0, TraitClause1]
     vtable: lazy
 }
 
@@ -234,6 +222,8 @@ pub fn from_residual<T>(_1: Option<!>[{built_in impl Sized for !}]) -> Option<T>
 where
     TraitClause0: (T: Sized),
 = <opaque>
+
+struct () {}
 
 // Full name: test_crate::included
 pub fn included() -> u32
@@ -457,7 +447,7 @@ pub fn desugarings(x: Option<u32>[{built_in impl Sized for u32}]) -> Option<u32>
     storage_dead(val)
     _4 = Range { start: const 0u32, end: move _5 }
     storage_dead(_5)
-    _3 = into_iter<Range<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for Range<u32>[{built_in impl Sized for u32}]}, impl_Iterator_for_Range<u32>[{built_in impl Sized for u32}, impl_Step_for_u32, {built_in impl Destruct for u32}]](move _4)
+    _3 = into_iter<Range<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for Range<u32>[{built_in impl Sized for u32}]}, impl_Iterator_for_Range<u32>[{built_in impl Sized for u32}, impl_Step_for_u32]](move _4)
     ↳⚡ storage_dead(_17)
         storage_dead(x)
         unwind_continue
@@ -470,7 +460,7 @@ pub fn desugarings(x: Option<u32>[{built_in impl Sized for u32}]) -> Option<u32>
         storage_live(_14)
         _14 = &mut iter
         _13 = &two-phase-mut (*_14)
-        _12 = next<'6, u32>[{built_in impl Sized for u32}, impl_Step_for_u32, {built_in impl Destruct for u32}](move _13)
+        _12 = next<'6, u32>[{built_in impl Sized for u32}, impl_Step_for_u32](move _13)
         ↳⚡ storage_dead(_17)
             storage_dead(x)
             unwind_continue

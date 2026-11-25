@@ -14,14 +14,9 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-struct str {
-  _0: [u8],
-}
-
-// Full name: core::panicking::panic
+// Full name: core::panicking::panic_default_msg
 #[track_caller]
-#[lang_item(Panic)]
-pub fn panic(_1: &'static str) -> !
+pub fn panic_default_msg() -> !
 = <opaque>
 
 // Full name: test_crate::HasOutput
@@ -67,8 +62,6 @@ where
   _0: T,
 }
 
-pub const test_crate::foo::{promoted_const}: str = "explicit panic" with_metadata(14usize)
-
 // Full name: test_crate::foo
 pub fn foo<T, Clause1_ReaderCore, Clause1_Clause2_BlockSize, Clause1_Clause2_Clause2_Output, Clause2_Output>() -> Wrapper<Clause1_ReaderCore, Clause1_Clause2_BlockSize, Clause1_Clause2_Clause2_Output>[TraitClause1::ImpliedClause1, TraitClause1::ImpliedClause2, TraitClause3]
 where
@@ -78,14 +71,10 @@ where
     TraitClause3: (Clause2_Output: Bound),
 {
     let mut _0: Wrapper<Clause1_ReaderCore, Clause1_Clause2_BlockSize, Clause1_Clause2_Clause2_Output>[TraitClause1::ImpliedClause1, TraitClause1::ImpliedClause2, TraitClause3]; // return
-    let mut _1: &'1 str; // anonymous local
 
     storage_live(_0)
-    storage_live(_1)
-    _1 = &test_crate::foo::{promoted_const} with_metadata(const 14usize)
-    panic(panic(move _1))
-    ↳⚡ storage_dead(_1)
-        unwind_continue
+    panic(panic_default_msg())
+    ↳⚡ unwind_continue
 }
 
 

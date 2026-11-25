@@ -42,7 +42,6 @@ fn main()
         where list := LinkedList::<u8>;
 
     storage_live(_0)
-    _0 = ()
     storage_live(list)
     list = new::<u8>()
     ↳⚡ unwind_continue

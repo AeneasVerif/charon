@@ -24,7 +24,6 @@ fn main()
     let _max_char: char; // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_max_char)
     _max_char = read MAX
     fake_read(_max_char)

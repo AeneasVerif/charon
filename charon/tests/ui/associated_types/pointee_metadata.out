@@ -34,6 +34,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::Eq
+#[lang_item(Eq)]
 #[diagnostic_item("Eq")]
 pub trait Eq<Self>
 {
@@ -100,6 +101,7 @@ pub trait Hash<Self>
 }
 
 // Full name: core::marker::Send
+#[lang_item(Send)]
 #[diagnostic_item("Send")]
 pub unsafe trait Send<Self>
 
@@ -175,7 +177,6 @@ fn empty_metadata()
     _5 = move _6
     storage_live(_0)
     storage_live(_4)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)
@@ -220,7 +221,6 @@ fn slice_metadata()
     _6 = move _7
     storage_live(_0)
     storage_live(_5)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)

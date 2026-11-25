@@ -44,7 +44,6 @@ fn main()
 
     storage_live(_0)
     storage_live(_6)
-    _0 = ()
     storage_live(x)
     x = const 52usize
     fake_read(x)

@@ -36,6 +36,7 @@ pub trait Clone<Self>
 }
 
 // Full name: core::clone::Clone::clone_from
+#[lang_item(CloneFromFn)]
 pub fn clone_from<'_0, '_1, Self>(self: &'_0 mut Self, source: &'_1 Self)
 where
     TraitClause0: (Self: Clone),
@@ -50,7 +51,6 @@ where
     let mut _4: &'4 Self; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source) with_metadata(read source.metadata)

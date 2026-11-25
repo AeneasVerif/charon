@@ -14,7 +14,6 @@ fn main()
     let mut _2: test_crate::main::AssertIsAsBytes#1; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = test_crate::main::AssertIsAsBytes {  }
     storage_dead(_1)

@@ -11,7 +11,6 @@ fn main()
 
     storage_live(_0)
     storage_live(_2)
-    _0 = ()
     storage_live(_1)
     _2 = const 1i32 panic.+ const 9i32
     _1 = move _2

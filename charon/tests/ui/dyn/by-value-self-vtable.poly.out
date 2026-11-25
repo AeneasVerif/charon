@@ -329,7 +329,6 @@ fn main()
     let mut _9: &'18 (dyn Consume + '19); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     x = mk()
     ↳⚡ unwind_continue

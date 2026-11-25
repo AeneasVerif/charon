@@ -49,7 +49,6 @@ fn some_method<'_0>(self: &'_0 Point::<i32>)
     let mut _8: &'3 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy (*self).x
@@ -101,7 +100,6 @@ fn main()
     let mut _3: &'1 Point::<i32>; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(p)
     p = Point::<i32> { x: const 10i32, y: const 50u64, z: const 1i32 }
     fake_read(p)

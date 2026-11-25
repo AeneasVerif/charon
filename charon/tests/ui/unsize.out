@@ -121,14 +121,35 @@ where
     TraitClause0: (T: Sized),
 = <opaque>
 
-// Full name: alloc::rc::Rc
+// Full name: alloc::rcs::arc::Arc
+#[diagnostic_item("Arc")]
+pub opaque type Arc<T>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
+
+// Full name: alloc::rcs::arc::Arc::{impl Destruct for Arc<T>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn impl_Destruct_for_Arc::drop_glue<'_0, T, A>(_1: &'_0 mut Arc<T>[TraitClause0, TraitClause1])
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
+= <opaque>
+
+pub fn alloc::rcs::arc::{Arc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<T>(_1: T) -> Arc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: alloc::rcs::rc::Rc
 #[diagnostic_item("Rc")]
 pub opaque type Rc<T>
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (type_error("removed allocator parameter"): Sized),
 
-// Full name: alloc::rc::Rc::{impl Destruct for Rc<T>[TraitClause0, TraitClause1]}::drop_glue
+// Full name: alloc::rcs::rc::Rc::{impl Destruct for Rc<T>[TraitClause0, TraitClause1]}::drop_glue
 unsafe fn impl_Destruct_for_Rc::drop_glue<'_0, T, A>(_1: &'_0 mut Rc<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: MetaSized),
@@ -137,7 +158,7 @@ where
     Outlives1: (A: '_0),
 = <opaque>
 
-pub fn alloc::rc::{Rc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<T>(_1: T) -> Rc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
+pub fn alloc::rcs::rc::{Rc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<T>(_1: T) -> Rc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
 where
     TraitClause0: (T: Sized),
 = <opaque>
@@ -165,27 +186,6 @@ impl "impl_Display_for_String" Display for String {
 
 // Full name: alloc::string::{impl Display for String}::{vtable}
 vtable impl_Display_for_String::{vtable}: core::fmt::Display::{vtable} = Opaque(VTable was chosen to be opaque)
-
-// Full name: alloc::sync::Arc
-#[diagnostic_item("Arc")]
-pub opaque type Arc<T>
-where
-    TraitClause0: (T: MetaSized),
-    TraitClause1: (type_error("removed allocator parameter"): Sized),
-
-// Full name: alloc::sync::Arc::{impl Destruct for Arc<T>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn impl_Destruct_for_Arc::drop_glue<'_0, T, A>(_1: &'_0 mut Arc<T>[TraitClause0, TraitClause1])
-where
-    TraitClause0: (T: MetaSized),
-    TraitClause1: (A: Sized),
-    Outlives0: (T: '_0),
-    Outlives1: (A: '_0),
-= <opaque>
-
-pub fn alloc::sync::{Arc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<T>(_1: T) -> Arc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
-where
-    TraitClause0: (T: Sized),
-= <opaque>
 
 // Full name: test_crate::MyPtr
 struct MyPtr<T>
@@ -237,10 +237,10 @@ where
     let _1: &'1 mut MyPtr<T>[TraitClause0]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[impl_Destruct_for_Box::drop_glue<'2, T, Global>[TraitClause0, {built_in impl Sized for Global}]] (*_1)._0
     ↳⚡ storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_1)
     return
 }
@@ -337,7 +337,6 @@ fn foo()
     let mut _36: &'57 String; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     set '1: '2
     set '4: '3
     storage_live(array)
@@ -374,7 +373,7 @@ fn foo()
     storage_live(_9)
     storage_live(_10)
     _10 = copy array
-    _9 = alloc::rc::{Rc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<[i32; 2usize]>[{built_in impl Sized for [i32; 2usize]}](move _10)
+    _9 = alloc::rcs::rc::{Rc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<[i32; 2usize]>[{built_in impl Sized for [i32; 2usize]}](move _10)
     ↳⚡ unwind_continue
     _8 = unsize_cast<Rc<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], 2usize>(move _9)
     conditional_drop[impl_Destruct_for_Rc::drop_glue<'62, [i32; 2usize], Global>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}]] _9
@@ -390,7 +389,7 @@ fn foo()
     storage_live(_12)
     storage_live(_13)
     _13 = copy array
-    _12 = alloc::sync::{Arc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<[i32; 2usize]>[{built_in impl Sized for [i32; 2usize]}](move _13)
+    _12 = alloc::rcs::arc::{Arc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<[i32; 2usize]>[{built_in impl Sized for [i32; 2usize]}](move _13)
     ↳⚡ unwind_continue
     _11 = unsize_cast<Arc<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], 2usize>(move _12)
     conditional_drop[impl_Destruct_for_Arc::drop_glue<'65, [i32; 2usize], Global>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}]] _12
@@ -473,7 +472,7 @@ fn foo()
         ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_28)
-    _26 = alloc::rc::{Rc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<String>[{built_in impl Sized for String}](move _27)
+    _26 = alloc::rcs::rc::{Rc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<String>[{built_in impl Sized for String}](move _27)
     ↳⚡ conditional_drop[impl_Destruct_for_String::drop_glue<'117>] _27
         ↳⚡ unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_String::drop_glue<'77>] string
@@ -505,7 +504,7 @@ fn foo()
         ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_32)
-    _30 = alloc::sync::{Arc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<String>[{built_in impl Sized for String}](move _31)
+    _30 = alloc::rcs::arc::{Arc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<String>[{built_in impl Sized for String}](move _31)
     ↳⚡ conditional_drop[impl_Destruct_for_String::drop_glue<'156>] _31
         ↳⚡ unwind_terminate(in_cleanup)
         conditional_drop[impl_Destruct_for_String::drop_glue<'77>] string

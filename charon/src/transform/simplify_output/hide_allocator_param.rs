@@ -28,8 +28,8 @@ impl TransformPass for Transform {
         let types = &[
             "alloc::boxed::Box",
             "alloc::vec::Vec",
-            "alloc::rc::Rc",
-            "alloc::sync::Arc",
+            "alloc::rcs::rc::Rc",
+            "alloc::rcs::arc::Arc",
         ];
 
         let types: Vec<NamePattern> = types

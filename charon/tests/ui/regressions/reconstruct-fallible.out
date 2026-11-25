@@ -19,7 +19,6 @@ fn other()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -30,7 +29,6 @@ fn sink_tuple(_x: (usize, bool))
     let _x: (usize, bool); // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(_x)
     return
@@ -44,7 +42,6 @@ fn sink_int(_x: usize)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_x)
     return
 }
@@ -56,7 +53,6 @@ fn sink_bool(_x: bool)
     let _x: bool; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(_x)
     return
@@ -72,7 +68,6 @@ fn must_preserve_tuple()
     let mut _4: (usize, bool); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(z)
     z = add_with_overflow::<usize>(const 0usize, const 0usize)
     ↳⚡ undefined_behavior
@@ -102,7 +97,6 @@ fn can_erase_check()
     let mut _4: usize; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(z)
     z = const 0usize wrap.+ const 0usize
     storage_live(_2)
@@ -131,7 +125,6 @@ fn must_preserve_overflow_flag()
     let mut _4: bool; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(z)
     z = add_with_overflow::<usize>(const 0usize, const 0usize)
     ↳⚡ undefined_behavior
@@ -163,7 +156,6 @@ fn mixed_field0_and_cross_block_tuple()
     let mut _6: (usize, bool); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(z)
     z = add_with_overflow::<usize>(const 0usize, const 0usize)
     ↳⚡ undefined_behavior
@@ -203,7 +195,6 @@ fn can_erase_check_multi_block()
     let mut _7: usize; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(z)
     z = const 0usize wrap.+ const 0usize
     storage_live(_2)
