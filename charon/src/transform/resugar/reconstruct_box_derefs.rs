@@ -16,7 +16,7 @@ pub struct Transform;
 /// transmute::<NonNull<T>, *const T>(copy (*b).0)        // drop elaboration
 /// ```
 /// Returns `b`
-fn box_pointer_assignment(rvalue: &Rvalue) -> Option<Place> {
+fn box_pointer_assignment(krate: &TranslatedCrate, rvalue: &Rvalue) -> Option<Place> {
     let (unique_place, raw_ptr_ty) = match rvalue {
         Rvalue::UnaryOp(
             UnOp::Cast(CastKind::BoxDerefTransmute(raw_ptr_ty)),
@@ -44,8 +44,8 @@ fn box_pointer_assignment(rvalue: &Rvalue) -> Option<Place> {
     if !tref.is_box() {
         return None;
     }
-    let box_generics = &tref.generics;
-    if !box_generics.types[0].eq_modulo_regions(raw_ptr_ty.as_raw_ptr()?.0) {
+    let pointee = box_place.ty().builtin_deref(krate)?;
+    if !pointee.eq_modulo_regions(raw_ptr_ty.as_raw_ptr()?.0) {
         return None;
     }
     Some(box_place.clone())
@@ -72,16 +72,17 @@ impl LocalStatus {
     }
 }
 
-struct LocalStatusCollector {
+struct LocalStatusCollector<'a> {
+    krate: &'a TranslatedCrate,
     local_status: IndexVec<LocalId, LocalStatus>,
     current_statement: Option<StmtLoc>,
 }
 
-impl Visitor for LocalStatusCollector {
+impl Visitor for LocalStatusCollector<'_> {
     type Break = std::convert::Infallible;
 }
 
-impl VisitBody for LocalStatusCollector {
+impl VisitBody for LocalStatusCollector<'_> {
     fn visit_place(&mut self, place: &Place) -> ControlFlow<Self::Break> {
         match &place.kind {
             // Skip uses of a local where the last projection is a deref or a metadata access.
@@ -101,7 +102,7 @@ impl VisitBody for LocalStatusCollector {
     fn visit_ullbc_statement(&mut self, st: &ullbc_ast::Statement) -> ControlFlow<Self::Break> {
         if let StatementKind::Assign(dst, rvalue) = &st.kind
             && let Some(local) = dst.as_local()
-            && let Some(box_place) = box_pointer_assignment(rvalue)
+            && let Some(box_place) = box_pointer_assignment(self.krate, rvalue)
         {
             let status = &mut self.local_status[local];
             if status.box_assignment.is_some() {
@@ -119,8 +120,12 @@ impl VisitBody for LocalStatusCollector {
     }
 }
 
-fn collect_local_status(body: &ExprBody) -> IndexVec<LocalId, LocalStatus> {
+fn collect_local_status(
+    krate: &TranslatedCrate,
+    body: &ExprBody,
+) -> IndexVec<LocalId, LocalStatus> {
     let mut collector = LocalStatusCollector {
+        krate,
         local_status: body.locals.locals.map_ref(|_| Default::default()),
         current_statement: None,
     };
@@ -146,8 +151,8 @@ impl UllbcPass for Transform {
         options.treat_box_as_builtin
     }
 
-    fn transform_body(&self, _ctx: &mut TransformCtx, body: &mut ExprBody) {
-        let local_status = collect_local_status(body);
+    fn transform_body(&self, ctx: &mut TransformCtx, body: &mut ExprBody) {
+        let local_status = collect_local_status(&ctx.translated, body);
 
         body.body.dyn_visit_in_body_mut(|place: &mut Place| {
             if let PlaceKind::Projection(proj) = &mut place.kind

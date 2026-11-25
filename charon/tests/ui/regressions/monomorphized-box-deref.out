@@ -1,13 +1,26 @@
+# Final LLBC before serialization:
 
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_bodies.rs:955:37:
-assertion failed: generics.types.len() == 2
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting body.
- --> tests/ui/regressions/monomorphized-box-deref.rs:7:1
-  |
-7 | / pub fn deref_box(b: Box<u32>) -> u32 {
-8 | |     *b
-9 | | }
-  | |_^
+// Full name: alloc::boxed::Box::<u32, Global>
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box::<u32, Global>
 
-ERROR Charon failed to translate this code (1 errors)
+// Full name: alloc::boxed::Box::{impl Destruct for Box::<u32, Global>}::drop_glue::<u32, Global>
+unsafe fn drop_glue::<u32, Global><'_0>(_1: &'_0 mut Box::<u32, Global>)
+= <opaque>
+
+// Full name: test_crate::deref_box
+pub fn deref_box(b: Box::<u32, Global>) -> u32
+{
+    let mut _0: u32; // return
+    let b: Box::<u32, Global>; // arg #1
+
+    storage_live(_0)
+    _0 = copy (*b)
+    drop[drop_glue::<u32, Global><'0>] b
+    ↳⚡ unwind_continue
+    return
+}
+
+
+
