@@ -56,6 +56,7 @@ pub mod export;
 #[cfg(feature = "minirust")]
 pub mod minirust;
 pub mod name_matcher;
+#[allow(clippy::large_unopt_stack_frames)]
 pub mod options;
 pub mod pretty;
 pub mod timing;
