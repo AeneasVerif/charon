@@ -276,33 +276,29 @@ pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u
 {
     let mut _0: &'2 u32; // return
     let input: &'4 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // arg #1
-    let mut _2: !; // anonymous local
     let x: &'5 u32; // local
         where x :< &'5 u32;
-    let mut _4: &'6 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // anonymous local
-        where _4 :< &'0 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}];
+    let mut _3: &'6 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // anonymous local
+        where _3 :< &'0 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}];
 
     storage_live(_0)
-    storage_live(_2)
-    storage_live(_4)
-    _4 = &(*input)
-    match (*_4) {
+    storage_live(_3)
+    _3 = &(*input)
+    match (*_3) {
         Either::Left => {
         },
         _ => {
-            storage_dead(_4)
-            _2 = panic_default_msg()
-            ↳⚡ storage_dead(_2)
-                storage_dead(input)
+            storage_dead(_3)
+            panic(panic_default_msg())
+            ↳⚡ storage_dead(input)
                 unwind_continue
         },
     }
     storage_live(x)
-    x = &((*_4) as variant Either::Left)._0._0
-    storage_dead(_4)
+    x = &((*_3) as variant Either::Left)._0._0
+    storage_dead(_3)
     _0 = &(*x)
     storage_dead(x)
-    storage_dead(_2)
     storage_dead(input)
     return
 }

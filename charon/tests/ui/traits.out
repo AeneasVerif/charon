@@ -1537,13 +1537,10 @@ pub fn flabada<'a>(_x: &'a ()) -> Wrapper<(bool, &'a ())>[{built_in impl Sized f
 {
     let mut _0: Wrapper<(bool, &'12 ())>[{built_in impl Sized for (bool, &'12 ())}]; // return
     let _x: &'16 (); // arg #1
-    let mut _2: !; // anonymous local
 
     storage_live(_0)
-    storage_live(_2)
-    _2 = todo_default_msg()
-    ↳⚡ storage_dead(_2)
-        storage_dead(_x)
+    panic(todo_default_msg())
+    ↳⚡ storage_dead(_x)
         unwind_continue
 }
 
@@ -1676,13 +1673,10 @@ where
     TraitClause1: (I: test_crate::assoc_ty_trait_ref::SliceIndex),
 {
     let mut _0: TraitClause1::Output; // return
-    let mut _1: !; // anonymous local
 
     storage_live(_0)
-    storage_live(_1)
-    _1 = todo_default_msg()
-    ↳⚡ storage_dead(_1)
-        unwind_continue
+    panic(todo_default_msg())
+    ↳⚡ unwind_continue
 }
 
 

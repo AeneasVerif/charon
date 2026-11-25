@@ -27,13 +27,10 @@ where
     TraitClause1: (T: HasAssoc),
 {
     let mut _0: TraitClause1::Assoc; // return
-    let mut _1: !; // anonymous local
 
     storage_live(_0)
-    storage_live(_1)
-    _1 = todo_default_msg()
-    ↳⚡ storage_dead(_1)
-        unwind_continue
+    panic(todo_default_msg())
+    ↳⚡ unwind_continue
 }
 
 // Full name: test_crate::{impl Trait for T}::default_method
@@ -42,13 +39,10 @@ where
     TraitClause0: (T: HasAssoc),
 {
     let mut _0: TraitClause0::Assoc; // return
-    let mut _1: !; // anonymous local
 
     storage_live(_0)
-    storage_live(_1)
-    _1 = todo_default_msg()
-    ↳⚡ storage_dead(_1)
-        unwind_continue
+    panic(todo_default_msg())
+    ↳⚡ unwind_continue
 }
 
 // Full name: test_crate::{impl Trait for T}

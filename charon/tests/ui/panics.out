@@ -114,13 +114,10 @@ struct () {}
 fn panic1()
 {
     let mut _0: (); // return
-    let _1: !; // anonymous local
 
     storage_live(_0)
-    storage_live(_1)
-    _1 = panic_default_msg()
-    ↳⚡ storage_dead(_1)
-        unwind_continue
+    panic(panic_default_msg())
+    ↳⚡ unwind_continue
 }
 
 pub const test_crate::panic2::{promoted_const}: str = "O no!" with_metadata(5usize)
@@ -230,13 +227,10 @@ fn panic5()
 fn panic6()
 {
     let mut _0: (); // return
-    let _1: !; // anonymous local
 
     storage_live(_0)
-    storage_live(_1)
-    _1 = unreachable_default_msg()
-    ↳⚡ storage_dead(_1)
-        unwind_continue
+    panic(unreachable_default_msg())
+    ↳⚡ unwind_continue
 }
 
 pub const test_crate::panic7::{promoted_const}: str = "internal error: entered unreachable code: can't reach this" with_metadata(58usize)
@@ -266,13 +260,10 @@ fn panic7()
 fn panic8()
 {
     let mut _0: (); // return
-    let _1: !; // anonymous local
 
     storage_live(_0)
-    storage_live(_1)
-    _1 = todo_default_msg()
-    ↳⚡ storage_dead(_1)
-        unwind_continue
+    panic(todo_default_msg())
+    ↳⚡ unwind_continue
 }
 
 pub const test_crate::panic9::{promoted_const}: str = "explicit panic" with_metadata(14usize)

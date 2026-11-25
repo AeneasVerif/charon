@@ -10,14 +10,6 @@ pub struct Transform {
 
 impl Transform {
     pub fn new(ctx: &mut TransformCtx) -> CowBox<dyn UllbcPass> {
-        let panic_name = Name::from_path(names::EXPLICIT_PANIC_NAME);
-        let panic_explicit = ctx
-            .translated
-            .fun_decls
-            .iter_indexed()
-            .find(|(_, decl)| decl.item_meta.name == panic_name)
-            .map(|(id, _)| id);
-
         let repeated_globals =
             super::anon_const_to_call::globals_in_constant_repeats(&ctx.translated);
 
@@ -26,32 +18,7 @@ impl Transform {
             .translated
             .fun_decls
             .extract(|_, decl| {
-                decl.body.as_unstructured().is_some_and(|body| {
-                    // `panic!` generates a function item named `panic_cold_explicit` that calls
-                    // `panic_explicit`. We inline that function.
-                    let block = &body.body[START_BLOCK_ID];
-                    let is_local_panic_fn = if decl.item_meta.name.short_str()
-                        == Some("panic_cold_explicit")
-                        && matches!(body.body.len(), 2 | 3)
-                        && block.statements.is_empty()
-                        && let TerminatorKind::Call { call, .. } = &block.terminator.kind
-                        && let FnOperand::Regular(fn_ptr) = &call.func
-                        && let FnPtrKind::Fun(id) = fn_ptr.kind.as_ref()
-                        && Some(*id) == panic_explicit
-                    {
-                        body.body.iter_enumerated().all(|(id, block)| {
-                            id == START_BLOCK_ID
-                                || block.statements.is_empty()
-                                    && matches!(
-                                        block.terminator.kind,
-                                        TerminatorKind::UnwindResume
-                                            | TerminatorKind::UnwindTerminate(..)
-                                            | TerminatorKind::UndefinedBehavior
-                                    )
-                        })
-                    } else {
-                        false
-                    };
+                decl.body.as_unstructured().is_some_and(|_| {
                     // The `anon_consts_to_call` pass transformed references to anon consts into
                     // calls to their initializers, so we only have to inline these. Keep those
                     // that are still needed because they're inside a repeat operation.
@@ -66,8 +33,7 @@ impl Transform {
                     };
                     let is_vec_construction_fn = decl.item_meta.diagnostic_item.as_deref()
                         == Some(names::BOX_ASSUME_INIT_INTO_VEC_UNSAFE);
-                    is_local_panic_fn
-                        || (is_inlineable_anon_const && ctx.options.inline_anon_consts)
+                    (is_inlineable_anon_const && ctx.options.inline_anon_consts)
                         || (is_vec_construction_fn && ctx.options.treat_box_as_builtin)
                 })
             })

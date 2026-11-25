@@ -235,7 +235,6 @@ where
     let mut _9: u32; // anonymous local
     let mut _10: u32; // anonymous local
     let mut _11: u32; // anonymous local
-    let mut _12: !; // anonymous local
 
     storage_live(_0)
     storage_live(_11)
@@ -243,10 +242,8 @@ where
         CList::CCons => {
         },
         CList::CNil => {
-            storage_live(_12)
-            _12 = panic_default_msg()
-            ↳⚡ storage_dead(_12)
-                storage_dead(_11)
+            panic(panic_default_msg())
+            ↳⚡ storage_dead(_11)
                 storage_dead(i)
                 storage_dead(l)
                 unwind_continue
@@ -273,8 +270,7 @@ where
         _9 = move _11
         storage_dead(_10)
         _7 = list_nth<'12, T>[TraitClause0](move _8, move _9)
-        ↳⚡ storage_dead(_12)
-            storage_dead(_11)
+        ↳⚡ storage_dead(_11)
             storage_dead(i)
             storage_dead(l)
             unwind_continue
@@ -285,7 +281,6 @@ where
         storage_dead(_5)
         storage_dead(tl)
         storage_dead(x)
-        storage_dead(_12)
         storage_dead(_11)
         storage_dead(i)
         storage_dead(l)
@@ -296,7 +291,6 @@ where
     storage_dead(_5)
     storage_dead(tl)
     storage_dead(x)
-    storage_dead(_12)
     storage_dead(_11)
     storage_dead(i)
     storage_dead(l)
@@ -326,7 +320,6 @@ where
     let mut _14: u32; // anonymous local
     let mut _15: u32; // anonymous local
     let mut _16: u32; // anonymous local
-    let mut _17: !; // anonymous local
 
     storage_live(_0)
     storage_live(_16)
@@ -336,10 +329,8 @@ where
         CList::CCons => {
         },
         CList::CNil => {
-            storage_live(_17)
-            _17 = panic_default_msg()
-            ↳⚡ storage_dead(_17)
-                storage_dead(_16)
+            panic(panic_default_msg())
+            ↳⚡ storage_dead(_16)
                 storage_dead(i)
                 storage_dead(l)
                 unwind_continue
@@ -373,8 +364,7 @@ where
         _14 = move _16
         storage_dead(_15)
         _12 = list_nth_mut<'17, T>[TraitClause0](move _13, move _14)
-        ↳⚡ storage_dead(_17)
-            storage_dead(_16)
+        ↳⚡ storage_dead(_16)
             storage_dead(i)
             storage_dead(l)
             unwind_continue
@@ -394,7 +384,6 @@ where
     _0 = &mut (*_3)
     storage_dead(_4)
     storage_dead(_3)
-    storage_dead(_17)
     storage_dead(_16)
     storage_dead(i)
     storage_dead(l)
@@ -416,7 +405,6 @@ where
     let mut _6: u32; // anonymous local
     let mut _7: u32; // anonymous local
     let mut _8: &'7 mut CList<T>[TraitClause0]; // anonymous local
-    let mut _9: !; // anonymous local
 
     storage_live(_0)
     storage_live(_7)
@@ -437,7 +425,6 @@ where
                     storage_dead(_5)
                     storage_dead(tl)
                     storage_dead(x)
-                    storage_dead(_9)
                     storage_dead(_7)
                     storage_dead(i)
                     storage_dead(l)
@@ -461,10 +448,8 @@ where
             },
         }
     }
-    storage_live(_9)
-    _9 = panic_default_msg()
-    ↳⚡ storage_dead(_9)
-        storage_dead(_7)
+    panic(panic_default_msg())
+    ↳⚡ storage_dead(_7)
         storage_dead(i)
         storage_dead(l)
         unwind_continue

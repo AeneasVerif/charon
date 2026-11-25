@@ -1870,13 +1870,12 @@ pub fn get_elem_mut<'_0>(ls: &'_0 mut List<usize>[{built_in impl Sized for usize
     let mut _0: &'1 mut usize; // return
     let mut ls: &'3 mut List<usize>[{built_in impl Sized for usize}]; // arg #1
     let x: usize; // arg #2
-    let mut _3: !; // anonymous local
     let y: &'4 mut usize; // local
     let tl: &'6 mut Box<List<usize>[{built_in impl Sized for usize}]>[{built_in impl MetaSized for List<usize>[{built_in impl Sized for usize}]}, {built_in impl Sized for Global}]; // local
-    let mut _6: bool; // anonymous local
+    let mut _5: bool; // anonymous local
+    let mut _6: usize; // anonymous local
     let mut _7: usize; // anonymous local
-    let mut _8: usize; // anonymous local
-    let mut _9: &'7 mut List<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let mut _8: &'7 mut List<usize>[{built_in impl Sized for usize}]; // anonymous local
 
     storage_live(_0)
     loop {
@@ -1886,32 +1885,31 @@ pub fn get_elem_mut<'_0>(ls: &'_0 mut List<usize>[{built_in impl Sized for usize
                 y = &mut ((*ls) as variant List::Cons)._0
                 storage_live(tl)
                 tl = &mut ((*ls) as variant List::Cons)._1
+                storage_live(_5)
                 storage_live(_6)
+                _6 = copy (*y)
                 storage_live(_7)
-                _7 = copy (*y)
-                storage_live(_8)
-                _8 = copy x
-                _6 = move _7 == move _8
-                if move _6 {
-                    storage_dead(_8)
+                _7 = copy x
+                _5 = move _6 == move _7
+                if move _5 {
                     storage_dead(_7)
-                    _0 = &mut (*y)
                     storage_dead(_6)
+                    _0 = &mut (*y)
+                    storage_dead(_5)
                     storage_dead(tl)
                     storage_dead(y)
-                    storage_dead(_3)
                     storage_dead(x)
                     storage_dead(ls)
                     return
                 } else {
                 }
-                storage_dead(_8)
                 storage_dead(_7)
-                storage_live(_9)
-                _9 = &mut (*(*tl))
-                ls = move _9
-                storage_dead(_9)
                 storage_dead(_6)
+                storage_live(_8)
+                _8 = &mut (*(*tl))
+                ls = move _8
+                storage_dead(_8)
+                storage_dead(_5)
                 storage_dead(tl)
                 storage_dead(y)
                 continue 0
@@ -1921,10 +1919,8 @@ pub fn get_elem_mut<'_0>(ls: &'_0 mut List<usize>[{built_in impl Sized for usize
             },
         }
     }
-    storage_live(_3)
-    _3 = panic_default_msg()
-    ↳⚡ storage_dead(_3)
-        storage_dead(x)
+    panic(panic_default_msg())
+    ↳⚡ storage_dead(x)
         storage_dead(ls)
         unwind_continue
 }
@@ -1944,7 +1940,6 @@ where
     let mut _6: u32; // anonymous local
     let mut _7: &'7 mut List<T>[TraitClause0]; // anonymous local
     let mut _8: u32; // anonymous local
-    let mut _9: !; // anonymous local
 
     storage_live(_0)
     storage_live(_8)
@@ -1965,7 +1960,6 @@ where
                     storage_dead(_5)
                     storage_dead(tl)
                     storage_dead(x)
-                    storage_dead(_9)
                     storage_dead(_8)
                     storage_dead(i)
                     storage_dead(ls)
@@ -1989,10 +1983,8 @@ where
             },
         }
     }
-    storage_live(_9)
-    _9 = panic_default_msg()
-    ↳⚡ storage_dead(_9)
-        storage_dead(_8)
+    panic(panic_default_msg())
+    ↳⚡ storage_dead(_8)
         storage_dead(i)
         storage_dead(ls)
         unwind_continue

@@ -8,7 +8,7 @@ pub struct Transform;
 impl Transform {
     fn update_statements(locals: &Locals, seq: &mut [Statement]) -> Vec<Statement> {
         // Remove consecutive unconditional errors. This can happen when a function call is
-        // replaced by a panic by `inline_local_panic_functions`.
+        // replaced by a panic by `reconstruct_panic_calls`.
         if let [
             Statement {
                 kind:

@@ -14,7 +14,7 @@ fn my_panic(_x: u32) -> !
     let _x: u32; // arg #1
 
     storage_live(_0)
-    _0 = panic_default_msg()
+    panic(panic_default_msg())
     ↳⚡ storage_dead(_x)
         unwind_continue
 }
