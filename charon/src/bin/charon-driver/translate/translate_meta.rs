@@ -923,7 +923,8 @@ impl<'tcx> TranslateCtx<'tcx> {
         if let Some(local_def_id) = def_id.as_local() {
             return tcx.effective_visibilities(()).is_exported(local_def_id);
         }
-        // otherwise, we compute it ourselves!
+        // otherwise, we compute it ourselves! this mirrors rustc's `effective_visibilities` query:
+        // https://github.com/rust-lang/rust/blob/923c95cdf5ba65cea505aa2ea829f578e1506ed8/compiler/rustc_privacy/src/lib.rs#L1789
         let parent = tcx.opt_parent(def_id);
         let parent_kind = parent.map(|parent| tcx.def_kind(parent));
         match tcx.def_kind(def_id) {
@@ -959,6 +960,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                 }
                 // ... and check that all referenced items are exported or in another crate.
                 // this is also what rustc does!
+                // https://github.com/rust-lang/rust/blob/923c95cdf5ba65cea505aa2ea829f578e1506ed8/compiler/rustc_privacy/src/lib.rs#L376
                 return def_ids
                     .into_iter()
                     .all(|id| id.krate != def_id.krate || self.is_exported(id));
@@ -1009,7 +1011,9 @@ impl<'tcx> TranslateCtx<'tcx> {
         let exported = match def.def_id().base {
             hax::DefIdBase::Real(def_id) => self.is_exported(def_id),
             hax::DefIdBase::Synthetic(_) => true,
-            _ => false,
+            hax::DefIdBase::Promoted(..)
+            | hax::DefIdBase::ImplAssocItem(_)
+            | hax::DefIdBase::Alloc(_) => false,
         };
         let inline = self.translate_inline(def);
         let attributes = def

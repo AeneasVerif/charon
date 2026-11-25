@@ -1,0 +1,59 @@
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+struct () {}
+
+// Full name: test_crate::Tr
+trait Tr<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    fn f;
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Tr for u8}::f
+fn impl_Tr_for_u8::f()
+{
+    let mut _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl Tr for u8}
+impl "impl_Tr_for_u8" Tr for u8 {
+    proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
+    fn f = impl_Tr_for_u8::f
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Tr for ()}::f
+fn impl_Tr_for_unit::f()
+{
+    let mut _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl Tr for ()}
+impl "impl_Tr_for_unit" Tr for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    fn f = impl_Tr_for_unit::f
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Tr for ()}::f::m::T
+pub impl(in test_crate::impl_Tr_for_unit::f::m) trait T<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: impl_Tr_for_unit::f::m::T::{vtable}
+}
+
+

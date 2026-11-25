@@ -210,8 +210,11 @@ impl CrateMerger {
                 }
                 fn visit_impl_restriction(
                     &mut self,
-                    _x: &mut ImplRestriction,
+                    x: &mut ImplRestriction,
                 ) -> ControlFlow<Self::Break> {
+                    let name_suffix = self.name_suffix.take();
+                    self.visit_inner(x)?;
+                    self.name_suffix = name_suffix;
                     ControlFlow::Continue(())
                 }
                 fn enter_name(&mut self, name: &mut Name) {
