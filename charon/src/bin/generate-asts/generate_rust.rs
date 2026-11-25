@@ -190,15 +190,12 @@ impl RustcDatatypes {
         crate_data: &TranslatedCrate,
     ) -> Result<SeqHashMap<TypeDeclId, RustcDatatype>> {
         fn name_matches_path(name: &Name, path: &str) -> bool {
-            let mut elems = name.name.iter().enumerate();
+            let mut elems = name.name.iter();
             let mut parts = path.split("::");
             loop {
                 match (elems.next(), parts.next()) {
                     (None, None) => return true,
-                    // The crate disambiguator distinguishes crates with the same name, e.g. our
-                    // `thin_vec` and rustc's.
-                    (Some((i, PathElem::Ident(name, disambiguator))), Some(part))
-                        if (i == 0 || disambiguator.is_zero()) && name == part => {}
+                    (Some(PathElem::Ident(name, _)), Some(part)) if name == part => {}
                     _ => return false,
                 }
             }
@@ -212,14 +209,14 @@ impl RustcDatatypes {
                 .filter(|decl| name_matches_path(&decl.item_meta.name, path))
                 .map(|decl| decl.def_id)
                 .collect_vec();
-            match ids.as_slice() {
-                [] if datatype.is_copy() => bail!("could not find translated `{path}`"),
-                [_, _, ..] if datatype.is_copy() => bail!("ambiguous translated path `{path}`"),
-                _ => {
-                    for id in ids {
-                        datatypes.insert(id, *datatype);
-                    }
-                }
+            if datatype.is_copy() && ids.len() != 1 {
+                bail!(
+                    "expected exactly one translated `{path}`, found {}",
+                    ids.len()
+                )
+            }
+            for id in ids {
+                datatypes.insert(id, *datatype);
             }
         }
         Ok(datatypes)

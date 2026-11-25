@@ -559,11 +559,10 @@ impl DefId {
                     return generics;
                 }
                 // We build a custom environment here.
-                let item_id = id.item_impl_id;
-                let decl_generics = tcx.generics_of(item_id);
+                let impl_generics = tcx.generics_of(id.item_impl_id);
+                let decl_generics = tcx.generics_of(id.item_decl_id);
                 let parent_count = tcx.generics_of(id.trait_impl_id).count();
-                let own_params = tcx
-                    .generics_of(id.item_decl_id)
+                let own_params = decl_generics
                     .own_params
                     .iter()
                     .cloned()
@@ -582,10 +581,9 @@ impl DefId {
                     parent_count,
                     own_params,
                     param_def_id_to_index,
-                    has_self: decl_generics.has_self,
-                    // `own_params` come from the trait declaration.
-                    has_arg_pos_consts: tcx.generics_of(id.item_decl_id).has_arg_pos_consts,
-                    has_late_bound_regions: decl_generics.has_late_bound_regions,
+                    has_self: impl_generics.has_self,
+                    has_arg_pos_consts: decl_generics.has_arg_pos_consts,
+                    has_late_bound_regions: impl_generics.has_late_bound_regions,
                 }));
                 cache.virtual_generics = Some(generics);
                 generics

@@ -64,7 +64,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr<'tcx>> for ty::Const<
                     | ty::AliasConstKind::Free { def_id: def }
                     | ty::AliasConstKind::Anon { def_id: def } => def,
                     ty::AliasConstKind::InherentSelf { .. } => {
-                        // Normalization replaces `InherentSelf` with its its value
+                        // Normalization replaces `InherentSelf` with its value
                         let msg = format!("unnormalized constant: {self:?}");
                         s.raise(Level::ERROR, span, msg.clone());
                         let ty = Ty::new(s, TyKind::Error);
