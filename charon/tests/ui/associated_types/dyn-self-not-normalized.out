@@ -1,0 +1,119 @@
+# Final LLBC before serialization:
+
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
+    non-dyn-compatible
+}
+
+struct test_crate::Trait::{vtable}<Ty0> {
+  size: usize,
+  align: usize,
+  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait<Ty0>)),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: test_crate::Trait
+pub trait Trait<Self, Self_Output>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Output: Sized)
+    vtable: test_crate::Trait::{vtable}<Self_Output>
+}
+
+// Full name: test_crate::Deref
+pub trait Deref<Self, Self_Target>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Target: MetaSized)
+    vtable: test_crate::Deref::{vtable}<Self_Target>
+}
+
+// Full name: test_crate::{impl Deref<(dyn Trait<u8> + 'static)> for ()}
+impl "impl_Deref_for_unit" Deref<(dyn Trait<u8> + 'static)> for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    proof ImpliedClause1: ((dyn Trait<u8> + 'static): MetaSized) = {built_in impl MetaSized for (dyn Trait<u8> + 'static)}
+    vtable: lazy
+}
+
+// Full name: test_crate::Wrap
+pub struct Wrap<P>
+where
+    TraitClause0: (P: Sized),
+{
+  _0: P,
+}
+
+// Full name: test_crate::{impl Trait<Clause2_Output> for Wrap<P>[TraitClause0]}
+impl<P, Clause1_Target, Clause2_Output> "impl_Trait_for_Wrap" Trait<Clause2_Output> for Wrap<P>[TraitClause0]
+where
+    TraitClause0: (P: Sized),
+    TraitClause1: (P: Deref<Clause1_Target>),
+    TraitClause2: (Clause1_Target: Trait<Clause2_Output>),
+{
+    proof ImpliedClause0: (Wrap<P>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Wrap<P>[TraitClause0]}
+    proof ImpliedClause1: (Clause2_Output: Sized) = TraitClause2::ImpliedClause1
+    vtable: lazy
+}
+
+// Full name: test_crate::assert_trait
+pub fn assert_trait<F, Clause1_Output>(_1: F)
+where
+    TraitClause0: (F: Sized),
+    TraitClause1: (F: Trait<Clause1_Output>),
+{
+    let mut _0: (); // return
+    let mut _1: F; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    conditional_drop[{built_in impl Destruct for F}::drop_glue<'0>] _1
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::f
+pub fn f()
+{
+    let mut _0: (); // return
+    let mut _1: Wrap<()>[{built_in impl Sized for ()}]; // anonymous local
+    let mut _2: (); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    storage_live(_2)
+    _2 = ()
+    _1 = Wrap { _0: move _2 }
+    storage_dead(_2)
+    _0 = assert_trait<Wrap<()>[{built_in impl Sized for ()}], u8>[{built_in impl Sized for Wrap<()>[{built_in impl Sized for ()}]}, impl_Trait_for_Wrap<(), (dyn Trait<u8> + 'static), u8>[{built_in impl Sized for ()}, impl_Deref_for_unit, Trait<(dyn Trait<u8> + 'static), u8>]](move _1)
+    ↳⚡ unwind_continue
+    storage_dead(_1)
+    return
+}
+
+
+

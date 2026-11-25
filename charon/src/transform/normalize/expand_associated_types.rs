@@ -1077,15 +1077,21 @@ impl UpdateItemBody<'_> {
                 }
             },
             TraitRefKind::Dyn => {
-                let pred = &tref.trait_decl_ref;
-                let self_ty = pred.generics.types[0].clone();
-                if self_ty.is_error() {
-                    return None;
+                let mut self_ty = tref.trait_decl_ref.generics.types[0].clone();
+                // We update trait refs before their contents, so the `Self` type may be an
+                // associated type we haven't normalized yet.
+                while let TyKind::TraitType(self_tref, type_id, _) = self_ty.kind() {
+                    let path =
+                        TraitRefPath::self_ref(self_tref.trait_id()).with_assoc_type(*type_id);
+                    let normalized = self.lookup_path_on_trait_ref(&path, self_tref)?;
+                    if normalized == self_ty {
+                        return None;
+                    }
+                    self_ty = normalized;
                 }
+                // An error type, or a projection we couldn't normalize.
                 let TyKind::DynTrait(dyn_pred) = self_ty.kind() else {
-                    unreachable!(
-                        "`TraitRefKind::Dyn` only makes sense with a `dyn Trait` Self type"
-                    )
+                    return None;
                 };
                 // Paths apply to the first clause of the binder, which is the one that's being
                 // implemented. FIXME: is that true? if not, ask hax to resolve the correct clause.
