@@ -146,7 +146,6 @@ pub fn test_crate::incr<'a>(x: &'a mut u32)
 
     storage_live(_0)
     storage_live(_2)
-    _0 = ()
     _2 = copy (*x) panic.+ const 1u32
     (*x) = move _2
     _0 = ()
@@ -171,7 +170,6 @@ pub fn use_incr()
     let mut _10: &'6 mut u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     x = const 0u32
     fake_read(x)

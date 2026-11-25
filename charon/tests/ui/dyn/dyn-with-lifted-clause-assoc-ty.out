@@ -71,7 +71,6 @@ where
     let mut _4: I; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     _3 = &(*p) with_metadata(read p.metadata)
     storage_live(_4)

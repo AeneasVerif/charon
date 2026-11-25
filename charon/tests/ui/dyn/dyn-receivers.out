@@ -88,7 +88,6 @@ where
     let _1: &'1 mut Pin<Ptr>[TraitClause0]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[{built_in impl Destruct for Ptr}::drop_glue<'2>] (*_1).pointer
     ↳⚡ unwind_continue
     _0 = ()
@@ -172,7 +171,6 @@ where
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _0 = ()
     _6 = transmute<*const T>(copy (*_1)._0.pointer)
     drop[{built_in impl Destruct for T}::drop_glue<'4>] (*_6)
     ↳⚡ _4 = &mut (*_1)
@@ -237,7 +235,6 @@ where
     storage_live(_0)
     storage_live(_2)
     storage_live(_3)
-    _0 = ()
     _2 = &mut (*_1)
     _3 = impl_Drop_for_Arc::drop<'6, T, A>[TraitClause0, TraitClause1, TraitClause2](move _2)
     ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'7>] (*_1).alloc
@@ -294,7 +291,6 @@ where
     storage_live(_0)
     storage_live(_2)
     storage_live(_3)
-    _0 = ()
     _2 = &mut (*_1)
     _3 = impl_Drop_for_Rc::drop<'6, T, A>[TraitClause0, TraitClause1, TraitClause2](move _2)
     ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'7>] (*_1).alloc
@@ -338,7 +334,6 @@ pub fn call_box(x: Box<(dyn T + 'static), Global>[{built_in impl MetaSized for (
     let mut _2: Box<(dyn T + '9), Global>[{built_in impl MetaSized for (dyn T + '11)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = move x
     _0 = (read (*_2._0.pointer.pointer.metadata).method_by_box)(move _2)
@@ -361,7 +356,6 @@ pub fn call_rc(x: Rc<(dyn T + 'static), Global>[{built_in impl MetaSized for (dy
     let mut _2: Rc<(dyn T + '9), Global>[{built_in impl MetaSized for (dyn T + '11)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = move x
     _0 = (read (*_2.ptr.pointer.metadata).method_by_rc)(move _2)
@@ -384,7 +378,6 @@ pub fn call_arc(x: Arc<(dyn T + 'static), Global>[{built_in impl MetaSized for (
     let mut _2: Arc<(dyn T + '9), Global>[{built_in impl MetaSized for (dyn T + '11)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = move x
     _0 = (read (*_2.ptr.pointer.metadata).method_by_arc)(move _2)
@@ -407,7 +400,6 @@ pub fn call_pin_mut<'_0>(x: Pin<&'_0 mut (dyn T + '_0)>[{built_in impl Sized for
     let mut _2: Pin<&'28 mut (dyn T + '29)>[{built_in impl Sized for &'28 mut (dyn T + '35)}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = move x
     _0 = (read (*_2.pointer.metadata).method_by_pin_mut)<'42>(move _2)
@@ -424,7 +416,6 @@ pub fn call_pin_box(x: Pin<Box<(dyn T + 'static), Global>[{built_in impl MetaSiz
     let mut _2: Pin<Box<(dyn T + '48), Global>[{built_in impl MetaSized for (dyn T + '50)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn T + '57), Global>[{built_in impl MetaSized for (dyn T + '59)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = move x
     _0 = (read (*_2.pointer._0.pointer.pointer.metadata).method_by_pin_box)(move _2)

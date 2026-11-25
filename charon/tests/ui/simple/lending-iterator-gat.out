@@ -123,7 +123,6 @@ where
     let _1: &'1 mut (A,); // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -225,7 +224,6 @@ where
 
     storage_live(_0)
     storage_live(_3)
-    _0 = ()
     loop {
         storage_live(_4)
         storage_live(_5)
@@ -421,7 +419,6 @@ where
     storage_live(_0)
     storage_live(item)
     storage_live(_5)
-    _0 = ()
     item = noretag move tupled_args._0
     storage_live(_4)
     _4 = copy (*item)
@@ -446,7 +443,6 @@ extern "rust-call" fn call_once<'_0, '_1>(_1: {closure}<'_0>, _2: (&'_1 i32,))
 
     storage_live(_0)
     storage_live(_3)
-    _0 = ()
     _3 = &mut _1
     _0 = call_mut<'_0, '_1, '20>(move _3, move _2)
     ↳⚡ storage_dead(_3)
@@ -525,7 +521,6 @@ pub fn main()
     storage_live(_0)
     storage_live(_24)
     storage_live(_25)
-    _0 = ()
     storage_live(x)
     x = const 42i32
     fake_read(x)

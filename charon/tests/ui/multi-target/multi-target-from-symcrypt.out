@@ -545,7 +545,6 @@ fn impl_NttIntrinsicsInterface_for_NttIntrinsicsXmm::vec128_store<'_0>(dst: &'_0
     let mut _7: __m128i; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
@@ -659,7 +658,6 @@ fn impl_NttIntrinsicsInterface_for_NttIntrinsicsNeon::vec128_store<'_0>(dst: &'_
     let mut _6: uint16x8_t; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
@@ -753,7 +751,6 @@ fn ntt_layer_generic<'_0, '_1>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8usize])
     let mut _21: &'_ mut u16; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = Range { start: const 0usize, end: const 8usize }
@@ -884,7 +881,6 @@ where
     let mut _12: TraitClause1::Vec128; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(va)
     storage_live(_4)
     _4 = &(*a)
@@ -988,7 +984,6 @@ fn test_crate::poly_element_ntt_layer::x86_64-apple-darwin<'_0, '_1>(a: &'_0 mut
     let mut _9: &'7 [u16; 8usize]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     _3 = cpu_features_present(read SYMCRYPT_CPU_FEATURE_SSE2)
     ↳⚡ storage_dead(b)
@@ -1047,7 +1042,6 @@ fn test_crate::poly_element_ntt_layer::aarch64-apple-darwin<'_0, '_1>(a: &'_0 mu
     let mut _9: &'7 [u16; 8usize]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     _3 = cpu_features_present(read SYMCRYPT_CPU_FEATURE_NEON)
     ↳⚡ storage_dead(b)

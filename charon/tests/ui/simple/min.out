@@ -13,7 +13,6 @@ fn main()
     let mut _1: u64; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = impl_Ord_for_u64::min(const 1u64, const 2u64)
     ↳⚡ unwind_continue

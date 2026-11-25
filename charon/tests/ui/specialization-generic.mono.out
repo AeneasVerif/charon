@@ -16,7 +16,6 @@ fn inherited::<u32, Pair::<&'_ u8, bool>><'_0>(self: &'_0 Pair::<&'_ u8, bool>)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(self)
     return
 }
@@ -28,7 +27,6 @@ fn overridden::<'_, u8><'_0>(self: &'_0 Pair::<&'_ u8, bool>)
     let self: &'1 Pair::<&'_ u8, bool>; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(self)
     return
@@ -70,7 +68,6 @@ fn main()
     storage_live(_0)
     storage_live(_7)
     storage_live(_8)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)

@@ -193,7 +193,6 @@ where
     _16 = move _17
     storage_live(_0)
     storage_live(_15)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _15 = move _16

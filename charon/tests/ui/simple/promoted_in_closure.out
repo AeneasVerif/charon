@@ -12,7 +12,6 @@ fn main()
     let f: {closure}; // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(f)
     f = {closure} {  }
     _0 = ()
@@ -40,7 +39,6 @@ extern "rust-call" fn call<'_0>(_1: &'_0 {closure}, tupled_args: ())
     _5 = move _6
     storage_live(_0)
     storage_live(_4)
-    _0 = ()
     storage_live(_3)
     _4 = move _5
     _3 = &(*_4)

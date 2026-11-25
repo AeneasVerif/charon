@@ -127,7 +127,6 @@ fn main()
     let mut _13: [u8; 4usize]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(args_3)

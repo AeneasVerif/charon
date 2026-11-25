@@ -545,7 +545,6 @@ fn impl_SimdOps_for_Sse2::store<'_0>(dst: &'_0 mut [u16; 8usize], val: __m128i)
     let mut _7: __m128i; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
@@ -659,7 +658,6 @@ fn impl_SimdOps_for_Neon::store<'_0>(dst: &'_0 mut [u16; 8usize], val: uint16x8_
     let mut _6: uint16x8_t; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
@@ -746,7 +744,6 @@ where
     let mut _11: TraitClause1::V128; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(va)
     storage_live(_4)
     _4 = &(*a)
@@ -821,7 +818,6 @@ fn add_scalar<'_0, '_1>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8usize])
     let mut _21: &'_ mut u16; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = Range { start: const 0usize, end: const 8usize }
@@ -957,7 +953,6 @@ fn test_crate::add_dispatch::x86_64-apple-darwin<'_0, '_1>(a: &'_0 mut [u16; 8us
     let mut _9: &'7 [u16; 8usize]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     _3 = cpu_features_present(const 1u32)
     ↳⚡ storage_dead(b)
@@ -1016,7 +1011,6 @@ fn test_crate::add_dispatch::aarch64-apple-darwin<'_0, '_1>(a: &'_0 mut [u16; 8u
     let mut _9: &'7 [u16; 8usize]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     _3 = cpu_features_present(const 2u32)
     ↳⚡ storage_dead(b)

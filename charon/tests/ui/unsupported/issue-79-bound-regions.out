@@ -85,7 +85,6 @@ fn main()
     _9 = move _10
     storage_live(_0)
     storage_live(_8)
-    _0 = ()
     storage_live(slice)
     storage_live(_2)
     storage_live(_3)

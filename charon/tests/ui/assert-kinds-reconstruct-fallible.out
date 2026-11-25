@@ -33,7 +33,6 @@ fn main()
     bb0: {
         storage_live(_0);
         storage_live(_4);
-        _0 = ();
         storage_live(_1);
         _1 = [const 1i32, const 2i32, const 3i32];
         storage_live(_2);

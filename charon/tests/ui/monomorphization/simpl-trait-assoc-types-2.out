@@ -36,7 +36,6 @@ fn impl_Trait_for_i32::comsume<'_0>(self: &'_0 i32)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(self)
     return
 }
@@ -49,7 +48,6 @@ fn impl_Trait_for_i32::comsume::{vtable_method}<'_0>(_1: &'_0 (dyn Trait<Item = 
     let mut _2: &'_0 i32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 i32>(move _1)
     _0 = impl_Trait_for_i32::comsume<'_0>(move _2)
@@ -94,7 +92,6 @@ fn impl_Trait_for_usize::comsume<'_0>(self: &'_0 usize)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(self)
     return
 }
@@ -107,7 +104,6 @@ fn impl_Trait_for_usize::comsume::{vtable_method}<'_0>(_1: &'_0 (dyn Trait<Item 
     let mut _2: &'_0 usize; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 usize>(move _1)
     _0 = impl_Trait_for_usize::comsume<'_0>(move _2)
@@ -182,7 +178,6 @@ fn main()
     storage_live(_0)
     storage_live(_11)
     storage_live(_12)
-    _0 = ()
     set '1: '0
     set '3: '2
     set '5: '4

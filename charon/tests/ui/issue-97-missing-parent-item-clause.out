@@ -48,7 +48,6 @@ where
     let _2: !; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = unimplemented_default_msg()
     ↳⚡ storage_dead(_2)
@@ -71,7 +70,6 @@ pub fn test(tree: AVLTree<u32>[{built_in impl Sized for u32}])
     let mut _3: &'1 mut AVLTree<u32>[{built_in impl Sized for u32}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &two-phase-mut tree

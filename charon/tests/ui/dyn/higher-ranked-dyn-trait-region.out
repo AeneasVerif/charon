@@ -42,7 +42,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -53,7 +52,6 @@ fn main()
     let _1: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = use_type<fn<'a>(&'a (dyn Trait<'a> + 'a))>[{built_in impl Sized for fn<'a>(&'a (dyn Trait<'a> + 'a))}]()
     ↳⚡ unwind_continue

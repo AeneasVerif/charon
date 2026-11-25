@@ -64,7 +64,6 @@ pub unsafe fn drop_in_place::<(dyn T)>(to_drop: *mut (dyn T))
     let mut _3: &'5 mut (dyn T + '6); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &mut (*to_drop) with_metadata(read to_drop.metadata)
@@ -84,7 +83,6 @@ unsafe fn f(p: *mut (dyn T + 'static))
     let mut _2: *mut (dyn T + '3); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = copy p
     _0 = drop_in_place::<(dyn T)>(move _2)

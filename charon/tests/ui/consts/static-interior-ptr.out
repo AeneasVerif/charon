@@ -60,7 +60,6 @@ fn main()
     let mut _7: &'34 &'35 u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)

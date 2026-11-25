@@ -65,7 +65,6 @@ where
 
     storage_live(_0)
     storage_live(x)
-    _0 = ()
     x = noretag move tupled_args._0
     storage_live(_4)
     _4 = &(*x)

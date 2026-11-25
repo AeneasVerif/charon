@@ -21,7 +21,6 @@ fn foo()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -31,7 +30,6 @@ fn bar()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -46,7 +44,6 @@ fn absorb_full()
     let mut _4: bool; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     // bb0

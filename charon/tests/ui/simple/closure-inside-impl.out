@@ -45,7 +45,6 @@ where
     let _closure: {closure}<F, T>[TraitClause0, TraitClause1]; // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_closure)
     _closure = {closure} {  }
     fake_read(_closure)
@@ -69,7 +68,6 @@ where
 
     storage_live(_0)
     storage_live(_x)
-    _0 = ()
     _x = noretag move tupled_args._0
     _0 = ()
     storage_dead(_x)

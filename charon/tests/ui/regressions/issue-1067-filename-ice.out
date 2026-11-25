@@ -115,7 +115,6 @@ fn main()
     let mut _8: [u8; 5usize]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(buf)
     buf = new<u8>[{built_in impl Sized for u8}]()
     ↳⚡ storage_dead(_8)

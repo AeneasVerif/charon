@@ -181,7 +181,6 @@ fn iter(n: usize)
     let i: usize; // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)

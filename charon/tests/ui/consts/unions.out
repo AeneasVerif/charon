@@ -72,7 +72,6 @@ fn main()
     let _12: &'13 Same; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = &A

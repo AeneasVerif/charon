@@ -94,7 +94,6 @@ fn main()
     let _3: &'2 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_s)
     storage_live(_2)
     storage_live(_3)

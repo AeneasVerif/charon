@@ -181,7 +181,6 @@ pub fn inline_const()
     let mut _3: *const Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = &raw const test_crate::{promoted_const}

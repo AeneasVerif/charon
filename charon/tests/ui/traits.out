@@ -139,7 +139,6 @@ where
     let _1: &'1 mut (A, B); // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
     ↳⚡ drop[{built_in impl Destruct for B}::drop_glue<'4>] (*_1)._1
         ↳⚡ storage_dead(_1)
@@ -560,7 +559,6 @@ where
     let _1: &'1 mut Wrapper<T>[TraitClause0]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_1).x
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -973,7 +971,6 @@ pub fn impl_WithConstTy_for_bool::f<'_0, '_1>(_1: &'_0 mut u64, _2: &'_1 [u8; 32
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -1030,7 +1027,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     conditional_drop[{built_in impl Destruct for TraitClause1::W}::drop_glue<'0>] _1
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -1079,7 +1075,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_x)
     return
 }
@@ -1095,7 +1090,6 @@ where
     let _x: u32; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(_x)
     return
@@ -1184,7 +1178,6 @@ where
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -1647,7 +1640,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     conditional_drop[{built_in impl Destruct for F}::drop_glue<'0>] _1
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -1662,7 +1654,6 @@ pub fn flibidi()
     let _1: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = test_crate::call<'10, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {impl Fn<(&'a (),)> for for<'a> flabada<'a>}<'10>](const flabada<'25>)
     ↳⚡ unwind_continue

@@ -36,7 +36,6 @@ fn str_tail<const W : &'static Wrap<str>[{built_in impl MetaSized for str}]>()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -50,7 +49,6 @@ fn main()
     let _2: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = &test_crate::main::{promoted_const} with_metadata(const 5usize)
     storage_dead(_1)

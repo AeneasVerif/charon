@@ -614,7 +614,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let fn_ptr = self.translate_drop_glue_method_call(span, pointee_ty)?;
 
         let mut builder = BodyBuilder::new(span, signature.inputs.len());
-        let _return_place = builder.new_var(Some("ret".to_string()), signature.output.clone());
+        let return_place = builder.new_var(Some("ret".to_string()), signature.output.clone());
+        builder.push_statement(StatementKind::Assign(return_place, Rvalue::unit_value()));
         let input = builder.new_var(None, signature.inputs[0].clone());
         builder.insert_drop(input.deref(), fn_ptr);
         Ok(Body::Unstructured(builder.build()))

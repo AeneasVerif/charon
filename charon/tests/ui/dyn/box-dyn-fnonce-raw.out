@@ -383,7 +383,6 @@ where
     let mut _15: Layout; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(ptr)
     ptr = copy (*self)._0
     storage_live(layout)
@@ -468,7 +467,6 @@ where
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _0 = ()
     _6 = transmute<*const T>(copy (*_1)._0.pointer)
     drop[{built_in impl Destruct for T}::drop_glue<'4>] (*_6)
     ↳⚡ _4 = &mut (*_1)

@@ -59,7 +59,6 @@ where
     let mut _4: &'4 Self; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source) with_metadata(read source.metadata)
@@ -106,7 +105,6 @@ where
     let mut _4: &'4 usize; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source)
@@ -592,7 +590,6 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
     let mut _7: &'4 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy align
@@ -1102,7 +1099,6 @@ where
 
     storage_live(_0)
     storage_live(_16)
-    _0 = ()
     storage_live(_4)
     _4 = check_language_ub()
     ↳⚡ storage_dead(_16)
@@ -1183,7 +1179,6 @@ where
     let mut _5: *mut T; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &raw const (*y)

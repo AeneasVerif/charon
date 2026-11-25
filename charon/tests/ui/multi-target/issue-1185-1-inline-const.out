@@ -55,7 +55,6 @@ pub fn const_time_array_copy_mwe<'_0, const N : usize>(_a: &'_0 mut [u8; N])
     storage_dead(_2)
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_a)
     storage_dead(_4)
     return

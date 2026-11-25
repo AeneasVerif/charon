@@ -252,7 +252,6 @@ fn function_call(_1: u32)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -509,7 +508,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _1
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -561,7 +559,6 @@ fn foo()
 
     storage_live(_0)
     storage_live(_32)
-    _0 = ()
     storage_live(_3)
     // Call `default` and destructure the result
     _3 = impl_Default_for_Foo::default()
@@ -790,7 +787,6 @@ pub fn thing()
 
     storage_live(_0)
     storage_live(_3)
-    _0 = ()
     storage_live(x)
     storage_live(_2)
     // This comment belongs above the assignment to `x` and not above intermediate computations.
@@ -821,7 +817,6 @@ pub fn fake_read(x: u32)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     // This statement is translated to a `fake_read`.
     storage_dead(x)
     return
@@ -836,7 +831,6 @@ fn fool()
     let mut _1: &'1 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = &test_crate::fool::{promoted_const} with_metadata(const 17usize)
     storage_dead(_1)

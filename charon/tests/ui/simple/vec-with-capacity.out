@@ -122,7 +122,6 @@ where
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _0 = ()
     _2 = noretag copy _1.metadata
     _3 = const 0usize
     loop {
@@ -246,7 +245,6 @@ where
     let mut _5: usize; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -286,7 +284,6 @@ where
     storage_live(_0)
     storage_live(_2)
     storage_live(_3)
-    _0 = ()
     _2 = &mut (*_1)
     _3 = impl_Drop_for_Vec::drop<'6, T, A>[TraitClause0, TraitClause1, {built_in impl Destruct for T}, {built_in impl Destruct for A}](move _2)
     ↳⚡ drop[impl_Destruct_for_RawVec::drop_glue<'7, T, A>[TraitClause0, TraitClause1]] (*_1).buf
@@ -375,7 +372,6 @@ fn vec()
         where _1 :< Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}];
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = with_capacity<u32>[{built_in impl Sized for u32}](const 42usize)
     ↳⚡ unwind_continue

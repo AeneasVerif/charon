@@ -36,7 +36,6 @@ fn constant()
     _6 = move _7
     storage_live(_0)
     storage_live(_5)
-    _0 = ()
     storage_live(_val)
     _val = read CONST
     fake_read(_val)
@@ -86,7 +85,6 @@ fn shared_static()
     let _6: &'4 usize; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_val)
     storage_live(_2)
     _2 = &SHARED_STATIC
@@ -136,7 +134,6 @@ fn mut_static()
     let _ptr_mut: *mut usize; // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_val)
     _val = copy MUT_STATIC
     fake_read(_val)
@@ -185,7 +182,6 @@ fn method<'_0>(self: &'_0 Foo)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(self)
     return
 }
@@ -198,7 +194,6 @@ fn non_copy_static()
     let _2: &'2 Foo; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = &FOO

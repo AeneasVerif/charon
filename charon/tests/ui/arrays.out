@@ -388,7 +388,6 @@ where
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _0 = ()
     _2 = noretag copy _1.metadata
     _3 = const 0usize
     loop {
@@ -483,7 +482,6 @@ where
 
     storage_live(_0)
     storage_live(_2)
-    _0 = ()
     _2 = as_mut_slice<'_, T, N>[TraitClause0](move _1)
     ↳⚡ undefined_behavior
     _0 = drop_glue<'8, [T]>[impl_Destruct_for_slice<T>[TraitClause0]](move _2)
@@ -511,7 +509,6 @@ pub fn incr<'_0>(x: &'_0 mut u32)
 
     storage_live(_0)
     storage_live(_2)
-    _0 = ()
     _2 = copy (*x) panic.+ const 1u32
     (*x) = move _2
     _0 = ()
@@ -1199,7 +1196,6 @@ pub fn update_update_array(s: [[u32; 32usize]; 32usize], i: usize, j: usize)
     let mut _11: &'_ mut u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_4)
     _4 = copy i
     fake_read(s)
@@ -1251,7 +1247,6 @@ pub fn incr_array_self<'_0>(s: &'_0 mut [u32; 2usize])
 
     storage_live(_0)
     storage_live(_3)
-    _0 = ()
     storage_live(_2)
     _2 = const 0usize
     fake_read((*s))
@@ -1292,7 +1287,6 @@ pub fn incr_slice_self<'_0>(s: &'_0 mut [u32])
 
     storage_live(_0)
     storage_live(_3)
-    _0 = ()
     storage_live(_2)
     _2 = const 0usize
     storage_live(_4)
@@ -1326,7 +1320,6 @@ pub fn array_local_deep_copy<'_0>(x: &'_0 [u32; 32usize])
     let _y: [u32; 32usize]; // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_y)
     _y = copy (*x)
     fake_read(_y)
@@ -1344,7 +1337,6 @@ pub fn take_array(_1: [u32; 2usize])
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -1356,7 +1348,6 @@ pub fn take_array_borrow<'_0>(_1: &'_0 [u32; 2usize])
     let mut _1: &'1 [u32; 2usize]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(_1)
     return
@@ -1370,7 +1361,6 @@ pub fn take_slice<'_0>(_1: &'_0 [u32])
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -1382,7 +1372,6 @@ pub fn take_mut_slice<'_0>(_1: &'_0 mut [u32])
     let mut _1: &'1 mut [u32]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(_1)
     return
@@ -1421,7 +1410,6 @@ pub fn const_slice()
     _5 = move _6
     storage_live(_0)
     storage_live(_4)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)
@@ -1465,7 +1453,6 @@ pub fn take_all()
     let mut _16: &'11 mut [u32; 2usize]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     x = repeat<u32, 2usize>[{built_in impl Sized for u32}, impl_Clone_for_u32](const 0u32)
     ↳⚡ undefined_behavior
@@ -1799,7 +1786,6 @@ pub fn update_array(x: [u32; 2usize])
     let mut _4: &'_ mut u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = const 0usize
     fake_read(x)
@@ -1827,7 +1813,6 @@ pub fn update_array_mut_borrow<'_0>(x: &'_0 mut [u32; 2usize])
     let mut _4: &'_ mut u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = const 0usize
     fake_read((*x))
@@ -1855,7 +1840,6 @@ pub fn update_mut_slice<'_0>(x: &'_0 mut [u32])
     let mut _4: &'_ mut u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = const 0usize
     storage_live(_3)
@@ -1892,7 +1876,6 @@ pub fn update_all()
     let mut _12: &'6 mut [u32; 2usize]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     x = repeat<u32, 2usize>[{built_in impl Sized for u32}, impl_Clone_for_u32](const 0u32)
     ↳⚡ undefined_behavior
@@ -1955,7 +1938,6 @@ pub fn range_all()
     let mut _7: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     x = repeat<u32, 4usize>[{built_in impl Sized for u32}, impl_Clone_for_u32](const 0u32)
     ↳⚡ undefined_behavior
@@ -2060,7 +2042,6 @@ pub fn take_array_t(_1: [AB; 2usize])
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -2078,7 +2059,6 @@ pub fn non_copyable_array()
     let mut _5: [AB; 2usize]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     storage_live(_2)
     _2 = AB::A {  }
@@ -2368,7 +2348,6 @@ pub fn f0()
     let mut _7: &'_ mut u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(s)
     storage_live(_2)
     storage_live(_3)
@@ -2410,7 +2389,6 @@ pub fn f1()
     let mut _4: &'_ mut u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(s)
     s = [const 1u32, const 2u32]
     fake_read(s)
@@ -2438,7 +2416,6 @@ pub fn f2(_1: u32)
     let mut _1: u32; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(_1)
     return
@@ -2631,7 +2608,6 @@ pub fn ite()
     let mut _11: &'7 mut [u32; 2usize]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     x = repeat<u32, 2usize>[{built_in impl Sized for u32}, impl_Clone_for_u32](const 0u32)
     ↳⚡ undefined_behavior
@@ -2704,7 +2680,6 @@ pub fn zero_slice<'_0>(a: &'_0 mut [u8])
 
     storage_live(_0)
     storage_live(_9)
-    _0 = ()
     storage_live(i)
     i = const 0usize
     fake_read(i)
@@ -2774,7 +2749,6 @@ pub fn iter_mut_slice<'_0>(a: &'_0 mut [u8])
 
     storage_live(_0)
     storage_live(_8)
-    _0 = ()
     storage_live(len)
     storage_live(_3)
     _3 = &(*a) with_metadata(read a.metadata)
@@ -2907,7 +2881,6 @@ fn slice_pattern_1(x: [(); 1usize])
     let mut _4: &'_ (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_named)
     storage_live(_3)
     _3 = &x
@@ -2942,7 +2915,6 @@ where
     let mut _10: &'_ mut &'8 mut T; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_a)
     storage_live(_5)
     _5 = &mut x
@@ -2988,7 +2960,6 @@ fn slice_pattern_3<'_0>(x: &'_0 [(); 1usize])
     let mut _4: &'_ (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_named)
     storage_live(_3)
     _3 = &(*x)
@@ -3022,7 +2993,6 @@ fn slice_pattern_4<'_0>(x: &'_0 [()])
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
-    _0 = ()
     _3 = noretag copy x.metadata
     _2 = move _3
     _4 = const 1usize

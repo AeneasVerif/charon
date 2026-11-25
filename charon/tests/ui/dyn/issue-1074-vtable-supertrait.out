@@ -51,7 +51,6 @@ pub fn foo<'_0>(self: &'_0 MyStruct)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(self)
     return
 }
@@ -64,7 +63,6 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn MyTrait))
     let mut _2: &'_0 MyStruct; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 MyStruct>(move _1)
     _0 = foo<'_0>(move _2)
@@ -125,7 +123,6 @@ fn main()
     _7 = move _8
     storage_live(_0)
     storage_live(_6)
-    _0 = ()
     storage_live(x)
     storage_live(_2)
     storage_live(_3)

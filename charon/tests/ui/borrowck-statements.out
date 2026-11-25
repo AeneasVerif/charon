@@ -248,7 +248,6 @@ where
     let _1: &'1 mut (A, B); // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
     ↳⚡ drop[{built_in impl Destruct for B}::drop_glue<'4>] (*_1)._1
         ↳⚡ storage_dead(_1)
@@ -402,7 +401,6 @@ pub fn nested_impl_trait(value_1: Box<u32>[{built_in impl MetaSized for u32}, {b
         where value_2 := Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}];
 
     storage_live(_0)
-    _0 = ()
     storage_live(value_2)
     value_2 = move value_1
     fake_read(value_2)
@@ -431,7 +429,6 @@ pub fn multiple_impl_traits(value_1: (u32, String))
         where value_2 := (u32, String);
 
     storage_live(_0)
-    _0 = ()
     storage_live(value_2)
     value_2 = move value_1
     fake_read(value_2)
@@ -460,7 +457,6 @@ pub fn higher_ranked_impl_trait(value_1: fn<'a>(&'a u32))
         where value_2 := fn<'a>(&'a u32);
 
     storage_live(_0)
-    _0 = ()
     storage_live(value_2)
     value_2 = copy value_1
     fake_read(value_2)
@@ -482,7 +478,6 @@ where
         where value_2 := &'1 u32;
 
     storage_live(_0)
-    _0 = ()
     set '0: 'b
     set '1: 'b
     storage_live(value_2)
@@ -509,7 +504,6 @@ pub fn set_type_self<'_0>(self: Foo<'_0>)
         where x := Foo<'_0>;
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     x = move self
     fake_read(x)
@@ -529,7 +523,6 @@ pub fn explicit_lifetimes<'a>(value: (&'static u32, &'a u32, &'a u32))
         where x := (&'static u32, &'a u32, &'a u32);
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     x = copy value
     fake_read(x)
@@ -582,7 +575,6 @@ where
         where x := StaticCopy<'1>;
 
     storage_live(_0)
-    _0 = ()
     set '0: 'static
     set '1: 'static
     storage_live(x)
@@ -606,7 +598,6 @@ where
         where x := Box<StaticCopy<'1>>[{built_in impl MetaSized for StaticCopy<'1>}, {built_in impl Sized for Global}];
 
     storage_live(_0)
-    _0 = ()
     set '0: 'static
     set '1: 'static
     storage_live(x)
@@ -659,7 +650,6 @@ where
         where x := u32;
 
     storage_live(_0)
-    _0 = ()
     set 'b: 'a
     storage_live(x)
     x = copy value
@@ -701,7 +691,6 @@ where
         where x := &'b u32;
 
     storage_live(_0)
-    _0 = ()
     set 'a: 'b
     set 'b: 'a
     storage_live(x)
@@ -725,7 +714,6 @@ where
         where x := &'a u32;
 
     storage_live(_0)
-    _0 = ()
     set 'a: 'b
     storage_live(x)
     x = copy value
@@ -746,7 +734,6 @@ pub fn deferred_annotation(value: &'static u32)
     let mut _3: &'3 u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     storage_live(_3)
     _3 = copy value
@@ -771,7 +758,6 @@ pub fn ref_annotations(value: &'static u32)
         where y :< &'8 mut &'static u32;
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     x = &value
     storage_live(y)
@@ -802,7 +788,6 @@ pub fn shared_projected_annotation(value: &'static u32)
     let mut _5: &'6 u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     storage_live(y)
     storage_live(_4)
@@ -835,7 +820,6 @@ pub fn multiple_projected_annotations(value: &'static u32)
     let mut _4: &'10 u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &(*value)
@@ -858,7 +842,6 @@ where
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     set 'b: 'a
     _0 = ()
     // This annotation has obligations but no local or MIR statement.

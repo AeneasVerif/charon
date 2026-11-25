@@ -50,7 +50,6 @@ pub fn impl_Drop_for_NeedsDrop::drop<'_0>(self: &'_0 mut NeedsDrop)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -65,7 +64,6 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut NeedsDrop)
     storage_live(_0)
     storage_live(_2)
     storage_live(_3)
-    _0 = ()
     _2 = &mut (*_1)
     _3 = impl_Drop_for_NeedsDrop::drop<'6>(move _2)
     ↳⚡ unwind_continue
@@ -90,7 +88,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     drop[{built_in impl Destruct for T}::drop_glue<'0>] _x
     ↳⚡ unwind_continue
     return
@@ -109,7 +106,6 @@ pub fn conditional(x: NeedsDrop, move_x: bool)
 
     storage_live(_0)
     storage_live(_6)
-    _0 = ()
     _6 = const false
     _6 = const true
     storage_live(_3)

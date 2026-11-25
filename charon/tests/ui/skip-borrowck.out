@@ -100,7 +100,6 @@ pub fn choose_test()
 
     storage_live(_0)
     storage_live(_8)
-    _0 = ()
     storage_live(x)
     x = const 0i32
     fake_read(x)

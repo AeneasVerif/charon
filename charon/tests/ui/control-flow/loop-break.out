@@ -29,7 +29,6 @@ fn do_something()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -39,7 +38,6 @@ fn do_something_at_the_end()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -54,7 +52,6 @@ fn main()
     let mut _4: bool; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     // Needed a few convolutions to make it emit a `break` instead of moving the `return`
     // inside the loop.

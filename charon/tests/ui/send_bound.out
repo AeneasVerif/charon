@@ -40,7 +40,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     conditional_drop[{built_in impl Destruct for M}::drop_glue<'0>] _msg
     ↳⚡ storage_dead(_msg)
         unwind_continue
@@ -56,7 +55,6 @@ fn main()
     let mut _2: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = ()

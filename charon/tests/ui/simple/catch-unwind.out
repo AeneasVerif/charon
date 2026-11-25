@@ -119,7 +119,6 @@ extern "rust-call" fn call_once(_1: {closure}, tupled_args: ())
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(tupled_args)
     storage_dead(_1)
     return
@@ -144,7 +143,6 @@ fn main()
     let mut _2: {closure}; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = {closure} {  }

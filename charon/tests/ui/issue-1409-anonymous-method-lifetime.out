@@ -168,7 +168,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     conditional_drop[{built_in impl Destruct for F}::drop_glue<'2>] _2
     ↳⚡ storage_dead(_2)
         storage_dead(_1)
@@ -187,7 +186,6 @@ pub fn test<'a>(x: &'a u64)
     let mut _3: &'5 u64; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &(*x)

@@ -255,7 +255,6 @@ where
     let _1: &'1 mut (A,); // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -2372,7 +2371,6 @@ where
     storage_live(_0)
     storage_live(x)
     storage_live(_5)
-    _0 = ()
     x = noretag move tupled_args._0
     storage_live(_4)
     _4 = copy (*x)
@@ -2412,7 +2410,6 @@ fn test_fnmut_with_ref()
     _10 = move _11
     storage_live(_0)
     storage_live(_9)
-    _0 = ()
     storage_live(sum)
     sum = const 0usize
     fake_read(sum)

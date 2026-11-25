@@ -20,7 +20,6 @@ fn foo()
     _3 = move _4
     storage_live(_0)
     storage_live(_2)
-    _0 = ()
     storage_live(_1)
     _2 = move _3
     _1 = &(*_2)

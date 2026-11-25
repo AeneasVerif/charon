@@ -334,7 +334,6 @@ fn dummy<'_0>(self: &'_0 i32)
     let mut _4: &'3 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy (*self)
@@ -604,7 +603,6 @@ where
     let mut _9: &'9 i64; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_4)
     storage_live(_5)
     _5 = &(*self) with_metadata(read self.metadata)
@@ -649,7 +647,6 @@ where
     let mut _4: &'_0 Self; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_4)
     _4 = concretize<&'_0 Self>(move _1)
     _0 = test_crate::Both32And64::both_operate<'_0, '_1, '_2, Self>[TraitClause0](move _4, move _2, move _3)
@@ -680,7 +677,6 @@ fn impl_BaseOn_i32_for_i32::operate_on<'_0, '_1>(self: &'_0 i32, t: &'_1 i32)
     let mut _6: &'4 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = copy (*self)
@@ -711,7 +707,6 @@ fn impl_BaseOn_i32_for_i32::operate_on::{vtable_method}<'_0, '_1>(_1: &'_0 (dyn 
     let mut _3: &'_0 i32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     _3 = concretize<&'_0 i32>(move _1)
     _0 = impl_BaseOn_i32_for_i32::operate_on<'_0, '_1>(move _3, move _2)
@@ -768,7 +763,6 @@ fn impl_BaseOn_i64_for_i32::operate_on<'_0, '_1>(self: &'_0 i32, t: &'_1 i64)
     let mut _7: &'5 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
@@ -802,7 +796,6 @@ fn impl_BaseOn_i64_for_i32::operate_on::{vtable_method}<'_0, '_1>(_1: &'_0 (dyn 
     let mut _3: &'_0 i32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     _3 = concretize<&'_0 i32>(move _1)
     _0 = impl_BaseOn_i64_for_i32::operate_on<'_0, '_1>(move _3, move _2)
@@ -858,7 +851,6 @@ fn impl_Both32And64_for_i32::both_operate<'_0, '_1, '_2>(self: &'_0 i32, t32: &'
     let mut _9: &'9 i64; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_4)
     storage_live(_5)
     _5 = &(*self)
@@ -1096,7 +1088,6 @@ fn use_alias<'_0>(x: &'_0 (dyn Both32And64 + '_0))
     storage_live(_0)
     storage_live(_8)
     storage_live(_9)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &(*x) with_metadata(read x.metadata)
@@ -1291,7 +1282,6 @@ fn main()
     storage_live(_83)
     storage_live(_84)
     storage_live(_85)
-    _0 = ()
     set '1: '0
     set '3: '2
     set '5: '4

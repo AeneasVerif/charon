@@ -1229,7 +1229,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<Body, Error> {
         let mut builder = BodyBuilder::new(span, 1);
 
-        builder.new_var(Some("ret".into()), Ty::mk_unit());
+        let ret = builder.new_var(Some("ret".into()), Ty::mk_unit());
+        builder.push_statement(StatementKind::Assign(ret, Rvalue::unit_value()));
         let dyn_self = builder.new_var(Some("dyn_self".into()), shim_receiver.clone());
         let target_self = builder.new_var(Some("target_self".into()), target_receiver.clone());
 

@@ -90,7 +90,6 @@ fn addr_of()
         where _5 :< *mut u32;
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     x = const 0u32
     fake_read(x)
@@ -122,7 +121,6 @@ fn literal_casts()
     let mut _5: f64; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = cast<u8>(const 0u64)
     storage_dead(_1)
@@ -147,7 +145,6 @@ fn test_crate::ptr_casts::foo()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -196,7 +193,6 @@ fn ptr_casts()
     _24 = move _25
     storage_live(_0)
     storage_live(_23)
-    _0 = ()
     storage_live(array_ptr)
     storage_live(_2)
     _23 = move _24
@@ -288,7 +284,6 @@ extern "rust-call" fn call<'_0>(_1: &'_0 {closure}, tupled_args: (u8,))
 
     storage_live(_0)
     storage_live(_3)
-    _0 = ()
     _3 = noretag move tupled_args._0
     _0 = ()
     storage_dead(_3)
@@ -306,7 +301,6 @@ extern "rust-call" fn call_mut<'_0>(state: &'_0 mut {closure}, args: (u8,))
     let mut _3: &'0 {closure}; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     _3 = &(*state)
     _0 = call<'2>(move _3, move args)
@@ -330,7 +324,6 @@ extern "rust-call" fn call_once(_1: {closure}, _2: (u8,))
 
     storage_live(_0)
     storage_live(_3)
-    _0 = ()
     _3 = &mut _1
     _0 = call_mut<'3>(move _3, move _2)
     ↳⚡ storage_dead(_3)
@@ -352,7 +345,6 @@ fn {as_fn}(arg1: u8)
     let mut state: {closure}; // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(args)
     storage_live(state)
     args = (move arg1,)
@@ -375,7 +367,6 @@ unsafe fn bar()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -384,7 +375,6 @@ fn test_crate::fn_casts::foo()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -403,7 +393,6 @@ fn fn_casts()
     let mut _8: fn(u8); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = fn_def_to_fn_ptr(const test_crate::fn_casts::foo)
     storage_dead(_1)

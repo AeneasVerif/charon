@@ -56,7 +56,6 @@ where
     let mut _3: &'4 T; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_c)
     storage_live(_3)
     _3 = &(*x)
@@ -108,7 +107,6 @@ where
     let mut _3: &'3 T; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_c)
     storage_live(_3)
     _3 = &x

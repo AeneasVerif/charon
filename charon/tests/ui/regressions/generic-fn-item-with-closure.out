@@ -146,7 +146,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(tupled_args)
     storage_dead(_1)
     return
@@ -160,7 +159,6 @@ pub fn main()
     let mut _2: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = Option::Some { _0: const 42i32 }

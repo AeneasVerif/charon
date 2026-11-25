@@ -25,7 +25,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -38,7 +37,6 @@ fn main()
     let mut _1: test_crate::main::{closure}<'2, '3>; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = test_crate::main::{closure} {  }
     storage_dead(_1)

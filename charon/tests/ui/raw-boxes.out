@@ -193,7 +193,6 @@ fn core::ptr::write_bytes::precondition_check(addr: *const (), align: usize, zer
     let mut _11: &'4 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_4)
     storage_live(_5)
     _5 = copy addr
@@ -425,7 +424,6 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
     let mut _7: &'4 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy align
@@ -635,7 +633,6 @@ where
     let mut _14: usize; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_4)
     _4 = check_language_ub()
     ↳⚡ unwind_continue
@@ -698,7 +695,6 @@ where
     let mut _6: usize; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_4)
     _4 = copy self
     storage_live(_5)
@@ -883,7 +879,6 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut 
     let mut _28: &'4 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_6)
     storage_live(zero_size)
     storage_live(_8)
@@ -1019,7 +1014,6 @@ where
 
     storage_live(_0)
     storage_live(_16)
-    _0 = ()
     storage_live(_4)
     _4 = check_language_ub()
     ↳⚡ unwind_continue
@@ -1670,7 +1664,6 @@ where
     let mut _3: T; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = move t
@@ -1854,7 +1847,6 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr: *mu
     let mut _7: &'4 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy ptr
@@ -2064,7 +2056,6 @@ where
     let mut _15: Layout; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(ptr)
     ptr = copy (*self)._0
     storage_live(layout)
@@ -2149,7 +2140,6 @@ where
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _0 = ()
     _6 = transmute<*const T>(copy (*_1)._0.pointer)
     drop[{built_in impl Destruct for T}::drop_glue<'4>] (*_6)
     ↳⚡ _4 = &mut (*_1)
@@ -2569,7 +2559,6 @@ unsafe fn foo()
     storage_live(_0)
     storage_live(_9)
     storage_live(_10)
-    _0 = ()
     storage_live(b_1)
     b_1 = alloc::boxed::{Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl#0}]}::new<i32>[{built_in impl Sized for i32}](const 42i32)
     ↳⚡ unwind_continue

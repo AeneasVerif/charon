@@ -64,7 +64,6 @@ fn main()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 

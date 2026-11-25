@@ -122,7 +122,6 @@ fn foo()
     let mut _8: Box<[i32; 1usize]>[{built_in impl MetaSized for [i32; 1usize]}, {built_in impl Sized for Global}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_v)
     storage_live(_2)
     storage_live(_7)
@@ -195,7 +194,6 @@ pub fn bar()
     let mut _8: Box<[Foo; 1usize]>[{built_in impl MetaSized for [Foo; 1usize]}, {built_in impl Sized for Global}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)

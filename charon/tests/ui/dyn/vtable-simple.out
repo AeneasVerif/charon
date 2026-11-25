@@ -224,7 +224,6 @@ fn main()
     _5 = move _6
     storage_live(_0)
     storage_live(_4)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)

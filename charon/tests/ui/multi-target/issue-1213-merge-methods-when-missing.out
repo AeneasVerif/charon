@@ -252,7 +252,6 @@ fn f<'_0>(blocks: &'_0 mut [u8])
     let mut _8: &'23 mut IterMut<'24, u8>[{built_in impl Sized for u8}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -315,7 +314,6 @@ fn g<'_0, '_1>(s0: &'_0 [u8], s1: &'_1 [u8])
     let mut _12: &'140 mut Zip<Iter<'141, u8>[{built_in impl Sized for u8}], Iter<'142, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Iter<'141, u8>[{built_in impl Sized for u8}]}, {built_in impl Sized for Iter<'142, u8>[{built_in impl Sized for u8}]}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)

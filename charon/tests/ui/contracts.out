@@ -31,7 +31,6 @@ extern "rust-call" fn call<'_0>(_1: &'_0 {closure}, tupled_args: ())
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(tupled_args)
     storage_dead(_1)
     return
@@ -71,7 +70,6 @@ fn function()
     let mut _4: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(closure)
     closure = {closure} {  }
     fake_read(closure)
@@ -109,7 +107,6 @@ fn sibling()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -131,7 +128,6 @@ pub fn path_target()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }

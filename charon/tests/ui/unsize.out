@@ -237,7 +237,6 @@ where
     let _1: &'1 mut MyPtr<T>[TraitClause0]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[impl_Destruct_for_Box::drop_glue<'2, T, Global>[TraitClause0, {built_in impl Sized for Global}]] (*_1)._0
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -338,7 +337,6 @@ fn foo()
     let mut _36: &'57 String; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     set '1: '2
     set '4: '3
     storage_live(array)

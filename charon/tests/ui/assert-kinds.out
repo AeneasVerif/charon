@@ -149,7 +149,6 @@ fn main()
         storage_live(_17);
         storage_live(_18);
         storage_live(_19);
-        _0 = ();
         storage_live(_1);
         _1 = [const 1i32, const 2i32, const 3i32];
         storage_live(_2);

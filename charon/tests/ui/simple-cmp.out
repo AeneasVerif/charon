@@ -30,7 +30,6 @@ fn main()
     let _6: &'3 i32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     x = const 11i32
     fake_read(x)

@@ -137,7 +137,6 @@ fn trait_error<'_0>(s: &'_0 [u8])
     let mut _4: &'2 [u8]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_array)
     storage_live(_3)
     storage_live(_4)

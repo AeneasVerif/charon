@@ -26,7 +26,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -36,7 +35,6 @@ fn in_default()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -49,7 +47,6 @@ where
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -66,7 +63,6 @@ fn in_default_const()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }

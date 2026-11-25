@@ -119,7 +119,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     conditional_drop[{built_in impl Destruct for F}::drop_glue<'0>] _1
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -136,7 +135,6 @@ where
     let _1: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = use_constructor<T, Value<T>[TraitClause0]>[TraitClause0, {built_in impl Sized for Value<T>[TraitClause0]}, {impl FnOnce<(T,)> for Value<T>[TraitClause0]}<T>[TraitClause0]](const Value<T>[TraitClause0])
     ↳⚡ unwind_continue

@@ -59,7 +59,6 @@ fn foo(_1: PortableHash<42usize>)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     drop[impl_Destruct_for_PortableHash::drop_glue<'0, 42usize>] _1
     ↳⚡ storage_dead(_1)
         unwind_continue

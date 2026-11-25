@@ -125,7 +125,6 @@ fn use_string(_1: String)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_live(drop_arg)
     drop_arg = &mut _1
     storage_live(drop_ret)
@@ -149,7 +148,6 @@ fn use_vec(_1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for 
     let mut drop_ret: (); // local
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_live(drop_arg)
     drop_arg = &mut _1
@@ -178,7 +176,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_live(drop_arg)
     drop_arg = &mut _1
     storage_live(drop_ret)
@@ -200,7 +197,6 @@ fn skip_drop_scalar(_1: i32)
     let mut _1: i32; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(_1)
     return
@@ -225,7 +221,6 @@ pub fn impl_Drop_for_Point::drop<'_0>(self: &'_0 mut Point)
     let mut _4: &'8 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -265,7 +260,6 @@ unsafe fn impl_Destruct_for_Point::drop_glue<'_0>(_1: &'_0 mut Point)
     storage_live(_0)
     storage_live(_2)
     storage_live(_3)
-    _0 = ()
     _2 = &mut (*_1)
     _3 = impl_Drop_for_Point::drop<'6>(move _2)
     ↳⚡ storage_live(drop_arg_4)
@@ -402,7 +396,6 @@ fn main()
     let mut drop_ret_7: (); // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(p)
     storage_live(_2)
     _2 = new<i32>[{built_in impl Sized for i32}, {built_in impl Destruct for i32}](const 1i32)

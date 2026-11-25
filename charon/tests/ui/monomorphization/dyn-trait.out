@@ -84,7 +84,6 @@ fn main()
     let _7: &'10 String; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(str)
     storage_live(_2)
     storage_live(_3)

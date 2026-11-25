@@ -40,7 +40,6 @@ fn export_name()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -51,7 +50,6 @@ fn link_section()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -64,7 +62,6 @@ unsafe fn target_feature()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -75,7 +72,6 @@ fn force_target_feature()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -93,7 +89,6 @@ fn no_writable<'_0>(_1: &'_0 mut u32)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -104,7 +99,6 @@ fn call_foreign_target_feature()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = _mm256_zeroall()
     ↳⚡ unwind_continue
     return

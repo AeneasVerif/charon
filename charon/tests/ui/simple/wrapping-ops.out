@@ -80,7 +80,6 @@ fn main()
     let _6: u8; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = const 255u8 wrap.+ const 1u8
     storage_dead(_1)

@@ -97,7 +97,6 @@ fn takes_fn<'_0>(f: &'_0 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::Implied
     let mut _7: &'27 mut u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(counter)
     counter = const 0u32
     fake_read(counter)
@@ -305,7 +304,6 @@ fn gives_fn()
     _5 = move _6
     storage_live(_0)
     storage_live(_4)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)

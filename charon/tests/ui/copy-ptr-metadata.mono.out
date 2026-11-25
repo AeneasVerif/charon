@@ -40,7 +40,6 @@ pub fn metadata::<u32>(ptr: *const u32)
     let mut _2: *const u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = copy ptr
     _0 = noretag copy _2.metadata
@@ -161,7 +160,6 @@ fn main()
     storage_live(_15)
     storage_live(_16)
     storage_live(_17)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)

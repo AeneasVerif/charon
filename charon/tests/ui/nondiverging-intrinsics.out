@@ -52,7 +52,6 @@ where
     storage_live(_0)
     storage_live(_9)
     storage_live(_10)
-    _0 = ()
     storage_live(_5)
     _5 = copy condition
     _9 = assume(move _5)

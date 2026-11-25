@@ -326,7 +326,6 @@ fn main()
     let mut _11: fn(&'7 (dyn Consume + '8)) -> u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     x = mk()
     ↳⚡ storage_dead(_11)

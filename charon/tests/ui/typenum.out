@@ -24,7 +24,6 @@ pub fn foo<T>()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -35,7 +34,6 @@ pub fn main()
     let _1: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = foo<UInt<UInt<UInt<UInt<UInt<UInt<UTerm, B0>, B0>, B0>, B0>, B0>, B0>>()
     ↳⚡ unwind_continue

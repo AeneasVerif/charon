@@ -100,7 +100,6 @@ pub fn closure()
     let mut _1: {closure}<'2, '3>; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = {closure} {  }
     storage_dead(_1)
@@ -122,7 +121,6 @@ where
 
     storage_live(_0)
     storage_live(_3)
-    _0 = ()
     _3 = noretag move tupled_args._0
     _0 = ()
     storage_dead(_3)

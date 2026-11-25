@@ -84,7 +84,6 @@ fn main()
     let mut _9: &'40 &'41 u64; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = &U8
     _ = (*_1)

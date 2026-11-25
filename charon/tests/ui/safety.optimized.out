@@ -479,7 +479,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(self)
     return
 }
@@ -502,7 +501,6 @@ unsafe fn unsafe_fn()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -544,7 +542,6 @@ fn no_mangle()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -556,7 +553,6 @@ fn export_name()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -570,7 +566,6 @@ fn link_section()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -582,7 +577,6 @@ extern "C" fn naked()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     naked_asm!("ret")
     ↳⚡ // unsafe
         undefined_behavior
@@ -597,7 +591,6 @@ fn force_target_feature()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -607,7 +600,6 @@ fn safe_fn()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -680,7 +672,6 @@ unsafe fn dangerous()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -730,7 +721,6 @@ fn unsafe_call_fn()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     // unsafe
     _0 = dangerous()
     ↳⚡ unwind_continue
@@ -746,7 +736,6 @@ where
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     // unsafe
     _0 = TraitClause1::unsafe_method()
     ↳⚡ unwind_continue
@@ -761,7 +750,6 @@ fn unsafe_call_fn_ptr(f: unsafe fn())
     let mut _2: unsafe fn(); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = copy f
     // unsafe
@@ -790,7 +778,6 @@ fn unsafe_write_mutable_static()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     // unsafe
     COUNTER = const 1usize
     _0 = ()
@@ -883,7 +870,6 @@ fn unsafe_asm()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     // unsafe
     asm!("nop") {
         fallthrough => {
@@ -902,7 +888,6 @@ fn unsafe_call_unsafe_dyn_method<'_0>(s: &'_0 (dyn DynTrait + '_0))
     let mut _2: &'5 (dyn DynTrait + '6); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = &(*s) with_metadata(read s.metadata)
     // unsafe
@@ -988,7 +973,6 @@ fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
     let mut _16: &'_ u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_5)
     storage_live(_6)
     _6 = copy x
@@ -1069,7 +1053,6 @@ fn safe_call(f: fn())
     let _4: (*const u32, *mut usize); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy f
@@ -1098,7 +1081,6 @@ where
     let _1: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = TraitClause1::safe_method()
     ↳⚡ unwind_continue
@@ -1124,7 +1106,6 @@ fn safe_write_union_field(foo: Foo)
     let mut foo: Foo; // arg #1
 
     storage_live(_0)
-    _0 = ()
     foo.one = const 1u64
     _0 = ()
     storage_dead(foo)
@@ -1138,7 +1119,6 @@ fn safe_write_nested_union_field(bar: Bar)
     let mut bar: Bar; // arg #1
 
     storage_live(_0)
-    _0 = ()
     bar.foo.one = const 1u64
     _0 = ()
     storage_dead(bar)
@@ -1217,7 +1197,6 @@ extern "C" fn safe_naked_asm()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     naked_asm!("ret")
     ↳⚡ // unsafe
         undefined_behavior
@@ -1231,7 +1210,6 @@ fn safe_call_dyn_method<'_0>(s: &'_0 (dyn DynTrait + '_0))
     let mut _2: &'5 (dyn DynTrait + '6); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = &(*s) with_metadata(read s.metadata)
     _0 = (read (*_2.metadata).method_safe_method)<'14>(move _2)
@@ -1250,7 +1228,6 @@ fn safe_drop_dyn(_s: Box<(dyn DynTrait + 'static)>[{built_in impl MetaSized for 
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     drop[drop_glue<'23, (dyn DynTrait + '18), Global>[{built_in impl MetaSized for (dyn DynTrait + '18)}, {built_in impl Sized for Global}]] _s
     ↳⚡ storage_dead(_s)
         unwind_continue
@@ -1267,7 +1244,6 @@ unsafe fn with_feature()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -1280,7 +1256,6 @@ unsafe fn with_feature_unsafe()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -1290,7 +1265,6 @@ fn unsafe_call_target_feature_fn()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     // unsafe
     _0 = with_feature()
     ↳⚡ unwind_continue
@@ -1305,7 +1279,6 @@ unsafe fn safe_call_target_feature_fn_with_feature()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = with_feature()
     ↳⚡ unwind_continue
     return
@@ -1319,7 +1292,6 @@ unsafe fn safe_call_target_feature_fn_with_implied_feature()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = with_feature()
     ↳⚡ unwind_continue
     return
@@ -1335,7 +1307,6 @@ extern "rust-call" fn {impl Fn<()> for test_crate::safe_call_target_feature_fn_i
     let mut tupled_args: (); // arg #2
 
     storage_live(_0)
-    _0 = ()
     _0 = with_feature()
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)
@@ -1366,7 +1337,6 @@ unsafe fn safe_call_target_feature_fn_in_closure()
     _4 = move _5
     storage_live(_0)
     storage_live(_3)
-    _0 = ()
     storage_live(_1)
     _3 = move _4
     _1 = &(*_3)
@@ -1399,7 +1369,6 @@ extern "rust-call" fn {impl Fn<()> for test_crate::safe_call_target_feature_fn_i
     let mut tupled_args: (); // arg #2
 
     storage_live(_0)
-    _0 = ()
     _0 = with_feature()
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)
@@ -1430,7 +1399,6 @@ unsafe fn safe_call_target_feature_fn_in_inline_closure()
     _4 = move _5
     storage_live(_0)
     storage_live(_3)
-    _0 = ()
     storage_live(_1)
     _3 = move _4
     _1 = &(*_3)
@@ -1459,7 +1427,6 @@ unsafe fn unsafe_call_unsafe_target_feature_fn()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     // unsafe
     _0 = with_feature_unsafe()
     ↳⚡ unwind_continue
@@ -1475,7 +1442,6 @@ fn with_forced_feature()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -1485,7 +1451,6 @@ fn unsafe_call_forced_target_feature_fn()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     // unsafe
     _0 = with_forced_feature()
     ↳⚡ unwind_continue
@@ -1500,7 +1465,6 @@ unsafe fn safe_call_forced_target_feature_fn_with_feature()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = with_forced_feature()
     ↳⚡ unwind_continue
     return
@@ -1528,7 +1492,6 @@ fn unknown_call_excluded()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     // unknown safety: excluded wasn't translated
     _0 = excluded()
     ↳⚡ unwind_continue

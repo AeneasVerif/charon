@@ -148,7 +148,6 @@ fn call_fn_in_opaque_module()
     let mut _1: u32; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = fn_in_opaque_module()
     ↳⚡ unwind_continue

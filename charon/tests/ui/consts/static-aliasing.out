@@ -143,7 +143,6 @@ fn foo()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -159,7 +158,6 @@ fn main()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }

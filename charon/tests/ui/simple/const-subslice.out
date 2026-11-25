@@ -36,7 +36,6 @@ fn main()
     let mut _7: &'_ [u8; 3usize]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(y)
     storage_live(_6)
     _6 = [const 0u8, const 1u8, const 2u8]

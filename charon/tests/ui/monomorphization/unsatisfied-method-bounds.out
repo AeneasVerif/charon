@@ -25,7 +25,6 @@ fn method::<A><'_0>(self: &'_0 A)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(self)
     return
 }
@@ -40,7 +39,6 @@ fn method::<B><'_0>(self: &'_0 B)
     let self: &'1 B; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(self)
     return
@@ -72,7 +70,6 @@ fn main()
     storage_live(_0)
     storage_live(_5)
     storage_live(_6)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _6 = move _7

@@ -87,7 +87,6 @@ where
     let mut _3: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = &(*self)
     storage_live(_3)
@@ -120,7 +119,6 @@ pub fn use_foo()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }

@@ -575,7 +575,6 @@ fn cbd(prf_input: [u8; 33usize])
     let mut _12: &'_ mut u8; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = Range { start: const 0u8, end: const 3u8 }
@@ -665,7 +664,6 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
     let mut _22: Option<Arguments<'35>>[{built_in impl Sized for Arguments<'35>}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     _3 = const true
     if move _3 {

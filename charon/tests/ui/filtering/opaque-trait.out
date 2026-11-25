@@ -85,7 +85,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -97,7 +96,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -108,7 +106,6 @@ fn impl_Trait_for_unit::method2()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -118,7 +115,6 @@ fn impl_Trait_for_unit::method1()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -180,7 +176,6 @@ fn impl_Trait_for_u8::method2()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -203,7 +198,6 @@ fn impl_Trait_for_u8::method1()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -230,7 +224,6 @@ where
     let _2: usize; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = TraitClause1::method1()
     ↳⚡ unwind_continue

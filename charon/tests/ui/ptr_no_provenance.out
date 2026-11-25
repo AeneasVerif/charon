@@ -263,7 +263,6 @@ fn main()
         where ptr := *const ();
 
     storage_live(_0)
-    _0 = ()
     storage_live(ptr)
     ptr = null<()>[impl_Thin_for_T<()>[{built_in impl Pointee for () where Metadata  = ()}]]()
     ↳⚡ unwind_continue

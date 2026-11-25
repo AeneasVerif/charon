@@ -50,7 +50,6 @@ where
     let mut _4: &'4 Self; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source) with_metadata(read source.metadata)
@@ -97,7 +96,6 @@ where
     let mut _4: &'4 u8; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source)
@@ -263,7 +261,6 @@ fn main()
     let mut _3: u8; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = wrapping_add(const 255u8, const 1u8)
     ↳⚡ unwind_continue

@@ -31,7 +31,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -50,7 +49,6 @@ where
 
     storage_live(_0)
     storage_live(_3)
-    _0 = ()
     _3 = noretag move tupled_args._0
     _0 = ()
     storage_dead(_3)
@@ -70,7 +68,6 @@ where
     let mut _3: &'0 test_crate::main::{closure#1}<'_0>; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     _3 = &(*state)
     _0 = {impl Fn<(&'_0 u16,)> for test_crate::main::{closure#1}<'_0>}::call<'_0, '2>(move _3, move args)
@@ -94,7 +91,6 @@ extern "rust-call" fn {impl FnOnce<(&'_0 u16,)> for test_crate::main::{closure#1
 
     storage_live(_0)
     storage_live(_3)
-    _0 = ()
     _3 = &mut _1
     _0 = {impl FnMut<(&'_0 u16,)> for test_crate::main::{closure#1}<'_0>}::call_mut<'_0, '18>(move _3, move _2)
     ↳⚡ storage_dead(_3)
@@ -116,7 +112,6 @@ fn {as_fn}<'_0>(arg1: &'_0 u16)
     let mut state: test_crate::main::{closure#1}<'_0>; // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(args)
     storage_live(state)
     args = (move arg1,)
@@ -144,7 +139,6 @@ fn main()
     let mut _4: test_crate::main::{closure#1}<'4>; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = test_crate::main::{closure} {  }
     storage_dead(_1)
@@ -172,7 +166,6 @@ extern "rust-call" fn {impl Fn<(&'_0 u8,)> for test_crate::main::{closure}}::cal
 
     storage_live(_0)
     storage_live(_3)
-    _0 = ()
     _3 = noretag move tupled_args._0
     _0 = ()
     storage_dead(_3)

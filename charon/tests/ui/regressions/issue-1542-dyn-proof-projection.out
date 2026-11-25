@@ -103,7 +103,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _1
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -121,7 +120,6 @@ fn pass_to_wrap<'_0>(p: &'_0 (dyn Trait + '_0))
     let mut _4: &'30 (dyn Trait + '31); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)

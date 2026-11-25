@@ -68,7 +68,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     drop[TraitClause2::drop_glue<'0>] x
     ↳⚡ storage_dead(x)
         unwind_continue
@@ -86,7 +85,6 @@ where
     let x: U; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     drop[TraitClause1::drop_glue<'0>] x
     ↳⚡ storage_dead(x)
@@ -123,7 +121,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     drop[TraitClause4::drop_glue<'0>] _y
     ↳⚡ drop[TraitClause3::drop_glue<'2>] _x
         ↳⚡ storage_dead(_y)
@@ -149,7 +146,6 @@ fn main()
     let mut _2: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = ()

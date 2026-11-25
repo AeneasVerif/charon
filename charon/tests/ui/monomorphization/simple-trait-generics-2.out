@@ -190,7 +190,6 @@ fn main()
     storage_live(_0)
     storage_live(_11)
     storage_live(_12)
-    _0 = ()
     set '1: '0
     set '3: '2
     set '5: '4

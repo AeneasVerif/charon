@@ -53,7 +53,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_state)
     storage_dead(self)
     return
@@ -88,7 +87,6 @@ fn main()
     _7 = move _8
     storage_live(_0)
     storage_live(_6)
-    _0 = ()
     storage_live(hasher)
     hasher = DefaultHasher {  }
     fake_read(hasher)

@@ -154,7 +154,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     conditional_drop[{built_in impl Destruct for F}::drop_glue<'0>] _f
     ↳⚡ storage_dead(_f)
         unwind_continue
@@ -172,7 +171,6 @@ where
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -258,7 +256,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -272,7 +269,6 @@ where
     let _1: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = needs_parent<T>[TraitClause0, TraitClause1::ImpliedClause1<'1>]()
     ↳⚡ unwind_continue

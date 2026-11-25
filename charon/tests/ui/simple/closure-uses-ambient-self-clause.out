@@ -42,7 +42,6 @@ where
     let _1: &'1 mut (A,); // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -80,7 +79,6 @@ where
 
     storage_live(_0)
     storage_live(_3)
-    _0 = ()
     _3 = noretag move tupled_args._0
     _0 = ()
     conditional_drop[{built_in impl Destruct for TraitClause0::Item}::drop_glue<'2>] _3
@@ -117,7 +115,6 @@ where
     _6 = move _7
     storage_live(_0)
     storage_live(_5)
-    _0 = ()
     storage_live(_2)
     _5 = move _6
     _2 = &(*_5)

@@ -698,7 +698,6 @@ fn main()
 
     bb0: {
         storage_live(_0);
-        _0 = ();
         storage_live(a);
         a = [const 1u32, const 2u32, const 3u32, const 4u32, const 5u32];
         fake_read(a);

@@ -26,7 +26,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -41,7 +40,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -55,7 +53,6 @@ where
     let mut _1: fn<'a where T: 'a>(fn<'b>(&'a T)); // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(_1)
     return
@@ -72,7 +69,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -84,7 +80,6 @@ pub fn reference_to_function_pointer<'a>(_1: &'a fn<'b>(&'b u32))
     let mut _1: &'1 fn<'b>(&'b u32); // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(_1)
     return
@@ -99,7 +94,6 @@ where
     let mut _1: &'4 fn<'b>(&'5 u32); // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(_1)
     return
@@ -125,7 +119,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -149,7 +142,6 @@ where
     let mut _1: fn<'a where TraitClause1::Assoc: 'a>(&'a TraitClause1::Assoc); // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     storage_dead(_1)
     return

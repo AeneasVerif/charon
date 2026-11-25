@@ -9,7 +9,6 @@ fn foo()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -24,7 +23,6 @@ fn main()
     let mut _3: fn(); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(f)
     f = fn_def_to_fn_ptr(const foo)
     fake_read(f)

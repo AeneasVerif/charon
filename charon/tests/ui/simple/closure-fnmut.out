@@ -196,7 +196,6 @@ fn main()
     let mut _4: &'3 mut u8; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(z)
     z = const 3u8
     fake_read(z)

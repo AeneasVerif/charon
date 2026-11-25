@@ -153,7 +153,6 @@ fn main()
     let mut _4: TypeId; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     // Has a fallback body marked `#[miri::intrinsic_fallback_is_spec]`.
     _1 = select_unpredictable<u32>[{built_in impl Sized for u32}](const true, const 1u32, const 2u32)

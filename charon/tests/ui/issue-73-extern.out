@@ -35,7 +35,6 @@ fn use_type<'_0>(_x: &'_0 Type)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_x)
     return
 }

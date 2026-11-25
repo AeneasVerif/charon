@@ -142,7 +142,6 @@ where
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _0 = ()
     _2 = noretag copy _1.metadata
     _3 = const 0usize
     loop {
@@ -239,7 +238,6 @@ where
 
     storage_live(_0)
     storage_live(_2)
-    _0 = ()
     _2 = as_mut_slice<'_, T, N>[TraitClause0, {built_in impl Destruct for T}](move _1)
     ↳⚡ undefined_behavior
     _0 = drop_glue<'8, [T]>[impl_Destruct_for_slice<T>[TraitClause0, TraitClause1], impl_Destruct_for_slice<T>[TraitClause0, TraitClause1]](move _2)
@@ -265,7 +263,6 @@ where
     let _1: &'1 mut (A, B); // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[TraitClause1::drop_glue<'2>] (*_1)._0
     ↳⚡ drop[TraitClause2::drop_glue<'4>] (*_1)._1
         ↳⚡ storage_dead(_1)
@@ -288,7 +285,6 @@ fn drop_array(_1: [String; 4usize])
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     drop[impl_Destruct_for_array::drop_glue<'0, String, 4usize>[{built_in impl Sized for String}, impl_Destruct_for_String]] _1
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -303,7 +299,6 @@ fn drop_slice(_1: Box<[String]>[{built_in impl MetaSized for [String]}, {built_i
     let mut _1: Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, impl_Destruct_for_slice<String>[{built_in impl Sized for String}, impl_Destruct_for_String], {built_in impl Destruct for Global}]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     drop[impl_Destruct_for_Box::drop_glue<'0, [String], Global>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, impl_Destruct_for_slice<String>[{built_in impl Sized for String}, impl_Destruct_for_String], {built_in impl Destruct for Global}]] _1
     ↳⚡ storage_dead(_1)
@@ -325,7 +320,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     drop[impl_Destruct_for_tuple::drop_glue<'0, A, B>[TraitClause0, TraitClause2, TraitClause3]] _1
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -340,7 +334,6 @@ fn drop_tuple_string(_1: (String, String))
     let mut _1: (String, String); // arg #1
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     drop[impl_Destruct_for_tuple::drop_glue<'0, String, String>[{built_in impl Sized for String}, impl_Destruct_for_String, impl_Destruct_for_String]] _1
     ↳⚡ storage_dead(_1)

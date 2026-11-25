@@ -39,7 +39,6 @@ fn use_debug<'_0>(_d: &'_0 (dyn Trait + '_0))
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_d)
     return
 }
@@ -65,7 +64,6 @@ fn main()
     _6 = move _7
     storage_live(_0)
     storage_live(_5)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)

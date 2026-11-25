@@ -38,7 +38,6 @@ fn foo<'_0>(self: &'_0 Bar)
     bb0: {
         storage_live(_0);
         _0 = ();
-        _0 = ();
         storage_dead(self);
         return;
     }
@@ -53,7 +52,6 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn Foo))
 
     bb0: {
         storage_live(_0);
-        _0 = ();
         storage_live(_2);
         _2 = concretize<&'_0 Bar>(move _1);
         _0 = foo<'_0>(move _2) -> bb1 (unwind: bb2);
@@ -115,7 +113,6 @@ fn main()
 
     bb0: {
         storage_live(_0);
-        _0 = ();
         set '1: '0;
         set '3: '2;
         storage_live(bar);

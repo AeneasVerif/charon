@@ -89,7 +89,6 @@ fn main()
     let mut _3: {closure}; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(z)
     z = NotCopy {  }
     fake_read(z)

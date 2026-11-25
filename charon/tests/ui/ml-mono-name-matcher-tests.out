@@ -52,7 +52,6 @@ fn bar()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -108,7 +107,6 @@ fn foo()
     storage_live(_0)
     storage_live(_10)
     storage_live(_11)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _11 = read test_crate::foo::{promoted_const#1}
@@ -246,7 +244,6 @@ fn mono_usage()
     let mut _3: &'2 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_container1)
     _container1 = test_crate::{MonoContainer::<i32>}::create::<i32>(const 42i32)
     ↳⚡ unwind_continue

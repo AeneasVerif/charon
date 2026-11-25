@@ -186,7 +186,6 @@ pub fn drop<'_0>(self: &'_0 mut Droppable)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(self)
     return
 }
@@ -202,7 +201,6 @@ unsafe fn impl_Destruct_for_Droppable::drop_glue<'_0>(_1: &'_0 mut Droppable)
     storage_live(_0)
     storage_live(_2)
     storage_live(_3)
-    _0 = ()
     _2 = &mut (*_1)
     _3 = drop<'6>(move _2)
     ↳⚡ storage_dead(_3)
@@ -537,7 +535,6 @@ unsafe fn impl_Destruct_for_closure::drop_glue<'_0>(_1: &'_0 mut test_crate::mai
     let _1: &'1 mut test_crate::main::{closure#2}; // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[impl_Destruct_for_Droppable::drop_glue<'2>] (*_1)._0
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -1135,7 +1132,6 @@ fn main()
     storage_live(_29)
     storage_live(_30)
     storage_live(_31)
-    _0 = ()
     set '1: '0
     set '3: '2
     set '5: '4

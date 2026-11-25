@@ -159,7 +159,6 @@ extern "rust-call" fn impl_Fn_for_closure::call<'_0>(_1: &'_0 test_crate::BAR::{
     storage_live(_0)
     storage_live(a)
     storage_live(_20)
-    _0 = ()
     a = noretag move tupled_args._0
     storage_live(_4)
     storage_live(_5)
@@ -252,7 +251,6 @@ extern "rust-call" fn call_mut<'_0>(state: &'_0 mut test_crate::BAR::{closure}, 
     let mut _3: &'0 test_crate::BAR::{closure}; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     _3 = &(*state)
     _0 = impl_Fn_for_closure::call<'2>(move _3, move args)
@@ -276,7 +274,6 @@ extern "rust-call" fn call_once(_1: test_crate::BAR::{closure}, _2: (i32,))
 
     storage_live(_0)
     storage_live(_3)
-    _0 = ()
     _3 = &mut _1
     _0 = call_mut<'5>(move _3, move _2)
     ↳⚡ storage_dead(_3)
@@ -298,7 +295,6 @@ fn {as_fn}(arg1: i32)
     let mut state: test_crate::BAR::{closure}; // local
 
     storage_live(_0)
-    _0 = ()
     storage_live(args)
     storage_live(state)
     args = (move arg1,)
@@ -370,7 +366,6 @@ extern "rust-call" fn {impl Fn<(i32,)> for test_crate::foo::{closure}::<u8>}::ca
     storage_live(_0)
     storage_live(a)
     storage_live(_20)
-    _0 = ()
     a = noretag move tupled_args._0
     storage_live(_4)
     storage_live(_5)
@@ -464,7 +459,6 @@ fn foo::<u8>()
     let mut _4: (i32,); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(c)
     c = test_crate::foo::{closure}::<u8> {  }
     fake_read(c)
@@ -499,7 +493,6 @@ fn main()
     let _8: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     set '1: '0
     set '3: '2
     storage_live(boo)

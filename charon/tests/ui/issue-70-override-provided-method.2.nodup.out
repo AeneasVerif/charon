@@ -30,7 +30,6 @@ where
     let mut _5: &'3 Self; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self) with_metadata(read self.metadata)
@@ -63,7 +62,6 @@ where
     let mut _5: &'3 Self; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self) with_metadata(read self.metadata)
@@ -94,7 +92,6 @@ fn impl_Trait_for_Foo::required<'_0>(self: &'_0 Foo)
     let mut _3: &'2 Foo; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self)
@@ -127,7 +124,6 @@ fn impl_Trait_for_Bar::provided1<'_0>(self: &'_0 Bar)
     let mut _3: &'2 Bar; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self)
@@ -148,7 +144,6 @@ fn impl_Trait_for_Bar::required<'_0>(self: &'_0 Bar)
     let mut _3: &'2 Bar; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self)

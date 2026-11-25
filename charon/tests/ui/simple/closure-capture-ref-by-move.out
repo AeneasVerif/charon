@@ -19,7 +19,6 @@ where
 
     storage_live(_0)
     storage_live(_3)
-    _0 = ()
     _3 = copy (*(*_1)._0) panic.+ const 1i32
     (*(*_1)._0) = move _3
     _0 = ()
@@ -41,7 +40,6 @@ fn foo()
     let mut _6: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(x)
     x = const 0i32
     fake_read(x)

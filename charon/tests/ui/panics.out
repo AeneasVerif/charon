@@ -117,7 +117,6 @@ fn panic1()
     let _1: !; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = panic_default_msg()
     ↳⚡ storage_dead(_1)
@@ -134,7 +133,6 @@ fn panic2()
     let mut _2: &'7 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = &test_crate::panic2::{promoted_const} with_metadata(const 5usize)
@@ -158,7 +156,6 @@ fn panic3()
     let mut _2: &'7 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = &test_crate::panic3::{promoted_const} with_metadata(const 5usize)
@@ -182,7 +179,6 @@ fn panic4()
     let mut _2: &'1 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = const false
     storage_live(_2)
@@ -207,7 +203,6 @@ fn panic5()
     let mut _3: &'7 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = const false
     if move _1 {
@@ -238,7 +233,6 @@ fn panic6()
     let _1: !; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = unreachable_default_msg()
     ↳⚡ storage_dead(_1)
@@ -255,7 +249,6 @@ fn panic7()
     let mut _2: &'7 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = &test_crate::panic7::{promoted_const} with_metadata(const 58usize)
@@ -276,7 +269,6 @@ fn panic8()
     let _1: !; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = todo_default_msg()
     ↳⚡ storage_dead(_1)
@@ -292,7 +284,6 @@ fn panic9()
     let mut _1: &'47 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = &test_crate::panic9::{promoted_const} with_metadata(const 14usize)
     panic(begin_panic<&'18 str>[{built_in impl Sized for &'18 str}, impl_Any_for_T<&'18 str>[{built_in impl MetaSized for &'18 str}], {impl Send for &'_0 T}<'18, str>[{built_in impl Sync for str}]](move _1))

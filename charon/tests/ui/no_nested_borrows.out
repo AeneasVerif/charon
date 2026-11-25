@@ -133,7 +133,6 @@ where
     let _1: &'1 mut List<T>[TraitClause0]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     match (*_1) {
         List::Cons => {
             drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1) as variant List::Cons)._0
@@ -203,7 +202,6 @@ pub fn use_tuple_struct<'_0>(x: &'_0 mut Tuple<u32, u32>[{built_in impl Sized fo
     let x: &'1 mut Tuple<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     (*x)._0 = const 1u32
     _0 = ()
     storage_dead(x)
@@ -272,7 +270,6 @@ where
     let _1: &'1 mut IdType<T>[TraitClause0]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_1)._0
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -400,7 +397,6 @@ pub fn test2()
 
     storage_live(_0)
     storage_live(_6)
-    _0 = ()
     storage_live(x)
     x = const 23u32
     fake_read(x)
@@ -502,7 +498,6 @@ pub fn test_list1()
     let mut _3: List<i32>[{built_in impl Sized for i32}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(l)
     storage_live(_2)
     storage_live(_3)
@@ -542,7 +537,6 @@ pub fn test_box1()
     let mut _8: &'19 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(b)
     b = new<i32>[{built_in impl Sized for i32}](const 0i32)
     ↳⚡ storage_dead(_8)
@@ -614,7 +608,6 @@ pub fn test_unreachable(b: bool)
     let _3: !; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = copy b
     if move _2 {
@@ -901,7 +894,6 @@ pub fn test_even_odd()
     let mut _8: &'4 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = even(const 0u32)
     ↳⚡ storage_dead(_8)
@@ -1059,7 +1051,6 @@ pub fn incr<'_0>(x: &'_0 mut u32)
 
     storage_live(_0)
     storage_live(_2)
-    _0 = ()
     _2 = copy (*x) panic.+ const 1u32
     (*x) = move _2
     _0 = ()

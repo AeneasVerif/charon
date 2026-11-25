@@ -78,7 +78,6 @@ where
     let _1: &'1 mut Option<T>[TraitClause0]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     match (*_1) {
         Option::None => {
         },

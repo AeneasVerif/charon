@@ -65,7 +65,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     conditional_drop[{built_in impl Destruct for I}::drop_glue<'0>] it
     ↳⚡ storage_dead(it)
         unwind_continue
@@ -95,7 +94,6 @@ where
     let mut _3: Clause1_IntoIter; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = move it

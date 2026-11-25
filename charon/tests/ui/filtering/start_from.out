@@ -84,7 +84,6 @@ fn test_crate::module1::do_translate()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -93,7 +92,6 @@ fn test_crate::module1::do_translate_glob()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -104,7 +102,6 @@ fn test_crate::module2::do_translate()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -114,7 +111,6 @@ fn test_crate::module2::do_translate_glob()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -123,7 +119,6 @@ fn test_crate::hidden_module::do_translate_glob()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -137,7 +132,6 @@ fn method()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }

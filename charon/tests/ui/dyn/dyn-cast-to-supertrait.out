@@ -74,7 +74,6 @@ fn hunt<'_0>(self: &'_0 HouseCat)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(self)
     return
 }
@@ -87,7 +86,6 @@ fn impl_Feline_for_HouseCat::hunt::{vtable_method}<'_0>(_1: &'_0 (dyn Feline))
     let mut _2: &'_0 HouseCat; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 HouseCat>(move _1)
     _0 = hunt<'_0>(move _2)
@@ -133,7 +131,6 @@ fn pet<'_0>(self: &'_0 HouseCat)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(self)
     return
 }
@@ -146,7 +143,6 @@ fn impl_Pettable_for_HouseCat::pet::{vtable_method}<'_0>(_1: &'_0 (dyn Pettable)
     let mut _2: &'_0 HouseCat; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 HouseCat>(move _1)
     _0 = pet<'_0>(move _2)
@@ -192,7 +188,6 @@ fn meow<'_0>(self: &'_0 HouseCat)
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(self)
     return
 }
@@ -205,7 +200,6 @@ fn impl_Cat_for_HouseCat::meow::{vtable_method}<'_0>(_1: &'_0 (dyn Cat))
     let mut _2: &'_0 HouseCat; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 HouseCat>(move _1)
     _0 = meow<'_0>(move _2)
@@ -257,7 +251,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -284,7 +277,6 @@ fn main()
     let mut _10: &'34 (dyn Cat + '35); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     set '1: '0
     set '3: '2
     set '5: '4

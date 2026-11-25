@@ -131,7 +131,6 @@ where
     let _1: &'1 mut Wrapper<P>[TraitClause0]; // arg #1
 
     storage_live(_0)
-    _0 = ()
     drop[{built_in impl Destruct for P}::drop_glue<'2>] (*_1)._0
     ↳⚡ storage_dead(_1)
         unwind_continue

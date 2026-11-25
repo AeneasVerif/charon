@@ -64,7 +64,6 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     storage_dead(self)
     return
 }
@@ -92,7 +91,6 @@ where
     let mut _3: &'1 T; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &x

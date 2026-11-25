@@ -510,7 +510,6 @@ pub fn inline_const()
         where _1 :< &'0 Outer<[u16]>[{built_in impl MetaSized for [u16]}];
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = &test_crate::inline_const::{promoted_const} with_metadata(const 2usize)
     storage_dead(_1)

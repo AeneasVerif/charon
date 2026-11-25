@@ -359,7 +359,6 @@ fn foo()
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
     return
 }
 
@@ -373,7 +372,6 @@ fn test_attributes::tests::test_ignore#1()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = ()
     _0 = ()
     return
 }
@@ -520,7 +518,6 @@ fn test_attributes::tests::test_should_panic#1()
     let mut _3: &'7 str; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)
@@ -668,7 +665,6 @@ fn test_attributes::tests::test_foo#1()
     let _1: (); // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_1)
     _1 = foo()
     ↳⚡ unwind_continue

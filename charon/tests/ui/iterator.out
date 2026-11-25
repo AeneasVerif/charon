@@ -5754,7 +5754,6 @@ fn main()
     storage_live(_12)
     storage_live(_33)
     storage_live(_42)
-    _0 = ()
     storage_live(a)
     a = [const 0i32, const 1i32, const 2i32, const 3i32, const 4i32, const 5i32, const 6i32]
     fake_read(a)

@@ -35,7 +35,6 @@ where
     let mut _4: &'4 Self; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source)
@@ -82,7 +81,6 @@ where
     let mut _4: &'4 u128; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source)

@@ -70,7 +70,6 @@ fn foo(f: Foo)
     let mut _3: Box<u32>[{built_in impl Destruct for u32}, {built_in impl Destruct for Global}]; // anonymous local
 
     storage_live(_0)
-    _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = move f.x
