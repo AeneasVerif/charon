@@ -1,0 +1,13 @@
+
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_bodies.rs:955:37:
+assertion failed: generics.types.len() == 2
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting body.
+ --> tests/ui/regressions/monomorphized-box-deref.rs:7:1
+  |
+7 | / pub fn deref_box(b: Box<u32>) -> u32 {
+8 | |     *b
+9 | | }
+  | |_^
+
+ERROR Charon failed to translate this code (1 errors)
