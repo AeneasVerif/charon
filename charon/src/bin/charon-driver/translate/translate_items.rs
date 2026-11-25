@@ -593,7 +593,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             .and_then(|id| self.tcx.intrinsic(id));
 
         let body = if let Some(intrinsic) = intrinsic
-            && intrinsic.name == sym::type_id
+            && intrinsic.name == ty::Intrinsic::Rustc(sym::type_id)
             && TransItemSourceKind::IntrinsicFallback == self.item_src.kind
         {
             self.build_type_id_body(span, &signature)?
@@ -601,8 +601,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             && TransItemSourceKind::IntrinsicFallback != self.item_src.kind
         {
             // we special-case type_id: we give it a custom fallback that is the spec
-            let is_type_id = intrinsic.name == sym::type_id;
-            let arg_names = self.translate_argument_names(span, def, signature.inputs.len());
+            let is_type_id = intrinsic.name == ty::Intrinsic::Rustc(sym::type_id);
+            let arg_names = self.translate_argument_names(def, signature.inputs.len());
             let fallback = if intrinsic.must_be_overridden && !is_type_id {
                 None
             } else {
@@ -617,7 +617,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 .filter_map(|a| a.as_unknown())
                 .any(|a| a.path == "miri::intrinsic_fallback_is_spec");
             Body::Intrinsic {
-                name: intrinsic.name.to_ident_string(),
+                name: intrinsic.name.to_string(),
                 arg_names,
                 fallback,
                 fallback_is_spec: fallback_is_spec || is_type_id,

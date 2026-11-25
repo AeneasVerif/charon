@@ -61,6 +61,7 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut Guard)
         storage_dead(_2)
         storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_3)
     storage_dead(_2)
     storage_dead(_1)

@@ -55,7 +55,7 @@ pub struct ItemRefContents<'tcx> {
     /// Keep the original arguments. Different rustc arguments can have the same translated
     /// generics, so we must keep the args here if we want to be able to recover them.
     #[value(self.generics())]
-    rustc_args: ty::GenericArgsRef<'tcx>,
+    rustc_args: ty::GenericArgs<'tcx>,
     /// The generics passed to the item. If `in_trait` is `Some`, these are only the generics of
     /// the method/type/const itself; generics for the traits are available in
     /// `in_trait.unwrap().trait`.
@@ -104,7 +104,7 @@ impl<'tcx> ItemRef<'tcx> {
     pub fn translate<S: UnderOwnerState<'tcx>>(
         s: &S,
         def_id: RDefId,
-        generics: ty::GenericArgsRef<'tcx>,
+        generics: ty::GenericArgs<'tcx>,
     ) -> ItemRef<'tcx> {
         let hax_def_id = def_id.sinto(s);
         Self::translate_from_hax_def_id(s, hax_def_id, generics)
@@ -122,7 +122,7 @@ impl<'tcx> ItemRef<'tcx> {
     pub fn translate_from_hax_def_id<S: UnderOwnerState<'tcx>>(
         s: &S,
         hax_def_id: DefId,
-        generics: ty::GenericArgsRef<'tcx>,
+        generics: ty::GenericArgs<'tcx>,
     ) -> ItemRef<'tcx> {
         Self::translate_from_hax_def_id_maybe_resolve(
             s,
@@ -135,7 +135,7 @@ impl<'tcx> ItemRef<'tcx> {
     pub fn translate_projection<S: UnderOwnerState<'tcx>>(
         s: &S,
         def_id: RDefId,
-        generics: ty::GenericArgsRef<'tcx>,
+        generics: ty::GenericArgs<'tcx>,
     ) -> ItemRef<'tcx> {
         let hax_def_id = def_id.sinto(s);
         Self::translate_from_hax_def_id_maybe_resolve(
@@ -149,7 +149,7 @@ impl<'tcx> ItemRef<'tcx> {
     pub fn translate_from_hax_def_id_maybe_resolve<S: UnderOwnerState<'tcx>>(
         s: &S,
         hax_def_id: DefId,
-        generics: ty::GenericArgsRef<'tcx>,
+        generics: ty::GenericArgs<'tcx>,
         assoc_item_resolution: AssocItemResolution,
     ) -> ItemRef<'tcx> {
         let key = (hax_def_id.clone(), generics, assoc_item_resolution);
@@ -245,7 +245,7 @@ impl<'tcx> ItemRef<'tcx> {
     }
 
     /// Recover the original rustc args that generated this `ItemRef`.
-    pub fn rustc_args<S: BaseState<'tcx>>(&self, _s: &S) -> ty::GenericArgsRef<'tcx> {
+    pub fn rustc_args<S: BaseState<'tcx>>(&self, _s: &S) -> ty::GenericArgs<'tcx> {
         self.rustc_args
     }
 
@@ -301,8 +301,8 @@ impl<'tcx> ItemRef<'tcx> {
         s: &S,
     ) -> (
         Option<ItemRef<'tcx>>,
-        ty::GenericArgsRef<'tcx>,
-        ty::GenericArgsRef<'tcx>,
+        ty::GenericArgs<'tcx>,
+        ty::GenericArgs<'tcx>,
     ) {
         let tcx = s.tcx();
         let typing_parent = self.typing_parent(s);
@@ -311,13 +311,13 @@ impl<'tcx> ItemRef<'tcx> {
             None => 0,
         };
         let args = self.rustc_args(s);
-        let own_args = tcx.mk_args(&args[typing_parent_count..]);
+        let own_args = tcx.mk_args(&args.as_slice()[typing_parent_count..]);
         let (identity_args, _) = self.def_id.identity_args_with_extra_regions(s);
         let own_template = substitute(
             tcx,
             s.typing_env(),
             Some(args),
-            tcx.mk_args(&identity_args[typing_parent_count..]),
+            tcx.mk_args(&identity_args.as_slice()[typing_parent_count..]),
         );
 
         let soft_parent = if self.def_id.is_typeck_child(s)

@@ -91,13 +91,8 @@ where
     _0 = ()
     drop[{built_in impl Destruct for Ptr}::drop_glue<'2>] (*_1).pointer
     ↳⚡ unwind_continue
+    _0 = ()
     return
-}
-
-// Full name: core::ptr::unique::Unique
-pub struct Unique<T> {
-  pointer: NonNull<T>,
-  _marker: PhantomData<T>,
 }
 
 // Full name: alloc::alloc::Global
@@ -122,6 +117,15 @@ unsafe impl "impl_Allocator_for_Global" Allocator for Global {
     vtable: lazy
 }
 
+// Full name: alloc::boxed::BoxRaw
+struct BoxRaw<T>
+where
+    TraitClause0: (T: MetaSized),
+{
+  pointer: NonNull<T>,
+  _marker: PhantomData<T>,
+}
+
 // Full name: alloc::boxed::Box
 #[fundamental]
 #[lang_item(OwnedBox)]
@@ -131,7 +135,7 @@ where
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
 {
-  _0: Unique<T>,
+  _0: BoxRaw<T>[TraitClause0],
   _1: A,
 }
 
@@ -184,71 +188,16 @@ where
         unwind_continue
     drop[{built_in impl Destruct for A}::drop_glue<'13>] (*_1)._1
     ↳⚡ unwind_continue
-    return
-}
-
-// Full name: alloc::rc::RcInner
-opaque type RcInner<T>
-where
-    TraitClause0: (T: MetaSized),
-
-// Full name: alloc::rc::Rc
-#[diagnostic_item("Rc")]
-pub struct Rc<T, A>
-where
-    TraitClause0: (T: MetaSized),
-    TraitClause1: (A: Sized),
-    TraitClause2: (A: Allocator),
-{
-  ptr: NonNull<RcInner<T>[TraitClause0]>,
-  phantom: PhantomData<RcInner<T>[TraitClause0]>,
-  alloc: A,
-}
-
-// Full name: alloc::rc::{impl Drop for Rc<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop
-pub fn impl_Drop_for_Rc::drop<'_0, T, A>(_1: &'_0 mut Rc<T, A>[TraitClause0, TraitClause1, TraitClause2])
-where
-    TraitClause0: (T: MetaSized),
-    TraitClause1: (A: Sized),
-    TraitClause2: (A: Allocator),
-    Outlives0: (T: '_0),
-    Outlives1: (A: '_0),
-= <opaque>
-
-// Full name: alloc::rc::Rc::{impl Destruct for Rc<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_glue
-unsafe fn impl_Destruct_for_Rc::drop_glue<'_0, T, A>(_1: &'_0 mut Rc<T, A>[TraitClause0, TraitClause1, TraitClause2])
-where
-    TraitClause0: (T: MetaSized),
-    TraitClause1: (A: Sized),
-    TraitClause2: (A: Allocator),
-    Outlives0: (T: '_0),
-    Outlives1: (A: '_0),
-{
-    let mut _0: (); // return
-    let _1: &'1 mut Rc<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
-    let mut _2: &'2 mut Rc<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
-    let mut _3: (); // anonymous local
-
-    storage_live(_0)
-    storage_live(_2)
-    storage_live(_3)
     _0 = ()
-    _2 = &mut (*_1)
-    _3 = impl_Drop_for_Rc::drop<'6, T, A>[TraitClause0, TraitClause1, TraitClause2](move _2)
-    ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'7>] (*_1).alloc
-        ↳⚡ unwind_terminate(in_cleanup)
-        unwind_continue
-    drop[{built_in impl Destruct for A}::drop_glue<'8>] (*_1).alloc
-    ↳⚡ unwind_continue
     return
 }
 
-// Full name: alloc::sync::ArcInner
+// Full name: alloc::rcs::arc::ArcInner
 opaque type ArcInner<T>
 where
     TraitClause0: (T: MetaSized),
 
-// Full name: alloc::sync::Arc
+// Full name: alloc::rcs::arc::Arc
 #[diagnostic_item("Arc")]
 pub struct Arc<T, A>
 where
@@ -261,7 +210,7 @@ where
   alloc: A,
 }
 
-// Full name: alloc::sync::{impl Drop for Arc<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop
+// Full name: alloc::rcs::arc::{impl Drop for Arc<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop
 pub fn impl_Drop_for_Arc::drop<'_0, T, A>(_1: &'_0 mut Arc<T, A>[TraitClause0, TraitClause1, TraitClause2])
 where
     TraitClause0: (T: MetaSized),
@@ -271,7 +220,7 @@ where
     Outlives1: (A: '_0),
 = <opaque>
 
-// Full name: alloc::sync::Arc::{impl Destruct for Arc<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_glue
+// Full name: alloc::rcs::arc::Arc::{impl Destruct for Arc<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_glue
 unsafe fn impl_Destruct_for_Arc::drop_glue<'_0, T, A>(_1: &'_0 mut Arc<T, A>[TraitClause0, TraitClause1, TraitClause2])
 where
     TraitClause0: (T: MetaSized),
@@ -296,6 +245,64 @@ where
         unwind_continue
     drop[{built_in impl Destruct for A}::drop_glue<'8>] (*_1).alloc
     ↳⚡ unwind_continue
+    _0 = ()
+    return
+}
+
+// Full name: alloc::rcs::rc::RcInner
+opaque type RcInner<T>
+where
+    TraitClause0: (T: MetaSized),
+
+// Full name: alloc::rcs::rc::Rc
+#[diagnostic_item("Rc")]
+pub struct Rc<T, A>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
+{
+  ptr: NonNull<RcInner<T>[TraitClause0]>,
+  phantom: PhantomData<RcInner<T>[TraitClause0]>,
+  alloc: A,
+}
+
+// Full name: alloc::rcs::rc::{impl Drop for Rc<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop
+pub fn impl_Drop_for_Rc::drop<'_0, T, A>(_1: &'_0 mut Rc<T, A>[TraitClause0, TraitClause1, TraitClause2])
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
+= <opaque>
+
+// Full name: alloc::rcs::rc::Rc::{impl Destruct for Rc<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_glue
+unsafe fn impl_Destruct_for_Rc::drop_glue<'_0, T, A>(_1: &'_0 mut Rc<T, A>[TraitClause0, TraitClause1, TraitClause2])
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
+{
+    let mut _0: (); // return
+    let _1: &'1 mut Rc<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
+    let mut _2: &'2 mut Rc<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
+    let mut _3: (); // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _0 = ()
+    _2 = &mut (*_1)
+    _3 = impl_Drop_for_Rc::drop<'6, T, A>[TraitClause0, TraitClause1, TraitClause2](move _2)
+    ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'7>] (*_1).alloc
+        ↳⚡ unwind_terminate(in_cleanup)
+        unwind_continue
+    drop[{built_in impl Destruct for A}::drop_glue<'8>] (*_1).alloc
+    ↳⚡ unwind_continue
+    _0 = ()
     return
 }
 

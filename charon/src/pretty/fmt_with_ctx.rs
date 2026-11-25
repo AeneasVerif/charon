@@ -1910,7 +1910,6 @@ impl Display for from_rustc::AttributeKind {
             AttributeKind::Linkage(linkage, _) => {
                 let linkage = match linkage {
                     from_rustc::Linkage::AvailableExternally => "available_externally",
-                    from_rustc::Linkage::Common => "common",
                     from_rustc::Linkage::ExternalWeak => "extern_weak",
                     from_rustc::Linkage::External => "external",
                     from_rustc::Linkage::Internal => "internal",
@@ -1939,7 +1938,13 @@ impl Display for from_rustc::AttributeKind {
                 write!(f, "rustc_allocator_zeroed_variant = \"{name}\"")
             }
             AttributeKind::RustcDeallocator => write!(f, "rustc_deallocator"),
-            AttributeKind::RustcIntrinsic => write!(f, "rustc_intrinsic"),
+            AttributeKind::RustcIntrinsic { llvm } => {
+                write!(f, "rustc_intrinsic")?;
+                if let Some(llvm) = llvm {
+                    write!(f, "(llvm = \"{llvm}\")")?;
+                }
+                Ok(())
+            }
             AttributeKind::RustcNoWritable => write!(f, "rustc_no_writable"),
             AttributeKind::RustcReallocator => write!(f, "rustc_reallocator"),
             AttributeKind::ShouldPanic { reason } => {

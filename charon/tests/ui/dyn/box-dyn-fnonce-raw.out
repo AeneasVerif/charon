@@ -21,6 +21,14 @@ where
     TraitClause0: (T: MetaSized),
 = <opaque>
 
+// Full name: core::ptr::non_null::NonNull
+#[lang_item(NonNull)]
+pub opaque type NonNull<T>
+
+// Full name: core::alloc::layout::{Layout}::dangling_ptr
+pub fn dangling_ptr<'_0>(_1: &'_0 Layout) -> NonNull<u8>
+= <opaque>
+
 // Full name: core::alloc::AllocError
 pub struct AllocError {}
 
@@ -46,10 +54,6 @@ where
   Err { _0: E },
 }
 
-// Full name: core::ptr::non_null::NonNull
-#[lang_item(NonNull)]
-pub opaque type NonNull<T>
-
 vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
 
 // Full name: core::alloc::Allocator
@@ -60,6 +64,10 @@ pub unsafe trait Allocator<Self>
     fn deallocate<'_0_1, Outlives0: (Self: '_0_1)>;
     vtable: core::alloc::Allocator::{vtable}
 }
+
+// Full name: core::marker::PhantomData
+#[lang_item(PhantomData)]
+pub struct PhantomData<T> {}
 
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
@@ -212,27 +220,18 @@ pub trait FnOnce<Self, Args>
 fn panic_in_cleanup() -> !
 = <opaque>
 
+pub fn core::ptr::non_null::{NonNull<T>}::as_ptr<T>(_1: NonNull<T>) -> *mut T
+= <opaque>
+
+pub fn core::ptr::non_null::{NonNull<T>}::cast<T, U>(_1: NonNull<T>) -> NonNull<U>
+where
+    TraitClause0: (U: Sized),
+= <opaque>
+
 // Full name: core::ptr::non_null::{NonNull<[T]>}::as_mut_ptr
 pub fn as_mut_ptr<T>(_1: NonNull<[T]>) -> *mut T
 where
     TraitClause0: (T: Sized),
-= <opaque>
-
-// Full name: core::ptr::unique::Unique
-pub opaque type Unique<T>
-
-// Full name: core::ptr::non_null::{impl From<Unique<T>> for NonNull<T>}::from
-pub fn from<T>(_1: Unique<T>) -> NonNull<T>
-= <opaque>
-
-// Full name: core::ptr::unique::{Unique<T>}::as_ptr
-pub fn as_ptr<T>(_1: Unique<T>) -> *mut T
-= <opaque>
-
-// Full name: core::ptr::unique::{Unique<T>}::cast
-pub fn cast<T, U>(_1: Unique<T>) -> Unique<U>
-where
-    TraitClause0: (U: Sized),
 = <opaque>
 
 // Full name: alloc::alloc::Global
@@ -261,6 +260,89 @@ unsafe impl "impl_Allocator_for_Global" Allocator for Global {
 pub fn handle_alloc_error(_1: Layout) -> !
 = <opaque>
 
+// Full name: alloc::boxed::BoxRaw
+struct BoxRaw<T>
+where
+    TraitClause0: (T: MetaSized),
+{
+  pointer: NonNull<T>,
+  _marker: PhantomData<T>,
+}
+
+fn alloc::boxed::{BoxRaw<T>[TraitClause0]}::cast<T, U>(self: BoxRaw<T>[TraitClause0]) -> BoxRaw<U>[TraitClause1::ImpliedClause0]
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (U: Sized),
+{
+    let mut _0: BoxRaw<U>[TraitClause1::ImpliedClause0]; // return
+    let self: BoxRaw<T>[TraitClause0]; // arg #1
+    let mut _2: NonNull<U>; // anonymous local
+    let mut _3: NonNull<T>; // anonymous local
+    let mut _4: PhantomData<U>; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy self.pointer
+    _2 = core::ptr::non_null::{NonNull<T>}::cast<T, U>[TraitClause1](move _3)
+    ↳⚡ unwind_continue
+    storage_dead(_3)
+    storage_live(_4)
+    _4 = PhantomData {  }
+    _0 = BoxRaw { pointer: move _2, _marker: move _4 }
+    storage_dead(_4)
+    storage_dead(_2)
+    return
+}
+
+// Full name: alloc::boxed::{BoxRaw<T>[TraitClause0]}::as_non_null_ptr
+fn as_non_null_ptr<T>(self: BoxRaw<T>[TraitClause0]) -> NonNull<T>
+where
+    TraitClause0: (T: MetaSized),
+{
+    let mut _0: NonNull<T>; // return
+    let self: BoxRaw<T>[TraitClause0]; // arg #1
+
+    storage_live(_0)
+    _0 = copy self.pointer
+    return
+}
+
+fn alloc::boxed::{BoxRaw<T>[TraitClause0]}::as_ptr<T>(self: BoxRaw<T>[TraitClause0]) -> *mut T
+where
+    TraitClause0: (T: MetaSized),
+{
+    let mut _0: *mut T; // return
+    let self: BoxRaw<T>[TraitClause0]; // arg #1
+    let mut _2: NonNull<T>; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = copy self.pointer
+    _0 = core::ptr::non_null::{NonNull<T>}::as_ptr<T>(move _2)
+    ↳⚡ unwind_continue
+    storage_dead(_2)
+    return
+}
+
+// Full name: alloc::boxed::{impl From<BoxRaw<T>[TraitClause0]> for NonNull<T>}::from
+pub fn from<T>(value: BoxRaw<T>[TraitClause0]) -> NonNull<T>
+where
+    TraitClause0: (T: MetaSized),
+{
+    let mut _0: NonNull<T>; // return
+    let value: BoxRaw<T>[TraitClause0]; // arg #1
+    let mut _2: BoxRaw<T>[TraitClause0]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = copy value
+    _0 = as_non_null_ptr<T>[TraitClause0](move _2)
+    ↳⚡ unwind_continue
+    storage_dead(_2)
+    return
+}
+
 // Full name: alloc::boxed::Box
 #[fundamental]
 #[lang_item(OwnedBox)]
@@ -270,7 +352,7 @@ where
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
 {
-  _0: Unique<T>,
+  _0: BoxRaw<T>[TraitClause0],
   _1: A,
 }
 
@@ -285,19 +367,19 @@ where
 {
     let mut _0: (); // return
     let self: &'1 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
-    let ptr: Unique<T>; // local
+    let ptr: BoxRaw<T>[TraitClause0]; // local
     let layout: Layout; // local
     let mut _4: *const T; // anonymous local
     let mut _5: *mut T; // anonymous local
-    let mut _6: Unique<T>; // anonymous local
+    let mut _6: BoxRaw<T>[TraitClause0]; // anonymous local
     let mut _7: bool; // anonymous local
     let mut _8: usize; // anonymous local
     let mut _9: &'3 Layout; // anonymous local
     let _10: (); // anonymous local
     let mut _11: &'5 A; // anonymous local
     let mut _12: NonNull<u8>; // anonymous local
-    let mut _13: Unique<u8>; // anonymous local
-    let mut _14: Unique<T>; // anonymous local
+    let mut _13: BoxRaw<u8>[{built_in impl MetaSized for u8}]; // anonymous local
+    let mut _14: BoxRaw<T>[TraitClause0]; // anonymous local
     let mut _15: Layout; // anonymous local
 
     storage_live(_0)
@@ -309,7 +391,7 @@ where
     storage_live(_5)
     storage_live(_6)
     _6 = copy ptr
-    _5 = as_ptr<T>(move _6)
+    _5 = alloc::boxed::{BoxRaw<T>[TraitClause0]}::as_ptr<T>[TraitClause0](move _6)
     ↳⚡ unwind_continue
     _4 = cast<*const T>(move _5)
     storage_dead(_6)
@@ -342,10 +424,10 @@ where
     storage_live(_13)
     storage_live(_14)
     _14 = copy ptr
-    _13 = cast<T, u8>[{built_in impl Sized for u8}](move _14)
+    _13 = alloc::boxed::{BoxRaw<T>[TraitClause0]}::cast<T, u8>[TraitClause0, {built_in impl Sized for u8}](move _14)
     ↳⚡ unwind_continue
     storage_dead(_14)
-    _12 = from<u8>(move _13)
+    _12 = from<u8>[{built_in impl MetaSized for u8}](move _13)
     ↳⚡ unwind_continue
     storage_dead(_13)
     storage_live(_15)
@@ -387,7 +469,7 @@ where
     storage_live(_5)
     storage_live(_6)
     _0 = ()
-    _6 = transmute<*const T>(copy (*_1)._0.0)
+    _6 = transmute<*const T>(copy (*_1)._0.pointer)
     drop[{built_in impl Destruct for T}::drop_glue<'4>] (*_6)
     ↳⚡ _4 = &mut (*_1)
         _5 = impl_Drop_for_Box::drop<'11, T, A>[TraitClause0, TraitClause1, TraitClause2](move _4)
@@ -402,6 +484,7 @@ where
         unwind_continue
     drop[{built_in impl Destruct for A}::drop_glue<'13>] (*_1)._1
     ↳⚡ unwind_continue
+    _0 = ()
     return
 }
 
@@ -427,52 +510,82 @@ fn box_new_uninit(layout: Layout) -> *mut u8
 {
     let mut _0: *mut u8; // return
     let layout: Layout; // arg #1
-    let mut _2: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
-    let mut _3: &'1 Global; // anonymous local
-    let mut _4: Layout; // anonymous local
-    let mut _5: isize; // anonymous local
-    let ptr: NonNull<[u8]>; // local
-    let mut _7: NonNull<[u8]>; // anonymous local
-    let mut _8: !; // anonymous local
+    let mut _2: bool; // anonymous local
+    let mut _3: usize; // anonymous local
+    let mut _4: &'1 Layout; // anonymous local
+    let mut _5: NonNull<u8>; // anonymous local
+    let mut _6: &'2 Layout; // anonymous local
+    let mut _7: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let mut _8: &'4 Global; // anonymous local
     let mut _9: Layout; // anonymous local
-    let mut _10: &'2 Global; // anonymous local
+    let mut _10: isize; // anonymous local
+    let ptr: NonNull<[u8]>; // local
+    let mut _12: NonNull<[u8]>; // anonymous local
+    let mut _13: !; // anonymous local
+    let mut _14: Layout; // anonymous local
+    let mut _15: &'5 Global; // anonymous local
 
     storage_live(_0)
-    storage_live(_5)
     storage_live(_10)
+    storage_live(_15)
     storage_live(_2)
     storage_live(_3)
-    _10 = read {promoted_const}
-    _3 = &(*_10)
     storage_live(_4)
-    _4 = copy layout
-    _2 = allocate<'7>(move _3, move _4)
+    _4 = &layout
+    _3 = size<'9>(move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)
-    storage_dead(_3)
-    _5 = @discriminant(_2)
-    switch move _5 {
-        0isize => {
-        },
-        1isize => {
-            storage_live(_8)
-            storage_live(_9)
-            _9 = copy layout
-            _8 = handle_alloc_error(move _9)
-            ↳⚡ unwind_continue
-        },
-        _ => {
-            undefined_behavior
-        },
+    _2 = move _3 == const 0usize
+    if move _2 {
+    } else {
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_live(_7)
+        storage_live(_8)
+        _15 = read {promoted_const}
+        _8 = &(*_15)
+        storage_live(_9)
+        _9 = copy layout
+        _7 = allocate<'18>(move _8, move _9)
+        ↳⚡ unwind_continue
+        storage_dead(_9)
+        storage_dead(_8)
+        _10 = @discriminant(_7)
+        switch move _10 {
+            0isize => {
+            },
+            1isize => {
+                storage_live(_13)
+                storage_live(_14)
+                _14 = copy layout
+                _13 = handle_alloc_error(move _14)
+                ↳⚡ unwind_continue
+            },
+            _ => {
+                undefined_behavior
+            },
+        }
+        storage_live(ptr)
+        ptr = copy (_7 as variant Result::Ok)._0
+        storage_live(_12)
+        _12 = copy ptr
+        _0 = as_mut_ptr<u8>[{built_in impl Sized for u8}](move _12)
+        ↳⚡ unwind_continue
+        storage_dead(_12)
+        storage_dead(ptr)
+        storage_dead(_7)
+        return
     }
-    storage_live(ptr)
-    ptr = copy (_2 as variant Result::Ok)._0
-    storage_live(_7)
-    _7 = copy ptr
-    _0 = as_mut_ptr<u8>[{built_in impl Sized for u8}](move _7)
+    storage_dead(_3)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = &layout
+    _5 = dangling_ptr<'13>(move _6)
     ↳⚡ unwind_continue
-    storage_dead(_7)
-    storage_dead(ptr)
+    storage_dead(_6)
+    _0 = core::ptr::non_null::{NonNull<T>}::as_ptr<u8>(move _5)
+    ↳⚡ unwind_continue
+    storage_dead(_5)
     storage_dead(_2)
     return
 }
@@ -561,7 +674,7 @@ where
     _4 = move args
     _11 = box_deref_transmute<*const F>(copy _3._0)
     _0 = TraitClause4::call_once(move (*_11), move _4)
-    ↳⚡ _10 = transmute<*const F>(copy _3._0.0)
+    ↳⚡ _10 = transmute<*const F>(copy _3._0.pointer)
         _8 = &mut _3
         _9 = impl_Drop_for_Box::drop<'7, F, A>[TraitClause1, TraitClause2, TraitClause5](move _8)
         ↳⚡ unwind_terminate(in_cleanup)
@@ -569,7 +682,7 @@ where
         ↳⚡ unwind_terminate(in_cleanup)
         unwind_continue
     storage_dead(_4)
-    _7 = transmute<*const F>(copy _3._0.0)
+    _7 = transmute<*const F>(copy _3._0.pointer)
     _5 = &mut _3
     _6 = impl_Drop_for_Box::drop<'10, F, A>[TraitClause1, TraitClause2, TraitClause5](move _5)
     ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'12>] _3._1

@@ -446,6 +446,7 @@ and builtin_impl_data_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Fn" -> Ok BuiltinFn
     | `String "FnMut" -> Ok BuiltinFnMut
     | `String "FnOnce" -> Ok BuiltinFnOnce
+    | `String "FnAddr" -> Ok BuiltinFnAddr
     | `String "FnPtr" -> Ok BuiltinFnPtr
     | `String "AsyncFn" -> Ok BuiltinAsyncFn
     | `String "AsyncFnMut" -> Ok BuiltinAsyncFnMut
@@ -2414,11 +2415,18 @@ and rustc_attribute_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Cold" -> Ok RustcAttributeKindCold
     | `Assoc
         [
-          ("Deprecated", `Assoc [ ("deprecation", deprecation); ("span", span) ]);
+          ( "Deprecated",
+            `Assoc
+              [
+                ("deprecation", deprecation);
+                ("span", span);
+                ("is_inner", is_inner);
+              ] );
         ] ->
         let* deprecation = rustc_deprecation_of_json ctx deprecation in
         let* span = span_of_json ctx span in
-        Ok (RustcAttributeKindDeprecated (deprecation, span))
+        let* is_inner = bool_of_json ctx is_inner in
+        Ok (RustcAttributeKindDeprecated (deprecation, span, is_inner))
     | `Assoc [ ("ExportName", `Assoc [ ("name", name); ("span", span) ]) ] ->
         let* name = string_of_json ctx name in
         let* span = span_of_json ctx span in
@@ -2467,7 +2475,9 @@ and rustc_attribute_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* name = string_of_json ctx name in
         Ok (RustcAttributeKindRustcAllocatorZeroedVariant name)
     | `String "RustcDeallocator" -> Ok RustcAttributeKindRustcDeallocator
-    | `String "RustcIntrinsic" -> Ok RustcAttributeKindRustcIntrinsic
+    | `Assoc [ ("RustcIntrinsic", `Assoc [ ("llvm", llvm) ]) ] ->
+        let* llvm = option_of_json string_of_json ctx llvm in
+        Ok (RustcAttributeKindRustcIntrinsic llvm)
     | `String "RustcNoWritable" -> Ok RustcAttributeKindRustcNoWritable
     | `String "RustcReallocator" -> Ok RustcAttributeKindRustcReallocator
     | `Assoc [ ("ShouldPanic", `Assoc [ ("reason", reason) ]) ] ->
@@ -2598,7 +2608,6 @@ and rustc_cfg_abi_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Spe" -> Ok RustcCfgAbiSpe
     | `String "Uwp" -> Ok RustcCfgAbiUwp
     | `String "VecDefault" -> Ok RustcCfgAbiVecDefault
-    | `String "VecExtAbi" -> Ok RustcCfgAbiVecExtAbi
     | `String "X32" -> Ok RustcCfgAbiX32
     | `String "V8Plus" -> Ok RustcCfgAbiV8Plus
     | `String "Unspecified" -> Ok RustcCfgAbiUnspecified
@@ -3270,13 +3279,18 @@ and rustc_lang_item_of_json (ctx : of_json_ctx) (js : json) :
     | `String "AlignOf" -> Ok RustcLangItemAlignOf
     | `String "SizeOf" -> Ok RustcLangItemSizeOf
     | `String "OffsetOf" -> Ok RustcLangItemOffsetOf
+    | `String "RawEq" -> Ok RustcLangItemRawEq
+    | `String "CompareBytes" -> Ok RustcLangItemCompareBytes
     | `String "StructuralPeq" -> Ok RustcLangItemStructuralPeq
+    | `String "Debug" -> Ok RustcLangItemDebug
     | `String "Copy" -> Ok RustcLangItemCopy
     | `String "Clone" -> Ok RustcLangItemClone
     | `String "CloneFn" -> Ok RustcLangItemCloneFn
+    | `String "CloneFromFn" -> Ok RustcLangItemCloneFromFn
     | `String "UseCloned" -> Ok RustcLangItemUseCloned
     | `String "TrivialClone" -> Ok RustcLangItemTrivialClone
     | `String "Sync" -> Ok RustcLangItemSync
+    | `String "Send" -> Ok RustcLangItemSend
     | `String "DiscriminantKind" -> Ok RustcLangItemDiscriminantKind
     | `String "Discriminant" -> Ok RustcLangItemDiscriminant
     | `String "PointeeTrait" -> Ok RustcLangItemPointeeTrait
@@ -3286,10 +3300,13 @@ and rustc_lang_item_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Freeze" -> Ok RustcLangItemFreeze
     | `String "UnsafeUnpin" -> Ok RustcLangItemUnsafeUnpin
     | `String "FnPtrTrait" -> Ok RustcLangItemFnPtrTrait
-    | `String "FnPtrAsPtr" -> Ok RustcLangItemFnPtrAsPtr
+    | `String "FnAddrTrait" -> Ok RustcLangItemFnAddrTrait
+    | `String "FnAddrAsPtr" -> Ok RustcLangItemFnAddrAsPtr
+    | `String "FnAddrAddrFn" -> Ok RustcLangItemFnAddrAddrFn
     | `String "FnPtrFromPtr" -> Ok RustcLangItemFnPtrFromPtr
     | `String "Code" -> Ok RustcLangItemCode
     | `String "Drop" -> Ok RustcLangItemDrop
+    | `String "Forget" -> Ok RustcLangItemForget
     | `String "Destruct" -> Ok RustcLangItemDestruct
     | `String "AsyncDrop" -> Ok RustcLangItemAsyncDrop
     | `String "AsyncDropInPlace" -> Ok RustcLangItemAsyncDropInPlace
@@ -3328,6 +3345,9 @@ and rustc_lang_item_of_json (ctx : of_json_ctx) (js : json) :
     | `String "VaArgSafe" -> Ok RustcLangItemVaArgSafe
     | `String "VaList" -> Ok RustcLangItemVaList
     | `String "Complex" -> Ok RustcLangItemComplex
+    | `String "PpcF128" -> Ok RustcLangItemPpcF128
+    | `String "X87F80" -> Ok RustcLangItemX87F80
+    | `String "X87F80Raw" -> Ok RustcLangItemX87F80Raw
     | `String "Deref" -> Ok RustcLangItemDeref
     | `String "DerefMut" -> Ok RustcLangItemDerefMut
     | `String "DerefPure" -> Ok RustcLangItemDerefPure
@@ -3360,11 +3380,14 @@ and rustc_lang_item_of_json (ctx : of_json_ctx) (js : json) :
     | `String "CoroutineResume" -> Ok RustcLangItemCoroutineResume
     | `String "Unpin" -> Ok RustcLangItemUnpin
     | `String "Pin" -> Ok RustcLangItemPin
+    | `String "Move" -> Ok RustcLangItemMove
     | `String "OrderingEnum" -> Ok RustcLangItemOrderingEnum
     | `String "PartialEq" -> Ok RustcLangItemPartialEq
+    | `String "Eq" -> Ok RustcLangItemEq
     | `String "PartialOrd" -> Ok RustcLangItemPartialOrd
     | `String "CVoid" -> Ok RustcLangItemCVoid
-    | `String "Type" -> Ok RustcLangItemType
+    | `String "F16B" -> Ok RustcLangItemF16B
+    | `String "TypeKind" -> Ok RustcLangItemTypeKind
     | `String "TypeGeneric" -> Ok RustcLangItemTypeGeneric
     | `String "TypeId" -> Ok RustcLangItemTypeId
     | `String "Panic" -> Ok RustcLangItemPanic
@@ -3499,6 +3522,7 @@ and rustc_lang_item_of_json (ctx : of_json_ctx) (js : json) :
     | `String "From" -> Ok RustcLangItemFrom
     | `String "FromFn" -> Ok RustcLangItemFromFn
     | `String "FnPtr" -> Ok RustcLangItemFnPtr
+    | `String "DynTrait" -> Ok RustcLangItemDynTrait
     | _ -> Error "")
 
 and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
@@ -3549,7 +3573,6 @@ and rustc_linkage_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "AvailableExternally" -> Ok RustcLinkageAvailableExternally
-    | `String "Common" -> Ok RustcLinkageCommon
     | `String "ExternalWeak" -> Ok RustcLinkageExternalWeak
     | `String "External" -> Ok RustcLinkageExternal
     | `String "Internal" -> Ok RustcLinkageInternal
@@ -3705,6 +3728,7 @@ and rustc_os_of_json (ctx : of_json_ctx) (js : json) : (rustc_os, string) result
     | `String "Hermit" -> Ok RustcOsHermit
     | `String "Horizon" -> Ok RustcOsHorizon
     | `String "Hurd" -> Ok RustcOsHurd
+    | `String "Hyperlight" -> Ok RustcOsHyperlight
     | `String "Illumos" -> Ok RustcOsIllumos
     | `String "IOs" -> Ok RustcOsIOs
     | `String "L4Re" -> Ok RustcOsL4Re
@@ -3722,9 +3746,11 @@ and rustc_os_of_json (ctx : of_json_ctx) (js : json) : (rustc_os, string) result
     | `String "Psp" -> Ok RustcOsPsp
     | `String "Psx" -> Ok RustcOsPsx
     | `String "Qnx" -> Ok RustcOsQnx
+    | `String "Qtee" -> Ok RustcOsQtee
     | `String "Qurt" -> Ok RustcOsQurt
     | `String "Redox" -> Ok RustcOsRedox
     | `String "Rtems" -> Ok RustcOsRtems
+    | `String "Serenity" -> Ok RustcOsSerenity
     | `String "Solaris" -> Ok RustcOsSolaris
     | `String "SolidAsp3" -> Ok RustcOsSolidAsp3
     | `String "TeeOs" -> Ok RustcOsTeeOs

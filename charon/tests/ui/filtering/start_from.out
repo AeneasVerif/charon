@@ -36,6 +36,7 @@ pub trait Clone<Self>
 }
 
 // Full name: core::clone::Clone::clone_from
+#[lang_item(CloneFromFn)]
 pub fn clone_from<'_0, '_1, Self>(_1: &'_0 mut Self, _2: &'_1 Self)
 where
     TraitClause0: (Self: Clone),
@@ -51,6 +52,7 @@ where
     TraitClause0: (T: Sized),
 
 // Full name: core::iter::sources::once::once
+#[diagnostic_item("iter_once")]
 pub fn once<T>(_1: T) -> Once<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),

@@ -72,6 +72,7 @@ unsafe fn impl_Destruct_for_String::drop_glue<'_0>(_1: &'_0 mut String)
         storage_dead(drop_ret)
         storage_dead(drop_arg)
         unwind_continue
+    _0 = ()
     storage_dead(_1)
     storage_dead(drop_ret)
     storage_dead(drop_arg)

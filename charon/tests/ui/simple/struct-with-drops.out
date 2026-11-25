@@ -138,6 +138,7 @@ unsafe fn impl_Destruct_for_B::drop_glue<'_0>(_1: &'_0 mut B)
         storage_dead(_2)
         storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_3)
     storage_dead(_2)
     storage_dead(_1)
@@ -161,6 +162,7 @@ unsafe fn impl_Destruct_for_A::drop_glue<'_0>(_1: &'_0 mut A)
     drop[impl_Destruct_for_B::drop_glue<'3>] (*_1).b
     ↳⚡ storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_1)
     return
 }

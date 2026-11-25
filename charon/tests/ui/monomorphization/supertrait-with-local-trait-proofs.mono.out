@@ -1,27 +1,89 @@
-error: Type error after translation:
-       Mismatched trait clause:
-       expected: TraitClause1: ((): Parent<Wrapper::<u8>>)
-            got: {impl Parent<Wrapper::<u8>> for ()}: Parent<(), Wrapper::<u8>>
-       Visitor stack:
-         charon_lib::ast::items::trait_impl::TraitImpl
-       Binding stack (depth 1):
-         0: 
-  --> tests/ui/monomorphization/supertrait-with-local-trait-proofs.rs:22:1
-   |
-22 | impl Child for () {}
-   | ^^^^^^^^^^^^^^^^^^^^
+# Final LLBC before serialization:
 
-error: Type error after translation:
-       Mismatched trait clause:
-       expected: TraitClause2: ((): Parent<Wrapper::<Nested::<u8>>>)
-            got: {impl Parent<Wrapper::<Nested::<u8>>> for ()}: Parent<(), Wrapper::<Nested::<u8>>>
-       Visitor stack:
-         charon_lib::ast::items::trait_impl::TraitImpl
-       Binding stack (depth 1):
-         0: 
-  --> tests/ui/monomorphization/supertrait-with-local-trait-proofs.rs:22:1
-   |
-22 | impl Child for () {}
-   | ^^^^^^^^^^^^^^^^^^^^
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
 
-ERROR Charon failed to translate this code (2 errors)
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: test_crate::Bound
+pub trait Bound<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: test_crate::Bound::{vtable}
+}
+
+// Full name: test_crate::{impl Bound for u8}
+impl "impl_Bound_for_u8" Bound for u8 {
+    proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
+    vtable: lazy
+}
+
+// Full name: test_crate::Nested::<u8>
+pub struct Nested::<u8> {
+  _0: u8,
+}
+
+// Full name: test_crate::Wrapper::<u8>
+pub struct Wrapper::<u8> {
+  _0: u8,
+}
+
+// Full name: test_crate::Wrapper::<Nested::<u8>>
+pub struct Wrapper::<Nested::<u8>> {
+  _0: Nested::<u8>,
+}
+
+// Full name: test_crate::Parent
+pub trait Parent<Self, T>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: Sized)
+    vtable: test_crate::Parent::{vtable}
+}
+
+// Full name: test_crate::Child
+pub trait Child<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Parent<Wrapper::<u8>>)
+    proof ImpliedClause2: (Self: Parent<Wrapper::<Nested::<u8>>>)
+    proof ImpliedClause3: (u8: Bound)
+    vtable: test_crate::Child::{vtable}
+}
+
+// Full name: test_crate::{impl Parent<Wrapper::<u8>> for ()}
+impl Parent<Wrapper::<u8>> for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    proof ImpliedClause1: (Wrapper::<u8>: Sized) = {built_in impl Sized for Wrapper::<u8>}
+    vtable: lazy
+}
+
+// Full name: test_crate::{impl Parent<Wrapper::<Nested::<u8>>> for ()}
+impl Parent<Wrapper::<Nested::<u8>>> for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    proof ImpliedClause1: (Wrapper::<Nested::<u8>>: Sized) = {built_in impl Sized for Wrapper::<Nested::<u8>>}
+    vtable: lazy
+}
+
+// Full name: test_crate::{impl Child for ()}
+impl "impl_Child_for_unit" Child for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    proof ImpliedClause1: ((): Parent<Wrapper::<u8>>) = {impl Parent<Wrapper::<u8>> for ()}
+    proof ImpliedClause2: ((): Parent<Wrapper::<Nested::<u8>>>) = {impl Parent<Wrapper::<Nested::<u8>>> for ()}
+    proof ImpliedClause3: (u8: Bound) = impl_Bound_for_u8
+    vtable: lazy
+}
+
+
+

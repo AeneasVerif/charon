@@ -59,6 +59,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::Eq
+#[lang_item(Eq)]
 #[diagnostic_item("Eq")]
 pub trait Eq<Self>
 {
@@ -127,6 +128,7 @@ pub trait Hash<Self>
 }
 
 // Full name: core::marker::Send
+#[lang_item(Send)]
 #[diagnostic_item("Send")]
 pub unsafe trait Send<Self>
 

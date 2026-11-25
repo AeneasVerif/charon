@@ -9,7 +9,7 @@ pub opaque type TypeId
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
-fn core::intrinsics::type_id::{fallback}<T>() -> TypeId
+fn core::intrinsics::reflection::type_id::{fallback}<T>() -> TypeId
 where
     TraitClause0: (T: MetaSized),
 {
@@ -20,12 +20,12 @@ where
     return
 }
 
-// Full name: core::intrinsics::type_id
+// Full name: core::intrinsics::reflection::type_id
 #[rustc_intrinsic]
 pub fn type_id<T>() -> TypeId
 where
     TraitClause0: (T: MetaSized),
-= <intrinsic:type_id> with fallback (spec) core::intrinsics::type_id::{fallback}<T>[TraitClause0]
+= <intrinsic:type_id> with fallback (spec) core::intrinsics::reflection::type_id::{fallback}<T>[TraitClause0]
 
 // Full name: core::any::{TypeId}::of
 pub fn of<T>() -> TypeId

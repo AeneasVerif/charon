@@ -301,14 +301,6 @@ where
   end: Idx,
 }
 
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
-    non-dyn-compatible
-}
-
 // Full name: core::iter::traits::iterator::Iterator
 #[lang_item(Iterator)]
 #[diagnostic_item("Iterator")]
@@ -326,7 +318,6 @@ pub fn next<'_0, A>(_1: &'_0 mut Range<A>[TraitClause0]) -> Option<A>[TraitClaus
 where
     TraitClause0: (A: Sized),
     TraitClause1: (A: Step),
-    TraitClause2: (A: Destruct),
     Outlives0: (A: '_0),
 = <opaque>
 
@@ -335,12 +326,11 @@ impl<A> "impl_Iterator_for_Range" Iterator for Range<A>[TraitClause0]
 where
     TraitClause0: (A: Sized),
     TraitClause1: (A: Step),
-    TraitClause2: (A: Destruct),
 {
     proof ImpliedClause0: (Range<A>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Range<A>[TraitClause0]}
     proof ImpliedClause1: (A: Sized) = TraitClause0
     type Item = A
-    fn next<'_0_1> = next<'_0_1, A>[TraitClause0, TraitClause1, TraitClause2]
+    fn next<'_0_1> = next<'_0_1, A>[TraitClause0, TraitClause1]
     vtable: lazy
 }
 
@@ -767,7 +757,7 @@ fn ntt_layer_generic<'_0, '_1>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8usize])
     storage_live(_3)
     storage_live(_4)
     _4 = Range { start: const 0usize, end: const 8usize }
-    _3 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}]](move _4)
+    _3 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize]](move _4)
     ↳⚡ storage_dead(b)
         storage_dead(a)
         storage_dead(_21)
@@ -786,7 +776,7 @@ fn ntt_layer_generic<'_0, '_1>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8usize])
         storage_live(_8)
         _8 = &mut iter
         _7 = &two-phase-mut (*_8)
-        _6 = next<'10, usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}](move _7)
+        _6 = next<'10, usize>[{built_in impl Sized for usize}, impl_Step_for_usize](move _7)
         ↳⚡ storage_dead(b)
             storage_dead(a)
             storage_dead(_21)

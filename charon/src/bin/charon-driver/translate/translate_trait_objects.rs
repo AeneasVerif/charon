@@ -1,5 +1,5 @@
 use itertools::Itertools;
-use rustc_hir::attrs::LangItem;
+use rustc_attr_ir::LangItem;
 use rustc_span::kw;
 use std::mem;
 

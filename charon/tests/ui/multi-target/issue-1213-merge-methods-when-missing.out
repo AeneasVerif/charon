@@ -78,6 +78,7 @@ where
 = <opaque>
 
 // Full name: core::iter::adapters::zip::{impl Iterator for Zip<A, B>[TraitClause0, TraitClause1]}::zip
+#[diagnostic_item("iter_zip")]
 pub fn impl_Iterator_for_Zip::zip<A, B, U>(_1: Zip<A, B>[TraitClause0, TraitClause1], _2: U) -> Zip<Zip<A, B>[TraitClause0, TraitClause1], TraitClause6::IntoIter>[TraitClause5, TraitClause6::ImpliedClause2]
 where
     TraitClause0: (A: Sized),
@@ -128,6 +129,7 @@ where
     vtable: lazy
 }
 
+#[diagnostic_item("iter_zip")]
 pub fn core::iter::traits::iterator::Iterator::zip<Self, U>(_1: Self, _2: U) -> Zip<Self, TraitClause3::IntoIter>[TraitClause2, TraitClause3::ImpliedClause2]
 where
     TraitClause0: (Self: Iterator),
@@ -145,6 +147,7 @@ where
     Outlives1: (T: 'a),
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::zip
+#[diagnostic_item("iter_zip")]
 pub fn impl_Iterator_for_Iter::zip<'a, T, U>(_1: Iter<'a, T>[TraitClause0], _2: U) -> Zip<Iter<'a, T>[TraitClause0], TraitClause3::IntoIter>[TraitClause2, TraitClause3::ImpliedClause2]
 where
     TraitClause0: (T: Sized),
@@ -185,6 +188,7 @@ where
     Outlives1: (T: 'a),
 
 // Full name: core::slice::iter::{impl Iterator for IterMut<'a, T>[TraitClause0]}::zip
+#[diagnostic_item("iter_zip")]
 pub fn impl_Iterator_for_IterMut::zip<'a, T, U>(_1: IterMut<'a, T>[TraitClause0], _2: U) -> Zip<IterMut<'a, T>[TraitClause0], TraitClause3::IntoIter>[TraitClause2, TraitClause3::ImpliedClause2]
 where
     TraitClause0: (T: Sized),

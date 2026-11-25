@@ -225,16 +225,6 @@ where
   end: Idx,
 }
 
-struct () {}
-
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
-    non-dyn-compatible
-}
-
 // Full name: core::iter::traits::iterator::Iterator
 #[lang_item(Iterator)]
 #[diagnostic_item("Iterator")]
@@ -252,7 +242,6 @@ pub fn next<'_0, A>(_1: &'_0 mut Range<A>[TraitClause0]) -> Option<A>[TraitClaus
 where
     TraitClause0: (A: Sized),
     TraitClause1: (A: Step),
-    TraitClause2: (A: Destruct),
     Outlives0: (A: '_0),
 = <opaque>
 
@@ -261,12 +250,11 @@ impl<A> "impl_Iterator_for_Range" Iterator for Range<A>[TraitClause0]
 where
     TraitClause0: (A: Sized),
     TraitClause1: (A: Step),
-    TraitClause2: (A: Destruct),
 {
     proof ImpliedClause0: (Range<A>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Range<A>[TraitClause0]}
     proof ImpliedClause1: (A: Sized) = TraitClause0
     type Item = A
-    fn next<'_0_1> = next<'_0_1, A>[TraitClause0, TraitClause1, TraitClause2]
+    fn next<'_0_1> = next<'_0_1, A>[TraitClause0, TraitClause1]
     vtable: lazy
 }
 
@@ -286,6 +274,8 @@ struct str {
 #[lang_item(Panic)]
 pub fn panic(_1: &'static str) -> !
 = <opaque>
+
+struct () {}
 
 pub const test_crate::nested_loops_enum::{promoted_const}: str = "assertion failed: s >= 1" with_metadata(24usize)
 
@@ -332,7 +322,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         storage_live(_4);
         storage_live(_5);
         _5 = Range { start: const 0i32, end: const 128i32 };
-        _4 = into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_Range<i32>[{built_in impl Sized for i32}, impl_Step_for_i32, {built_in impl Destruct for i32}]](move _5) -> bb1 (unwind: bb16);
+        _4 = into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_Range<i32>[{built_in impl Sized for i32}, impl_Step_for_i32]](move _5) -> bb1 (unwind: bb16);
     }
 
     bb1: {
@@ -348,7 +338,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         storage_live(_9);
         _9 = &mut iter_6;
         _8 = &two-phase-mut (*_9);
-        _7 = next<'11, i32>[{built_in impl Sized for i32}, impl_Step_for_i32, {built_in impl Destruct for i32}](move _8) -> bb3 (unwind: bb16);
+        _7 = next<'11, i32>[{built_in impl Sized for i32}, impl_Step_for_i32](move _8) -> bb3 (unwind: bb16);
     }
 
     bb3: {
@@ -367,7 +357,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         _13 = copy step_out;
         _12 = Range { start: const 0usize, end: move _13 };
         storage_dead(_13);
-        _11 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}]](move _12) -> bb5 (unwind: bb16);
+        _11 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize]](move _12) -> bb5 (unwind: bb16);
     }
 
     bb5: {
@@ -383,7 +373,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         storage_live(_17);
         _17 = &mut iter_14;
         _16 = &two-phase-mut (*_17);
-        _15 = next<'15, usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}](move _16) -> bb7 (unwind: bb16);
+        _15 = next<'15, usize>[{built_in impl Sized for usize}, impl_Step_for_usize](move _16) -> bb7 (unwind: bb16);
     }
 
     bb7: {
@@ -414,7 +404,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         _20 = copy step_in;
         _19 = Range { start: const 0usize, end: move _20 };
         storage_dead(_20);
-        _18 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}]](move _19) -> bb10 (unwind: bb16);
+        _18 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize]](move _19) -> bb10 (unwind: bb16);
     }
 
     bb10: {
@@ -430,7 +420,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         storage_live(_24);
         _24 = &mut iter_21;
         _23 = &two-phase-mut (*_24);
-        _22 = next<'18, usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}](move _23) -> bb12 (unwind: bb16);
+        _22 = next<'18, usize>[{built_in impl Sized for usize}, impl_Step_for_usize](move _23) -> bb12 (unwind: bb16);
     }
 
     bb12: {

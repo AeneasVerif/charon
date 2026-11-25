@@ -175,6 +175,7 @@ opaque type core::fmt::Debug::{vtable}
 // layout: none
 
 // Full name: core::fmt::Debug
+#[lang_item(Debug)]
 #[diagnostic_item("Debug")]
 pub trait Debug<Self>
 {

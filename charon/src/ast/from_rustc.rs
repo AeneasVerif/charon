@@ -80,6 +80,8 @@ pub enum AttributeKind {
     Deprecated {
         deprecation: Deprecation,
         span: Span,
+        /// `true` if this an inner attribute (ie `#![]`).
+        is_inner: bool,
     },
     /// Represents [`#[export_name]`](https://doc.rust-lang.org/reference/abi.html#the-export_name-attribute).
     ExportName {
@@ -114,7 +116,9 @@ pub enum AttributeKind {
     NonExhaustive(Span),
     /// Represents `#[optimize(size|speed)]`
     Optimize(OptimizeAttr, Span),
-    /// Represents `#[align(N)]`.
+    /// Represents `#[rustc_align(N)]`.
+    ///
+    /// FIXME(#82232, #143834): temporarily renamed to mitigate `#[align]` nameres ambiguity
     RustcAlign { align: u64, span: Span },
     /// Represents `#[rustc_allocator]`
     RustcAllocator,
@@ -124,8 +128,8 @@ pub enum AttributeKind {
     RustcAllocatorZeroedVariant { name: Ustr },
     /// Represents `#[rustc_deallocator]`
     RustcDeallocator,
-    /// Represents `#[rustc_intrinsic]`
-    RustcIntrinsic,
+    /// Represents `#[rustc_intrinsic]` / `#[rustc_intrinsic(llvm = "...")]`
+    RustcIntrinsic { llvm: Option<Ustr> },
     /// Represents `#[rustc_no_writable]`
     RustcNoWritable,
     /// Represents `#[rustc_reallocator]`
@@ -161,23 +165,33 @@ pub enum LangItem {
     AlignOf,
     ///The `mem_size_const` lang item.
     SizeOf,
-    ///The `offset_of` lang item.
+    ///The `OffsetOf` lang item.
     OffsetOf,
+    ///The `raw_eq` lang item.
+    RawEq,
+    ///The `compare_bytes` lang item.
+    CompareBytes,
     ///The `structural_peq` lang item.
     /// Trait injected by `#[derive(PartialEq)]`, (i.e. "Partial EQ").
     StructuralPeq,
+    ///The `debug` lang item.
+    Debug,
     ///The `copy` lang item.
     Copy,
     ///The `clone` lang item.
     Clone,
     ///The `clone_fn` lang item.
     CloneFn,
+    ///The `clone_from_fn` lang item.
+    CloneFromFn,
     ///The `use_cloned` lang item.
     UseCloned,
     ///The `trivial_clone` lang item.
     TrivialClone,
     ///The `sync` lang item.
     Sync,
+    ///The `send` lang item.
+    Send,
     ///The `discriminant_kind` lang item.
     DiscriminantKind,
     ///The `discriminant_type` lang item.
@@ -197,14 +211,20 @@ pub enum LangItem {
     UnsafeUnpin,
     ///The `fn_ptr_trait` lang item.
     FnPtrTrait,
-    ///The `fn_ptr_as_ptr` lang item.
-    FnPtrAsPtr,
+    ///The `fn_addr_trait` lang item.
+    FnAddrTrait,
+    ///The `fn_addr_as_ptr` lang item.
+    FnAddrAsPtr,
+    ///The `fn_addr_addr_fn` lang item.
+    FnAddrAddrFn,
     ///The `fn_ptr_from_ptr` lang item.
     FnPtrFromPtr,
     ///The `code` lang item.
     Code,
     ///The `drop` lang item.
     Drop,
+    ///The `forget` lang item.
+    Forget,
     ///The `destruct` lang item.
     Destruct,
     ///The `async_drop` lang item.
@@ -281,7 +301,13 @@ pub enum LangItem {
     VaList,
     ///The `complex` lang item.
     Complex,
-    ///The `deref` lang item.
+    ///The `ppcf128` lang item.
+    PpcF128,
+    ///The `x87_f80` lang item.
+    X87F80,
+    ///The `x87_f80_raw` lang item.
+    X87F80Raw,
+    ///The `Deref` lang item.
     Deref,
     ///The `deref_mut` lang item.
     DerefMut,
@@ -345,16 +371,22 @@ pub enum LangItem {
     Unpin,
     ///The `Pin` lang item.
     Pin,
+    ///The `move_trait` lang item.
+    Move,
     ///The `Ordering` lang item.
     OrderingEnum,
-    ///The `eq` lang item.
+    ///The `partial_eq` lang item.
     PartialEq,
+    ///The `eq` lang item.
+    Eq,
     ///The `partial_ord` lang item.
     PartialOrd,
     ///The `c_void` lang item.
     CVoid,
-    ///The `type_info` lang item.
-    Type,
+    ///The `f16b` lang item.
+    F16B,
+    ///The `type_kind` lang item.
+    TypeKind,
     ///The `type_info_generic` lang item.
     TypeGeneric,
     ///The `type_id` lang item.
@@ -605,6 +637,8 @@ pub enum LangItem {
     FromFn,
     ///The `FnPtr` lang item.
     FnPtr,
+    ///The `DynTrait` lang item.
+    DynTrait,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -673,6 +707,7 @@ pub enum Os {
     Hermit,
     Horizon,
     Hurd,
+    Hyperlight,
     Illumos,
     IOs,
     L4Re,
@@ -690,9 +725,11 @@ pub enum Os {
     Psp,
     Psx,
     Qnx,
+    Qtee,
     Qurt,
     Redox,
     Rtems,
+    Serenity,
     Solaris,
     SolidAsp3,
     TeeOs,
@@ -781,7 +818,6 @@ pub enum CfgAbi {
     Spe,
     Uwp,
     VecDefault,
-    VecExtAbi,
     X32,
     V8Plus,
     Unspecified,
@@ -855,7 +891,6 @@ pub enum InlineAttr {
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("RustcLinkage"))]
 pub enum Linkage {
     AvailableExternally,
-    Common,
     ExternalWeak,
     External,
     Internal,

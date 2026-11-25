@@ -10,6 +10,7 @@ struct {vtable} {
 }
 
 // Full name: core::marker::Send
+#[lang_item(Send)]
 #[diagnostic_item("Send")]
 pub unsafe trait Send<Self>
 

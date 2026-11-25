@@ -239,9 +239,9 @@ pub fn fn_sig_bound_region_variances<'tcx>(
             a_ty: ty::Ty<'tcx>,
             _: ty::Ty<'tcx>,
             def_id: rustc_hir::def_id::DefId,
-            a_args: ty::GenericArgsRef<'tcx>,
-            b_args: ty::GenericArgsRef<'tcx>,
-            _: impl FnOnce(ty::GenericArgsRef<'tcx>) -> ty::Ty<'tcx>,
+            a_args: ty::GenericArgs<'tcx>,
+            b_args: ty::GenericArgs<'tcx>,
+            _: impl FnOnce(ty::GenericArgs<'tcx>) -> ty::Ty<'tcx>,
         ) -> RelateResult<'tcx, ty::Ty<'tcx>> {
             relate_args_with_variances(self, self.tcx.variances_of(def_id), a_args, b_args)?;
             Ok(a_ty)
@@ -349,7 +349,7 @@ pub fn fn_sig_bound_region_variances<'tcx>(
 pub fn inst_binder<'tcx, T>(
     tcx: ty::TyCtxt<'tcx>,
     typing_env: ty::TypingEnv<'tcx>,
-    args: Option<ty::GenericArgsRef<'tcx>>,
+    args: Option<ty::GenericArgs<'tcx>>,
     x: ty::EarlyBinder<'tcx, T>,
 ) -> T
 where
@@ -369,7 +369,7 @@ where
 pub fn substitute<'tcx, T>(
     tcx: ty::TyCtxt<'tcx>,
     typing_env: ty::TypingEnv<'tcx>,
-    args: Option<ty::GenericArgsRef<'tcx>>,
+    args: Option<ty::GenericArgs<'tcx>>,
     x: T,
 ) -> T
 where
@@ -384,7 +384,7 @@ where
 pub fn identity_args_with_inferred<'tcx>(
     tcx: ty::TyCtxt<'tcx>,
     def_id: RDefId,
-) -> ty::GenericArgsRef<'tcx> {
+) -> ty::GenericArgs<'tcx> {
     match tcx.def_kind(def_id) {
         RDefKind::Closure | RDefKind::SyntheticCoroutineBody => {
             let type_of = tcx
@@ -408,7 +408,9 @@ pub fn identity_args_with_inferred<'tcx>(
             let ret_ty = mir_kinds::CTFE::get_mir(tcx, def_id, get_ret_ty)
                 .or_else(|| mir_kinds::Optimized::get_mir(tcx, def_id, get_ret_ty))
                 .expect("could not compute the type of this inline const: {def_id:?}");
-            let mut args = ty::GenericArgs::identity_for_item(tcx, def_id).to_vec();
+            let mut args = ty::GenericArgs::identity_for_item(tcx, def_id)
+                .as_slice()
+                .to_vec();
             *args
                 .last_mut()
                 .expect("inline const has a return type parameter") = ret_ty.into();
@@ -509,9 +511,9 @@ pub fn match_region_args<'tcx, T: Relate<ty::TyCtxt<'tcx>>>(
             a_ty: ty::Ty<'tcx>,
             _: ty::Ty<'tcx>,
             _: rustc_span::def_id::DefId,
-            a_args: ty::GenericArgsRef<'tcx>,
-            b_args: ty::GenericArgsRef<'tcx>,
-            _: impl FnOnce(ty::GenericArgsRef<'tcx>) -> ty::Ty<'tcx>,
+            a_args: ty::GenericArgs<'tcx>,
+            b_args: ty::GenericArgs<'tcx>,
+            _: impl FnOnce(ty::GenericArgs<'tcx>) -> ty::Ty<'tcx>,
         ) -> RelateResult<'tcx, ty::Ty<'tcx>> {
             self.relate(a_args, b_args)?;
             Ok(a_ty)
@@ -672,7 +674,7 @@ pub fn get_method_sig<'tcx>(
     tcx: ty::TyCtxt<'tcx>,
     typing_env: ty::TypingEnv<'tcx>,
     def_id: RDefId,
-    method_args: Option<ty::GenericArgsRef<'tcx>>,
+    method_args: Option<ty::GenericArgs<'tcx>>,
 ) -> ty::PolyFnSig<'tcx> {
     let item = tcx.associated_item(def_id);
     let ty::AssocContainer::TraitImpl(Ok(decl_method_id)) = item.container else {
@@ -805,11 +807,10 @@ pub fn dyn_self_ty<'tcx>(
 pub fn drop_glue_shim<'tcx>(
     s: &impl UnderOwnerState<'tcx>,
     def_id: &DefId,
-    instantiate: Option<ty::GenericArgsRef<'tcx>>,
+    instantiate: Option<ty::GenericArgs<'tcx>>,
 ) -> mir::Body<'tcx> {
     let tcx = s.base().tcx;
-    let drop_glue =
-        tcx.require_lang_item(rustc_hir::attrs::LangItem::DropGlue, rustc_span::DUMMY_SP);
+    let drop_glue = tcx.require_lang_item(rustc_attr_ir::LangItem::DropGlue, rustc_span::DUMMY_SP);
     let ty = inst_binder(tcx, s.typing_env(), instantiate, def_id.type_of(s));
     let mut body = rustc_mir_transform::build_drop_shim(tcx, drop_glue, Some(ty), s.typing_env());
     // Set the mir phase so that charon knows the contained drops are precise.

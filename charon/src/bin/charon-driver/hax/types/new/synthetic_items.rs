@@ -4,7 +4,7 @@ use charon_lib::name_matcher::NamePattern;
 
 use itertools::Itertools;
 use {
-    rustc_hir::attrs::LangItem,
+    rustc_attr_ir::LangItem,
     rustc_middle::ty::{
         self, TypeFoldable, TypeSuperFoldable, TypeSuperVisitable, TypeVisitable, Upcast,
     },
@@ -122,7 +122,7 @@ impl SyntheticItem {
         self.data(s).generics
     }
 
-    pub fn identity_args<'tcx>(&self, s: &impl BaseState<'tcx>) -> ty::GenericArgsRef<'tcx> {
+    pub fn identity_args<'tcx>(&self, s: &impl BaseState<'tcx>) -> ty::GenericArgs<'tcx> {
         let tcx = s.base().tcx;
         tcx.mk_args_from_iter(
             self.generics_of(s)
@@ -230,6 +230,7 @@ impl<'tcx> GlobalCache<'tcx> {
             own_params: Default::default(),
             param_def_id_to_index: Default::default(),
             has_self: false,
+            has_arg_pos_consts: false,
             has_late_bound_regions: None,
         };
         // The synthetic item itself is hax-only. We still need rustc defs for its generic
@@ -268,7 +269,13 @@ impl<'tcx> GlobalCache<'tcx> {
                         synthetic: false,
                     },
                 );
-                let n_arg = mk_param("N", ty::GenericParamDefKind::Const { has_default: false });
+                let n_arg = mk_param(
+                    "N",
+                    ty::GenericParamDefKind::Const {
+                        has_default: false,
+                        arg_pos: None,
+                    },
+                );
 
                 let item_ty = t_arg.as_type().unwrap();
                 let len = n_arg.as_const().unwrap();
@@ -356,7 +363,10 @@ impl<'tcx> GlobalCache<'tcx> {
                         if let ty::ConstKind::Param(param) = ct.kind() {
                             self.insert(
                                 param.index as usize,
-                                ty::GenericParamDefKind::Const { has_default: false },
+                                ty::GenericParamDefKind::Const {
+                                    has_default: false,
+                                    arg_pos: None,
+                                },
                             );
                         }
                         ct.super_visit_with(self)
@@ -423,7 +433,6 @@ impl<'tcx> GlobalCache<'tcx> {
                             .enumerate()
                             .filter_map(|(i, clause)| (i != index).then_some(*clause)),
                     )
-                    .elaborate_sized()
                     .any(|implied| implied == clause);
                     if follows_by_elaboration {
                         wf_clauses.remove(index);
@@ -439,7 +448,10 @@ impl<'tcx> GlobalCache<'tcx> {
         let data = SyntheticItemData {
             generics: Box::leak(Box::new(generics)),
             clauses,
-            param_env: ty::ParamEnv::new(tcx, clauses.iter().copied()),
+            param_env: ty::ParamEnv::new(
+                tcx,
+                ty::elaborate::elaborate(tcx, clauses.iter().copied()),
+            ),
             late_bound_scope: matches!(item, SyntheticItem::FnPtr(_))
                 .then(|| tcx.parent(borrowed_param_def_ids.lt)),
         };
@@ -452,7 +464,7 @@ impl<'tcx> ItemRef<'tcx> {
     pub fn translate_synthetic<S: UnderOwnerState<'tcx>>(
         s: &S,
         synthetic: SyntheticItem,
-        generics: ty::GenericArgsRef<'tcx>,
+        generics: ty::GenericArgs<'tcx>,
     ) -> ItemRef<'tcx> {
         let hax_def_id = DefId::make_synthetic(s, synthetic);
         ItemRef::translate_from_hax_def_id(s, hax_def_id, generics)
@@ -503,7 +515,7 @@ impl FnPtrShape {
     fn extract_shape<'tcx>(
         tcx: ty::TyCtxt<'tcx>,
         sig: ty::PolyFnSig<'tcx>,
-    ) -> (Self, ty::GenericArgsRef<'tcx>) {
+    ) -> (Self, ty::GenericArgs<'tcx>) {
         fn should_freshen<'tcx>(
             value: &impl ty::TypeVisitable<ty::TyCtxt<'tcx>>,
             binder_depth: u32,

@@ -22,7 +22,7 @@ pub struct TypeId {
   data: [*const (); 2usize],
 }
 
-// Full name: core::intrinsics::type_id::{fallback}
+// Full name: core::intrinsics::reflection::type_id::{fallback}
 fn {fallback}<T>() -> TypeId
 where
     TraitClause0: (T: MetaSized),
@@ -34,7 +34,7 @@ where
     return
 }
 
-// Full name: core::intrinsics::type_id
+// Full name: core::intrinsics::reflection::type_id
 #[rustc_intrinsic]
 pub fn type_id<T>() -> TypeId
 where

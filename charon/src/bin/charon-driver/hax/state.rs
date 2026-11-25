@@ -103,10 +103,10 @@ mod base {
         /// and the base one represented by `None`. Moreover we can instantiate definitions with
         /// generic arguments.
         pub full_defs:
-            HashMap<(Option<PromotedId>, Option<ty::GenericArgsRef<'tcx>>), Arc<FullDef<'tcx>>>,
+            HashMap<(Option<PromotedId>, Option<ty::GenericArgs<'tcx>>), Arc<FullDef<'tcx>>>,
         /// Cache the `Ty` translations.
         pub tys: HashMap<ty::Ty<'tcx>, Ty<'tcx>>,
-        /// Cache the `ItemRef` translations. This is fast because `GenericArgsRef` is interned.
+        /// Cache the `ItemRef` translations. This is fast because `GenericArgs` is interned.
         pub item_refs: HashMap<ItemRefKey<'tcx, DefId>, ItemRef<'tcx>>,
         /// Cache of trait refs to resolved trait proofs.
         pub trait_proofs: HashMap<ty::PolyTraitRef<'tcx>, crate::hax::traits::TraitProof<'tcx>>,

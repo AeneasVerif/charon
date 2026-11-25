@@ -191,13 +191,14 @@ and rustc_attribute_kind =
   | RustcAttributeKindAutomaticallyDerived
       (** Represents [#[automatically_derived]] *)
   | RustcAttributeKindCold  (** Represents [#[cold]]. *)
-  | RustcAttributeKindDeprecated of rustc_deprecation * span
+  | RustcAttributeKindDeprecated of rustc_deprecation * span * bool
       (** Represents
           [[#[deprecated]]](https://doc.rust-lang.org/stable/reference/attributes/diagnostics.html#the-deprecated-attribute).
 
           Fields:
           - [deprecation]
-          - [span] *)
+          - [span]
+          - [is_inner]: [true] if this an inner attribute (ie [#![]]). *)
   | RustcAttributeKindExportName of string * span
       (** Represents
           [[#[export_name]]](https://doc.rust-lang.org/reference/abi.html#the-export_name-attribute).
@@ -236,7 +237,10 @@ and rustc_attribute_kind =
   | RustcAttributeKindOptimize of rustc_optimize_attr * span
       (** Represents [#[optimize(size|speed)]] *)
   | RustcAttributeKindRustcAlign of int * span
-      (** Represents [#[align(N)]].
+      (** Represents [#[rustc_align(N)]].
+
+          FIXME(#82232, #143834): temporarily renamed to mitigate [#[align]]
+          nameres ambiguity
 
           Fields:
           - [align]
@@ -250,7 +254,11 @@ and rustc_attribute_kind =
           Fields:
           - [name] *)
   | RustcAttributeKindRustcDeallocator  (** Represents [#[rustc_deallocator]] *)
-  | RustcAttributeKindRustcIntrinsic  (** Represents [#[rustc_intrinsic]] *)
+  | RustcAttributeKindRustcIntrinsic of string option
+      (** Represents [#[rustc_intrinsic]] / [#[rustc_intrinsic(llvm = "...")]]
+
+          Fields:
+          - [llvm] *)
   | RustcAttributeKindRustcNoWritable  (** Represents [#[rustc_no_writable]] *)
   | RustcAttributeKindRustcReallocator  (** Represents [#[rustc_reallocator]] *)
   | RustcAttributeKindShouldPanic of string option
@@ -357,7 +365,6 @@ and item_id =
     about these variants. *)
 and rustc_linkage =
   | RustcLinkageAvailableExternally
-  | RustcLinkageCommon
   | RustcLinkageExternalWeak
   | RustcLinkageExternal
   | RustcLinkageInternal

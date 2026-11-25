@@ -44,6 +44,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::Eq
+#[lang_item(Eq)]
 #[diagnostic_item("Eq")]
 pub trait Eq<Self>
 {

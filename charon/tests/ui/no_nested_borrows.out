@@ -39,6 +39,16 @@ pub fn panic(_1: &'static str) -> !
 fn panic_in_cleanup() -> !
 = <opaque>
 
+// Full name: core::panicking::panic_default_msg
+#[track_caller]
+pub fn panic_default_msg() -> !
+= <opaque>
+
+// Full name: core::panicking::unreachable_default_msg
+#[track_caller]
+pub fn unreachable_default_msg() -> !
+= <opaque>
+
 // Full name: alloc::alloc::Global
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
@@ -126,21 +136,20 @@ where
     _0 = ()
     match (*_1) {
         List::Cons => {
+            drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1) as variant List::Cons)._0
+            ↳⚡ drop[impl_Destruct_for_Box::drop_glue<'4, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] ((*_1) as variant List::Cons)._1
+                ↳⚡ storage_dead(_1)
+                    unwind_terminate(in_cleanup)
+                storage_dead(_1)
+                unwind_continue
+            drop[impl_Destruct_for_Box::drop_glue<'3, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] ((*_1) as variant List::Cons)._1
+            ↳⚡ storage_dead(_1)
+                unwind_continue
         },
         _ => {
-            storage_dead(_1)
-            return
         },
     }
-    drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1) as variant List::Cons)._0
-    ↳⚡ drop[impl_Destruct_for_Box::drop_glue<'4, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] ((*_1) as variant List::Cons)._1
-        ↳⚡ storage_dead(_1)
-            unwind_terminate(in_cleanup)
-        storage_dead(_1)
-        unwind_continue
-    drop[impl_Destruct_for_Box::drop_glue<'3, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] ((*_1) as variant List::Cons)._1
-    ↳⚡ storage_dead(_1)
-        unwind_continue
+    _0 = ()
     storage_dead(_1)
     return
 }
@@ -267,6 +276,7 @@ where
     drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_1)._0
     ↳⚡ storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_1)
     return
 }
@@ -360,7 +370,6 @@ pub fn cast_bool_to_bool(x: bool) -> bool
 }
 
 // Full name: test_crate::test2
-#[allow(unused_variables)]
 pub fn test2()
 {
     let mut _0: (); // return
@@ -483,7 +492,6 @@ pub fn get_max(x: u32, y: u32) -> u32
 }
 
 // Full name: test_crate::test_list1
-#[allow(unused_variables)]
 pub fn test_list1()
 {
     let mut _0: (); // return
@@ -597,30 +605,31 @@ pub fn copy_int(x: i32) -> i32
     return
 }
 
-pub const test_crate::test_unreachable::{promoted_const}: str = "internal error: entered unreachable code" with_metadata(40usize)
-
 // Full name: test_crate::test_unreachable
 pub fn test_unreachable(b: bool)
 {
     let mut _0: (); // return
     let b: bool; // arg #1
     let mut _2: bool; // anonymous local
-    let mut _3: &'1 str; // anonymous local
+    let _3: !; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = copy b
+    if move _2 {
+    } else {
+        _0 = ()
+        storage_dead(_2)
+        storage_dead(_3)
+        storage_dead(b)
+        return
+    }
     storage_live(_3)
-    _3 = &test_crate::test_unreachable::{promoted_const} with_metadata(const 40usize)
-    assert(move _2 == false) else panic(panic(move _3))
+    _3 = unreachable_default_msg()
     ↳⚡ storage_dead(_3)
+        storage_dead(b)
         unwind_continue
-    _0 = ()
-    storage_dead(_2)
-    storage_dead(b)
-    storage_dead(_3)
-    return
 }
 
 // Full name: test_crate::is_cons
@@ -647,8 +656,6 @@ where
     return
 }
 
-pub const test_crate::split_list::{promoted_const}: str = "explicit panic" with_metadata(14usize)
-
 // Full name: test_crate::split_list
 pub fn split_list<T>(l: List<T>[TraitClause0]) -> (T, List<T>[TraitClause0])
 where
@@ -660,7 +667,7 @@ where
     let tl: Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]; // local
     let mut _4: T; // anonymous local
     let mut _5: List<T>[TraitClause0]; // anonymous local
-    let mut _6: &'1 str; // anonymous local
+    let mut _6: !; // anonymous local
 
     storage_live(_0)
     match l {
@@ -668,14 +675,13 @@ where
         },
         _ => {
             storage_live(_6)
-            _6 = &test_crate::split_list::{promoted_const} with_metadata(const 14usize)
-            panic(panic(move _6))
-            ↳⚡ conditional_drop[impl_Destruct_for_List::drop_glue<'3, T>[TraitClause0]] l
-                ↳⚡ storage_dead(l)
-                    storage_dead(_6)
+            _6 = panic_default_msg()
+            ↳⚡ conditional_drop[impl_Destruct_for_List::drop_glue<'1, T>[TraitClause0]] l
+                ↳⚡ storage_dead(_6)
+                    storage_dead(l)
                     unwind_terminate(in_cleanup)
-                storage_dead(l)
                 storage_dead(_6)
+                storage_dead(l)
                 unwind_continue
         },
     }
@@ -688,72 +694,72 @@ where
     storage_live(_5)
     _5 = move (*tl)
     _0 = (move _4, move _5)
-    conditional_drop[impl_Destruct_for_List::drop_glue<'2, T>[TraitClause0]] _5
-    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] _4
-        ↳⚡ storage_dead(l)
-            storage_dead(_6)
+    conditional_drop[impl_Destruct_for_List::drop_glue<'0, T>[TraitClause0]] _5
+    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'3>] _4
+        ↳⚡ storage_dead(_6)
+            storage_dead(l)
             unwind_terminate(in_cleanup)
-        conditional_drop[impl_Destruct_for_Box::drop_glue<'7, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] tl
-        ↳⚡ storage_dead(l)
-            storage_dead(_6)
+        conditional_drop[impl_Destruct_for_Box::drop_glue<'5, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] tl
+        ↳⚡ storage_dead(_6)
+            storage_dead(l)
             unwind_terminate(in_cleanup)
-        conditional_drop[{built_in impl Destruct for T}::drop_glue<'9>] hd
-        ↳⚡ storage_dead(l)
-            storage_dead(_6)
+        conditional_drop[{built_in impl Destruct for T}::drop_glue<'7>] hd
+        ↳⚡ storage_dead(_6)
+            storage_dead(l)
             unwind_terminate(in_cleanup)
-        conditional_drop[impl_Destruct_for_List::drop_glue<'3, T>[TraitClause0]] l
-        ↳⚡ storage_dead(l)
-            storage_dead(_6)
+        conditional_drop[impl_Destruct_for_List::drop_glue<'1, T>[TraitClause0]] l
+        ↳⚡ storage_dead(_6)
+            storage_dead(l)
             unwind_terminate(in_cleanup)
-        storage_dead(l)
         storage_dead(_6)
+        storage_dead(l)
         unwind_continue
     storage_dead(_5)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] _4
-    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'7, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] tl
-        ↳⚡ storage_dead(l)
-            storage_dead(_6)
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'2>] _4
+    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'5, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] tl
+        ↳⚡ storage_dead(_6)
+            storage_dead(l)
             unwind_terminate(in_cleanup)
-        conditional_drop[{built_in impl Destruct for T}::drop_glue<'9>] hd
-        ↳⚡ storage_dead(l)
-            storage_dead(_6)
+        conditional_drop[{built_in impl Destruct for T}::drop_glue<'7>] hd
+        ↳⚡ storage_dead(_6)
+            storage_dead(l)
             unwind_terminate(in_cleanup)
-        conditional_drop[impl_Destruct_for_List::drop_glue<'3, T>[TraitClause0]] l
-        ↳⚡ storage_dead(l)
-            storage_dead(_6)
+        conditional_drop[impl_Destruct_for_List::drop_glue<'1, T>[TraitClause0]] l
+        ↳⚡ storage_dead(_6)
+            storage_dead(l)
             unwind_terminate(in_cleanup)
-        storage_dead(l)
         storage_dead(_6)
+        storage_dead(l)
         unwind_continue
     storage_dead(_4)
-    conditional_drop[impl_Destruct_for_Box::drop_glue<'6, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] tl
-    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'9>] hd
-        ↳⚡ storage_dead(l)
-            storage_dead(_6)
+    conditional_drop[impl_Destruct_for_Box::drop_glue<'4, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] tl
+    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'7>] hd
+        ↳⚡ storage_dead(_6)
+            storage_dead(l)
             unwind_terminate(in_cleanup)
-        conditional_drop[impl_Destruct_for_List::drop_glue<'3, T>[TraitClause0]] l
-        ↳⚡ storage_dead(l)
-            storage_dead(_6)
+        conditional_drop[impl_Destruct_for_List::drop_glue<'1, T>[TraitClause0]] l
+        ↳⚡ storage_dead(_6)
+            storage_dead(l)
             unwind_terminate(in_cleanup)
-        storage_dead(l)
         storage_dead(_6)
+        storage_dead(l)
         unwind_continue
     storage_dead(tl)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'8>] hd
-    ↳⚡ conditional_drop[impl_Destruct_for_List::drop_glue<'3, T>[TraitClause0]] l
-        ↳⚡ storage_dead(l)
-            storage_dead(_6)
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'6>] hd
+    ↳⚡ conditional_drop[impl_Destruct_for_List::drop_glue<'1, T>[TraitClause0]] l
+        ↳⚡ storage_dead(_6)
+            storage_dead(l)
             unwind_terminate(in_cleanup)
-        storage_dead(l)
         storage_dead(_6)
+        storage_dead(l)
         unwind_continue
     storage_dead(hd)
-    conditional_drop[impl_Destruct_for_List::drop_glue<'10, T>[TraitClause0]] l
-    ↳⚡ storage_dead(l)
-        storage_dead(_6)
+    conditional_drop[impl_Destruct_for_List::drop_glue<'8, T>[TraitClause0]] l
+    ↳⚡ storage_dead(_6)
+        storage_dead(l)
         unwind_continue
-    storage_dead(l)
     storage_dead(_6)
+    storage_dead(l)
     return
 }
 

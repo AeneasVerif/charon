@@ -171,6 +171,7 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut Foo)
     }
 
     bb1: {
+        _0 = ();
         return;
     }
 

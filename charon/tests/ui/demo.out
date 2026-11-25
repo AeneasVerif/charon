@@ -14,14 +14,9 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-struct str {
-  _0: [u8],
-}
-
-// Full name: core::panicking::panic
+// Full name: core::panicking::panic_default_msg
 #[track_caller]
-#[lang_item(Panic)]
-pub fn panic(_1: &'static str) -> !
+pub fn panic_default_msg() -> !
 = <opaque>
 
 // Full name: alloc::alloc::Global
@@ -224,8 +219,6 @@ where
   CNil,
 }
 
-pub const test_crate::list_nth::{promoted_const}: str = "explicit panic" with_metadata(14usize)
-
 // Full name: test_crate::list_nth
 pub fn list_nth<'a, T>(l: &'a CList<T>[TraitClause0], i: u32) -> &'a T
 where
@@ -244,7 +237,7 @@ where
     let mut _9: u32; // anonymous local
     let mut _10: u32; // anonymous local
     let mut _11: u32; // anonymous local
-    let mut _12: &'10 str; // anonymous local
+    let mut _12: !; // anonymous local
 
     storage_live(_0)
     storage_live(_11)
@@ -253,12 +246,11 @@ where
         },
         CList::CNil => {
             storage_live(_12)
-            _12 = &test_crate::list_nth::{promoted_const} with_metadata(const 14usize)
-            panic(panic(move _12))
-            ↳⚡ storage_dead(_11)
+            _12 = panic_default_msg()
+            ↳⚡ storage_dead(_12)
+                storage_dead(_11)
                 storage_dead(i)
                 storage_dead(l)
-                storage_dead(_12)
                 unwind_continue
         },
     }
@@ -282,11 +274,11 @@ where
         _11 = copy _10 panic.- const 1u32
         _9 = move _11
         storage_dead(_10)
-        _7 = list_nth<'14, T>[TraitClause0](move _8, move _9)
-        ↳⚡ storage_dead(_11)
+        _7 = list_nth<'12, T>[TraitClause0](move _8, move _9)
+        ↳⚡ storage_dead(_12)
+            storage_dead(_11)
             storage_dead(i)
             storage_dead(l)
-            storage_dead(_12)
             unwind_continue
         _0 = &(*_7)
         storage_dead(_9)
@@ -295,10 +287,10 @@ where
         storage_dead(_5)
         storage_dead(tl)
         storage_dead(x)
+        storage_dead(_12)
         storage_dead(_11)
         storage_dead(i)
         storage_dead(l)
-        storage_dead(_12)
         return
     }
     storage_dead(_6)
@@ -306,14 +298,12 @@ where
     storage_dead(_5)
     storage_dead(tl)
     storage_dead(x)
+    storage_dead(_12)
     storage_dead(_11)
     storage_dead(i)
     storage_dead(l)
-    storage_dead(_12)
     return
 }
-
-pub const test_crate::list_nth_mut::{promoted_const}: str = "explicit panic" with_metadata(14usize)
 
 // Full name: test_crate::list_nth_mut
 pub fn list_nth_mut<'a, T>(l: &'a mut CList<T>[TraitClause0], i: u32) -> &'a mut T
@@ -338,7 +328,7 @@ where
     let mut _14: u32; // anonymous local
     let mut _15: u32; // anonymous local
     let mut _16: u32; // anonymous local
-    let mut _17: &'15 str; // anonymous local
+    let mut _17: !; // anonymous local
 
     storage_live(_0)
     storage_live(_16)
@@ -349,12 +339,11 @@ where
         },
         CList::CNil => {
             storage_live(_17)
-            _17 = &test_crate::list_nth_mut::{promoted_const} with_metadata(const 14usize)
-            panic(panic(move _17))
-            ↳⚡ storage_dead(_16)
+            _17 = panic_default_msg()
+            ↳⚡ storage_dead(_17)
+                storage_dead(_16)
                 storage_dead(i)
                 storage_dead(l)
-                storage_dead(_17)
                 unwind_continue
         },
     }
@@ -385,11 +374,11 @@ where
         _16 = copy _15 panic.- const 1u32
         _14 = move _16
         storage_dead(_15)
-        _12 = list_nth_mut<'19, T>[TraitClause0](move _13, move _14)
-        ↳⚡ storage_dead(_16)
+        _12 = list_nth_mut<'17, T>[TraitClause0](move _13, move _14)
+        ↳⚡ storage_dead(_17)
+            storage_dead(_16)
             storage_dead(i)
             storage_dead(l)
-            storage_dead(_17)
             unwind_continue
         _8 = &mut (*_12)
         storage_dead(_14)
@@ -407,14 +396,12 @@ where
     _0 = &mut (*_3)
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(_17)
     storage_dead(_16)
     storage_dead(i)
     storage_dead(l)
-    storage_dead(_17)
     return
 }
-
-pub const test_crate::list_nth_mut1::{promoted_const}: str = "explicit panic" with_metadata(14usize)
 
 // Full name: test_crate::list_nth_mut1
 pub fn list_nth_mut1<'a, T>(l: &'a mut CList<T>[TraitClause0], i: u32) -> &'a mut T
@@ -431,7 +418,7 @@ where
     let mut _6: u32; // anonymous local
     let mut _7: u32; // anonymous local
     let mut _8: &'7 mut CList<T>[TraitClause0]; // anonymous local
-    let mut _9: &'9 str; // anonymous local
+    let mut _9: !; // anonymous local
 
     storage_live(_0)
     storage_live(_7)
@@ -452,10 +439,10 @@ where
                     storage_dead(_5)
                     storage_dead(tl)
                     storage_dead(x)
+                    storage_dead(_9)
                     storage_dead(_7)
                     storage_dead(i)
                     storage_dead(l)
-                    storage_dead(_9)
                     return
                 } else {
                 }
@@ -477,12 +464,11 @@ where
         }
     }
     storage_live(_9)
-    _9 = &test_crate::list_nth_mut1::{promoted_const} with_metadata(const 14usize)
-    panic(panic(move _9))
-    ↳⚡ storage_dead(_7)
+    _9 = panic_default_msg()
+    ↳⚡ storage_dead(_9)
+        storage_dead(_7)
         storage_dead(i)
         storage_dead(l)
-        storage_dead(_9)
         unwind_continue
 }
 

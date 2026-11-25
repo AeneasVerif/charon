@@ -4,7 +4,7 @@
 //! independently.
 
 use itertools::Itertools;
-use rustc_hir::attrs::LangItem;
+use rustc_attr_ir::LangItem;
 use std::borrow::Cow;
 use std::collections::VecDeque;
 use std::mem;
@@ -16,7 +16,7 @@ use std::rc::Rc;
 use crate::hax;
 use rustc_middle::mir;
 use rustc_middle::ty;
-use rustc_span::{Symbol, sym};
+use rustc_span::{Symbol, kw, sym};
 
 use super::translate_crate::*;
 use super::translate_ctx::*;
@@ -233,23 +233,17 @@ impl<'tcx> TranslateCtx<'tcx> {
 }
 
 impl<'tcx> ItemTransCtx<'tcx, '_> {
-    /// Translate the names of the arguments of this definition, if they are available,
-    /// otherwise naming arguments `arg0`, `arg1`, etc.
-    /// Note that the names of the arguments are not always available, even when
-    /// we can retrieve the MIR body, in which case we also fall back to `argN`.
+    /// Translate the names of the arguments of this function, if they are available.
     pub fn translate_argument_names(
         &mut self,
-        span: Span,
         def: &hax::FullDef<'tcx>,
         n_args: usize,
     ) -> Vec<Option<String>> {
-        let Ok(Some(body)) = self.get_mir(def.this(), span) else {
+        let Some(def_id) = def.def_id().as_real_def_id() else {
             return vec![None; n_args];
         };
-        hax::local_names(&body)
-            .into_iter()
-            .skip(1)
-            .take(body.arg_count)
+        (self.tcx.fn_arg_idents(def_id).iter())
+            .map(|ident| Some(ident.filter(|i| i.name != kw::Underscore)?.to_string()))
             .collect()
     }
 
@@ -1453,7 +1447,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                             };
                             tref.clone()
                         } else {
-                            let item = hax::translate_item_ref(&self.hax_state, *def_id, generics);
+                            let item = hax::translate_item_ref(&self.hax_state, *def_id, *generics);
                             self.translate_type_decl_ref(span, &item)?
                         };
                         let variant_id = match adt_kind {
@@ -1469,7 +1463,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     mir::AggregateKind::Closure(def_id, generics) => {
-                        let item = hax::translate_item_ref(&self.hax_state, *def_id, generics);
+                        let item = hax::translate_item_ref(&self.hax_state, *def_id, *generics);
                         let tref = self.translate_closure_type_ref(span, &item)?;
                         let akind = AggregateKind::Adt(tref, None, None);
                         Ok(Rvalue::Aggregate(akind, operands_t))
@@ -1662,7 +1656,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         span: Span,
         dest: Place,
         name: Symbol,
-        generic_args: ty::GenericArgsRef<'tcx>,
+        generic_args: ty::GenericArgs<'tcx>,
         args: Vec<Operand>,
     ) -> Result<(), Error> {
         // Sadly rustc doesn't expose a Symbol -> DefId map for intrinsics.
@@ -1675,7 +1669,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 def_id
             }
         };
-        assert!(self.tcx.is_intrinsic(def_id, name));
+        assert!(self.tcx.is_rustc_intrinsic(def_id, name));
         let item = hax::ItemRef::translate(self.hax_state_with_id(), def_id, generic_args);
         let func =
             FnOperand::Regular(self.translate_fn_ptr(span, &item, TransItemSourceKind::Fun)?);
@@ -1704,7 +1698,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         self.span = span;
         use mir::TerminatorKind;
         let kind: ullbc_ast::TerminatorKind = match &terminator.kind {
-            TerminatorKind::Goto { target } => {
+            TerminatorKind::Goto {
+                target,
+                loop_hint_attrs: _,
+            } => {
                 let target = self.translate_basic_block_id(*target);
                 ullbc_ast::TerminatorKind::Goto { target }
             }

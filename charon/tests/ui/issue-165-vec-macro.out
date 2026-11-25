@@ -100,9 +100,9 @@ where
     Outlives1: (A: '_0),
 = <opaque>
 
-// Full name: alloc::vec::from_elem
+// Full name: alloc::vec::from_elem_global
 #[diagnostic_item("vec_from_elem")]
-pub fn from_elem<T>(_1: T, _2: usize) -> Vec<T>[TraitClause0, {built_in impl Sized for Global}]
+pub fn from_elem_global<T>(_1: T, _2: usize) -> Vec<T>[TraitClause0, {built_in impl Sized for Global}]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
@@ -155,7 +155,7 @@ fn foo()
     storage_dead(_2)
     fake_read(_v)
     storage_live(_v2)
-    _v2 = from_elem<i32>[{built_in impl Sized for i32}, impl_Clone_for_i32](const 1i32, const 10usize)
+    _v2 = from_elem_global<i32>[{built_in impl Sized for i32}, impl_Clone_for_i32](const 1i32, const 10usize)
     ↳⚡ conditional_drop[impl_Destruct_for_Vec::drop_glue<'2, i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]] _v
         ↳⚡ storage_dead(ret)
             unwind_terminate(in_cleanup)

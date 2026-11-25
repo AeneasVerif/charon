@@ -52,7 +52,7 @@ impl<'tcx> FieldDef<'tcx> {
     pub fn sfrom<S: UnderOwnerState<'tcx>>(
         s: &S,
         fdef: &ty::FieldDef,
-        instantiate: ty::GenericArgsRef<'tcx>,
+        instantiate: ty::GenericArgs<'tcx>,
     ) -> FieldDef<'tcx> {
         let tcx = s.base().tcx;
         let ty = normalize(tcx, s.typing_env(), fdef.ty(tcx, instantiate)).sinto(s);
@@ -98,7 +98,7 @@ impl<'tcx> VariantDef<'tcx> {
         s: &S,
         def: &ty::VariantDef,
         discr_val: ty::util::Discr<'tcx>,
-        instantiate: Option<ty::GenericArgsRef<'tcx>>,
+        instantiate: Option<ty::GenericArgs<'tcx>>,
     ) -> Self {
         let def_id = def.def_id.sinto(s);
         let instantiate = instantiate.unwrap_or_else(|| def_id.identity_args(s));

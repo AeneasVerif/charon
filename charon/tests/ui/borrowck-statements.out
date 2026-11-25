@@ -78,19 +78,14 @@ where
   Some { _0: T },
 }
 
-struct str {
-  _0: [u8],
-}
-
-// Full name: core::panicking::panic
-#[track_caller]
-#[lang_item(Panic)]
-pub fn panic(_1: &'static str) -> !
-= <opaque>
-
 // Full name: core::panicking::panic_in_cleanup
 #[lang_item(PanicInCleanup)]
 fn panic_in_cleanup() -> !
+= <opaque>
+
+// Full name: core::panicking::panic_default_msg
+#[track_caller]
+pub fn panic_default_msg() -> !
 = <opaque>
 
 // Full name: core::slice::index::SliceIndex
@@ -263,6 +258,7 @@ where
     drop[{built_in impl Destruct for B}::drop_glue<'3>] (*_1)._1
     ↳⚡ storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_1)
     return
 }
@@ -276,42 +272,39 @@ where
   Right,
 }
 
-pub const test_crate::destructure::{promoted_const}: str = "explicit panic" with_metadata(14usize)
-
 // Full name: test_crate::destructure
 pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]) -> &'a u32
 {
     let mut _0: &'2 u32; // return
     let input: &'4 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // arg #1
+    let mut _2: !; // anonymous local
     let x: &'5 u32; // local
         where x :< &'5 u32;
-    let mut _3: &'6 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // anonymous local
-        where _3 :< &'0 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}];
-    let mut _4: &'8 str; // anonymous local
+    let mut _4: &'6 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}]; // anonymous local
+        where _4 :< &'0 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}];
 
     storage_live(_0)
-    storage_live(_3)
-    _3 = &(*input)
-    match (*_3) {
+    storage_live(_2)
+    storage_live(_4)
+    _4 = &(*input)
+    match (*_4) {
         Either::Left => {
         },
         _ => {
-            storage_dead(_3)
-            storage_live(_4)
-            _4 = &test_crate::destructure::{promoted_const} with_metadata(const 14usize)
-            panic(panic(move _4))
-            ↳⚡ storage_dead(input)
-                storage_dead(_4)
+            storage_dead(_4)
+            _2 = panic_default_msg()
+            ↳⚡ storage_dead(_2)
+                storage_dead(input)
                 unwind_continue
         },
     }
     storage_live(x)
-    x = &((*_3) as variant Either::Left)._0._0
-    storage_dead(_3)
+    x = &((*_4) as variant Either::Left)._0._0
+    storage_dead(_4)
     _0 = &(*x)
     storage_dead(x)
+    storage_dead(_2)
     storage_dead(input)
-    storage_dead(_4)
     return
 }
 

@@ -89,6 +89,7 @@ unsafe fn impl_Destruct_for_slice::drop_glue::<String><'_0>(_1: &'_0 mut [String
             continue 0
         }
     }
+    _0 = ()
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
@@ -139,6 +140,7 @@ unsafe fn impl_Destruct_for_array::drop_glue::<String, 4usize><'_0>(_1: &'_0 mut
     ↳⚡ storage_dead(_2)
         storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -166,6 +168,7 @@ unsafe fn {impl Destruct for (String, String)}::drop_glue::<String, String><'_0>
     drop[impl_Destruct_for_String::drop_glue<'3>] (*_1)._1
     ↳⚡ storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_1)
     return
 }

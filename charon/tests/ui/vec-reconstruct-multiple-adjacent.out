@@ -118,9 +118,9 @@ where
     Outlives1: (A: '_0),
 = <opaque>
 
-// Full name: alloc::vec::from_elem
+// Full name: alloc::vec::from_elem_global
 #[diagnostic_item("vec_from_elem")]
-pub fn from_elem<T>(_1: T, _2: usize) -> Vec<T>[TraitClause0, {built_in impl Sized for Global}]
+pub fn from_elem_global<T>(_1: T, _2: usize) -> Vec<T>[TraitClause0, {built_in impl Sized for Global}]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
@@ -544,7 +544,7 @@ fn repeated()
     storage_live(_0)
     _0 = ()
     storage_live(_a)
-    _a = from_elem<u8>[{built_in impl Sized for u8}, impl_Clone_for_u8](const 1u8, const 3usize)
+    _a = from_elem_global<u8>[{built_in impl Sized for u8}, impl_Clone_for_u8](const 1u8, const 3usize)
     ↳⚡ unwind_continue
     fake_read(_a)
     _0 = ()

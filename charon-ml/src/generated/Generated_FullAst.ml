@@ -155,7 +155,6 @@ and rustc_cfg_abi =
   | RustcCfgAbiSpe
   | RustcCfgAbiUwp
   | RustcCfgAbiVecDefault
-  | RustcCfgAbiVecExtAbi
   | RustcCfgAbiX32
   | RustcCfgAbiV8Plus
   | RustcCfgAbiUnspecified
@@ -262,6 +261,7 @@ and rustc_os =
   | RustcOsHermit
   | RustcOsHorizon
   | RustcOsHurd
+  | RustcOsHyperlight
   | RustcOsIllumos
   | RustcOsIOs
   | RustcOsL4Re
@@ -279,9 +279,11 @@ and rustc_os =
   | RustcOsPsp
   | RustcOsPsx
   | RustcOsQnx
+  | RustcOsQtee
   | RustcOsQurt
   | RustcOsRedox
   | RustcOsRtems
+  | RustcOsSerenity
   | RustcOsSolaris
   | RustcOsSolidAsp3
   | RustcOsTeeOs

@@ -42,14 +42,23 @@ pub extern opaque type Code
 #[lang_item(NonNull)]
 pub opaque type NonNull<T>
 
-// Full name: core::ops::function::FnPtr
-#[fundamental]
-#[lang_item(FnPtrTrait)]
-pub trait FnPtr<Self>
+// Full name: core::ops::function::FnAddr
+#[lang_item(FnAddrTrait)]
+pub unsafe trait FnAddr<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Copy)
     fn as_ptr;
+    non-dyn-compatible
+}
+
+// Full name: core::ops::function::FnPtr
+#[fundamental]
+#[lang_item(FnPtrTrait)]
+pub unsafe trait FnPtr<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnAddr)
     fn from_ptr;
     non-dyn-compatible
 }

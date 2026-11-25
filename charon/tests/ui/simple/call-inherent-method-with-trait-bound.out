@@ -66,6 +66,7 @@ where
     drop[{built_in impl Destruct for S}::drop_glue<'2>] (*_1)._0
     ↳⚡ storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_1)
     return
 }

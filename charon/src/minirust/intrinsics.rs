@@ -116,32 +116,30 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 _ => raise!(span, "unknown MiniRust test intrinsic `{item}`"),
             };
             self.make_intrinsic_function(span, fdecl, intrinsic_op)?
-        } else if let Some(lang_item) = &fdecl.item_meta.lang_item {
-            match lang_item {
-                LangItem::Panic
-                | LangItem::PanicFmt
-                | LangItem::PanicImpl
-                | LangItem::PanicBoundsCheck
-                | LangItem::PanicMisalignedPointerDereference
-                | LangItem::PanicCannotUnwind
-                | LangItem::PanicInCleanup
-                | LangItem::PanicAddOverflow
-                | LangItem::PanicSubOverflow
-                | LangItem::PanicMulOverflow
-                | LangItem::PanicDivOverflow
-                | LangItem::PanicRemOverflow
-                | LangItem::PanicNegOverflow
-                | LangItem::PanicShrOverflow
-                | LangItem::PanicShlOverflow
-                | LangItem::PanicDivZero
-                | LangItem::PanicRemZero
-                | LangItem::PanicNullPointerDereference
-                | LangItem::PanicNullReferenceConstructed
-                | LangItem::PanicInvalidEnumConstruction => {
-                    self.make_unwind_function(span, fdecl, UnwindSource::OpaquePayload)?
-                }
-                _ => return Ok(None),
-            }
+        } else if let Some(
+            LangItem::Panic
+            | LangItem::PanicFmt
+            | LangItem::PanicImpl
+            | LangItem::PanicBoundsCheck
+            | LangItem::PanicMisalignedPointerDereference
+            | LangItem::PanicCannotUnwind
+            | LangItem::PanicInCleanup
+            | LangItem::PanicAddOverflow
+            | LangItem::PanicSubOverflow
+            | LangItem::PanicMulOverflow
+            | LangItem::PanicDivOverflow
+            | LangItem::PanicRemOverflow
+            | LangItem::PanicNegOverflow
+            | LangItem::PanicShrOverflow
+            | LangItem::PanicShlOverflow
+            | LangItem::PanicDivZero
+            | LangItem::PanicRemZero
+            | LangItem::PanicNullPointerDereference
+            | LangItem::PanicNullReferenceConstructed
+            | LangItem::PanicInvalidEnumConstruction,
+        ) = &fdecl.item_meta.lang_item
+        {
+            self.make_unwind_function(span, fdecl, UnwindSource::OpaquePayload)?
         } else {
             match &fdecl.body {
                 Body::Extern { symbol, .. } => match symbol.as_str() {
@@ -154,7 +152,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     _ => return Ok(None),
                 },
                 Body::Intrinsic { name, .. } => match name.as_str() {
-                    "abort" => {
+                    "abort_immediate" => {
                         self.make_intrinsic_function(span, fdecl, mini::IntrinsicOp::Abort)?
                     }
                     "assume" => {

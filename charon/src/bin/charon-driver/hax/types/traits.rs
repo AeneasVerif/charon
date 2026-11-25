@@ -37,7 +37,7 @@ impl<'tcx> AssocItem<'tcx> {
     pub fn sfrom_instantiated<S: BaseState<'tcx>>(
         s: &S,
         item: &ty::AssocItem,
-        item_args: Option<ty::GenericArgsRef<'tcx>>,
+        item_args: Option<ty::GenericArgs<'tcx>>,
     ) -> AssocItem<'tcx> {
         let tcx = s.base().tcx;
         // We want to solve traits in the context of this item.
@@ -127,9 +127,18 @@ impl<'tcx> AssocItem<'tcx> {
 #[args(<'tcx, S: BaseState<'tcx>>, from: ty::AssocKind, state: S as _tcx)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AssocKind {
-    Const { name: Symbol },
+    Const { data: AssocConstData },
     Fn { name: Symbol, has_self: bool },
     Type { data: AssocTypeData },
+}
+
+/// Reflects [`ty::AssocConstData`]
+#[derive(AdtInto)]
+#[args(<'tcx, S: BaseState<'tcx>>, from: ty::AssocConstData, state: S as _tcx)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum AssocConstData {
+    Named(Symbol),
+    Anonymous,
 }
 
 /// Reflects [`ty::AssocTypeData`]

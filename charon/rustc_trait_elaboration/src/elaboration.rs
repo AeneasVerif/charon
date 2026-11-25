@@ -10,7 +10,7 @@ use rustc_middle::ty::print::with_no_trimmed_paths;
 use rustc_middle::ty::{self, *};
 use rustc_span::{DUMMY_SP, Symbol};
 use rustc_trait_selection::traits::ImplSource;
-use rustc_type_ir::Interner;
+use rustc_type_ir::{CallerBoundsIterator, Interner};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct ItemClause<'tcx, Id = DefId> {
@@ -91,7 +91,7 @@ pub struct PredicateSearcher<'tcx, Id: ItemId = DefId> {
     /// Whether we're in a trait declaration context where an implicit `Self: Trait` clause is
     /// accessible.
     implicit_self_clause: bool,
-    /// Cache the `ItemRef` translations. This is fast because `GenericArgsRef` is interned.
+    /// Cache the `ItemRef` translations. This is fast because `GenericArgs` is interned.
     pub(crate) item_refs_cache: HashMap<ItemRefKey<'tcx, Id>, ItemRef<'tcx, Id>>,
     /// Cache of trait refs to resolved trait proofs.
     trait_proofs_cache: HashMap<ty::PolyTraitRef<'tcx>, TraitProof<'tcx, Id>>,
@@ -138,6 +138,8 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         self.typing_env
             .param_env
             .caller_bounds()
+            .all_clauses_interned(self.elab_ctx.tcx)
+            .iter()
             .any(|clause| !clause.has_non_region_param())
     }
 
@@ -202,6 +204,8 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             self.typing_env
                 .param_env
                 .caller_bounds()
+                .all_clauses_interned(tcx)
+                .iter()
                 .chain(erased_predicates.iter().map(|pred| pred.clause)),
         );
         let val = f(&mut searcher, self_ty);
@@ -376,7 +380,7 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         let item_ref = self.resolve_item_reference(
             state,
             Id::from_rust_def_id(state, *def_id),
-            args,
+            *args,
             AssocItemResolution::ImplItem,
         );
 
@@ -633,6 +637,10 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
                             }
                         }
 
+                        // TODO: rustc doesn't support dropping view types yet.
+                        ty::View(..) => {
+                            return error(format!("Unsupported view type in `{tref:?}`"));
+                        }
                         ty::Placeholder(..) | ty::Infer(..) | ty::Error(..) => {
                             let msg = format!(
                                 "Cannot resolve clause `{tref:?}` \
@@ -684,7 +692,7 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         &mut self,
         state: &Id::State<'tcx>,
         def_id: Id,
-        generics: GenericArgsRef<'tcx>,
+        generics: GenericArgs<'tcx>,
     ) -> Vec<TraitProof<'tcx, Id>> {
         self.resolve_predicates(
             state,
@@ -698,7 +706,7 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         &mut self,
         state: &Id::State<'tcx>,
         def_id: Id,
-        generics: GenericArgsRef<'tcx>,
+        generics: GenericArgs<'tcx>,
     ) -> Vec<TraitProof<'tcx, Id>> {
         self.resolve_predicates(
             state,
@@ -713,7 +721,7 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         &mut self,
         state: &Id::State<'tcx>,
         predicates: ItemPredicates<'tcx, PredicateId>,
-        generics: GenericArgsRef<'tcx>,
+        generics: GenericArgs<'tcx>,
     ) -> Vec<TraitProof<'tcx, Id>> {
         let tcx = self.elab_ctx.tcx;
         predicates

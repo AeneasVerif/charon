@@ -161,13 +161,13 @@ where
     let mut _31: usize; // anonymous local
     let mut _32: bool; // anonymous local
     let mut _33: usize; // anonymous local
-    let _34: i8; // anonymous local
+    let mut _34: i8; // anonymous local
     let _35: *const T; // anonymous local
     let _36: (); // anonymous local
     let mut _37: usize; // anonymous local
     let mut _38: bool; // anonymous local
     let mut _39: usize; // anonymous local
-    let _40: i8; // anonymous local
+    let mut _40: i8; // anonymous local
     let _41: (); // anonymous local
     let _42: (); // anonymous local
     let mut _43: bool; // anonymous local
@@ -255,7 +255,7 @@ where
         storage_live(mid);
         storage_live(_11);
         _11 = copy base;
-        mid = move _11 wrap.+ copy half;
+        mid = copy half wrap.+ move _11;
         storage_dead(_11);
         storage_live(cmp_12);
         storage_live(_13);
@@ -307,7 +307,7 @@ where
         storage_live(_17);
         storage_live(_34);
         _34 = @discriminant(cmp_12);
-        _17 = copy _34 == const 1i8;
+        _17 = move _34 == const 1i8;
         storage_dead(_34);
         _16 = select_unpredictable<usize>[{built_in impl Sized for usize}, {built_in impl Destruct for usize}](move _17, move base, move mid) -> bb12 (unwind: bb36);
     }

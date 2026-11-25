@@ -1,6 +1,5 @@
 //@ revisions=poly,mono
 //@[mono] charon-args=--monomorphize
-//@[mono] known-failure
 
 pub trait Bound {}
 impl Bound for u8 {}

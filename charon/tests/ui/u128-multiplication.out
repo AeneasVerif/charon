@@ -20,6 +20,7 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+#[lang_item(CloneFromFn)]
 pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(self: &'_0 mut Self, source: &'_1 Self)
 where
     TraitClause0: (Self: Clone),
@@ -69,6 +70,7 @@ pub fn impl_Clone_for_u128::clone<'_0>(self: &'_0 u128) -> u128
 }
 
 // Full name: core::clone::impls::{impl Clone for u128}::clone_from
+#[lang_item(CloneFromFn)]
 pub fn impl_Clone_for_u128::clone_from<'_0, '_1>(self: &'_0 mut u128, source: &'_1 u128)
 where
     TraitClause0: (u128: Destruct),

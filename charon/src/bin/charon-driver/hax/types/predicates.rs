@@ -186,6 +186,8 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<(S, UnitBinder<'tcx>), ProjectionPred
 /// Reflects [`ty::ClauseKind`]
 #[derive(AdtInto)]
 #[args(< S: UnderOwnerState<'tcx>>, from: ty::ClauseKind<'tcx>, state: (S, UnitBinder<'tcx>) as tcx)]
+// Compressed clauses only appear in `ParamEnv`s, which we decompress before reading them.
+#[append(FROM_TYPE::CompressedTrait(_) => unreachable!("unexpected compressed clause"),)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ClauseKind<'tcx> {
     Trait(TraitPredicate<'tcx>),

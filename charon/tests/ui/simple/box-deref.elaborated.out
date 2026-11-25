@@ -73,7 +73,7 @@ fn read_ref<'a>(b: Box<&'a u32>[{built_in impl MetaSized for &'a u32}, {built_in
 
     storage_live(_0)
     _0 = copy (*b)
-    drop[impl_Destruct_for_Box::drop_glue<'37, &'32 u32, Global>[{built_in impl MetaSized for &'32 u32}, {built_in impl Sized for Global}]] b
+    drop[impl_Destruct_for_Box::drop_glue<'53, &'48 u32, Global>[{built_in impl MetaSized for &'48 u32}, {built_in impl Sized for Global}]] b
     ↳⚡ storage_dead(b)
         unwind_continue
     storage_dead(b)

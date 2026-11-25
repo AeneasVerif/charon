@@ -237,6 +237,7 @@ and builtin_impl_data =
   | BuiltinFn
   | BuiltinFnMut
   | BuiltinFnOnce
+  | BuiltinFnAddr
   | BuiltinFnPtr
   | BuiltinAsyncFn
   | BuiltinAsyncFnMut
@@ -1139,16 +1140,21 @@ and rustc_lang_item =
   | RustcLangItemUnsize  (**The [unsize] lang item. *)
   | RustcLangItemAlignOf  (**The [mem_align_const] lang item. *)
   | RustcLangItemSizeOf  (**The [mem_size_const] lang item. *)
-  | RustcLangItemOffsetOf  (**The [offset_of] lang item. *)
+  | RustcLangItemOffsetOf  (**The [OffsetOf] lang item. *)
+  | RustcLangItemRawEq  (**The [raw_eq] lang item. *)
+  | RustcLangItemCompareBytes  (**The [compare_bytes] lang item. *)
   | RustcLangItemStructuralPeq
       (** The [structural_peq] lang item. Trait injected by
           [#[derive(PartialEq)]], (i.e. "Partial EQ"). *)
+  | RustcLangItemDebug  (**The [debug] lang item. *)
   | RustcLangItemCopy  (**The [copy] lang item. *)
   | RustcLangItemClone  (**The [clone] lang item. *)
   | RustcLangItemCloneFn  (**The [clone_fn] lang item. *)
+  | RustcLangItemCloneFromFn  (**The [clone_from_fn] lang item. *)
   | RustcLangItemUseCloned  (**The [use_cloned] lang item. *)
   | RustcLangItemTrivialClone  (**The [trivial_clone] lang item. *)
   | RustcLangItemSync  (**The [sync] lang item. *)
+  | RustcLangItemSend  (**The [send] lang item. *)
   | RustcLangItemDiscriminantKind  (**The [discriminant_kind] lang item. *)
   | RustcLangItemDiscriminant
       (** The [discriminant_type] lang item. The associated item of the
@@ -1160,10 +1166,13 @@ and rustc_lang_item =
   | RustcLangItemFreeze  (**The [freeze] lang item. *)
   | RustcLangItemUnsafeUnpin  (**The [unsafe_unpin] lang item. *)
   | RustcLangItemFnPtrTrait  (**The [fn_ptr_trait] lang item. *)
-  | RustcLangItemFnPtrAsPtr  (**The [fn_ptr_as_ptr] lang item. *)
+  | RustcLangItemFnAddrTrait  (**The [fn_addr_trait] lang item. *)
+  | RustcLangItemFnAddrAsPtr  (**The [fn_addr_as_ptr] lang item. *)
+  | RustcLangItemFnAddrAddrFn  (**The [fn_addr_addr_fn] lang item. *)
   | RustcLangItemFnPtrFromPtr  (**The [fn_ptr_from_ptr] lang item. *)
   | RustcLangItemCode  (**The [code] lang item. *)
   | RustcLangItemDrop  (**The [drop] lang item. *)
+  | RustcLangItemForget  (**The [forget] lang item. *)
   | RustcLangItemDestruct  (**The [destruct] lang item. *)
   | RustcLangItemAsyncDrop  (**The [async_drop] lang item. *)
   | RustcLangItemAsyncDropInPlace  (**The [async_drop_in_place] lang item. *)
@@ -1203,7 +1212,10 @@ and rustc_lang_item =
   | RustcLangItemVaArgSafe  (**The [va_arg_safe] lang item. *)
   | RustcLangItemVaList  (**The [va_list] lang item. *)
   | RustcLangItemComplex  (**The [complex] lang item. *)
-  | RustcLangItemDeref  (**The [deref] lang item. *)
+  | RustcLangItemPpcF128  (**The [ppcf128] lang item. *)
+  | RustcLangItemX87F80  (**The [x87_f80] lang item. *)
+  | RustcLangItemX87F80Raw  (**The [x87_f80_raw] lang item. *)
+  | RustcLangItemDeref  (**The [Deref] lang item. *)
   | RustcLangItemDerefMut  (**The [deref_mut] lang item. *)
   | RustcLangItemDerefPure  (**The [deref_pure] lang item. *)
   | RustcLangItemDerefTarget  (**The [deref_target] lang item. *)
@@ -1235,11 +1247,14 @@ and rustc_lang_item =
   | RustcLangItemCoroutineResume  (**The [coroutine_resume] lang item. *)
   | RustcLangItemUnpin  (**The [unpin] lang item. *)
   | RustcLangItemPin  (**The [Pin] lang item. *)
+  | RustcLangItemMove  (**The [move_trait] lang item. *)
   | RustcLangItemOrderingEnum  (**The [Ordering] lang item. *)
-  | RustcLangItemPartialEq  (**The [eq] lang item. *)
+  | RustcLangItemPartialEq  (**The [partial_eq] lang item. *)
+  | RustcLangItemEq  (**The [eq] lang item. *)
   | RustcLangItemPartialOrd  (**The [partial_ord] lang item. *)
   | RustcLangItemCVoid  (**The [c_void] lang item. *)
-  | RustcLangItemType  (**The [type_info] lang item. *)
+  | RustcLangItemF16B  (**The [f16b] lang item. *)
+  | RustcLangItemTypeKind  (**The [type_kind] lang item. *)
   | RustcLangItemTypeGeneric  (**The [type_info_generic] lang item. *)
   | RustcLangItemTypeId  (**The [type_id] lang item. *)
   | RustcLangItemPanic  (**The [panic] lang item. *)
@@ -1403,6 +1418,7 @@ and rustc_lang_item =
   | RustcLangItemFrom  (**The [From] lang item. *)
   | RustcLangItemFromFn  (**The [from] lang item. *)
   | RustcLangItemFnPtr  (**The [FnPtr] lang item. *)
+  | RustcLangItemDynTrait  (**The [DynTrait] lang item. *)
 
 (** Type layout information.
 

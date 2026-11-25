@@ -68,8 +68,8 @@ pub trait Parent<Self, T>
 pub trait Child<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Parent<Wrapper<u8>[{built_in impl Sized for u8}, Self::ImpliedClause3]>)
-    proof ImpliedClause2: (Self: Parent<Wrapper<Nested<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Nested<u8>[{built_in impl Sized for u8}]}, impl_Bound_for_Nested<u8>[{built_in impl Sized for u8}, Self::ImpliedClause3]]>)
+    proof ImpliedClause1: (Self: Parent<Wrapper<u8>[{built_in impl Sized for u8}, impl_Bound_for_u8]>)
+    proof ImpliedClause2: (Self: Parent<Wrapper<Nested<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Nested<u8>[{built_in impl Sized for u8}]}, impl_Bound_for_Nested<u8>[{built_in impl Sized for u8}, impl_Bound_for_u8]]>)
     proof ImpliedClause3: (u8: Bound)
     vtable: test_crate::Child::{vtable}
 }

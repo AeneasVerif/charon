@@ -313,16 +313,6 @@ where
   end: Idx,
 }
 
-struct () {}
-
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
-    non-dyn-compatible
-}
-
 // Full name: core::iter::traits::iterator::Iterator
 #[lang_item(Iterator)]
 #[diagnostic_item("Iterator")]
@@ -340,7 +330,6 @@ pub fn next<'_0, A>(_1: &'_0 mut Range<A>[TraitClause0]) -> Option<A>[TraitClaus
 where
     TraitClause0: (A: Sized),
     TraitClause1: (A: Step),
-    TraitClause2: (A: Destruct),
     Outlives0: (A: '_0),
 = <opaque>
 
@@ -349,12 +338,11 @@ impl<A> "impl_Iterator_for_Range" Iterator for Range<A>[TraitClause0]
 where
     TraitClause0: (A: Sized),
     TraitClause1: (A: Step),
-    TraitClause2: (A: Destruct),
 {
     proof ImpliedClause0: (Range<A>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Range<A>[TraitClause0]}
     proof ImpliedClause1: (A: Sized) = TraitClause0
     type Item = A
-    fn next<'_0_1> = next<'_0_1, A>[TraitClause0, TraitClause1, TraitClause2]
+    fn next<'_0_1> = next<'_0_1, A>[TraitClause0, TraitClause1]
     vtable: lazy
 }
 
@@ -373,6 +361,11 @@ struct str {
 #[track_caller]
 #[lang_item(Panic)]
 pub fn panic(_1: &'static str) -> !
+= <opaque>
+
+// Full name: core::panicking::panic_default_msg
+#[track_caller]
+pub fn panic_default_msg() -> !
 = <opaque>
 
 // Full name: core::slice::index::SliceIndex
@@ -519,6 +512,8 @@ where
     Outlives1: (A: '_0),
     Outlives2: (TraitClause3::Output: '_0),
 = <opaque>
+
+struct () {}
 
 // Full name: test_crate::test_loop1
 pub fn test_loop1(max: u32) -> u32
@@ -784,7 +779,6 @@ pub fn test_loop3(max: u32) -> u32
 }
 
 // Full name: test_crate::test_loop4
-#[allow(unused_assignments)]
 pub fn test_loop4(max: u32) -> u32
 {
     let mut _0: u32; // return
@@ -1437,7 +1431,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     storage_live(_4)
     storage_live(_5)
     _5 = Range { start: const 0i32, end: const 128i32 }
-    _4 = into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_Range<i32>[{built_in impl Sized for i32}, impl_Step_for_i32, {built_in impl Destruct for i32}]](move _5)
+    _4 = into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_Range<i32>[{built_in impl Sized for i32}, impl_Step_for_i32]](move _5)
     ↳⚡ storage_dead(_25)
         storage_dead(_10)
         storage_dead(step_in)
@@ -1452,7 +1446,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         storage_live(_9)
         _9 = &mut iter_6
         _8 = &two-phase-mut (*_9)
-        _7 = next<'11, i32>[{built_in impl Sized for i32}, impl_Step_for_i32, {built_in impl Destruct for i32}](move _8)
+        _7 = next<'11, i32>[{built_in impl Sized for i32}, impl_Step_for_i32](move _8)
         ↳⚡ storage_dead(_25)
             storage_dead(_10)
             storage_dead(step_in)
@@ -1482,7 +1476,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     _13 = copy step_out
     _12 = Range { start: const 0usize, end: move _13 }
     storage_dead(_13)
-    _11 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}]](move _12)
+    _11 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize]](move _12)
     ↳⚡ storage_dead(_25)
         storage_dead(_10)
         storage_dead(step_in)
@@ -1497,7 +1491,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         storage_live(_17)
         _17 = &mut iter_14
         _16 = &two-phase-mut (*_17)
-        _15 = next<'15, usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}](move _16)
+        _15 = next<'15, usize>[{built_in impl Sized for usize}, impl_Step_for_usize](move _16)
         ↳⚡ storage_dead(_25)
             storage_dead(_10)
             storage_dead(step_in)
@@ -1517,7 +1511,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         _20 = copy step_in
         _19 = Range { start: const 0usize, end: move _20 }
         storage_dead(_20)
-        _18 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}]](move _19)
+        _18 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize]](move _19)
         ↳⚡ storage_dead(_25)
             storage_dead(_10)
             storage_dead(step_in)
@@ -1532,7 +1526,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
             storage_live(_24)
             _24 = &mut iter_21
             _23 = &two-phase-mut (*_24)
-            _22 = next<'18, usize>[{built_in impl Sized for usize}, impl_Step_for_usize, {built_in impl Destruct for usize}](move _23)
+            _22 = next<'18, usize>[{built_in impl Sized for usize}, impl_Step_for_usize](move _23)
             ↳⚡ storage_dead(_25)
                 storage_dead(_10)
                 storage_dead(step_in)
@@ -1614,7 +1608,7 @@ pub fn loop_inside_if(b: bool, n: u32) -> u32
     _7 = copy n
     _6 = Range { start: const 0u32, end: move _7 }
     storage_dead(_7)
-    _5 = into_iter<Range<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for Range<u32>[{built_in impl Sized for u32}]}, impl_Iterator_for_Range<u32>[{built_in impl Sized for u32}, impl_Step_for_u32, {built_in impl Destruct for u32}]](move _6)
+    _5 = into_iter<Range<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for Range<u32>[{built_in impl Sized for u32}]}, impl_Iterator_for_Range<u32>[{built_in impl Sized for u32}, impl_Step_for_u32]](move _6)
     ↳⚡ storage_dead(_14)
         storage_dead(n)
         storage_dead(b)
@@ -1628,7 +1622,7 @@ pub fn loop_inside_if(b: bool, n: u32) -> u32
         storage_live(_11)
         _11 = &mut iter
         _10 = &two-phase-mut (*_11)
-        _9 = next<'6, u32>[{built_in impl Sized for u32}, impl_Step_for_u32, {built_in impl Destruct for u32}](move _10)
+        _9 = next<'6, u32>[{built_in impl Sized for u32}, impl_Step_for_u32](move _10)
         ↳⚡ storage_dead(_14)
             storage_dead(n)
             storage_dead(b)
@@ -1872,21 +1866,19 @@ where
   Nil,
 }
 
-pub const test_crate::get_elem_mut::{promoted_const}: str = "explicit panic" with_metadata(14usize)
-
 // Full name: test_crate::get_elem_mut
 pub fn get_elem_mut<'_0>(ls: &'_0 mut List<usize>[{built_in impl Sized for usize}], x: usize) -> &'_0 mut usize
 {
     let mut _0: &'1 mut usize; // return
     let mut ls: &'3 mut List<usize>[{built_in impl Sized for usize}]; // arg #1
     let x: usize; // arg #2
+    let mut _3: !; // anonymous local
     let y: &'4 mut usize; // local
     let tl: &'6 mut Box<List<usize>[{built_in impl Sized for usize}]>[{built_in impl MetaSized for List<usize>[{built_in impl Sized for usize}]}, {built_in impl Sized for Global}]; // local
-    let mut _5: bool; // anonymous local
-    let mut _6: usize; // anonymous local
+    let mut _6: bool; // anonymous local
     let mut _7: usize; // anonymous local
-    let mut _8: &'7 mut List<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let mut _9: &'9 str; // anonymous local
+    let mut _8: usize; // anonymous local
+    let mut _9: &'7 mut List<usize>[{built_in impl Sized for usize}]; // anonymous local
 
     storage_live(_0)
     loop {
@@ -1896,32 +1888,32 @@ pub fn get_elem_mut<'_0>(ls: &'_0 mut List<usize>[{built_in impl Sized for usize
                 y = &mut ((*ls) as variant List::Cons)._0
                 storage_live(tl)
                 tl = &mut ((*ls) as variant List::Cons)._1
-                storage_live(_5)
                 storage_live(_6)
-                _6 = copy (*y)
                 storage_live(_7)
-                _7 = copy x
-                _5 = move _6 == move _7
-                if move _5 {
+                _7 = copy (*y)
+                storage_live(_8)
+                _8 = copy x
+                _6 = move _7 == move _8
+                if move _6 {
+                    storage_dead(_8)
                     storage_dead(_7)
-                    storage_dead(_6)
                     _0 = &mut (*y)
-                    storage_dead(_5)
+                    storage_dead(_6)
                     storage_dead(tl)
                     storage_dead(y)
+                    storage_dead(_3)
                     storage_dead(x)
                     storage_dead(ls)
-                    storage_dead(_9)
                     return
                 } else {
                 }
-                storage_dead(_7)
-                storage_dead(_6)
-                storage_live(_8)
-                _8 = &mut (*(*tl))
-                ls = move _8
                 storage_dead(_8)
-                storage_dead(_5)
+                storage_dead(_7)
+                storage_live(_9)
+                _9 = &mut (*(*tl))
+                ls = move _9
+                storage_dead(_9)
+                storage_dead(_6)
                 storage_dead(tl)
                 storage_dead(y)
                 continue 0
@@ -1931,16 +1923,13 @@ pub fn get_elem_mut<'_0>(ls: &'_0 mut List<usize>[{built_in impl Sized for usize
             },
         }
     }
-    storage_live(_9)
-    _9 = &test_crate::get_elem_mut::{promoted_const} with_metadata(const 14usize)
-    panic(panic(move _9))
-    ↳⚡ storage_dead(x)
+    storage_live(_3)
+    _3 = panic_default_msg()
+    ↳⚡ storage_dead(_3)
+        storage_dead(x)
         storage_dead(ls)
-        storage_dead(_9)
         unwind_continue
 }
-
-pub const test_crate::list_nth_mut_loop_with_id::{promoted_const}: str = "explicit panic" with_metadata(14usize)
 
 // Full name: test_crate::list_nth_mut_loop_with_id
 pub fn list_nth_mut_loop_with_id<'_0, T>(ls: &'_0 mut List<T>[TraitClause0], i: u32) -> &'_0 mut T
@@ -1957,7 +1946,7 @@ where
     let mut _6: u32; // anonymous local
     let mut _7: &'7 mut List<T>[TraitClause0]; // anonymous local
     let mut _8: u32; // anonymous local
-    let mut _9: &'9 str; // anonymous local
+    let mut _9: !; // anonymous local
 
     storage_live(_0)
     storage_live(_8)
@@ -1978,10 +1967,10 @@ where
                     storage_dead(_5)
                     storage_dead(tl)
                     storage_dead(x)
+                    storage_dead(_9)
                     storage_dead(_8)
                     storage_dead(i)
                     storage_dead(ls)
-                    storage_dead(_9)
                     return
                 } else {
                 }
@@ -2003,12 +1992,11 @@ where
         }
     }
     storage_live(_9)
-    _9 = &test_crate::list_nth_mut_loop_with_id::{promoted_const} with_metadata(const 14usize)
-    panic(panic(move _9))
-    ↳⚡ storage_dead(_8)
+    _9 = panic_default_msg()
+    ↳⚡ storage_dead(_9)
+        storage_dead(_8)
         storage_dead(i)
         storage_dead(ls)
-        storage_dead(_9)
         unwind_continue
 }
 

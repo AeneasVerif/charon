@@ -93,7 +93,7 @@ impl<'tcx, Id: ItemId> Clone for ElaborationCtx<'tcx, Id> {
 
 impl<'tcx, Id: ItemId> Copy for ElaborationCtx<'tcx, Id> {}
 
-pub type ItemRefKey<'tcx, Id> = (Id, ty::GenericArgsRef<'tcx>, AssocItemResolution);
+pub type ItemRefKey<'tcx, Id> = (Id, ty::GenericArgs<'tcx>, AssocItemResolution);
 
 struct ElaborationData<'tcx, Id: ItemId = DefId> {
     bounds_options: BoundsOptions,

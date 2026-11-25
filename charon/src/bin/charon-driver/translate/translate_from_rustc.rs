@@ -12,8 +12,8 @@
 
 use super::translate_ctx::TranslateCtx;
 use charon_lib::ast::from_rustc::{self, FromRustcError};
-use rustc_hir::attrs::lang_items::*;
-use rustc_hir::attrs::*;
+use rustc_attr_ir::lang_items::*;
+use rustc_attr_ir::*;
 use rustc_span::symbol::*;
 use rustc_target::spec::*;
 
@@ -76,12 +76,15 @@ impl<'tcx> TranslateCtx<'tcx> {
                 Ok(from_rustc::AttributeKind::AutomaticallyDerived)
             }
             AttributeKind::Cold => Ok(from_rustc::AttributeKind::Cold),
-            AttributeKind::Deprecated { deprecation, span } => {
-                Ok(from_rustc::AttributeKind::Deprecated {
-                    deprecation: self.translate_deprecation_from_rustc(deprecation)?,
-                    span: self.translate_span(span),
-                })
-            }
+            AttributeKind::Deprecated {
+                deprecation,
+                span,
+                is_inner,
+            } => Ok(from_rustc::AttributeKind::Deprecated {
+                deprecation: self.translate_deprecation_from_rustc(deprecation)?,
+                span: self.translate_span(span),
+                is_inner: *(is_inner),
+            }),
             AttributeKind::ExportName { name, span } => Ok(from_rustc::AttributeKind::ExportName {
                 name: (name).to_string().into(),
                 span: self.translate_span(span),
@@ -138,7 +141,14 @@ impl<'tcx> TranslateCtx<'tcx> {
                 })
             }
             AttributeKind::RustcDeallocator => Ok(from_rustc::AttributeKind::RustcDeallocator),
-            AttributeKind::RustcIntrinsic => Ok(from_rustc::AttributeKind::RustcIntrinsic),
+            AttributeKind::RustcIntrinsic { llvm } => {
+                Ok(from_rustc::AttributeKind::RustcIntrinsic {
+                    llvm: (llvm)
+                        .as_ref()
+                        .map(|value| Ok((value).to_string().into()))
+                        .transpose()?,
+                })
+            }
             AttributeKind::RustcNoWritable => Ok(from_rustc::AttributeKind::RustcNoWritable),
             AttributeKind::RustcReallocator => Ok(from_rustc::AttributeKind::RustcReallocator),
             AttributeKind::ShouldPanic { reason } => Ok(from_rustc::AttributeKind::ShouldPanic {
@@ -183,13 +193,18 @@ impl<'tcx> TranslateCtx<'tcx> {
             LangItem::AlignOf => Ok(from_rustc::LangItem::AlignOf),
             LangItem::SizeOf => Ok(from_rustc::LangItem::SizeOf),
             LangItem::OffsetOf => Ok(from_rustc::LangItem::OffsetOf),
+            LangItem::RawEq => Ok(from_rustc::LangItem::RawEq),
+            LangItem::CompareBytes => Ok(from_rustc::LangItem::CompareBytes),
             LangItem::StructuralPeq => Ok(from_rustc::LangItem::StructuralPeq),
+            LangItem::Debug => Ok(from_rustc::LangItem::Debug),
             LangItem::Copy => Ok(from_rustc::LangItem::Copy),
             LangItem::Clone => Ok(from_rustc::LangItem::Clone),
             LangItem::CloneFn => Ok(from_rustc::LangItem::CloneFn),
+            LangItem::CloneFromFn => Ok(from_rustc::LangItem::CloneFromFn),
             LangItem::UseCloned => Ok(from_rustc::LangItem::UseCloned),
             LangItem::TrivialClone => Ok(from_rustc::LangItem::TrivialClone),
             LangItem::Sync => Ok(from_rustc::LangItem::Sync),
+            LangItem::Send => Ok(from_rustc::LangItem::Send),
             LangItem::DiscriminantKind => Ok(from_rustc::LangItem::DiscriminantKind),
             LangItem::Discriminant => Ok(from_rustc::LangItem::Discriminant),
             LangItem::PointeeTrait => Ok(from_rustc::LangItem::PointeeTrait),
@@ -199,10 +214,13 @@ impl<'tcx> TranslateCtx<'tcx> {
             LangItem::Freeze => Ok(from_rustc::LangItem::Freeze),
             LangItem::UnsafeUnpin => Ok(from_rustc::LangItem::UnsafeUnpin),
             LangItem::FnPtrTrait => Ok(from_rustc::LangItem::FnPtrTrait),
-            LangItem::FnPtrAsPtr => Ok(from_rustc::LangItem::FnPtrAsPtr),
+            LangItem::FnAddrTrait => Ok(from_rustc::LangItem::FnAddrTrait),
+            LangItem::FnAddrAsPtr => Ok(from_rustc::LangItem::FnAddrAsPtr),
+            LangItem::FnAddrAddrFn => Ok(from_rustc::LangItem::FnAddrAddrFn),
             LangItem::FnPtrFromPtr => Ok(from_rustc::LangItem::FnPtrFromPtr),
             LangItem::Code => Ok(from_rustc::LangItem::Code),
             LangItem::Drop => Ok(from_rustc::LangItem::Drop),
+            LangItem::Forget => Ok(from_rustc::LangItem::Forget),
             LangItem::Destruct => Ok(from_rustc::LangItem::Destruct),
             LangItem::AsyncDrop => Ok(from_rustc::LangItem::AsyncDrop),
             LangItem::AsyncDropInPlace => Ok(from_rustc::LangItem::AsyncDropInPlace),
@@ -241,6 +259,9 @@ impl<'tcx> TranslateCtx<'tcx> {
             LangItem::VaArgSafe => Ok(from_rustc::LangItem::VaArgSafe),
             LangItem::VaList => Ok(from_rustc::LangItem::VaList),
             LangItem::Complex => Ok(from_rustc::LangItem::Complex),
+            LangItem::PpcF128 => Ok(from_rustc::LangItem::PpcF128),
+            LangItem::X87F80 => Ok(from_rustc::LangItem::X87F80),
+            LangItem::X87F80Raw => Ok(from_rustc::LangItem::X87F80Raw),
             LangItem::Deref => Ok(from_rustc::LangItem::Deref),
             LangItem::DerefMut => Ok(from_rustc::LangItem::DerefMut),
             LangItem::DerefPure => Ok(from_rustc::LangItem::DerefPure),
@@ -273,11 +294,14 @@ impl<'tcx> TranslateCtx<'tcx> {
             LangItem::CoroutineResume => Ok(from_rustc::LangItem::CoroutineResume),
             LangItem::Unpin => Ok(from_rustc::LangItem::Unpin),
             LangItem::Pin => Ok(from_rustc::LangItem::Pin),
+            LangItem::Move => Ok(from_rustc::LangItem::Move),
             LangItem::OrderingEnum => Ok(from_rustc::LangItem::OrderingEnum),
             LangItem::PartialEq => Ok(from_rustc::LangItem::PartialEq),
+            LangItem::Eq => Ok(from_rustc::LangItem::Eq),
             LangItem::PartialOrd => Ok(from_rustc::LangItem::PartialOrd),
             LangItem::CVoid => Ok(from_rustc::LangItem::CVoid),
-            LangItem::Type => Ok(from_rustc::LangItem::Type),
+            LangItem::F16B => Ok(from_rustc::LangItem::F16B),
+            LangItem::TypeKind => Ok(from_rustc::LangItem::TypeKind),
             LangItem::TypeGeneric => Ok(from_rustc::LangItem::TypeGeneric),
             LangItem::TypeId => Ok(from_rustc::LangItem::TypeId),
             LangItem::Panic => Ok(from_rustc::LangItem::Panic),
@@ -422,6 +446,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             LangItem::From => Ok(from_rustc::LangItem::From),
             LangItem::FromFn => Ok(from_rustc::LangItem::FromFn),
             LangItem::FnPtr => Ok(from_rustc::LangItem::FnPtr),
+            LangItem::DynTrait => Ok(from_rustc::LangItem::DynTrait),
             // If the below is reached, the code is not up-to-date with the rustc version
             _ => Err(FromRustcError),
         }
@@ -485,6 +510,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             Os::Hermit => Ok(from_rustc::Os::Hermit),
             Os::Horizon => Ok(from_rustc::Os::Horizon),
             Os::Hurd => Ok(from_rustc::Os::Hurd),
+            Os::Hyperlight => Ok(from_rustc::Os::Hyperlight),
             Os::Illumos => Ok(from_rustc::Os::Illumos),
             Os::IOs => Ok(from_rustc::Os::IOs),
             Os::L4Re => Ok(from_rustc::Os::L4Re),
@@ -502,9 +528,11 @@ impl<'tcx> TranslateCtx<'tcx> {
             Os::Psp => Ok(from_rustc::Os::Psp),
             Os::Psx => Ok(from_rustc::Os::Psx),
             Os::Qnx => Ok(from_rustc::Os::Qnx),
+            Os::Qtee => Ok(from_rustc::Os::Qtee),
             Os::Qurt => Ok(from_rustc::Os::Qurt),
             Os::Redox => Ok(from_rustc::Os::Redox),
             Os::Rtems => Ok(from_rustc::Os::Rtems),
+            Os::Serenity => Ok(from_rustc::Os::Serenity),
             Os::Solaris => Ok(from_rustc::Os::Solaris),
             Os::SolidAsp3 => Ok(from_rustc::Os::SolidAsp3),
             Os::TeeOs => Ok(from_rustc::Os::TeeOs),
@@ -577,7 +605,6 @@ impl<'tcx> TranslateCtx<'tcx> {
             CfgAbi::Spe => Ok(from_rustc::CfgAbi::Spe),
             CfgAbi::Uwp => Ok(from_rustc::CfgAbi::Uwp),
             CfgAbi::VecDefault => Ok(from_rustc::CfgAbi::VecDefault),
-            CfgAbi::VecExtAbi => Ok(from_rustc::CfgAbi::VecExtAbi),
             CfgAbi::X32 => Ok(from_rustc::CfgAbi::X32),
             CfgAbi::V8Plus => Ok(from_rustc::CfgAbi::V8Plus),
             CfgAbi::Unspecified => Ok(from_rustc::CfgAbi::Unspecified),
@@ -646,7 +673,6 @@ impl<'tcx> TranslateCtx<'tcx> {
     ) -> Result<from_rustc::Linkage, FromRustcError> {
         match value {
             Linkage::AvailableExternally => Ok(from_rustc::Linkage::AvailableExternally),
-            Linkage::Common => Ok(from_rustc::Linkage::Common),
             Linkage::ExternalWeak => Ok(from_rustc::Linkage::ExternalWeak),
             Linkage::External => Ok(from_rustc::Linkage::External),
             Linkage::Internal => Ok(from_rustc::Linkage::Internal),

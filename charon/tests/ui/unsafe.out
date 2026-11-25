@@ -34,6 +34,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::Eq
+#[lang_item(Eq)]
 #[diagnostic_item("Eq")]
 pub trait Eq<Self>
 {
@@ -161,6 +162,7 @@ pub unsafe fn core::intrinsics::assume(b_1: bool)
 = <intrinsic:assume> with fallback {fallback}
 
 // Full name: core::marker::Send
+#[lang_item(Send)]
 #[diagnostic_item("Send")]
 pub unsafe trait Send<Self>
 

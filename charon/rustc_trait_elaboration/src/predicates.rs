@@ -416,7 +416,7 @@ impl<'tcx, Id: Clone> ItemPredicates<'tcx, Id> {
     }
 
     /// Substitute all the predicates with these args.
-    pub fn instantiate(mut self, tcx: TyCtxt<'tcx>, args: ty::GenericArgsRef<'tcx>) -> Self {
+    pub fn instantiate(mut self, tcx: TyCtxt<'tcx>, args: ty::GenericArgs<'tcx>) -> Self {
         for predicate in self.iter_mut() {
             predicate.clause = ty::EarlyBinder::bind(tcx, predicate.clause)
                 .instantiate(tcx, args)

@@ -210,10 +210,10 @@ pub fn caller<'a>() -> &'static Location<'static>
     return
 }
 
-// Full name: core::intrinsics::abort
+// Full name: core::intrinsics::abort_immediate
 #[rustc_intrinsic]
-pub fn abort() -> !
-= <intrinsic:abort>
+pub fn abort_immediate() -> !
+= <intrinsic:abort_immediate>
 
 // Full name: core::panicking::panic_fmt
 #[track_caller]
@@ -273,7 +273,7 @@ pub fn panic_fmt<'_0>(fmt: Arguments<'_0>) -> !
             unwind_continue
     }
     storage_live(_3)
-    _3 = abort()
+    _3 = abort_immediate()
     ↳⚡ undefined_behavior
 }
 
@@ -462,12 +462,6 @@ pub struct UsizeNoHighBit {
   _0: usize is 0usize..=9223372036854775807usize,
 }
 
-// Full name: core::ptr::unique::Unique
-pub struct Unique<T> {
-  pointer: NonNull<T>,
-  _marker: PhantomData<T>,
-}
-
 // Full name: alloc::alloc::Global
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
@@ -477,7 +471,7 @@ struct RawVecInner<A>
 where
     TraitClause0: (A: Sized),
 {
-  ptr: Unique<u8>,
+  ptr: NonNull<u8>,
   cap: UsizeNoHighBit,
   alloc: A,
 }

@@ -126,6 +126,7 @@ where
     _0 = ()
     drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
     ↳⚡ unwind_continue
+    _0 = ()
     return
 }
 

@@ -201,6 +201,7 @@ where
             continue 0
         }
     }
+    _0 = ()
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
@@ -245,6 +246,7 @@ where
     ↳⚡ storage_dead(_2)
         storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -273,6 +275,7 @@ where
     drop[TraitClause2::drop_glue<'3>] (*_1)._1
     ↳⚡ storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_1)
     return
 }

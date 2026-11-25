@@ -36,6 +36,7 @@ pub trait Clone<Self>
 }
 
 // Full name: core::clone::Clone::clone_from
+#[lang_item(CloneFromFn)]
 pub fn clone_from<'_0, '_1, Self>(self: &'_0 mut Self, source: &'_1 Self)
 where
     TraitClause0: (Self: Clone),

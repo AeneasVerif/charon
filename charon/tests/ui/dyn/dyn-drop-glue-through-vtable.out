@@ -143,6 +143,7 @@ unsafe fn impl_Destruct_for_A::drop_glue<'_0>(_1: &'_0 mut A)
     storage_live(drop_ret)
     drop_ret = (read (*drop_arg.metadata).drop)<'4>(move drop_arg)
     ↳⚡ unwind_continue
+    _0 = ()
     return
 }
 

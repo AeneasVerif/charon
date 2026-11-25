@@ -57,11 +57,13 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr<'tcx>> for ty::Const<
                 let kind = ConstantExprKind::ConstRef { id: p.sinto(s) };
                 ConstantExpr::new(kind, ty.sinto(s))
             }
-            ty::ConstKind::Alias(_, ucv) => {
-                let def = ucv
-                    .kind
-                    .opt_def_id()
-                    .expect("AliasConstKind with no def id?");
+            // We purposefully ignore `InherentSelf`: its args aren't in impl form
+            ty::ConstKind::Alias(_, ucv)
+                if let ty::AliasConstKind::Projection { def_id: def }
+                | ty::AliasConstKind::InherentImpl { def_id: def }
+                | ty::AliasConstKind::Free { def_id: def }
+                | ty::AliasConstKind::Anon { def_id: def } = ucv.kind =>
+            {
                 let src = ConstSource::TyConst(ucv);
                 if s.base().options.inline_anon_consts
                     // Rustc hoists inline `const {}` blocks and constant expressions into
@@ -246,7 +248,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr<'tcx>>
                 value: value.sinto(s),
             },
             ConstKind::FnDef { def, args } => {
-                ConstantExprKind::FnDef(translate_item_ref(s, *def, args))
+                ConstantExprKind::FnDef(translate_item_ref(s, *def, *args))
             }
             ConstKind::FnPtr(target) => ConstantExprKind::FnPtr(target.sinto(s)),
             ConstKind::Ptr { target, unsize } => {

@@ -1,7 +1,7 @@
 //@ no-default-options
-//@ charon-args=--include alloc::boxed::Box --include core::ptr::unique::Unique
-//@ charon-args=--include core::pin::Pin --include alloc::rc::Rc
-//@ charon-args=--include alloc::sync::Arc --include core::ptr::non_null::NonNull
+//@ charon-args=--include alloc::boxed::Box --include alloc::boxed::BoxRaw
+//@ charon-args=--include core::pin::Pin --include alloc::rcs::rc::Rc
+//@ charon-args=--include alloc::rcs::arc::Arc --include core::ptr::non_null::NonNull
 use std::pin::Pin;
 use std::rc::Rc;
 use std::sync::Arc;

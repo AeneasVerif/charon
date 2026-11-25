@@ -93,14 +93,9 @@ where
   Some { _0: T },
 }
 
-struct str {
-  _0: [u8],
-}
-
-// Full name: core::panicking::panic
+// Full name: core::panicking::panic_default_msg
 #[track_caller]
-#[lang_item(Panic)]
-pub fn panic(_1: &'static str) -> !
+pub fn panic_default_msg() -> !
 = <opaque>
 
 // Full name: core::slice::index::SliceIndex
@@ -425,8 +420,6 @@ fn slice_pat2()
     return
 }
 
-pub const test_crate::slice_pat3::{promoted_const#2}: str = "explicit panic" with_metadata(14usize)
-
 // Full name: test_crate::slice_pat3
 fn slice_pat3()
 {
@@ -436,20 +429,20 @@ fn slice_pat3()
         where slice := &'1 [i32];
     let mut _2: &'5 [i32; 4usize]; // anonymous local
     let _3: &'6 [i32; 4usize]; // anonymous local
+    let mut _4: !; // anonymous local
     let _a: &'8 i32; // local
     let _b: &'9 [i32]; // local
     let _c: &'10 i32; // local
-    let mut _7: usize; // anonymous local
     let mut _8: usize; // anonymous local
     let mut _9: usize; // anonymous local
-    let mut _10: bool; // anonymous local
-    let mut _11: &'11 [i32; 4usize]; // anonymous local
-    let mut _12: usize; // anonymous local
+    let mut _10: usize; // anonymous local
+    let mut _11: bool; // anonymous local
+    let mut _12: &'11 [i32; 4usize]; // anonymous local
     let mut _13: usize; // anonymous local
-    let mut _14: &'12 [i32; 4usize]; // anonymous local
-    let mut _15: &'19 [i32; 4usize]; // anonymous local
-    let mut _16: [i32; 4usize]; // anonymous local
-    let mut _17: &'18 str; // anonymous local
+    let mut _14: usize; // anonymous local
+    let mut _15: &'12 [i32; 4usize]; // anonymous local
+    let mut _16: &'17 [i32; 4usize]; // anonymous local
+    let mut _17: [i32; 4usize]; // anonymous local
     let mut _18: &'_ [i32]; // anonymous local
     let mut _19: &'_ i32; // anonymous local
     let mut _20: &'_ [i32]; // anonymous local
@@ -460,52 +453,61 @@ fn slice_pat3()
     let mut _25: usize; // anonymous local
     let mut _26: &'_ i32; // anonymous local
 
-    storage_live(_14)
     storage_live(_15)
     storage_live(_16)
-    _16 = repeat<i32, 4usize>[{built_in impl Sized for i32}, impl_Clone_for_i32](const 0i32)
+    storage_live(_17)
+    _17 = repeat<i32, 4usize>[{built_in impl Sized for i32}, impl_Clone_for_i32](const 0i32)
     ↳⚡ undefined_behavior
-    _15 = &_16
-    _14 = move _15
+    _16 = &_17
+    _15 = move _16
     storage_live(_0)
-    storage_live(_7)
+    storage_live(_4)
     storage_live(_8)
     storage_live(_9)
     storage_live(_10)
     storage_live(_11)
+    storage_live(_12)
     _0 = ()
     storage_live(slice)
     storage_live(_2)
     storage_live(_3)
-    _11 = move _14
-    _3 = &(*_11)
+    _12 = move _15
+    _3 = &(*_12)
     _2 = &(*_3)
     slice = as_slice<'_, i32, 4usize>[{built_in impl Sized for i32}](move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
     fake_read(slice)
     storage_dead(_3)
-    _8 = noretag copy slice.metadata
-    _7 = move _8
-    _9 = const 2usize
-    _10 = move _7 >= move _9
-    storage_live(_17)
-    _17 = &test_crate::slice_pat3::{promoted_const#2} with_metadata(const 14usize)
-    assert(move _10 == true) else panic(panic(move _17))
-    ↳⚡ storage_dead(_26)
-        storage_dead(_25)
-        storage_dead(_24)
-        storage_dead(_23)
-        storage_dead(_22)
-        storage_dead(_21)
-        storage_dead(_20)
-        storage_dead(_19)
-        storage_dead(_18)
-        storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(_15)
-        storage_dead(_14)
-        unwind_continue
+    _9 = noretag copy slice.metadata
+    _8 = move _9
+    _10 = const 2usize
+    _11 = move _8 >= move _10
+    if move _11 {
+    } else {
+        _4 = panic_default_msg()
+        ↳⚡ storage_dead(_14)
+            storage_dead(_13)
+            storage_dead(_12)
+            storage_dead(_11)
+            storage_dead(_10)
+            storage_dead(_9)
+            storage_dead(_8)
+            storage_dead(_4)
+            storage_dead(_26)
+            storage_dead(_25)
+            storage_dead(_24)
+            storage_dead(_23)
+            storage_dead(_22)
+            storage_dead(_21)
+            storage_dead(_20)
+            storage_dead(_19)
+            storage_dead(_18)
+            storage_dead(_17)
+            storage_dead(_16)
+            storage_dead(_15)
+            unwind_continue
+    }
     storage_live(_a)
     storage_live(_18)
     _18 = &(*slice) with_metadata(read slice.metadata)
@@ -514,10 +516,10 @@ fn slice_pat3()
     ↳⚡ undefined_behavior
     _a = &(*_19)
     storage_live(_b)
-    storage_live(_12)
-    _12 = read slice.metadata ub.- const 1usize
     storage_live(_13)
-    _13 = read _12 ub.- const 1usize
+    _13 = read slice.metadata ub.- const 1usize
+    storage_live(_14)
+    _14 = read _13 ub.- const 1usize
     storage_live(_20)
     _20 = &(*slice) with_metadata(read slice.metadata)
     storage_live(_21)
@@ -527,7 +529,7 @@ fn slice_pat3()
     storage_live(_23)
     _23 = impl_SliceIndex_slice_for_Range_usize::index<'_, i32>[{built_in impl Sized for i32}](move _22, move _20)
     ↳⚡ undefined_behavior
-    _b = &(*_23) with_metadata(read _13)
+    _b = &(*_23) with_metadata(read _14)
     storage_live(_c)
     storage_live(_24)
     _24 = &(*slice) with_metadata(read slice.metadata)
@@ -542,13 +544,14 @@ fn slice_pat3()
     storage_dead(_b)
     storage_dead(_a)
     storage_dead(slice)
+    storage_dead(_14)
     storage_dead(_13)
     storage_dead(_12)
     storage_dead(_11)
     storage_dead(_10)
     storage_dead(_9)
     storage_dead(_8)
-    storage_dead(_7)
+    storage_dead(_4)
     storage_dead(_26)
     storage_dead(_25)
     storage_dead(_24)
@@ -561,7 +564,6 @@ fn slice_pat3()
     storage_dead(_17)
     storage_dead(_16)
     storage_dead(_15)
-    storage_dead(_14)
     return
 }
 

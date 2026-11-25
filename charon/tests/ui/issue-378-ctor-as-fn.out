@@ -95,6 +95,7 @@ unsafe fn impl_Destruct_for_Foo::drop_glue<'_0>(_1: &'_0 mut Foo)
     drop[impl_Destruct_for_String::drop_glue<'2>] (*_1)._1
     ↳⚡ storage_dead(_1)
         unwind_continue
+    _0 = ()
     storage_dead(_1)
     return
 }
