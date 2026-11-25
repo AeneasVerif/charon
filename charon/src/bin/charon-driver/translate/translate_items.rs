@@ -1328,7 +1328,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                             if item_meta.opacity.is_transparent() {
                                 self.mark_method_as_used(trait_id, trait_method_id);
                             }
-                            self.translate_item_binder(
+                            self.translate_trait_item_binder(
                                 item_span,
                                 binder_kind,
                                 value,
@@ -1421,7 +1421,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     let assoc_type_id = *assoc_item_id.as_type().unwrap();
                     let binder_kind = BinderKind::TraitType(trait_id, assoc_type_id);
                     let assoc_ty = match &impl_item.value {
-                        Some(impl_value) => self.translate_item_binder(
+                        Some(impl_value) => self.translate_trait_item_binder(
                             item_span,
                             binder_kind,
                             impl_value,

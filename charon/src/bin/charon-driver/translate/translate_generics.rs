@@ -5,7 +5,6 @@ use std::mem;
 use crate::hax;
 use crate::hax::{BaseState, Symbol};
 use rustc_middle::ty;
-use rustc_span::def_id::DefId as RDefId;
 
 use super::translate_ctx::{ItemTransCtx, TransItemSourceKind};
 use charon_lib::ast::*;
@@ -24,10 +23,6 @@ use charon_lib::utils::CycleDetector;
 /// this level, and various maps from the rustc-internal indices to our indices.
 #[derive(Debug, Default)]
 pub(crate) struct BindingLevel<'tcx> {
-    /// The definition whose generics this binding level contains, if this is an item binder.
-    pub def_id: Option<hax::DefId>,
-    /// Dummy rustc `DefId` that we use to `liberate_bound_regions` for our synthetic fn pointer items.
-    pub late_bound_scope_alias: Option<RDefId>,
     /// The parameters and predicates bound at this level.
     pub params: GenericParams,
     /// Whether this binding level exists in Hax's De Bruijn indices. `dyn Trait` introduces an
@@ -42,6 +37,9 @@ pub(crate) struct BindingLevel<'tcx> {
     pub early_region_vars: HashMap<hax::EarlyParamRegion, RegionId>,
     /// The map from rust named region parameter ids to translated region indices.
     pub region_vars_by_def_id: HashMap<hax::DefId, RegionId>,
+    /// `DefId` used by `ReLateParam` to refer to this binder's `bound_region_vars`,
+    /// if that may happen.
+    pub late_param_def_id: Option<hax::DefId>,
     /// The map from rust late/bound regions to translated region indices.
     pub bound_region_vars: Vec<RegionId>,
     /// Extra lifetimes unerased from the closure arguments. Hax represents them with placeholder
@@ -84,16 +82,16 @@ fn translate_variance(variance: Option<&hax::Variance>) -> Variance {
 }
 
 impl<'tcx> BindingLevel<'tcx> {
-    pub(crate) fn new(def_id: Option<hax::DefId>) -> Self {
+    pub(crate) fn new() -> Self {
         Self {
-            def_id,
+            late_param_def_id: None,
             counts_for_de_bruijn: true,
             ..Default::default()
         }
     }
 
     pub(crate) fn new_dyn() -> Self {
-        let mut level = Self::new(None);
+        let mut level = Self::new();
         level.counts_for_de_bruijn = false;
         level
     }
@@ -207,15 +205,17 @@ impl<'tcx> BindingLevel<'tcx> {
         self.const_generic_vars_map.insert(rid, var_id);
     }
 
-    /// Translate a binder of regions by appending the stored reguions to the given vector.
-    pub(crate) fn push_params_from_binder(
+    /// Add the binder's regions to this binding level.
+    pub(crate) fn push_late_bound_params(
         &mut self,
         binder: &hax::Binder<()>,
+        late_param_def_id: Option<hax::DefId>,
     ) -> Result<(), Error> {
         assert!(
             self.bound_region_vars.is_empty(),
             "Trying to use two binders at the same binding level"
         );
+        self.late_param_def_id = late_param_def_id;
         use crate::hax::BoundVariableKind::*;
         for p in &binder.bound_vars {
             match p {
@@ -338,11 +338,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         use hax::LateParamRegionKind::*;
         match &region.kind {
             Anon(index) | NamedAnon(index, _) => {
-                let Some((dbid, binder)) =
-                    self.binding_levels.iter_enumerated().find(|(_, binder)| {
-                        binder.def_id.as_ref() == Some(&region.scope)
-                            || binder.late_bound_scope_alias == region.scope.as_real_def_id()
-                    })
+                let Some((dbid, binder)) = self
+                    .binding_levels
+                    .iter_enumerated()
+                    .find(|(_, binder)| binder.late_param_def_id.as_ref() == Some(&region.scope))
                 else {
                     raise_error!(
                         self,
@@ -521,45 +520,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Ok(())
     }
 
-    /// Push the item's late-bound parameters in the current binding level.
-    fn push_late_bound_generics_for_def(&mut self, def: &hax::FullDef<'tcx>) -> Result<(), Error> {
-        if let Some(param_env) = def.param_env() {
-            self.innermost_binder_mut()
-                .push_params_from_binder(&param_env.late_bound)?;
-        }
-        if let hax::FullDefKind::FnPtr(f) = def.kind() {
-            self.innermost_binder_mut().late_bound_scope_alias = Some(f.late_bound_scope());
-        }
-        Ok(())
-    }
-
     /// Add the generics and predicates of this item and its parents to the current context.
-    #[tracing::instrument(skip(self, span, def))]
-    fn push_generics_for_def(&mut self, span: Span, def: &hax::FullDef<'tcx>) -> Result<(), Error> {
-        trace!("{:?}", def.param_env());
-        // Add generics from the parent item, recursively.
-        if let Some(param_env) = def.param_env()
-            && let Some(parent_item) = &param_env.soft_parent
-        {
-            let parent_def = self.hax_def(parent_item)?;
-            self.push_generics_for_def(span, &parent_def)?;
-        }
-        self.push_generics_for_def_without_parents(span, def)?;
-        Ok(())
-    }
-
-    /// Add the generics and predicates of this item. This does not include the parent generics;
-    /// use `push_generics_for_def` to get the full list.
-    fn push_generics_for_def_without_parents(
+    #[tracing::instrument(skip(self, def))]
+    fn push_generics_for_def(
         &mut self,
-        _span: Span,
         def: &hax::FullDef<'tcx>,
+        include_late_bound: bool,
     ) -> Result<(), Error> {
         if let Some(param_env) = def.param_env() {
+            // Add generics from the parent item, recursively.
+            if let Some(parent_item) = &param_env.soft_parent {
+                let parent_def = self.hax_def(parent_item)?;
+                self.push_generics_for_def(&parent_def, false)?;
+            }
             let origin = Self::predicate_origin_for_def(def);
-            self.push_param_env_without_parents(param_env, origin)?;
+            self.push_param_env_without_parents(param_env, origin, include_late_bound)?;
         }
-
         Ok(())
     }
 
@@ -592,6 +568,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         param_env: &hax::ParamEnv<'tcx>,
         origin: PredicateOrigin,
+        include_late_bound: bool,
     ) -> Result<(), Error> {
         for region in &param_env.extra_early_regions {
             self.innermost_binder_mut()
@@ -599,6 +576,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
         self.push_generic_params(&param_env.generics)?;
         self.register_predicates(&param_env.predicates, origin)?;
+        if include_late_bound {
+            self.innermost_binder_mut().push_late_bound_params(
+                &param_env.late_bound,
+                param_env.late_bound_scope.clone(),
+            )?;
+        }
         Ok(())
     }
 
@@ -611,19 +594,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// required by the `TransItemSourceKind`.
     pub fn translate_item_generics(
         &mut self,
-        span: Span,
+        _span: Span,
         def: &hax::FullDef<'tcx>,
         kind: &TransItemSourceKind,
     ) -> Result<(), Error> {
         assert!(self.binding_levels.is_empty());
-        self.binding_levels
-            .push(BindingLevel::new(Some(def.def_id().clone())));
-        self.push_generics_for_def(span, def)?;
-        // Add the lifetime generics coming from the higher-kindedness of the signature. For
-        // closures, late-bound variables are only bound on the impl, not the state struct.
-        if !matches!(def.kind(), hax::FullDefKind::Closure(_)) || kind.has_closure_late_params() {
-            self.push_late_bound_generics_for_def(def)?;
-        }
+        self.binding_levels.push(BindingLevel::new());
+        // For closures, we only bind late-bound variables on the impl/methods, not the state struct.
+        let include_late_bound =
+            !matches!(def.kind(), hax::FullDefKind::Closure(_)) || kind.has_closure_late_params();
+        self.push_generics_for_def(def, include_late_bound)?;
 
         if kind.has_self_borrow_region() {
             self.the_only_binder_mut().push_self_borrow_region();
@@ -634,16 +614,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Push a new binding level, run the provided function inside it, then return the bound value.
-    pub(crate) fn inside_binder<F, U>(
-        &mut self,
-        kind: BinderKind,
-        def_id: Option<hax::DefId>,
-        f: F,
-    ) -> Result<Binder<U>, Error>
+    pub(crate) fn inside_binder<F, U>(&mut self, kind: BinderKind, f: F) -> Result<Binder<U>, Error>
     where
         F: FnOnce(&mut Self) -> Result<U, Error>,
     {
-        self.binding_levels.push(BindingLevel::new(def_id));
+        self.binding_levels.push(BindingLevel::new());
 
         // Call the continuation. Important: do not short-circuit on error here.
         let res = f(self);
@@ -659,23 +634,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
-    /// Push a new binding level corresponding to the provided `def` for the duration of the inner
-    /// function call.
-    pub(crate) fn translate_binder_for_def<F, U>(
+    /// Push a new binding level with the given generics, then return the bound value.
+    pub(crate) fn inside_item_binder<F, U>(
         &mut self,
-        span: Span,
         kind: BinderKind,
-        def: &hax::FullDef<'tcx>,
+        owner: &hax::DefId,
+        param_env: &hax::ParamEnv<'tcx>,
+        predicate_origin: PredicateOrigin,
         f: F,
     ) -> Result<Binder<U>, Error>
     where
         F: FnOnce(&mut Self) -> Result<U, Error>,
     {
-        let inner_hax_state = self.t_ctx.hax_state.clone().with_hax_owner(def.def_id());
+        let inner_hax_state = self.t_ctx.hax_state.clone().with_hax_owner(owner);
         let outer_hax_state = mem::replace(&mut self.hax_state, inner_hax_state);
-        let ret = self.inside_binder(kind, Some(def.def_id().clone()), |this| {
-            this.push_generics_for_def_without_parents(span, def)?;
-            this.push_late_bound_generics_for_def(def)?;
+        let ret = self.inside_binder(kind, |this| {
+            this.push_param_env_without_parents(param_env, predicate_origin, true)?;
             this.innermost_binder().params.check_consistency();
             f(this)
         });
@@ -683,9 +657,26 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         ret
     }
 
-    /// Push a new binding level corresponding to the provided item binder for the duration of the
-    /// inner function call.
-    pub(crate) fn translate_item_binder<F, T, U>(
+    /// Push a new binding level corresponding to the provided `def` for the duration of the inner
+    /// function call.
+    pub(crate) fn translate_binder_for_def<F, U>(
+        &mut self,
+        _span: Span,
+        kind: BinderKind,
+        def: &hax::FullDef<'tcx>,
+        f: F,
+    ) -> Result<Binder<U>, Error>
+    where
+        F: FnOnce(&mut Self) -> Result<U, Error>,
+    {
+        let param_env = def.param_env().unwrap();
+        let origin = Self::predicate_origin_for_def(def);
+        self.inside_item_binder(kind, def.def_id(), param_env, origin, |this| f(this))
+    }
+
+    /// Push a new binding level corresponding to the provided trait item binder for the duration
+    /// of the inner function call.
+    pub(crate) fn translate_trait_item_binder<F, T, U>(
         &mut self,
         _span: Span,
         kind: BinderKind,
@@ -696,17 +687,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     where
         F: FnOnce(&mut Self, &T) -> Result<U, Error>,
     {
-        let inner_hax_state = self.t_ctx.hax_state.clone().with_hax_owner(&binder.def_id);
-        let outer_hax_state = mem::replace(&mut self.hax_state, inner_hax_state);
-        let ret = self.inside_binder(kind, Some(binder.def_id.clone()), |this| {
-            this.push_param_env_without_parents(&binder.param_env, predicate_origin)?;
-            this.innermost_binder_mut()
-                .push_params_from_binder(&binder.param_env.late_bound)?;
-            this.innermost_binder().params.check_consistency();
-            f(this, &binder.skip_binder)
-        });
-        self.hax_state = outer_hax_state;
-        ret
+        self.inside_item_binder(
+            kind,
+            &binder.def_id,
+            &binder.param_env,
+            predicate_origin,
+            |this| f(this, &binder.skip_binder),
+        )
     }
 
     /// Push a group of bound regions and call the continuation.
@@ -721,9 +708,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     where
         F: FnOnce(&mut Self, &T) -> Result<U, Error>,
     {
-        let binder = self.inside_binder(BinderKind::Other, None, |this| {
+        let binder = self.inside_binder(BinderKind::Other, |this| {
             this.innermost_binder_mut()
-                .push_params_from_binder(&binder.rebind(()))?;
+                .push_late_bound_params(&binder.rebind(()), None)?;
             f(this, binder.hax_skip_binder_ref())
         })?;
         // Convert to a region-only binder.
