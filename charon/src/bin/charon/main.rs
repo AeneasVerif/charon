@@ -43,7 +43,11 @@ use clap::Parser;
 use cli::{Charon, Cli};
 use itertools::Itertools;
 use serde::Deserialize;
-use std::{env, path::PathBuf, process::ExitStatus};
+use std::{
+    env,
+    path::PathBuf,
+    process::{Command, ExitStatus},
+};
 use toolchain::{
     CHARON_SYSROOT_VAR, HOST_TARGET, setup_miri_sysroot, toolchain_path, toolchain_version,
 };
@@ -213,7 +217,7 @@ fn translate_merged_crates(
 
     // TODO: a lib and a bin of the same package have the same crate name and overwrite each
     // other's output.
-    let crate_names = cargo_targets(&cargo_args)?
+    let crate_names = cargo_targets(toolchain::in_toolchain("cargo")?, &cargo_args)?
         .into_iter()
         .unique()
         .collect_vec();
@@ -318,25 +322,32 @@ fn translate_with_cargo(
         }
     };
 
-    let mut cmd = toolchain::in_toolchain("cargo")?;
-    cmd.env("RUSTC_WRAPPER", toolchain::driver_path());
-    cmd.env_remove("RUSTC_WORKSPACE_WRAPPER");
-    cmd.env("CHARON_USING_CARGO", "1");
-    cmd.env_remove("CARGO_PRIMARY_PACKAGE");
-    cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
+    let sysroot = miri_sysroot(options.sysroot.as_deref(), &target);
+    // Cargo caches the output of its compiler queries in `target/.rustc_info.json`, keyed by the
+    // compiler wrapper -- we run all cargo commands with the same env to take advantage of it.
+    let cargo = || -> anyhow::Result<Command> {
+        let mut cmd = toolchain::in_toolchain("cargo")?;
+        cmd.env("RUSTC_WRAPPER", toolchain::driver_path());
+        cmd.env_remove("RUSTC_WORKSPACE_WRAPPER");
+        cmd.env("CHARON_USING_CARGO", "1");
+        cmd.env_remove("CARGO_PRIMARY_PACKAGE");
+        cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
+        if let Some(sysroot) = &sysroot {
+            cmd.env(CHARON_SYSROOT_VAR, sysroot);
+        }
+        Ok(cmd)
+    };
+
+    let mut cmd = cargo()?;
     // We control cargo caching as follows: `charon-driver` declares that if
     // `CHARON_SELECTED_CRATE_{crate_name}` changes, then cache should be invalidated and the
     // driver re-run. We then set it with a fresh value for all the crates that are targeted by the
     // current command (e.g. the workspace roots, or a crate selected with `-p`).
-    for crate_name in cargo_targets(&cargo_args)? {
+    for crate_name in cargo_targets(cargo()?, &cargo_args)? {
         let nonce = fresh_nonce();
         cmd.env(selected_crate_var(&crate_name), &nonce);
     }
     cmd.arg("build");
-
-    if let Some(sysroot) = miri_sysroot(options.sysroot.as_deref(), &target) {
-        cmd.env(CHARON_SYSROOT_VAR, sysroot);
-    }
     cmd.args(cargo_args);
     trace!("running {cmd:?}");
     Ok(cmd
@@ -346,8 +357,8 @@ fn translate_with_cargo(
         .expect("failed to wait for cargo?"))
 }
 
-/// Returns the names of the crates that `cargo build <build_args>` selects.
-fn cargo_targets(build_args: &[String]) -> anyhow::Result<Vec<String>> {
+/// Returns the names of the crates that `cargo build <build_args>` selects, using `cmd` to run cargo.
+fn cargo_targets(mut cmd: Command, build_args: &[String]) -> anyhow::Result<Vec<String>> {
     /// The parts of cargo's `--unit-graph` output we use.
     #[derive(Deserialize)]
     struct UnitGraph {
@@ -363,7 +374,6 @@ fn cargo_targets(build_args: &[String]) -> anyhow::Result<Vec<String>> {
         name: String,
     }
 
-    let mut cmd = toolchain::in_toolchain("cargo")?;
     cmd.args(["build", "--unit-graph", "-Z", "unstable-options"]);
     cmd.args(build_args);
     trace!("running {cmd:?}");
