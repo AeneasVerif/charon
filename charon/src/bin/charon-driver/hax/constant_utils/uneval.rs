@@ -57,13 +57,20 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr<'tcx>> for ty::Const<
                 let kind = ConstantExprKind::ConstRef { id: p.sinto(s) };
                 ConstantExpr::new(kind, ty.sinto(s))
             }
-            // We purposefully ignore `InherentSelf`: its args aren't in impl form
-            ty::ConstKind::Alias(_, ucv)
-                if let ty::AliasConstKind::Projection { def_id: def }
-                | ty::AliasConstKind::InherentImpl { def_id: def }
-                | ty::AliasConstKind::Free { def_id: def }
-                | ty::AliasConstKind::Anon { def_id: def } = ucv.kind =>
-            {
+            ty::ConstKind::Alias(_, ucv) => {
+                let def = match ucv.kind {
+                    ty::AliasConstKind::Projection { def_id: def }
+                    | ty::AliasConstKind::InherentImpl { def_id: def }
+                    | ty::AliasConstKind::Free { def_id: def }
+                    | ty::AliasConstKind::Anon { def_id: def } => def,
+                    ty::AliasConstKind::InherentSelf { .. } => {
+                        // Normalization replaces `InherentSelf` with its its value
+                        let msg = format!("unnormalized constant: {self:?}");
+                        s.raise(Level::ERROR, span, msg.clone());
+                        let ty = Ty::new(s, TyKind::Error);
+                        return ConstantExpr::new(ConstantExprKind::Todo(msg), ty);
+                    }
+                };
                 let src = ConstSource::TyConst(ucv);
                 if s.base().options.inline_anon_consts
                     // Rustc hoists inline `const {}` blocks and constant expressions into

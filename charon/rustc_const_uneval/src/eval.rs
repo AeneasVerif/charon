@@ -241,7 +241,8 @@ impl<'tcx> ConstReader<'tcx> {
     /// its evaluation fails, or if its type has no valtree representation.
     fn eval_to_valtree(&self, span: Span, uv: ty::AliasConst<'tcx>) -> Option<ty::Value<'tcx>> {
         let tcx = self.tcx;
-        // `InherentSelf` args aren't in impl form; they only appear before normalization.
+        // Normalization replaces `InherentSelf` consts with their value, so we only see one if
+        // normalization failed or was skipped.
         if uv.has_non_region_param() || matches!(uv.kind, ty::AliasConstKind::InherentSelf { .. }) {
             return None;
         }
