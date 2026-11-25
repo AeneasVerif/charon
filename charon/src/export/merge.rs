@@ -208,6 +208,15 @@ impl CrateMerger {
                 fn enter_trait_impl_id(&mut self, id: &mut TraitImplId) {
                     *id += self.trait_impl_offset;
                 }
+                fn visit_impl_restriction(
+                    &mut self,
+                    x: &mut ImplRestriction,
+                ) -> ControlFlow<Self::Break> {
+                    let name_suffix = self.name_suffix.take();
+                    self.visit_inner(x)?;
+                    self.name_suffix = name_suffix;
+                    ControlFlow::Continue(())
+                }
                 fn enter_name(&mut self, name: &mut Name) {
                     if let Some(suffix) = &self.name_suffix {
                         name.name.push(suffix.clone());

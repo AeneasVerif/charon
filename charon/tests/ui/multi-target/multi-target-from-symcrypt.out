@@ -357,7 +357,7 @@ pub fn wrapping_add(_1: u16, _2: u16) -> u16
 
 // Full name: core::slice::index::SliceIndex
 #[diagnostic_item("SliceIndex")]
-pub unsafe trait SliceIndex<Self, T>
+pub impl(in core) unsafe trait SliceIndex<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: MetaSized)
