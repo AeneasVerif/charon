@@ -950,7 +950,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                                 {
                                     // Some sanity checks
                                     assert!(generics.regions.is_empty());
-                                    assert!(generics.types.len() == 2);
+                                    assert!(
+                                        self.t_ctx.options.monomorphize_with_hax
+                                            || generics.types.len() == 2
+                                    );
                                     assert!(generics.const_generics.is_empty());
                                     if field_id == FieldId::ZERO {
                                         // We pretend the pointee field is a deref.
