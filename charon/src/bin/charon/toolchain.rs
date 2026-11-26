@@ -1,9 +1,13 @@
 use anyhow::{Context, Result};
 use serde::Deserialize;
-use std::{env, ffi::OsStr, path::PathBuf, process::Command};
+use std::{env, ffi::OsStr, path::PathBuf, process::Command, sync::Mutex};
 
 // Store the toolchain details directly in the binary.
 static PINNED_TOOLCHAIN: &str = include_str!("../../../rust-toolchain");
+
+/// The target triple charon was compiled for, i.e. the platform it runs on.
+/// This is the default `--target` when the user doesn't pass one.
+pub const HOST_TARGET: &str = env!("CHARON_HOST_TARGET");
 
 /// This struct is used to deserialize the "rust-toolchain" file.
 #[derive(Deserialize)]
@@ -94,9 +98,14 @@ pub fn in_toolchain(program: impl AsRef<OsStr>) -> Result<Command> {
         Command::new(program)
     } else {
         trace!("Using rustup-provided toolchain.");
-        if !toolchain.is_installed()? {
-            println!("The required toolchain is not installed. Installing...");
-            toolchain.install()?;
+        static CHECKED: Mutex<bool> = Mutex::new(false);
+        let mut checked = CHECKED.lock().unwrap();
+        if !*checked {
+            if !toolchain.is_installed()? {
+                println!("The required toolchain is not installed. Installing...");
+                toolchain.install()?;
+            }
+            *checked = true;
         }
         toolchain.run(program)
     };
