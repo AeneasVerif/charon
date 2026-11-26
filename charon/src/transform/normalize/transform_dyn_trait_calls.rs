@@ -190,8 +190,7 @@ fn transform_dyn_trait_call(
         Operand::Read(receiver_ptr.project(ProjectionElem::PtrMetadata, ptr_to_vtable_ty));
     let mut vtable_ty = receiver_vtable_ty;
 
-    // A supertrait's method is in the supertrait's vtable, not the receiver's: we look up the
-    // vtable of each supertrait along the path in turn.
+    // Walk up the supertraits until we find the vtable that has the method we need.
     for clause_id in supertrait_path {
         let current_vtable_ref = vtable_ty
             .as_adt()
