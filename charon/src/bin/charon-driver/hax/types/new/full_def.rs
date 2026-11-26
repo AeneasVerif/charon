@@ -1554,7 +1554,7 @@ pub struct VirtualTraitImpl<'tcx> {
     pub implied_trait_proofs: Vec<TraitProof<'tcx>>,
     /// The associated types and their predicates, in definition order.
     pub types: Vec<(Ty<'tcx>, Vec<TraitProof<'tcx>>)>,
-    /// The methods, in definition order.
+    /// The required methods, in definition order.
     pub methods: Vec<VirtualTraitMethod<'tcx>>,
     /// The item under which this impl was built.
     owner: DefId,
@@ -1897,6 +1897,7 @@ where
         .associated_items(trait_ref.def_id)
         .in_definition_order()
         .filter(|assoc| matches!(assoc.kind, ty::AssocKind::Fn { .. }))
+        .filter(|assoc| !assoc.defaultness(tcx).has_value())
         .map(|assoc| {
             let sig = tcx.fn_sig(assoc.def_id).instantiate(tcx, trait_ref.args);
             let sig = normalize(tcx, s.typing_env(), sig);

@@ -223,15 +223,29 @@ impl TransItemSourceKind {
         )
     }
 
-    /// Whether the item takes an extra lifetime parameter for the borrow of `self`.
-    pub fn has_self_borrow_region(&self) -> bool {
-        match self {
+    /// The extra lifetime parameters the item takes for the late-bound lifetimes of a method,
+    /// the first of which is the borrow of `self`. See `BindingLevel::method_regions`.
+    pub fn method_region_params(&self) -> GenericParams {
+        let num_regions = match self {
             Self::VirtualMethod(kind) | Self::VTableMethod(TransImplSource::Virtual(kind)) => {
-                kind.has_self_borrow()
+                kind.method_regions()
             }
-            Self::VTableDropShim(..) => true,
-            _ => false,
+            Self::VTableDropShim(..) => 1,
+            _ => 0,
+        };
+        let mut params = GenericParams::empty();
+        for i in 0..num_regions {
+            // The first region is the borrow of `self`.
+            let variance = if i == 0 {
+                Variance::Covariant
+            } else {
+                Variance::Unknown
+            };
+            params
+                .regions
+                .push_with(|index| RegionParam::new(index, None, variance));
         }
+        params
     }
 
     /// Whether the corresponding item binds the late-bound lifetimes of the closure, or just its
@@ -1023,8 +1037,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
             }
         }
-        if kind.has_self_borrow_region() {
-            generics = generics.concat(&self.self_borrow_generic_args());
+        for _ in kind.method_region_params().regions {
+            generics.regions.push(self.translate_erased_region());
         }
 
         let trait_ref = hax_item

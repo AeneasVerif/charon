@@ -1351,7 +1351,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 })?;
                 bound_sig.apply(
                     self.the_only_binder()
-                        .self_borrow_region
+                        .method_regions
                         .iter()
                         .map(|r| Region::Var(DeBruijnVar::new_at_zero(*r)))
                         .collect(),
@@ -1367,8 +1367,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 match target_kind {
                     ClosureKind::FnOnce => state_ty,
                     ClosureKind::Fn | ClosureKind::FnMut => {
-                        let rid = self.the_only_binder().self_borrow_region.unwrap();
-                        let region = Region::Var(DeBruijnVar::new_at_zero(rid));
+                        let region = self.self_borrow_region();
                         let mutability = RefKind::mutable(target_kind == ClosureKind::FnMut);
                         TyKind::Ref(region, state_ty, mutability).into_ty()
                     }

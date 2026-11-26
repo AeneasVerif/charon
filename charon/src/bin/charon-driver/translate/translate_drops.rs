@@ -1,5 +1,6 @@
 use rustc_middle::ty;
 
+use super::translate_crate::VirtualImplKind;
 use super::translate_ctx::*;
 use crate::hax;
 use charon_lib::ast::*;
@@ -62,7 +63,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     }
 
     pub fn drop_glue_fn_ptr_sig(&self, self_ty: Ty) -> RegionBinder<FunSig> {
-        let params = Self::self_borrow_params();
+        let params =
+            TransItemSourceKind::VirtualMethod(VirtualImplKind::Destruct).method_region_params();
         let region = Region::Var(DeBruijnVar::new_at_zero(RegionId::ZERO));
         let self_ty = self_ty.move_under_binder();
         RegionBinder {
