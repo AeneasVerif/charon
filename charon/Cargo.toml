@@ -123,12 +123,18 @@ wait-timeout = "0.2.0"
 which = "7.0"
 rustc_apfloat = "0.2.3"
 
+[target.'cfg(not(windows))'.dependencies]
+tikv-jemalloc-sys = { version = "0.6.1", optional = true, features = ["override_allocator_on_supported_platforms"] }
+
 [features]
-default = ["rustc", "minirust"]
+default = ["rustc", "minirust", "jemalloc"]
 # Hook into rustc-internal APIs. Needed for the `charon-driver` binary but not
 # the main crate. Pass `--no-default-features` to compile `charon-lib` on a
 # stable toolchain.
 rustc = ["dep:rustc_const_uneval", "dep:rustc_trait_elaboration"]
+# Use jemalloc as the allocator of `charon-driver`.
+# Not available on Windows.
+jemalloc = ["dep:tikv-jemalloc-sys"]
 # Enables converting monomorphized ULLBC to MiniRust's serialized format.
 minirust = ["dep:minirust-rs", "dep:miniutil"]
 # Enable the `charon` tool attribute when translating charon with itself.
@@ -160,6 +166,9 @@ rustc_private = true
 split-debuginfo = "unpacked"
 
 [profile.dev.package.minirust-rs]
+opt-level = 3
+
+[profile.dev.package.tikv-jemalloc-sys]
 opt-level = 3
 
 [patch.crates-io]

@@ -37,6 +37,17 @@ extern crate rustc_trait_selection;
 #[macro_use]
 extern crate charon_lib;
 
+// Enables `jemalloc` -- this also changes the allocator that `rustc` uses!
+#[cfg(all(feature = "jemalloc", not(windows)))]
+use tikv_jemalloc_sys as _;
+// Change jemalloc's default options:
+// - `narenas:1`: limit jemalloc to a single arena, instead of one per thread. rustc is
+//   highly parallel so one arena per thread leads to undesirable RSS increases.
+#[cfg(all(feature = "jemalloc", not(windows)))]
+#[cfg_attr(target_vendor = "apple", unsafe(export_name = "_rjem_malloc_conf"))]
+#[cfg_attr(not(target_vendor = "apple"), unsafe(export_name = "malloc_conf"))]
+static MALLOC_CONF: &u8 = &b"narenas:1\0"[0];
+
 mod driver;
 #[macro_use]
 pub mod hax;
