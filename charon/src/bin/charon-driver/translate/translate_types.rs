@@ -69,7 +69,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             RePlaceholder(placeholder) => {
                 // We use placeholders to track some closure regions that rustc erases.
                 for (dbid, level) in self.binding_levels.iter_enumerated() {
-                    if let Some(&rid) = level.closure_extra_self_regions.get(placeholder) {
+                    if let Some(&rid) = level.extra_early_region_vars.get(placeholder) {
                         return Ok(Region::Var(DeBruijnVar::bound(dbid, rid)));
                     }
                 }
