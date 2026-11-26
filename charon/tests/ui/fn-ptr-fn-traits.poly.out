@@ -1305,6 +1305,7 @@ pub fn test_dyn_fn(x: u32) -> u32
     let mut _6: &'12 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '13); // anonymous local
     let mut _7: (u32,); // anonymous local
     let mut _8: u32; // anonymous local
+    let mut _9: extern "rust-call" fn<'_0_1>(&'_0_1 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32>), (u32,)) -> u32; // anonymous local
 
     storage_live(_0)
     set '1: '0
@@ -1327,8 +1328,11 @@ pub fn test_dyn_fn(x: u32) -> u32
     storage_live(_8)
     _8 = copy x
     _7 = (move _8,)
-    _0 = (read (*_6.metadata).method_call)<'23>(move _6, move _7)
+    storage_live(_9)
+    _9 = vtable_lookup<method_call>(read _6.metadata)
+    _0 = (read _9)<'23>(move _6, move _7)
     ↳⚡ storage_dead(x)
+        storage_dead(_9)
         unwind_continue
     storage_dead(_8)
     storage_dead(_7)
@@ -1336,6 +1340,7 @@ pub fn test_dyn_fn(x: u32) -> u32
     storage_dead(dyn_fn)
     storage_dead(fn_ptr)
     storage_dead(x)
+    storage_dead(_9)
     return
 }
 
@@ -1355,6 +1360,7 @@ pub fn test_dyn_fn_mut(x: u32) -> u32
     let mut _6: &'12 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '13); // anonymous local
     let mut _7: (u32,); // anonymous local
     let mut _8: u32; // anonymous local
+    let mut _9: extern "rust-call" fn<'_0_1>(&'_0_1 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32>), (u32,)) -> u32; // anonymous local
 
     storage_live(_0)
     set '1: '0
@@ -1377,8 +1383,11 @@ pub fn test_dyn_fn_mut(x: u32) -> u32
     storage_live(_8)
     _8 = copy x
     _7 = (move _8,)
-    _0 = (read (*_6.metadata).method_call_mut)<'23>(move _6, move _7)
+    storage_live(_9)
+    _9 = vtable_lookup<method_call_mut>(read _6.metadata)
+    _0 = (read _9)<'23>(move _6, move _7)
     ↳⚡ storage_dead(x)
+        storage_dead(_9)
         unwind_continue
     storage_dead(_8)
     storage_dead(_7)
@@ -1386,6 +1395,7 @@ pub fn test_dyn_fn_mut(x: u32) -> u32
     storage_dead(dyn_fn)
     storage_dead(fn_ptr)
     storage_dead(x)
+    storage_dead(_9)
     return
 }
 

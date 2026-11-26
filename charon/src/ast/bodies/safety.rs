@@ -219,6 +219,7 @@ impl HasSafety for UnOp {
         match self {
             UnOp::Not => Safety::Safe,
             UnOp::Neg(om) => om.safety(krate),
+            UnOp::VTableLookup(..) => Safety::Safe,
             UnOp::Cast(CastKind::Concretize(..) | CastKind::Transmute(..)) => Safety::Unsafe,
             UnOp::Cast(CastKind::PtrWithExposedProvenance(tgt)) if tgt.is_ref() => Safety::Unsafe,
             UnOp::Cast(

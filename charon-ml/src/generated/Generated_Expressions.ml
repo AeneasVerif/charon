@@ -274,6 +274,12 @@ and unop =
   | Neg of overflow_mode  (** This can overflow, for [-i::MIN]. *)
   | Cast of cast_kind
       (** Casts are rvalues in MIR, but we treat them as unops. *)
+  | VTableLookup of type_decl_ref * v_table_field
+      (** Reads the entry [VTableField] of a corresponding [dyn] metadata, e.g.
+          for calling a method with dynamic dispatch. The operand is the
+          metadata of a pointer to a [dyn Trait] value. This is the only way
+          code is allowed to read VTables, as a plain read in user code is UB.
+      *)
 
 (** Used for [[Rvalue::Use]] to indicate whether the operand should be retagged
     (this is used for Rust's aliasing model). *)

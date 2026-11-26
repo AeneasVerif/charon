@@ -159,6 +159,10 @@ pub enum UnOp {
     Neg(OverflowMode),
     /// Casts are rvalues in MIR, but we treat them as unops.
     Cast(CastKind),
+    /// Reads the entry `VTableField` of a corresponding `dyn` metadata, e.g. for calling a method with dynamic dispatch.
+    /// The operand is the metadata of a pointer to a `dyn Trait` value.
+    /// This is the only way code is allowed to read VTables, as a plain read in user code is UB.
+    VTableLookup(TypeDeclRef, VTableField),
 }
 
 /// Cast the operand to a new type.

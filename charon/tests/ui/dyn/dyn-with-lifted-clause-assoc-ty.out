@@ -69,32 +69,40 @@ where
     let input: I; // arg #2
     let mut _3: &'5 (dyn exists<Clause0_Clause2_Span> Parser<I, Clause0_Clause2_Span> + '6); // anonymous local
     let mut _4: I; // anonymous local
+    let mut _5: fn<'_0_1>(&'_0_1 (dyn exists<Clause0_Clause2_Span> Parser<I, Clause0_Clause2_Span>), I); // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &(*p) with_metadata(read p.metadata)
     storage_live(_4)
     _4 = move input
-    _0 = (read (*_3.metadata).method_parse)<'14>(move _3, move _4)
+    storage_live(_5)
+    _5 = vtable_lookup<method_parse>(read _3.metadata)
+    _0 = (read _5)<'14>(move _3, move _4)
     ↳⚡ conditional_drop[{built_in impl Destruct for I}::drop_glue<'15>] _4
         ↳⚡ storage_dead(input)
             storage_dead(p)
+            storage_dead(_5)
             unwind_terminate(in_cleanup)
         conditional_drop[{built_in impl Destruct for I}::drop_glue<'17>] input
         ↳⚡ storage_dead(input)
             storage_dead(p)
+            storage_dead(_5)
             unwind_terminate(in_cleanup)
         storage_dead(input)
         storage_dead(p)
+        storage_dead(_5)
         unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     conditional_drop[{built_in impl Destruct for I}::drop_glue<'16>] input
     ↳⚡ storage_dead(input)
         storage_dead(p)
+        storage_dead(_5)
         unwind_continue
     storage_dead(input)
     storage_dead(p)
+    storage_dead(_5)
     return
 }
 
