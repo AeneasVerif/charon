@@ -578,11 +578,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         origin: PredicateOrigin,
         include_late_bound: bool,
     ) -> Result<(), Error> {
+        self.push_generic_params(&param_env.generics)?;
         for region in &param_env.extra_early_regions {
             self.innermost_binder_mut()
                 .push_unerased_region(region.clone());
         }
-        self.push_generic_params(&param_env.generics)?;
         self.register_predicates(&param_env.predicates, origin)?;
         if include_late_bound && let Some(late_bound) = &param_env.late_bound {
             self.innermost_binder_mut()
