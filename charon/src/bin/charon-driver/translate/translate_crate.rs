@@ -110,6 +110,9 @@ pub enum VirtualImplKind {
     /// An impl of the appropriate `Fn*` trait for a closure, function item or function pointer.
     /// Its method is `call_once`, `call_mut` or `call`.
     Callable(ClosureKind),
+    /// The impl of `Coroutine`, `Future`, `Iterator` or `AsyncIterator` for a coroutine. Its
+    /// method is `resume`, `poll`, `next` or `poll_next`, and contains the coroutine body.
+    Coroutine(CoroutineKind),
 }
 
 impl<'tcx> TransItemSource<'tcx> {
@@ -1371,6 +1374,7 @@ pub fn translate<'tcx>(
         lt_mutability_computer: Default::default(),
         monomorphic_layouts: Default::default(),
         intrinsic_def_ids: Default::default(),
+        cached_coroutine_bodies: Default::default(),
     };
     ctx.register_target_info();
     ctx.reserve_unit_decl();

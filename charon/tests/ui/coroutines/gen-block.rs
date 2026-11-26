@@ -1,4 +1,3 @@
-//@ known-failure
 //@ charon-args=--mir elaborated
 //@ no-default-options
 //@ rustc-args=--edition=2024

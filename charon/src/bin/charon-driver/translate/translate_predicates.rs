@@ -82,6 +82,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let item = match ty.kind() {
                     hax::TyKind::Adt(adt) => &adt.item,
                     hax::TyKind::Closure(closure) => &closure.item,
+                    hax::TyKind::Coroutine(coroutine) => &coroutine.item,
                     hax::TyKind::Array(array) => &array.item,
                     hax::TyKind::Slice(slice) => &slice.item,
                     hax::TyKind::Tuple(tuple) => &tuple.item,
@@ -90,22 +91,34 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 Some((item.clone(), VirtualImplKind::Destruct))
             }
             hax::BuiltinTraitData::Other(lang_item) => {
+                use hax::SolverTraitLangItem as Trait;
                 let kind = match lang_item {
-                    hax::SolverTraitLangItem::FnOnce => ClosureKind::FnOnce,
-                    hax::SolverTraitLangItem::FnMut => ClosureKind::FnMut,
-                    hax::SolverTraitLangItem::Fn => ClosureKind::Fn,
+                    Trait::FnOnce => VirtualImplKind::Callable(ClosureKind::FnOnce),
+                    Trait::FnMut => VirtualImplKind::Callable(ClosureKind::FnMut),
+                    Trait::Fn => VirtualImplKind::Callable(ClosureKind::Fn),
+                    Trait::Coroutine => VirtualImplKind::Coroutine(CoroutineKind::Coroutine),
+                    Trait::Future => VirtualImplKind::Coroutine(CoroutineKind::Async),
+                    Trait::Iterator => VirtualImplKind::Coroutine(CoroutineKind::Gen),
+                    Trait::AsyncIterator => VirtualImplKind::Coroutine(CoroutineKind::AsyncGen),
                     _ => return None,
                 };
                 // We skip the binder and erase regions to avoid bound vars escaping.
-                let callable_ty = trait_proof
+                let self_ty = trait_proof
                     .pred
                     .hax_skip_binder_ref()
                     .generic_args
                     .first()?
                     .as_type()?;
-                let item = callable_ty.callable_item()?;
-                let item = item.erase(self.hax_state_with_id());
-                Some((item, VirtualImplKind::Callable(kind)))
+                let item = match kind {
+                    VirtualImplKind::Coroutine(_) => {
+                        let hax::TyKind::Coroutine(coroutine) = self_ty.kind() else {
+                            unreachable!("non-coroutine for coroutine trait");
+                        };
+                        &coroutine.item
+                    }
+                    _ => self_ty.callable_item()?,
+                };
+                Some((item.erase(self.hax_state_with_id()), kind))
             }
             _ => None,
         }

@@ -10,6 +10,7 @@ use charon_lib::ids::IndexVec;
 use charon_lib::options::TranslateOptions;
 use petgraph::graphmap::DiGraphMap;
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
+use rustc_middle::mir;
 use rustc_middle::ty::TyCtxt;
 use rustc_span::def_id::DefId as RDefId;
 use std::borrow::Cow;
@@ -158,6 +159,8 @@ pub struct TranslateCtx<'tcx> {
     pub monomorphic_layouts: SeqHashMap<TypeDeclRef, Layout>,
     /// The `DefId`s of the intrinsics we resolved by name.
     pub intrinsic_def_ids: HashMap<rustc_span::Symbol, RDefId>,
+    /// Cache for [`TranslateCtx::cached_coroutine_mir`].
+    pub cached_coroutine_bodies: HashMap<hax::DefId, mir::Body<'tcx>>,
 }
 
 /// The functions exported under a given symbol.

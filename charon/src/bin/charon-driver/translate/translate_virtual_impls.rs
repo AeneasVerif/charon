@@ -12,6 +12,10 @@ impl VirtualImplKind {
             VirtualImplKind::Callable(ClosureKind::FnOnce) => hax::VirtualTrait::FnOnce,
             VirtualImplKind::Callable(ClosureKind::FnMut) => hax::VirtualTrait::FnMut,
             VirtualImplKind::Callable(ClosureKind::Fn) => hax::VirtualTrait::Fn,
+            VirtualImplKind::Coroutine(CoroutineKind::Coroutine) => hax::VirtualTrait::Coroutine,
+            VirtualImplKind::Coroutine(CoroutineKind::Async) => hax::VirtualTrait::Future,
+            VirtualImplKind::Coroutine(CoroutineKind::Gen) => hax::VirtualTrait::Iterator,
+            VirtualImplKind::Coroutine(CoroutineKind::AsyncGen) => hax::VirtualTrait::AsyncIterator,
         }
     }
 
@@ -21,6 +25,8 @@ impl VirtualImplKind {
         match self {
             // `call_once(self, args...)`
             VirtualImplKind::Callable(ClosureKind::FnOnce) => 0,
+            // `poll(self: Pin<&'a mut Self>, cx: &'b mut Context<'c>)`
+            VirtualImplKind::Coroutine(CoroutineKind::Async | CoroutineKind::AsyncGen) => 3,
             // `fn(&self, args...)`
             _ => 1,
         }
@@ -33,6 +39,9 @@ impl VirtualImplKind {
                 PathElem::Builtin(BuiltinPathElem::DropGlue, Disambiguator::ZERO)
             }
             VirtualImplKind::Callable(kind) => {
+                PathElem::Ident(kind.method_name().into(), Disambiguator::ZERO)
+            }
+            VirtualImplKind::Coroutine(kind) => {
                 PathElem::Ident(kind.method_name().into(), Disambiguator::ZERO)
             }
         }
@@ -92,6 +101,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             VirtualImplKind::Callable(target_kind) => {
                 self.translate_callable_method_body(span, def, target_kind, signature)
             }
+            VirtualImplKind::Coroutine(_) => Ok(self.translate_def_body(span, def)),
         }
     }
 

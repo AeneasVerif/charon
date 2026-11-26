@@ -644,6 +644,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     self.translate_region_binder(span, &trait_proof.pred, |ctx, tref| {
                         // We're inside the binder of `trait_proof.pred`, so we can skip the
                         // binder of the `Self` type.
+                        let generated = ctx.recognize_generated_impl_proof(trait_proof);
                         let (impl_item, impl_kind) = match (&trait_proof.kind, fn_trait_impl) {
                             (hax::TraitProofKind::Concrete(impl_item), _) => {
                                 (impl_item, TransImplSource::Normal)
@@ -658,6 +659,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                     item,
                                     TransImplSource::Virtual(VirtualImplKind::Callable(kind)),
                                 )
+                            }
+                            (_, None)
+                                if let Some((item, kind @ VirtualImplKind::Coroutine(_))) =
+                                    &generated =>
+                            {
+                                (item, TransImplSource::Virtual(*kind))
                             }
                             (_, None) => (tref, TransImplSource::Marker),
                         };
@@ -912,6 +919,15 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     implemented_trait_ref: &timpl.trait_pred().trait_ref,
                     implied_trait_proofs: timpl.implied_trait_proofs(),
                     methods: VTableMethodSource::ImplMethods(methods),
+                }
+            }
+            // We don't fill in the vtables of coroutines yet, so we don't need their methods.
+            (TransImplSource::Virtual(kind @ VirtualImplKind::Coroutine(_)), _) => {
+                let vimpl = impl_def.virtual_impl(self.hax_state(), kind.virtual_trait());
+                VTableInstanceData {
+                    implemented_trait_ref: &vimpl.trait_pred.trait_ref,
+                    implied_trait_proofs: &vimpl.implied_trait_proofs,
+                    methods: VTableMethodSource::ImplMethods(IndexVec::new()),
                 }
             }
             (TransImplSource::Marker, hax::FullDefKind::Trait(t)) => VTableInstanceData {

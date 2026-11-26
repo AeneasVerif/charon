@@ -549,6 +549,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             | FullDefKind::AssocFn(_)
             | FullDefKind::Ctor(_)
             | FullDefKind::Closure(_)
+            | FullDefKind::Coroutine(_)
             | FullDefKind::Const(_)
             | FullDefKind::AssocConst(_)
             | FullDefKind::Static(_) => PredicateOrigin::WhereClauseOnFn,

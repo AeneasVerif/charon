@@ -1,172 +1,274 @@
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:9:1
-   |
- 9 | / fn wrap<T>(x: T) -> impl Coroutine<Yield = (), Return = T> {
-10 | |     #[coroutine]
-11 | |     move || {
-12 | |         yield;
-...  |
-15 | | }
-   | |_^
+# Final LLBC before serialization:
 
-error: Coroutines are not supported
-  --> tests/ui/coroutines/generic.rs:11:5
-   |
-11 | /     move || {
-12 | |         yield;
-13 | |         x
-14 | |     }
-   | |_____^
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:18:9
-   |
-18 |     let mut c = wrap(());
-   |         ^^^^^
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+// Full name: core::marker::Unpin
+#[lang_item(Unpin)]
+pub trait Unpin<Self>
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+struct () {}
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1, Outlives0: (Self: '_0_1)>;
+    non-dyn-compatible
+}
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+// Full name: core::ops::coroutine::CoroutineState
+#[lang_item(CoroutineState)]
+pub enum CoroutineState<Y, R>
+where
+    TraitClause0: (Y: Sized),
+    TraitClause1: (R: Sized),
+{
+  Yielded { _0: Y },
+  Complete { _0: R },
+}
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+// Full name: core::ops::deref::Deref
+#[lang_item(Deref)]
+#[diagnostic_item("Deref")]
+pub trait Deref<Self>
+{
+    proof ImpliedClause0: (Self::Target: MetaSized)
+    type Target
+    fn deref<'_0_1, Outlives0: (Self: '_0_1), Outlives1: (Self::Target: '_0_1)>;
+    vtable: core::ops::deref::Deref::{vtable}<Self::Target>
+}
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+// Full name: core::ops::deref::{impl Deref for &'_0 mut T}::deref
+pub fn deref<'_0, '_1, T>(_1: &'_1 &'_0 mut T) -> &'_1 T
+where
+    TraitClause0: (T: MetaSized),
+    Outlives0: ('_0: '_1),
+    Outlives1: (T: '_0),
+    Outlives2: (T: '_1),
+= <opaque>
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+// Full name: core::ops::deref::{impl Deref for &'_0 mut T}
+impl<'_0, T> Deref for &'_0 mut T
+where
+    TraitClause0: (T: MetaSized),
+    Outlives0: (T: '_0),
+{
+    proof ImpliedClause0: (T: MetaSized) = TraitClause0
+    type Target = T
+    fn deref<'_0_1> = deref<'_0, '_0_1, T>[TraitClause0]
+    vtable: lazy
+}
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+// Full name: core::panicking::panic_const::panic_const_coroutine_resumed
+#[track_caller]
+#[lang_item(PanicCoroutineResumed)]
+pub fn panic_const_coroutine_resumed() -> !
+= <opaque>
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+// Full name: core::panicking::panic_const::panic_const_coroutine_resumed_panic
+#[track_caller]
+#[lang_item(PanicCoroutineResumedPanic)]
+pub fn panic_const_coroutine_resumed_panic() -> !
+= <opaque>
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+// Full name: core::panicking::panic_in_cleanup
+#[lang_item(PanicInCleanup)]
+fn panic_in_cleanup() -> !
+= <opaque>
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+// Full name: core::pin::Pin
+#[fundamental]
+#[lang_item(Pin)]
+pub opaque type Pin<Ptr>
+where
+    TraitClause0: (Ptr: Sized),
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+// Full name: core::pin::{Pin<Ptr>[TraitClause0]}::new
+pub fn new<Ptr>(_1: Ptr) -> Pin<Ptr>[TraitClause0]
+where
+    TraitClause0: (Ptr: Sized),
+    TraitClause1: (Ptr: Deref),
+    TraitClause2: (TraitClause1::Target: Unpin),
+= <opaque>
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+// Full name: test_crate::wrap::{coroutine}
+enum {coroutine}<T>
+where
+    TraitClause0: (T: Sized),
+{
+  Unresumed { _0: T },
+  Returned { _0: T },
+  Panicked { _0: T },
+  Suspend0 { _0: T },
+}
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+// Full name: test_crate::wrap
+fn wrap<T>(x: T) -> {coroutine}<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    let mut _0: {coroutine}<T>[TraitClause0]; // return
+    let x: T; // arg #1
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+    storage_live(_0)
+    _0 = {coroutine}::Unresumed { _0: move x }
+    storage_dead(x)
+    return
+}
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+// Full name: test_crate::wrap::{impl Coroutine<()> for {coroutine}<T>[TraitClause0]}::resume
+fn impl_Coroutine_unit_for_coroutine::resume<'_0, T>(_1: Pin<&'_0 mut {coroutine}<T>[TraitClause0]>[{built_in impl Sized for &'_0 mut {coroutine}<T>[TraitClause0]}], _2: ()) -> CoroutineState<(), T>[{built_in impl Sized for ()}, TraitClause0]
+where
+    TraitClause0: (T: Sized),
+    Outlives0: (T: '_0),
+{
+    let mut _0: CoroutineState<(), T>[{built_in impl Sized for ()}, TraitClause0]; // return
+    let mut _1: Pin<&'8 mut {coroutine}<T>[TraitClause0]>[{built_in impl Sized for &'8 mut {coroutine}<T>[TraitClause0]}]; // arg #1
+    let mut _2: (); // arg #2
+    let mut _3: (); // anonymous local
+    let mut _4: T; // anonymous local
+    let mut _5: &'12 mut {coroutine}<T>[TraitClause0]; // anonymous local
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+    storage_live(_0)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = read _1.0
+    match (*_5) {
+        {coroutine}::Unresumed => {
+        },
+        {coroutine}::Returned => {
+            loop {
+                assert(const false == true) (resumed_after_return) else panic(panic_const_coroutine_resumed())
+                ↳⚡ unwind_continue
+                continue 0
+            }
+        },
+        {coroutine}::Panicked => {
+            loop {
+                assert(const false == true) (resumed_after_panic) else panic(panic_const_coroutine_resumed_panic())
+                ↳⚡ unwind_continue
+                continue 0
+            }
+        },
+        {coroutine}::Suspend0 => {
+            storage_live(_3)
+            storage_dead(_3)
+            _4 = move ((*_5) as variant {coroutine}::Unresumed)._0
+            _0 = CoroutineState::Complete { _0: move _4 }
+            @discriminant((*_5)) = 1
+            storage_dead(_5)
+            storage_dead(_4)
+            storage_dead(_2)
+            storage_dead(_1)
+            return
+        },
+    }
+    storage_live(_3)
+    _3 = ()
+    _0 = CoroutineState::Yielded { _0: move _3 }
+    storage_dead(_3)
+    @discriminant((*_5)) = 3
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+// Full name: test_crate::wrap::{coroutine}::{impl Destruct for {coroutine}<T>[TraitClause0]}::drop_glue
+unsafe fn drop_glue<'_0, T>(_1: &'_0 mut {coroutine}<T>[TraitClause0])
+where
+    TraitClause0: (T: Sized),
+    Outlives0: (T: '_0),
+{
+    let mut _0: (); // return
+    let mut _1: &'1 mut {coroutine}<T>[TraitClause0]; // arg #1
+    let mut _2: u32; // anonymous local
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+    storage_live(_0)
+    storage_live(_2)
+    _2 = @discriminant((*_1))
+    _0 = ()
+    switch move _2 {
+        0u32 => {
+        },
+        3u32 => {
+            drop[{built_in impl Destruct for T}::drop_glue<'3>] ((*_1) as variant {coroutine}::Unresumed)._0
+            ↳⚡ storage_dead(_2)
+                storage_dead(_1)
+                unwind_continue
+            storage_dead(_2)
+            storage_dead(_1)
+            return
+        },
+        _ => {
+            storage_dead(_2)
+            storage_dead(_1)
+            return
+        },
+    }
+    drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1) as variant {coroutine}::Unresumed)._0
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+fn test_crate::resume()
+{
+    let mut _0: (); // return
+    let mut c: {coroutine}<()>[{built_in impl Sized for ()}]; // local
+    let mut _2: (); // anonymous local
+    let mut _3: CoroutineState<(), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}]; // anonymous local
+    let mut _4: Pin<&'8 mut {coroutine}<()>[{built_in impl Sized for ()}]>[{built_in impl Sized for &'8 mut {coroutine}<()>[{built_in impl Sized for ()}]}]; // anonymous local
+    let mut _5: &'12 mut {coroutine}<()>[{built_in impl Sized for ()}]; // anonymous local
+    let mut _6: (); // anonymous local
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:19:13
-   |
-19 |     let _ = Pin::new(&mut c).resume(());
-   |             ^^^^^^^^^^^^^^^^
+    storage_live(_0)
+    storage_live(c)
+    storage_live(_2)
+    _2 = ()
+    c = wrap<()>[{built_in impl Sized for ()}](move _2)
+    ↳⚡ unwind_continue
+    storage_dead(_2)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &mut c
+    _4 = new<&'24 mut {coroutine}<()>[{built_in impl Sized for ()}]>[{built_in impl Sized for &'24 mut {coroutine}<()>[{built_in impl Sized for ()}]}, {impl Deref for &'_0 mut T}<'24, {coroutine}<()>[{built_in impl Sized for ()}]>[{built_in impl MetaSized for {coroutine}<()>[{built_in impl Sized for ()}]}], {built_in impl Unpin for {coroutine}<()>[{built_in impl Sized for ()}]}](move _5)
+    ↳⚡ drop[drop_glue<'41, ()>[{built_in impl Sized for ()}]] c
+        ↳⚡ unwind_terminate(in_cleanup)
+        unwind_continue
+    storage_dead(_5)
+    storage_live(_6)
+    _6 = ()
+    _3 = impl_Coroutine_unit_for_coroutine::resume<'43, ()>[{built_in impl Sized for ()}](move _4, move _6)
+    ↳⚡ drop[drop_glue<'41, ()>[{built_in impl Sized for ()}]] c
+        ↳⚡ unwind_terminate(in_cleanup)
+        unwind_continue
+    storage_dead(_6)
+    storage_dead(_4)
+    storage_dead(_3)
+    _0 = ()
+    drop[drop_glue<'44, ()>[{built_in impl Sized for ()}]] c
+    ↳⚡ unwind_continue
+    storage_dead(c)
+    return
+}
 
-error: Coroutine types are not supported yet
-  --> tests/ui/coroutines/generic.rs:20:1
-   |
-20 | }
-   | ^
 
 
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_predicates.rs:17:55:
-internal error: entered unreachable code
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting body.
-  --> tests/ui/coroutines/generic.rs:17:1
-   |
-17 | / fn resume() {
-18 | |     let mut c = wrap(());
-19 | |     let _ = Pin::new(&mut c).resume(());
-20 | | }
-   | |_^
-
-ERROR Charon failed to translate this code (26 errors)
