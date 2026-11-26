@@ -529,6 +529,11 @@ impl DefId {
         }
     }
 
+    /// Whether the item has generic parameters, its parents' included.
+    pub fn has_generics<'tcx>(&self, s: &impl BaseState<'tcx>) -> bool {
+        self.can_have_generics(s) && self.generics_of(s).count() != 0
+    }
+
     pub fn generics_of<'tcx>(&self, s: &impl BaseState<'tcx>) -> &'tcx ty::Generics {
         let tcx = s.base().tcx;
         match self.base {
