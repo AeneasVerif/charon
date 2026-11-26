@@ -576,11 +576,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
         self.push_generic_params(&param_env.generics)?;
         self.register_predicates(&param_env.predicates, origin)?;
-        if include_late_bound {
-            self.innermost_binder_mut().push_late_bound_params(
-                &param_env.late_bound,
-                param_env.late_bound_scope.clone(),
-            )?;
+        if include_late_bound && let Some(late_bound) = &param_env.late_bound {
+            self.innermost_binder_mut()
+                .push_late_bound_params(&late_bound.binder, Some(late_bound.def_id.clone()))?;
         }
         Ok(())
     }

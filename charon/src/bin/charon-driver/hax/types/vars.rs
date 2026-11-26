@@ -333,6 +333,16 @@ pub struct Binder<T> {
     pub bound_vars: Vec<BoundVariableKind>,
 }
 
+/// A binder that wraps something that may mention the late-bound variables of an item. This does
+/// not count for de Bruijn indices: the late bound vars will instead be referred to using
+/// `LateParam`, using the `def_id` of this binder. That `def_id` is always that of the item,
+/// except in cases where the item doesn't have a rustc DefId, in which case we use a dummy one.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct LateBinder<T> {
+    pub def_id: DefId,
+    pub binder: Binder<T>,
+}
+
 impl Binder<()> {
     pub fn empty() -> Self {
         Binder {
