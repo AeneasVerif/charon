@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1795798709918,
+  "lastUpdate": 1795800148519,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -23762,6 +23762,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 247.5,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.8,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5b30d851e3acaeea3b974a49579e69135c830ac7",
+          "message": "Merge pull request #1661 from N1ark/nonnull-optim-attr\n\nTranslate `#[rustc_nonnull_optimization_guaranteed]`",
+          "timestamp": "2026-11-27T16:38:34Z",
+          "tree_id": "00ea602d76b20ad8e04f511fd921f053f8ebf226",
+          "url": "https://github.com/AeneasVerif/charon/commit/5b30d851e3acaeea3b974a49579e69135c830ac7"
+        },
+        "date": 1795800146596,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 50751806470,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 5.38,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 316.5,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 21.8,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 8207620963,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 1.94,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 247.8,
             "unit": "max-rss(MB)"
           },
           {
