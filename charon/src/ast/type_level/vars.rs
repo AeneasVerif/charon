@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 
 use crate::{ast::*, impl_from_enum};
+use nonmax::NonMaxU16;
 
 /// The index of a binder, counting from the innermost. See [`DeBruijnVar`] for details.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -19,11 +20,13 @@ use crate::{ast::*, impl_from_enum};
 #[serde(transparent)]
 #[cfg_attr(feature = "charon_on_charon", charon::transparent)]
 pub struct DeBruijnId {
-    pub index: usize,
+    index: NonMaxU16,
 }
 
 impl DeBruijnId {
-    pub const ZERO: DeBruijnId = DeBruijnId { index: 0 };
+    pub const ZERO: DeBruijnId = DeBruijnId {
+        index: NonMaxU16::ZERO,
+    };
 }
 
 /// Type-level variable.
@@ -367,43 +370,43 @@ impl From<TypeDbVar> for Ty {
 
 impl DeBruijnId {
     pub fn zero() -> Self {
-        DeBruijnId { index: 0 }
+        Self::ZERO
     }
 
     pub fn one() -> Self {
-        DeBruijnId { index: 1 }
+        Self::new(1)
     }
 
     pub fn new(index: usize) -> Self {
+        let index = u16::try_from(index)
+            .ok()
+            .and_then(NonMaxU16::new)
+            .expect("too many nested binders");
         DeBruijnId { index }
     }
 
+    pub fn index(self) -> usize {
+        self.index.get() as usize
+    }
+
     pub fn is_zero(&self) -> bool {
-        self.index == 0
+        self.index() == 0
     }
 
     pub fn incr(&self) -> Self {
-        DeBruijnId {
-            index: self.index + 1,
-        }
+        Self::new(self.index() + 1)
     }
 
     pub fn decr(&self) -> Self {
-        DeBruijnId {
-            index: self.index - 1,
-        }
+        Self::new(self.index() - 1)
     }
 
     pub fn plus(&self, delta: Self) -> Self {
-        DeBruijnId {
-            index: self.index + delta.index,
-        }
+        Self::new(self.index() + delta.index())
     }
 
     pub fn sub(&self, delta: Self) -> Option<Self> {
-        Some(DeBruijnId {
-            index: self.index.checked_sub(delta.index)?,
-        })
+        Some(Self::new(self.index().checked_sub(delta.index())?))
     }
 }
 
@@ -551,7 +554,7 @@ impl<T> BinderSlice<T> {
     }
     /// Helper that computes the real index into the underlying slice.
     fn real_index(&self, id: DeBruijnId) -> Option<usize> {
-        self.0.len().checked_sub(id.index + 1)
+        self.0.len().checked_sub(id.index() + 1)
     }
     pub fn get(&self, id: DeBruijnId) -> Option<&T> {
         self.0.get(self.real_index(id)?)
@@ -701,13 +704,13 @@ impl<T> IndexMut<DeBruijnId> for BinderSlice<T> {
 impl<T> Index<RangeFrom<DeBruijnId>> for BinderSlice<T> {
     type Output = BinderSlice<T>;
     fn index(&self, range: RangeFrom<DeBruijnId>) -> &Self::Output {
-        let end = self.0.len() - range.start.index;
+        let end = self.0.len() - range.start.index();
         BinderSlice::from_slice(&self.0[..end])
     }
 }
 impl<T> IndexMut<RangeFrom<DeBruijnId>> for BinderSlice<T> {
     fn index_mut(&mut self, range: RangeFrom<DeBruijnId>) -> &mut Self::Output {
-        let end = self.0.len() - range.start.index;
+        let end = self.0.len() - range.start.index();
         BinderSlice::from_slice_mut(&mut self.0[..end])
     }
 }

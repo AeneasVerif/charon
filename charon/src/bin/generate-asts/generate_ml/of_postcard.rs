@@ -197,6 +197,9 @@ impl<'a> GenerateCtx<'a> {
                         if first == "ustr" {
                             first = "string".to_string();
                         }
+                        if first == "non_max_u_16" {
+                            first = "u16".to_string();
+                        }
                         if first == "index_map" {
                             expr[2] = "int_of_postcard".to_string();
                         }

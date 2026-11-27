@@ -16,6 +16,9 @@ impl VisitorWithBinderStack for Infer<'_> {
 
 impl Infer<'_> {
     fn infer(&self, proof: &TraitRef) -> Option<TraitRef> {
+        if !proof.0.type_info().has_erased_clause_args() {
+            return None;
+        }
         let mut kind = proof.kind.clone();
         // Retrieve the poly trait ref that this proof refers to, along with the provided
         // arguments.
@@ -99,7 +102,7 @@ impl VisitAstMut for Infer<'_> {
         &mut self,
         value: &mut HashConsed<WithCachedTypeInfo<T>>,
     ) -> ControlFlow<Self::Break> {
-        if value.type_info().has_erased_or_body_regions() {
+        if value.type_info().has_erased_clause_args() {
             self.visit_inner(value)
         } else {
             ControlFlow::Continue(())

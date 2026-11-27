@@ -324,7 +324,7 @@ impl<'c> AstFormatter for FmtCtx<'c> {
                 None => {
                     write!(f, "{var_prefix}")?;
                     let (dbid, varid) = self.generics.as_bound_var_with_outermost_free(var);
-                    let depth = self.generics.depth().index - dbid.index;
+                    let depth = self.generics.depth().index() - dbid.index();
                     if depth == 0 {
                         write!(f, "{varid}")
                     } else {

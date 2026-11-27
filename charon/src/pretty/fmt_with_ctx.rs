@@ -555,7 +555,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstGenericParam {
 
 impl Display for DeBruijnId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
-        write!(f, "{}", self.index)
+        write!(f, "{}", self.index())
     }
 }
 

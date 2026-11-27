@@ -677,6 +677,11 @@ impl<T> RegionBinder<T> {
         }
     }
 
+    /// Whether this binder binds no regions and has no predicates.
+    pub fn is_empty(&self) -> bool {
+        self.regions.is_empty() && self.outlives.is_empty()
+    }
+
     /// The parameters and predicates introduced by this binder.
     pub fn to_params(&self) -> GenericParams {
         GenericParams {

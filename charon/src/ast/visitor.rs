@@ -84,6 +84,7 @@ use derive_generic_visitor::*;
         from_rustc::Linkage,
         i128,
         std::ops::RangeInclusive<IntegerValue>,
+        nonmax::NonMaxU16,
         u128,
         u32,
         u64,
