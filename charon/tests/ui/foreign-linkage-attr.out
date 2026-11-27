@@ -1,0 +1,80 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::option::Option
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
+pub enum Option<T>
+where
+    TraitClause0: (T: Sized),
+{
+  None,
+  Some { _0: T },
+}
+
+struct () {}
+
+// Full name: foreign_linkage_attr_aux::dep_extern_weak_static
+pub extern unsafe static dep_extern_weak_static: Option<unsafe extern "C" fn()>[{built_in impl Sized for unsafe extern "C" fn()}] = transmute<Option<unsafe extern "C" fn()>[{built_in impl Sized for unsafe extern "C" fn()}]>(&raw const <extern:dep_extern_weak_static>)
+
+// Full name: foreign_linkage_attr_aux::dep_extern_weak_fn
+pub extern unsafe extern "C" fn dep_extern_weak_fn()
+= <extern:dep_extern_weak_fn>
+
+// Full name: foreign_linkage_attr_aux::DEP_WEAK_STATIC
+pub fn DEP_WEAK_STATIC() -> u8
+= <opaque>
+
+// Full name: foreign_linkage_attr_aux::DEP_WEAK_STATIC
+pub static DEP_WEAK_STATIC: u8 = DEP_WEAK_STATIC()
+
+// Full name: foreign_linkage_attr_aux::dep_weak_fn
+pub fn dep_weak_fn()
+= <opaque>
+
+// Full name: test_crate::local_extern_weak_static
+#[linkage = "extern_weak"]
+extern unsafe static local_extern_weak_static: Option<unsafe extern "C" fn()>[{built_in impl Sized for unsafe extern "C" fn()}] = transmute<Option<unsafe extern "C" fn()>[{built_in impl Sized for unsafe extern "C" fn()}]>(&raw const <extern:local_extern_weak_static>)
+
+// Full name: test_crate::main
+fn main()
+{
+    let mut _0: (); // return
+    let _1: (); // anonymous local
+    let mut _2: &'1 u8; // anonymous local
+    let _3: (); // anonymous local
+
+    storage_live(_0)
+    _ = local_extern_weak_static
+    _ = dep_extern_weak_static
+    storage_live(_1)
+    _1 = dep_extern_weak_fn()
+    ↳⚡ unwind_continue
+    storage_dead(_1)
+    storage_live(_2)
+    _2 = &DEP_WEAK_STATIC
+    _ = (*_2)
+    storage_dead(_2)
+    storage_live(_3)
+    _3 = dep_weak_fn()
+    ↳⚡ unwind_continue
+    storage_dead(_3)
+    _0 = ()
+    return
+}
+
+
+
