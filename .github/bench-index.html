@@ -28,7 +28,7 @@
     }
     canvas { max-height: 350px; }
     #range { margin-bottom: 16px; }
-    #range button {
+    #range button, #range input {
       font: inherit;
       padding: 4px 12px;
       border: 1px solid #d0d7de;
@@ -36,13 +36,17 @@
       background: #fff;
       cursor: pointer;
     }
+    #range span { margin-right: 12px; }
     #range button.active { background: #0969da; color: #fff; border-color: #0969da; }
   </style>
 </head>
 <body>
   <h1>Charon Benchmarks</h1>
   <p class="subtitle">Performance tracking across commits (lower is better)</p>
-  <div id="range"></div>
+  <div id="range">
+    <span id="range-buttons"></span>
+    <span>from <input type="date" id="range-from"> to <input type="date" id="range-to"></span>
+  </div>
   <div id="charts"></div>
 
   <script src="data.js"></script>
@@ -53,8 +57,8 @@
     allRuns.sort((a, b) => a.date - b.date);
 
     // Group by unit (one chart per unit), with each crate as a separate line.
-    const metrics = new Map();   // unit -> Map<crate, [{date, commit, value}]>
-    for (const run of allRuns) {
+    const metrics = new Map();   // unit -> Map<crate, [{idx, date, commit, value}]>
+    for (const [idx, run] of allRuns.entries()) {
       for (const bench of run.benches) {
         const unit = bench.unit;
         // Benches used to only run with `--preset=fast` and weren't suffixed with the preset.
@@ -63,6 +67,7 @@
         const byUnit = metrics.get(unit);
         if (!byUnit.has(crate)) byUnit.set(crate, []);
         byUnit.get(crate).push({
+          idx,
           date: run.date,
           commit: run.commit,
           value: bench.value,
@@ -82,29 +87,51 @@
     const allCrates = [...new Set([...metrics.values()].flatMap(m => [...m.keys()]))].sort();
     const crateColor = new Map(allCrates.map((c, i) => [c, COLORS[i % COLORS.length]]));
 
-    // Time range selection. We filter the points instead of just setting the x-axis bounds so that
-    // the y-axis rescales to the visible data.
+    // Range selection. The x axis is the index of the run in `allRuns`, so a range is a pair of
+    // indices. On top of setting the x-axis bounds, we filter the points so that the y-axis rescales
+    // to the visible data.
     const DAY = 24 * 3600 * 1000;
-    const RANGES = { "1w": 7 * DAY, "1m": 30 * DAY, "3m": 90 * DAY, "all": Infinity };
+    const lastIdx = allRuns.length - 1;
+    const firstRunSince = date => allRuns.findIndex(r => r.date >= date);
+    const RANGES = {   // button label -> index of the first run to show
+      "1w": () => firstRunSince(allRuns.at(-1).date - 7 * DAY),
+      "1m": () => firstRunSince(allRuns.at(-1).date - 30 * DAY),
+      "3m": () => firstRunSince(allRuns.at(-1).date - 90 * DAY),
+      "last 50": () => Math.max(0, allRuns.length - 50),
+      "last 100": () => Math.max(0, allRuns.length - 100),
+      "last 300": () => Math.max(0, allRuns.length - 300),
+      "all": () => 0,
+    };
     const charts = [];   // [{chart, series: [all points of each dataset]}]
-    let range = "1m";
-    function applyRange() {
-      const cutoff = allRuns.at(-1).date - RANGES[range];
+    const fromInput = document.getElementById("range-from");
+    const toInput = document.getElementById("range-to");
+    // Date inputs use UTC "YYYY-MM-DD" strings.
+    const toDay = date => new Date(date).toISOString().slice(0, 10);
+    // `label` is the active button, or null for a custom date range.
+    function applyRange(lo, hi, label) {
       for (const { chart, series } of charts) {
-        chart.data.datasets.forEach((ds, i) => { ds.data = series[i].filter(p => p.x >= cutoff); });
+        chart.data.datasets.forEach((ds, i) => { ds.data = series[i].filter(p => p.x >= lo && p.x <= hi); });
+        Object.assign(chart.options.scales.x, { min: lo, max: hi });
         chart.update();
       }
       for (const b of document.querySelectorAll("#range button")) {
-        b.classList.toggle("active", b.textContent === range);
+        b.classList.toggle("active", b.textContent === label);
       }
+      fromInput.value = toDay(allRuns[lo].date);
+      toInput.value = toDay(allRuns[hi].date);
     }
-    const rangeDiv = document.getElementById("range");
-    for (const r of Object.keys(RANGES)) {
+    const buttonsSpan = document.getElementById("range-buttons");
+    for (const [label, firstIdx] of Object.entries(RANGES)) {
       const b = document.createElement("button");
-      b.textContent = r;
-      b.onclick = () => { range = r; applyRange(); };
-      rangeDiv.appendChild(b);
+      b.textContent = label;
+      b.onclick = () => applyRange(firstIdx(), lastIdx, label);
+      buttonsSpan.appendChild(b);
     }
+    fromInput.onchange = toInput.onchange = () => {
+      const lo = firstRunSince(Date.parse(fromInput.value));
+      const hi = allRuns.findLastIndex(r => r.date < Date.parse(toInput.value) + DAY);
+      if (lo !== -1 && hi !== -1 && lo <= hi) applyRange(lo, hi, null);
+    };
 
     for (const [metric, cratesMap] of metrics) {
       const container = document.createElement("div");
@@ -123,8 +150,9 @@
         datasets.push({
           label: crate,
           data: points.map(p => ({
-            x: p.date,
+            x: p.idx,
             y: p.value,
+            date: p.date,
             commit: p.commit,
           })),
           borderColor: color,
@@ -147,9 +175,10 @@
           scales: {
             x: {
               type: "linear",
-              title: { display: true, text: "Date" },
+              title: { display: true, text: "Commit" },
               ticks: {
-                callback: v => new Date(v).toLocaleDateString(),
+                precision: 0,
+                callback: v => allRuns[v]?.commit.id.slice(0, 7),
               },
             },
             y: {
@@ -162,7 +191,7 @@
               callbacks: {
                 title: items => {
                   const p = items[0].raw;
-                  const d = new Date(p.x).toLocaleString();
+                  const d = new Date(p.date).toLocaleString();
                   const sha = p.commit?.id?.slice(0, 8) ?? "";
                   return `${d}  (${sha})`;
                 },
@@ -186,7 +215,7 @@
       });
       charts.push({ chart, series });
     }
-    applyRange();
+    applyRange(RANGES["1m"](), lastIdx, "1m");
 
     if (metrics.size === 0) {
       chartsDiv.innerHTML = "<p>No benchmark data yet.</p>";
