@@ -3,7 +3,7 @@ use crate::CharonFailure;
 use crate::toolchain::CHARON_SYSROOT_VAR;
 use crate::translate::translate_crate;
 use charon_lib::errors::ErrorCtx;
-use charon_lib::options::{self, CliOpts, selected_crate_var};
+use charon_lib::options::{self, CliOpts, MirLevel, selected_crate_var};
 use charon_lib::transform::TransformCtx;
 use charon_lib::utils::arg_value;
 use itertools::Itertools;
@@ -145,6 +145,24 @@ fn precheck_rustc_errors(tcx: TyCtxt<'_>) -> bool {
     });
 
     tcx.dcx().has_errors().is_some()
+}
+
+/// Compute, in parallel, the MIR of the local bodies at the level the translation reads them.
+/// rustc computes them after the translation anyway.
+fn prefetch_local_mir(tcx: TyCtxt<'_>, level: MirLevel) {
+    tcx.par_hir_body_owners(|def_id| {
+        if tcx.is_intrinsic_that_must_be_overridden(def_id) {
+            return;
+        }
+        match level {
+            MirLevel::Built => tcx.ensure_done().mir_built(def_id),
+            MirLevel::Promoted => tcx.ensure_done().mir_promoted(def_id),
+            MirLevel::Elaborated => tcx
+                .ensure_done()
+                .mir_drops_elaborated_and_const_checked(def_id),
+            MirLevel::Optimized => {}
+        }
+    });
 }
 
 /// Run rustc checks that normally happen close to codegen, so that we get all the post-mono errors
@@ -302,6 +320,9 @@ impl<'a> Callbacks for CharonCallbacks<'a> {
         if charon_lib::timing::time("rustc-precheck-errors", || precheck_rustc_errors(tcx)) {
             return Compilation::Continue;
         }
+        charon_lib::timing::time("rustc-prefetch-mir", || {
+            prefetch_local_mir(tcx, self.options.mir_level())
+        });
 
         self.transform_ctx = charon_lib::timing::time("translate-crate", || {
             translate_crate::translate(
