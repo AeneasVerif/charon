@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1795802709706,
+  "lastUpdate": 1795811808599,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -23895,6 +23895,150 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 4.8,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a28cab022f6d94868e52c8a8e1f37528857292f4",
+          "message": "Merge pull request #1665 from N1ark/bench-presets-zoom\n\nMore benchmarking",
+          "timestamp": "2026-11-27T20:05:39Z",
+          "tree_id": "567566e4c9fd9b83140e3b8a0e02c862da895348",
+          "url": "https://github.com/AeneasVerif/charon/commit/a28cab022f6d94868e52c8a8e1f37528857292f4"
+        },
+        "date": 1795811806599,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet (fast)",
+            "value": 50653532545,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet (fast)",
+            "value": 5.43,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet (fast)",
+            "value": 316.4,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet (fast)",
+            "value": 21.8,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet (soteria)",
+            "value": 58814634519,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet (soteria)",
+            "value": 14.96,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet (soteria)",
+            "value": 553.8,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet (soteria)",
+            "value": 102,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet (aeneas)",
+            "value": 62325004324,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet (aeneas)",
+            "value": 10.26,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet (aeneas)",
+            "value": 314.7,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet (aeneas)",
+            "value": 43.4,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto (fast)",
+            "value": 7949735294,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto (fast)",
+            "value": 2.84,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto (fast)",
+            "value": 247.8,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto (fast)",
+            "value": 4.8,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto (soteria)",
+            "value": 9284656057,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto (soteria)",
+            "value": 2.58,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto (soteria)",
+            "value": 358.7,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto (soteria)",
+            "value": 48.6,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto (aeneas)",
+            "value": 92143341760,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto (aeneas)",
+            "value": 12.18,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto (aeneas)",
+            "value": 248.3,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto (aeneas)",
+            "value": 5.5,
             "unit": "output-size(MB)"
           }
         ]
