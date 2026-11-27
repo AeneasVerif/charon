@@ -26,8 +26,17 @@
       margin-top: 0;
       font-size: 1.2em;
     }
-    canvas { max-height: 350px; }
-    #range { margin-bottom: 16px; }
+    /* Chart.js sizes the canvas to fill this (with `maintainAspectRatio: false`). */
+    .chart-wrap { position: relative; height: 350px; }
+    #range {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 16px;
+      margin-bottom: 16px;
+    }
+    /* Lay out the button groups as items of the `#range` flexbox. */
+    #range-buttons { display: contents; }
     #range button, #range input {
       font: inherit;
       padding: 4px 12px;
@@ -37,8 +46,16 @@
       cursor: pointer;
     }
     #range button { margin-right: 4px; }
-    #range span { margin-right: 12px; }
     #range button.active { background: #0969da; color: #fff; border-color: #0969da; }
+    /* On narrow screens, give all the horizontal space to the charts. */
+    @media (max-width: 600px) {
+      body { padding: 8px 0; }
+      h1 { font-size: 1.5em; }
+      h1, .subtitle, #range, .chart-container h2 { padding: 0 8px; }
+      .chart-container { padding: 8px 0; border-left: none; border-right: none; border-radius: 0; }
+      .chart-wrap { height: 300px; }
+      #range button, #range input { padding: 4px 8px; }
+    }
   </style>
 </head>
 <body>
@@ -83,6 +100,8 @@
     ];
 
     const chartsDiv = document.getElementById("charts");
+    // E.g. "52.5B" instead of "52,500,000,000", to keep the y-axis narrow.
+    const compactNumber = new Intl.NumberFormat(undefined, { notation: "compact", maximumSignificantDigits: 3 });
 
     // Assign a color to each crate.
     const allCrates = [...new Set([...metrics.values()].flatMap(m => [...m.keys()]))].sort();
@@ -149,8 +168,11 @@
       const heading = document.createElement("h2");
       heading.textContent = metric;
       container.appendChild(heading);
+      const wrap = document.createElement("div");
+      wrap.className = "chart-wrap";
       const canvas = document.createElement("canvas");
-      container.appendChild(canvas);
+      wrap.appendChild(canvas);
+      container.appendChild(wrap);
       chartsDiv.appendChild(container);
 
       // Build one dataset per crate.
@@ -180,6 +202,7 @@
         data: { datasets },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           animation: false,
           interaction: { mode: "nearest", intersect: false },
           scales: {
@@ -188,15 +211,19 @@
               title: { display: true, text: "Commit" },
               ticks: {
                 precision: 0,
+                // Rotated shas take a lot of vertical space; skip some instead.
+                maxRotation: 0,
                 callback: v => allRuns[v]?.commit.id.slice(0, 7),
               },
             },
+            // No axis title: the metric is already the chart heading.
             y: {
-              title: { display: true, text: metric },
               beginAtZero: false,
+              ticks: { callback: v => compactNumber.format(v) },
             },
           },
           plugins: {
+            legend: { labels: { boxWidth: 12 } },
             tooltip: {
               callbacks: {
                 title: items => {
