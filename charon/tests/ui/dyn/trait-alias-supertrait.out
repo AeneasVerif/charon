@@ -1,13 +1,97 @@
-error: Error during trait resolution: Could not find a clause for `Binder { value: <dyn Sub as Alias>, bound_vars: [] }` in the item parameters
-  --> tests/ui/dyn/trait-alias-supertrait.rs:12:5
-   |
-12 |     needs_alias(x);
-   |     ^^^^^^^^^^^^^^
+# Final LLBC before serialization:
 
-error: Error during trait resolution: Could not find a clause for `Binder { value: <dyn Sub as Alias>, bound_vars: [] }` in the item parameters
-  --> tests/ui/dyn/trait-alias-supertrait.rs:12:5
-   |
-12 |     needs_alias(x);
-   |     ^^^^^^^^^^^^^^
+opaque type core::marker::MetaSized::{vtable}
 
-ERROR Charon failed to translate this code (2 errors)
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+struct () {}
+
+struct test_crate::Base::{vtable} {
+  size: usize,
+  align: usize,
+  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn Base)),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: test_crate::Base
+trait Base<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: test_crate::Base::{vtable}
+}
+
+struct test_crate::Alias::{vtable} {
+  size: usize,
+  align: usize,
+  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn Alias)),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+  super_trait_1: &'static test_crate::Base::{vtable},
+}
+
+// Full name: test_crate::Alias
+trait Alias<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Base)
+    vtable: test_crate::Alias::{vtable}
+}
+
+struct test_crate::Sub::{vtable} {
+  size: usize,
+  align: usize,
+  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn Sub)),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+  super_trait_1: &'static test_crate::Alias::{vtable},
+}
+
+// Full name: test_crate::Sub
+trait Sub<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Alias)
+    vtable: test_crate::Sub::{vtable}
+}
+
+// Full name: test_crate::needs_alias
+fn needs_alias<'_0, T>(_1: &'_0 T)
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (T: Alias),
+    Outlives0: (T: '_0),
+{
+    let mut _0: (); // return
+    let mut _1: &'1 T; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::test
+fn test<'_0>(x: &'_0 (dyn Sub + '_0))
+{
+    let mut _0: (); // return
+    let x: &'3 (dyn Sub + '4); // arg #1
+    let _2: (); // anonymous local
+    let mut _3: &'5 (dyn Sub + '6); // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = &(*x) with_metadata(read x.metadata)
+    _2 = needs_alias<'32, (dyn Sub + '17)>[{built_in impl MetaSized for (dyn Sub + '19)}, Sub<(dyn Sub + '20)>::ImpliedClause1](move _3)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 = ()
+    storage_dead(x)
+    return
+}
+
+
+

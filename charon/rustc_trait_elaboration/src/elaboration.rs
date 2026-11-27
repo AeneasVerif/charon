@@ -521,16 +521,24 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             }
             // Rustc can report ambiguity for a built-in trait's own `Self` clause. In that case
             // the clause can be found locally, so we try that.
-            Err(CodegenObligationError::Ambiguity) | Ok(ImplSource::Param(_)) => match self
-                .resolve_local(state, erased_tref.upcast(tcx))
-            {
-                Some(candidate) => candidate.proof.kind.clone(),
-                None => {
-                    let msg =
-                        format!("Could not find a clause for `{tref:?}` in the item parameters");
-                    return error(msg);
+            Err(CodegenObligationError::Ambiguity) | Ok(ImplSource::Param(_)) => {
+                match self.resolve_local(state, erased_tref.upcast(tcx)) {
+                    Some(candidate) => candidate.proof.kind.clone(),
+                    // If the self type is `dyn Trait`, try to resolve the clause via that predicate.
+                    None if let ty::Dynamic(..) = erased_tref.self_ty().skip_binder().kind()
+                        && let proof = self.resolve_dyn_trait(state, tref)
+                        && !matches!(proof.val.kind, TraitProofKind::Error(_)) =>
+                    {
+                        TraitProofKind::Dyn(proof)
+                    }
+                    None => {
+                        let msg = format!(
+                            "Could not find a clause for `{tref:?}` in the item parameters"
+                        );
+                        return error(msg);
+                    }
                 }
-            },
+            }
             Ok(ImplSource::Builtin(BuiltinImplSource::Object { .. }, _)) => {
                 TraitProofKind::Dyn(self.resolve_dyn_trait(state, tref))
             }

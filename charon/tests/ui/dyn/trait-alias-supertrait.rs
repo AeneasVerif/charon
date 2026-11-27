@@ -1,4 +1,3 @@
-//@ known-failure
 #![feature(trait_alias)]
 trait Base {}
 trait Alias = Base;
