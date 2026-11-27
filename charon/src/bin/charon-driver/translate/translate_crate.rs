@@ -26,7 +26,7 @@ use std::path::PathBuf;
 
 use super::translate_ctx::*;
 use crate::hax;
-use crate::hax::SInto;
+use crate::hax::{BaseState, SInto};
 use charon_lib::ast::*;
 use charon_lib::name_matcher::NamePattern;
 use charon_lib::options::{CliOpts, ConstHandling, StartFrom, TranslateOptions};
@@ -520,13 +520,13 @@ impl<'tcx> TranslateCtx<'tcx> {
         }
         let kind = self.base_kind_for_item(def_id)?;
         let item_src = if self.options.monomorphize_with_hax {
-            if let Ok(def) = self.poly_hax_def(def_id)
-                && !def.has_any_generics()
-            {
+            let s = self.hax_state.with_hax_owner(def_id);
+            if !def_id.has_generics(&s) {
                 // Monomorphize this item and the items it depends on.
-                TransItemSource::monomorphic(def.this(), kind)
+                let item = hax::ItemRef::identity(&s, def_id.clone());
+                TransItemSource::monomorphic(&item, kind)
             } else {
-                // Skip polymorphic items and items that cause errors.
+                // Skip polymorphic items.
                 return None;
             }
         } else {

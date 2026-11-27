@@ -181,6 +181,16 @@ impl<'tcx> ItemRef<'tcx> {
         item
     }
 
+    /// The item with its identity arguments.
+    pub fn identity<S: UnderOwnerState<'tcx>>(s: &S, def_id: DefId) -> ItemRef<'tcx> {
+        if def_id.can_have_generics(s) {
+            let args = def_id.identity_args(s);
+            Self::translate_from_hax_def_id(s, def_id, args)
+        } else {
+            Self::dummy_without_generics(s, def_id)
+        }
+    }
+
     /// Construct an `ItemRef` for items that can't have generics (e.g. modules).
     pub fn dummy_without_generics<S: BaseState<'tcx>>(s: &S, def_id: DefId) -> ItemRef<'tcx> {
         let content = ItemRefContents {
