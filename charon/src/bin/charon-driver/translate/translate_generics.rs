@@ -134,6 +134,7 @@ impl<'tcx> BindingLevel<'tcx> {
         &mut self,
         region: hax::BoundRegionKind,
         variance: Variance,
+        late_param_def_id: Option<&hax::DefId>,
     ) -> RegionId {
         use crate::hax::BoundRegionKind::*;
         let (name, def_id) = match region {
@@ -146,9 +147,16 @@ impl<'tcx> BindingLevel<'tcx> {
             late_bound: true,
             ..RegionParam::new(index, name, variance)
         });
-        self.bound_region_vars.push(rid);
         if let Some(def_id) = def_id {
             self.late_named_region_vars.insert(def_id, rid);
+        }
+        if let Some(def_id) = late_param_def_id {
+            self.late_anon_region_vars
+                .entry(def_id.clone())
+                .or_default()
+                .push(rid);
+        } else {
+            self.bound_region_vars.push(rid);
         }
         rid
     }
@@ -208,22 +216,26 @@ impl<'tcx> BindingLevel<'tcx> {
         self.const_generic_vars.insert(rid, var_id);
     }
 
-    /// Add the binder's regions to this binding level.
-    pub(crate) fn push_late_bound_params(
+    /// Add the binder's regions to this binding level. If `late_param_def_id` is `Some`, register
+    /// them for `ReLateParam` lookup; otherwise, register them as this level's `ReBound`
+    /// variables.
+    pub(crate) fn push_bound_params(
         &mut self,
         binder: &hax::Binder<()>,
-        late_param_def_id: Option<hax::DefId>,
-    ) -> Result<(), Error> {
-        assert!(
-            self.bound_region_vars.is_empty(),
-            "Trying to use two binders at the same binding level"
-        );
+        late_param_def_id: Option<&hax::DefId>,
+    ) {
+        if late_param_def_id.is_none() {
+            assert!(
+                self.bound_region_vars.is_empty(),
+                "Trying to use two binders at the same binding level"
+            );
+        }
         use crate::hax::BoundVariableKind::*;
         for p in &binder.bound_vars {
             match p {
                 Region(region, variance) => {
                     let variance = translate_variance(variance.as_ref());
-                    self.push_bound_region(region.clone(), variance);
+                    self.push_bound_region(region.clone(), variance, late_param_def_id);
                 }
                 Ty(_) => {
                     panic!("Unexpected locally bound type variable");
@@ -233,11 +245,6 @@ impl<'tcx> BindingLevel<'tcx> {
                 }
             }
         }
-        if let Some(def_id) = late_param_def_id {
-            self.late_anon_region_vars
-                .insert(def_id, self.bound_region_vars.clone());
-        }
-        Ok(())
     }
 }
 
@@ -585,8 +592,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
         self.register_predicates(&param_env.predicates, origin)?;
         if include_late_bound && let Some(late_bound) = &param_env.late_bound {
-            self.innermost_binder_mut()
-                .push_late_bound_params(&late_bound.binder, Some(late_bound.def_id.clone()))?;
+            let level = self.innermost_binder_mut();
+            level.push_bound_params(&late_bound.binder, Some(&late_bound.def_id));
+            // Make the variable available for lookup using debruijn indices too, which we use when
+            // translating signatures.
+            level.bound_region_vars = level
+                .late_anon_region_vars
+                .get(&late_bound.def_id)
+                .cloned()
+                .unwrap_or_default();
         }
         Ok(())
     }
@@ -716,7 +730,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     {
         let binder = self.inside_binder(BinderKind::Other, |this| {
             this.innermost_binder_mut()
-                .push_late_bound_params(&binder.rebind(()), None)?;
+                .push_bound_params(&binder.rebind(()), None);
             f(this, binder.hax_skip_binder_ref())
         })?;
         // Convert to a region-only binder.
