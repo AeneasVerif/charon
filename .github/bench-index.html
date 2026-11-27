@@ -36,6 +36,7 @@
       background: #fff;
       cursor: pointer;
     }
+    #range button { margin-right: 4px; }
     #range span { margin-right: 12px; }
     #range button.active { background: #0969da; color: #fff; border-color: #0969da; }
   </style>
@@ -93,14 +94,18 @@
     const DAY = 24 * 3600 * 1000;
     const lastIdx = allRuns.length - 1;
     const firstRunSince = date => allRuns.findIndex(r => r.date >= date);
-    const RANGES = {   // button label -> index of the first run to show
-      "1w": () => firstRunSince(allRuns.at(-1).date - 7 * DAY),
-      "1m": () => firstRunSince(allRuns.at(-1).date - 30 * DAY),
-      "3m": () => firstRunSince(allRuns.at(-1).date - 90 * DAY),
-      "last 50": () => Math.max(0, allRuns.length - 50),
-      "last 100": () => Math.max(0, allRuns.length - 100),
-      "last 300": () => Math.max(0, allRuns.length - 300),
-      "all": () => 0,
+    const RANGES = {   // group label -> button label -> index of the first run to show
+      "time:": {
+        "1w": () => firstRunSince(allRuns.at(-1).date - 7 * DAY),
+        "1m": () => firstRunSince(allRuns.at(-1).date - 30 * DAY),
+        "3m": () => firstRunSince(allRuns.at(-1).date - 90 * DAY),
+      },
+      "commits: last": {
+        "50": () => Math.max(0, allRuns.length - 50),
+        "100": () => Math.max(0, allRuns.length - 100),
+        "300": () => Math.max(0, allRuns.length - 300),
+        "all": () => 0,
+      },
     };
     const charts = [];   // [{chart, series: [all points of each dataset]}]
     const fromInput = document.getElementById("range-from");
@@ -121,11 +126,16 @@
       toInput.value = toDay(allRuns[hi].date);
     }
     const buttonsSpan = document.getElementById("range-buttons");
-    for (const [label, firstIdx] of Object.entries(RANGES)) {
-      const b = document.createElement("button");
-      b.textContent = label;
-      b.onclick = () => applyRange(firstIdx(), lastIdx, label);
-      buttonsSpan.appendChild(b);
+    for (const [groupLabel, group] of Object.entries(RANGES)) {
+      const groupSpan = document.createElement("span");
+      groupSpan.textContent = groupLabel + " ";
+      for (const [label, firstIdx] of Object.entries(group)) {
+        const b = document.createElement("button");
+        b.textContent = label;
+        b.onclick = () => applyRange(firstIdx(), lastIdx, label);
+        groupSpan.appendChild(b);
+      }
+      buttonsSpan.appendChild(groupSpan);
     }
     fromInput.onchange = toInput.onchange = () => {
       const lo = firstRunSince(Date.parse(fromInput.value));
@@ -215,7 +225,7 @@
       });
       charts.push({ chart, series });
     }
-    applyRange(RANGES["1m"](), lastIdx, "1m");
+    applyRange(RANGES["time:"]["1m"](), lastIdx, "1m");
 
     if (metrics.size === 0) {
       chartsDiv.innerHTML = "<p>No benchmark data yet.</p>";
