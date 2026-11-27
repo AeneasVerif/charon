@@ -599,6 +599,7 @@ pub struct Trait<'tcx> {
     param_env: ParamEnv<'tcx>,
     implied_predicates: GenericPredicates<'tcx>,
     is_unsafe: bool,
+    is_auto: bool,
     /// The module to which impls of this trait are restricted, if any (`impl(crate) trait`).
     impl_restriction: Option<DefId>,
     /// The special `Self: Trait` clause.
@@ -645,6 +646,10 @@ impl<'tcx> Trait<'tcx> {
     /// Whether this is an `unsafe trait`, i.e. implementing it requires `unsafe impl`.
     pub fn is_unsafe(&self) -> bool {
         self.is_unsafe
+    }
+    /// Whether this is an auto trait.
+    pub fn is_auto(&self) -> bool {
+        self.is_auto
     }
     /// The module to which impls of this trait are restricted, if any (`impl(crate) trait`).
     pub fn impl_restriction(&self) -> Option<&DefId> {
@@ -1296,6 +1301,7 @@ where
             def_id: hax_def_id.clone(),
             args,
             is_unsafe: tcx.trait_is_unsafe(def_id),
+            is_auto: tcx.trait_is_auto(def_id),
             impl_restriction: match tcx.trait_def(def_id).impl_restriction {
                 ty::RestrictionKind::Unrestricted => None,
                 ty::RestrictionKind::Restricted(mod_id, _) => Some(mod_id.sinto(s)),

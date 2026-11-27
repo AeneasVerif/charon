@@ -16,7 +16,7 @@ pub trait Sized<Self>
 
 #[lang_item(Sync)]
 #[diagnostic_item("Sync")]
-pub unsafe trait core::marker::Sync<Self>
+pub unsafe auto trait core::marker::Sync<Self>
 
 // Full name: core::mem::maybe_uninit::MaybeUninit
 #[lang_item(MaybeUninit)]

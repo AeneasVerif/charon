@@ -846,9 +846,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             hax::FullDefKind::TraitAlias(t) => t.implied_predicates(),
             _ => raise_error!(self, span, "Unexpected definition: {def:?}"),
         };
-        let (src, is_unsafe) = match def.kind() {
-            hax::FullDefKind::Trait(tr) => (TraitDeclSource::Normal, tr.is_unsafe()),
-            hax::FullDefKind::TraitAlias(_) => (TraitDeclSource::TraitAlias, false),
+        let (src, is_unsafe, is_auto) = match def.kind() {
+            hax::FullDefKind::Trait(tr) => (TraitDeclSource::Normal, tr.is_unsafe(), tr.is_auto()),
+            hax::FullDefKind::TraitAlias(_) => (TraitDeclSource::TraitAlias, false, false),
             _ => unreachable!(),
         };
         let impl_restriction = if let hax::FullDefKind::Trait(tr) = def.kind()
@@ -878,6 +878,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 item_meta,
                 src,
                 is_unsafe,
+                is_auto,
                 impl_restriction: impl_restriction.clone(),
                 implied_clauses,
                 generics: self.into_generics(),
@@ -955,6 +956,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 item_meta,
                 src,
                 is_unsafe,
+                is_auto,
                 impl_restriction: impl_restriction.clone(),
                 implied_clauses,
                 generics: self.into_generics(),
@@ -1185,6 +1187,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             item_meta,
             src,
             is_unsafe,
+            is_auto,
             impl_restriction,
             implied_clauses,
             generics: self.into_generics(),

@@ -25,7 +25,7 @@ opaque type core::marker::Sync::{vtable}
 // Full name: core::marker::Sync
 #[lang_item(Sync)]
 #[diagnostic_item("Sync")]
-pub unsafe trait Sync<Self>
+pub unsafe auto trait Sync<Self>
 
 vtable core::marker::Sync::{vtable}<Self>: core::marker::Sync::{vtable} = Opaque(VTable was chosen to be opaque)
 

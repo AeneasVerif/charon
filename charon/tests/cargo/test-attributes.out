@@ -73,12 +73,12 @@ pub fn from_str<'a>(_1: &'static str) -> Arguments<'a>
 // Full name: core::marker::Send
 #[lang_item(Send)]
 #[diagnostic_item("Send")]
-pub unsafe trait Send<Self>
+pub unsafe auto trait Send<Self>
 
 // Full name: core::marker::Sync
 #[lang_item(Sync)]
 #[diagnostic_item("Sync")]
-pub unsafe trait Sync<Self>
+pub unsafe auto trait Sync<Self>
 
 // Full name: core::marker::Tuple
 #[fundamental]

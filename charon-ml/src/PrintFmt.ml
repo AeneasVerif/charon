@@ -1973,7 +1973,8 @@ let pp_trait_decl (env : fmt_env) (indent : string) (indent_incr : string)
     | Restricted name -> "impl(in " ^ name_to_string env name ^ ") "
   in
   let safety = if def.is_unsafe then "unsafe " else "" in
-  let keyword = restriction ^ safety ^ "trait" in
+  let auto = if def.is_auto then "auto " else "" in
+  let keyword = restriction ^ safety ^ auto ^ "trait" in
   let intro =
     item_intro_to_string env indent keyword (IdTraitDecl def.def_id)
       def.item_meta

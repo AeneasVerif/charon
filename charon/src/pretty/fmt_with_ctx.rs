@@ -2928,7 +2928,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
             ImplRestriction::Restricted(name) => format!("impl(in {}) ", name.with_ctx(ctx)),
         };
         let safety = if self.is_unsafe { "unsafe " } else { "" };
-        let keyword = format!("{restriction}{safety}trait");
+        let auto = if self.is_auto { "auto " } else { "" };
+        let keyword = format!("{restriction}{safety}{auto}trait");
 
         self.item_meta
             .fmt_item_intro(f, ctx, &keyword, self.def_id)?;

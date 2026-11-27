@@ -42,12 +42,12 @@ where
 // Full name: core::marker::Send
 #[lang_item(Send)]
 #[diagnostic_item("Send")]
-pub unsafe trait Send<Self>
+pub unsafe auto trait Send<Self>
 
 // Full name: core::marker::Sync
 #[lang_item(Sync)]
 #[diagnostic_item("Sync")]
-pub unsafe trait Sync<Self>
+pub unsafe auto trait Sync<Self>
 
 // Full name: core::marker::{impl Send for &'_0 T}
 unsafe impl<'_0, T> Send for &'_0 T

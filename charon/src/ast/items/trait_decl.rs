@@ -56,6 +56,8 @@ pub struct TraitDecl {
     pub src: TraitDeclSource,
     /// Whether this is an `unsafe trait`, i.e. implementing it requires `unsafe impl`.
     pub is_unsafe: bool,
+    /// Whether this is an auto trait.
+    pub is_auto: bool,
     /// Where this trait may be implemented.
     pub impl_restriction: ImplRestriction,
     pub generics: GenericParams,

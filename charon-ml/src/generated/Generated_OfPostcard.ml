@@ -3402,6 +3402,7 @@ and trait_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* item_meta = item_meta_of_postcard ctx st in
      let* src = trait_decl_source_of_postcard ctx st in
      let* is_unsafe = bool_of_postcard ctx st in
+     let* is_auto = bool_of_postcard ctx st in
      let* impl_restriction = impl_restriction_of_postcard ctx st in
      let* generics = generic_params_of_postcard ctx st in
      let* implied_clauses =
@@ -3438,6 +3439,7 @@ and trait_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           item_meta;
           src;
           is_unsafe;
+          is_auto;
           impl_restriction;
           generics;
           implied_clauses;

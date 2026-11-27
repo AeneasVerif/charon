@@ -25,7 +25,7 @@ where
 // Full name: core::marker::Send
 #[lang_item(Send)]
 #[diagnostic_item("Send")]
-pub unsafe trait Send<Self>
+pub unsafe auto trait Send<Self>
 
 // Full name: core::marker::Sized
 #[fundamental]
@@ -61,7 +61,7 @@ pub trait FnOnce<Self, Args>
 
 // Full name: core::panic::unwind_safe::UnwindSafe
 #[diagnostic_item("unwind_safe_trait")]
-pub trait UnwindSafe<Self>
+pub auto trait UnwindSafe<Self>
 
 // Full name: core::result::Result
 #[diagnostic_item("Result")]
