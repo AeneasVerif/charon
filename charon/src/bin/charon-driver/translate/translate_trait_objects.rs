@@ -260,6 +260,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     }
 
     /// Given a trait ref, return a reference to its vtable struct, if it is dyn compatible.
+    /// The tref must be valid in ths current hax state: we call hax functions to resolve
+    /// associated types on it.
     pub fn translate_vtable_struct_ref_maybe_enqueue(
         &mut self,
         enqueue: bool,
