@@ -39,6 +39,7 @@ pub trait Copy<Self>
 pub extern opaque type Code
 
 // Full name: core::ptr::non_null::NonNull
+#[rustc_nonnull_optimization_guaranteed]
 #[lang_item(NonNull)]
 pub opaque type NonNull<T>
 

@@ -260,6 +260,8 @@ and rustc_attribute_kind =
           Fields:
           - [llvm] *)
   | RustcAttributeKindRustcNoWritable  (** Represents [#[rustc_no_writable]] *)
+  | RustcAttributeKindRustcNonnullOptimizationGuaranteed
+      (** Represents [#[rustc_nonnull_optimization_guaranteed]]. *)
   | RustcAttributeKindRustcReallocator  (** Represents [#[rustc_reallocator]] *)
   | RustcAttributeKindShouldPanic of string option
       (** Represents [#[should_panic]]

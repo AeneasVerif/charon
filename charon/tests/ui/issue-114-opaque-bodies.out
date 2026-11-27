@@ -123,6 +123,7 @@ pub const core::convert::num::impl_From_i32_for_i64::from::{promoted_const#1}: s
 pub const core::convert::num::impl_From_i32_for_i64::from::{promoted_const}: str = "assertion failed: <i64>::MIN as i128 <= <i32>::MIN as i128" with_metadata(58usize)
 
 // Full name: core::ptr::non_null::NonNull
+#[rustc_nonnull_optimization_guaranteed]
 #[lang_item(NonNull)]
 pub struct NonNull<T> {
   pointer: *const T is !null,

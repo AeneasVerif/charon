@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::num::nonzero::NonZero::<u32>
+#[rustc_nonnull_optimization_guaranteed]
 #[diagnostic_item("NonZero")]
 pub opaque type NonZero::<u32>
 // layout:

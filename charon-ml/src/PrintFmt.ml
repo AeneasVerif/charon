@@ -1363,6 +1363,8 @@ let pp_rustc_attribute_kind (fmt : Format.formatter)
       pp_string fmt "rustc_intrinsic";
       Option.iter (fun llvm -> Format.fprintf fmt "(llvm = \"%s\")" llvm) llvm
   | RustcAttributeKindRustcNoWritable -> pp_string fmt "rustc_no_writable"
+  | RustcAttributeKindRustcNonnullOptimizationGuaranteed ->
+      pp_string fmt "rustc_nonnull_optimization_guaranteed"
   | RustcAttributeKindRustcReallocator -> pp_string fmt "rustc_reallocator"
   | RustcAttributeKindShouldPanic reason ->
       pp_string fmt "should_panic";

@@ -82,6 +82,7 @@ impl RustcDatatypes {
                     "RustcDeallocator",
                     "RustcIntrinsic",
                     "RustcNoWritable",
+                    "RustcNonnullOptimizationGuaranteed",
                     "RustcReallocator",
                     "ShouldPanic",
                     "TargetFeature",

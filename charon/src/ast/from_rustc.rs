@@ -132,6 +132,8 @@ pub enum AttributeKind {
     RustcIntrinsic { llvm: Option<Ustr> },
     /// Represents `#[rustc_no_writable]`
     RustcNoWritable,
+    /// Represents `#[rustc_nonnull_optimization_guaranteed]`.
+    RustcNonnullOptimizationGuaranteed,
     /// Represents `#[rustc_reallocator]`
     RustcReallocator,
     /// Represents `#[should_panic]`

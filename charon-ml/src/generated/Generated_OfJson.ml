@@ -2499,6 +2499,8 @@ and rustc_attribute_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* llvm = option_of_json string_of_json ctx llvm in
         Ok (RustcAttributeKindRustcIntrinsic llvm)
     | `String "RustcNoWritable" -> Ok RustcAttributeKindRustcNoWritable
+    | `String "RustcNonnullOptimizationGuaranteed" ->
+        Ok RustcAttributeKindRustcNonnullOptimizationGuaranteed
     | `String "RustcReallocator" -> Ok RustcAttributeKindRustcReallocator
     | `Assoc [ ("ShouldPanic", `Assoc [ ("reason", reason) ]) ] ->
         let* reason = option_of_json string_of_json ctx reason in
