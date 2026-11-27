@@ -8,15 +8,15 @@ struct (_, _)::<&'_ u8, &'_ u8> {
 }
 
 // Full name: test_crate::foo::{closure}
-struct {closure}<'_0, '_1, '_2> {
-  _0: &'_2 u8,
+struct {closure}<'a, '_1, '_2, '_3> {
+  _0: &'_3 u8,
 }
 
 // Full name: test_crate::foo
-pub fn foo<'a>(x: &'a u8) -> {closure}<'a, 'static, 'a>
+pub fn foo<'a>(x: &'a u8) -> {closure}<'_, 'a, 'static, 'a>
 {
-    let mut _0: {closure}<'3, '4, '5>; // return
-    let x: &'7 u8; // arg #1
+    let mut _0: {closure}<'4, '5, '6, '7>; // return
+    let x: &'9 u8; // arg #1
 
     storage_live(_0)
     _0 = {closure} { _0: copy x }
@@ -24,7 +24,7 @@ pub fn foo<'a>(x: &'a u8) -> {closure}<'a, 'static, 'a>
 }
 
 // Full name: test_crate::foo::{closure}::{promoted_const}
-fn {promoted_const}<'_0, '_1, '_2>() -> &'_ u8
+fn {promoted_const}<'a, '_1, '_2, '_3>() -> &'_ u8
 {
     let mut _0: &'0 u8; // return
     let mut _1: u8; // anonymous local
@@ -37,22 +37,23 @@ fn {promoted_const}<'_0, '_1, '_2>() -> &'_ u8
 }
 
 // Full name: test_crate::foo::{closure}::{promoted_const}
-const {promoted_const}<'_0, '_1, '_2>: &'_ u8 = {promoted_const}<'_0, '_1, '_2>()
+const {promoted_const}<'a, '_1, '_2, '_3>: &'_ u8 = {promoted_const}<'a, '_1, '_2, '_3>()
 
-// Full name: test_crate::foo::{impl Fn<()> for {closure}<'_0, '_1, '_2>}::call
-extern "rust-call" fn call<'_0, '_1, '_2, '_3>(_1: &'_3 {closure}<'_0, '_1, '_2>, tupled_args: ()) -> (&'_ u8, &'_ u8)
+// Full name: test_crate::foo::{impl Fn<()> for {closure}<'a, '_1, '_2, '_3>}::call
+extern "rust-call" fn call<'a, '_1, '_2, '_3, '_4>(_1: &'_4 {closure}<'a, '_1, '_2, '_3>, tupled_args: ()) -> (&'_ u8, &'_ u8)
 where
-    Outlives0: ('_0: '_3),
-    Outlives1: ('_1: '_3),
-    Outlives2: ('_2: '_3),
+    Outlives0: ('a: '_4),
+    Outlives1: ('_1: '_4),
+    Outlives2: ('_2: '_4),
+    Outlives3: ('_3: '_4),
 {
     let mut _0: (&'_ u8, &'_ u8); // return
-    let mut _1: &'4 {closure}<'_0, '_1, '_2>; // arg #1
+    let mut _1: &'5 {closure}<'a, '_1, '_2, '_3>; // arg #1
     let mut tupled_args: (); // arg #2
-    let mut _3: &'6 u8; // anonymous local
-    let mut _4: &'7 u8; // anonymous local
-    let _5: &'8 u8; // anonymous local
-    let mut _6: &'9 u8; // anonymous local
+    let mut _3: &'7 u8; // anonymous local
+    let mut _4: &'8 u8; // anonymous local
+    let _5: &'9 u8; // anonymous local
+    let mut _6: &'10 u8; // anonymous local
 
     storage_live(_0)
     storage_live(_6)
@@ -60,7 +61,7 @@ where
     _3 = copy (*_1)._0
     storage_live(_4)
     storage_live(_5)
-    _6 = const {promoted_const}<'_0, '_1, '_2>
+    _6 = const {promoted_const}<'14, '_1, '_2, '_3>
     _5 = &(*_6)
     _4 = &(*_5)
     _0 = (move _3, move _4)

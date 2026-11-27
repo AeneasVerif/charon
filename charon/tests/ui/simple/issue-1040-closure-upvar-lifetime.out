@@ -3,8 +3,8 @@
 struct () {}
 
 // Full name: test_crate::foo::{closure}
-struct {closure}<'_0, '_1> {
-  _0: &'_1 u8,
+struct {closure}<'_0, '_1, '_2> {
+  _0: &'_2 u8,
 }
 
 // Full name: test_crate::foo
@@ -12,8 +12,8 @@ pub fn foo<'_0>(s: &'_0 u8)
 {
     let mut _0: (); // return
     let s: &'1 u8; // arg #1
-    let mut _2: {closure}<'4, '5>; // anonymous local
-    let mut _3: &'6 u8; // anonymous local
+    let mut _2: {closure}<'5, '6, '7>; // anonymous local
+    let mut _3: &'8 u8; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -27,14 +27,15 @@ pub fn foo<'_0>(s: &'_0 u8)
     return
 }
 
-// Full name: test_crate::foo::{impl Fn<()> for {closure}<'_0, '_1>}::call
-extern "rust-call" fn call<'_0, '_1, '_2>(_1: &'_2 {closure}<'_0, '_1>, tupled_args: ()) -> &'_0 u8
+// Full name: test_crate::foo::{impl Fn<()> for {closure}<'_0, '_1, '_2>}::call
+extern "rust-call" fn call<'_0, '_1, '_2, '_3>(_1: &'_3 {closure}<'_0, '_1, '_2>, tupled_args: ()) -> &'_1 u8
 where
-    Outlives0: ('_0: '_2),
-    Outlives1: ('_1: '_2),
+    Outlives0: ('_0: '_3),
+    Outlives1: ('_1: '_3),
+    Outlives2: ('_2: '_3),
 {
     let mut _0: &'1 u8; // return
-    let mut _1: &'5 {closure}<'_0, '_1>; // arg #1
+    let mut _1: &'6 {closure}<'_0, '_1, '_2>; // arg #1
     let mut tupled_args: (); // arg #2
 
     storage_live(_0)

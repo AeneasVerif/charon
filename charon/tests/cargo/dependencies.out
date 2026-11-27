@@ -205,13 +205,13 @@ fn {promoted_const}() -> &'_ u32
 const {promoted_const}: &'_ u32 = {promoted_const}()
 
 // Full name: test_cargo_dependencies::main::silly_incr::{closure}
-struct {closure} {}
+struct {closure}<'_0> {}
 
-// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32,)> for {closure}}::call_once
-extern "rust-call" fn call_once(_1: {closure}, tupled_args: (u32,)) -> u32
+// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32,)> for {closure}<'_0>}::call_once
+extern "rust-call" fn call_once<'_0>(_1: {closure}<'_0>, tupled_args: (u32,)) -> u32
 {
     let mut _0: u32; // return
-    let mut _1: {closure}; // arg #1
+    let mut _1: {closure}<'_0>; // arg #1
     let mut tupled_args: (u32,); // arg #2
     let y: u32; // local
     let mut _4: u32; // anonymous local
@@ -232,14 +232,14 @@ extern "rust-call" fn call_once(_1: {closure}, tupled_args: (u32,)) -> u32
     return
 }
 
-// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32,)> for {closure}}
-impl "impl_FnOnce_tuple_for_closure" FnOnce<(u32,)> for {closure} {
-    proof ImpliedClause0: ({closure}: MetaSized) = {built_in impl MetaSized for {closure}}
+// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32,)> for {closure}<'_0>}
+impl<'_0> "impl_FnOnce_tuple_for_closure" FnOnce<(u32,)> for {closure}<'_0> {
+    proof ImpliedClause0: ({closure}<'_0>: MetaSized) = {built_in impl MetaSized for {closure}<'_0>}
     proof ImpliedClause1: ((u32,): Sized) = {built_in impl Sized for (u32,)}
     proof ImpliedClause2: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     proof ImpliedClause3: (u32: Sized) = {built_in impl Sized for u32}
     type Output = u32
-    fn call_once = call_once
+    fn call_once = call_once<'_0>
     vtable: lazy
 }
 
@@ -250,7 +250,7 @@ fn silly_incr<'_0>(x: &'_0 mut u32)
     let x: &'1 mut u32; // arg #1
     let _2: (); // anonymous local
     let mut _3: &'2 mut u32; // anonymous local
-    let mut _4: {closure}; // anonymous local
+    let mut _4: {closure}<'4>; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -258,7 +258,7 @@ fn silly_incr<'_0>(x: &'_0 mut u32)
     _3 = &two-phase-mut (*x)
     storage_live(_4)
     _4 = {closure} {  }
-    _2 = take<'6, u32, {closure}>[{built_in impl Sized for u32}, {built_in impl Sized for {closure}}, impl_FnOnce_tuple_for_closure](move _3, move _4)
+    _2 = take<'37, u32, {closure}<'18>>[{built_in impl Sized for u32}, {built_in impl Sized for {closure}<'18>}, impl_FnOnce_tuple_for_closure<'18>](move _3, move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)

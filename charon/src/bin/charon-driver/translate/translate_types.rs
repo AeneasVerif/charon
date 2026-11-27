@@ -513,9 +513,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// In rustc/hax, closures and inline consts take a few extra generic types, which get inferred
-    /// and represent closure upvars and signature, or inline const return type. Instead of these
-    /// types, we add lifetime parameters. This method extracts the value of the lifetime
-    /// parameters in question.
+    /// and represent closure upvars and signature, or inline const return type. These types are
+    /// known so we don't consider them parameters in charon, however they still need to be given
+    /// lifetimes. These are the "extra early regions". On top of that, inner bodies may mention
+    /// outer bodies late bound lifetimes, which we fill in here as well.
     pub(crate) fn recover_extra_early_regions(
         &mut self,
         span: Span,
@@ -535,27 +536,34 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let Some(param_env) = def.param_env() else {
             return Ok(vec![]);
         };
-        // Fast path: most items don't have extra early regions anywhere up the soft parent chain
-        let mut ancestor = def.clone();
-        loop {
-            let Some(env) = ancestor.param_env() else {
-                return Ok(vec![]);
-            };
-            if !env.extra_early_regions.is_empty() {
-                break;
-            }
-            let Some(parent) = &env.soft_parent else {
-                return Ok(vec![]);
-            };
-            ancestor = self.hax_def(parent)?;
+        if param_env.extra_early_regions.is_empty() && param_env.soft_parent.is_none() {
+            return Ok(vec![]);
         }
         let (parent, actual, template) = item.soft_typing_parent(self.hax_state_with_id());
         // Recover parent arguments, in the same order as `push_generics_for_def`.
         let mut regions = if let Some(parent) = parent {
-            self.recover_extra_early_regions(span, &parent)?
+            let mut regions = self.recover_extra_early_regions(span, &parent)?;
+            let parent_def = self.hax_def(&parent)?;
+            if let Some(parent_env) = parent_def.param_env()
+                && let Some(late_bound) = &parent_env.late_bound
+            {
+                // Rustc does not track the relationship between late bound lifetimes across
+                // bodies, so we fill in with erased regions to be inferred later.
+                regions.extend(
+                    late_bound
+                        .binder
+                        .bound_vars
+                        .iter()
+                        .map(|_| self.translate_erased_region()),
+                );
+            }
+            regions
         } else {
             Vec::new()
         };
+        if param_env.extra_early_regions.is_empty() {
+            return Ok(regions);
+        }
         // See `soft_typing_parent` for details: `template` and `actual` should be the same
         // arguments, except that `template` has placeholder regions corresponding to the items
         // `extra_early_regions`, and actual has actual regions in the same locations. We zip the

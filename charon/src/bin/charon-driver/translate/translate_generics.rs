@@ -125,6 +125,7 @@ impl<'tcx> BindingLevel<'tcx> {
             late_bound: false,
         });
         self.early_region_vars.insert(region, rid);
+        // FIXME: is that used?
         self.late_named_region_vars.insert(def_id, rid);
         rid
     }
@@ -143,10 +144,10 @@ impl<'tcx> BindingLevel<'tcx> {
             Named(def_id, symbol) => (translate_region_name(symbol), Some(def_id)),
             ClosureEnv => (Some("env".to_owned()), None),
         };
-        let rid = self.params.regions.push_with(|index| RegionParam {
-            late_bound: true,
-            ..RegionParam::new(index, name, variance)
-        });
+        let rid = self
+            .params
+            .regions
+            .push_with(|index| RegionParam::new(index, name, variance));
         if let Some(def_id) = def_id {
             self.late_named_region_vars.insert(def_id, rid);
         }
@@ -540,16 +541,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn push_generics_for_def(
         &mut self,
         def: &hax::FullDef<'tcx>,
+        is_current_item: bool,
         include_late_bound: bool,
     ) -> Result<(), Error> {
         if let Some(param_env) = def.param_env() {
             // Add generics from the parent item, recursively.
             if let Some(parent_item) = &param_env.soft_parent {
                 let parent_def = self.hax_def(parent_item)?;
-                self.push_generics_for_def(&parent_def, false)?;
+                self.push_generics_for_def(&parent_def, false, true)?;
             }
             let origin = Self::predicate_origin_for_def(def);
-            self.push_param_env_without_parents(param_env, origin, include_late_bound)?;
+            self.push_param_env_without_parents(
+                param_env,
+                origin,
+                is_current_item,
+                include_late_bound,
+            )?;
         }
         Ok(())
     }
@@ -583,6 +590,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         param_env: &hax::ParamEnv<'tcx>,
         origin: PredicateOrigin,
+        is_current_item: bool,
         include_late_bound: bool,
     ) -> Result<(), Error> {
         self.push_generic_params(&param_env.generics)?;
@@ -594,13 +602,19 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         if include_late_bound && let Some(late_bound) = &param_env.late_bound {
             let level = self.innermost_binder_mut();
             level.push_bound_params(&late_bound.binder, Some(&late_bound.def_id));
-            // Make the variable available for lookup using debruijn indices too, which we use when
-            // translating signatures.
-            level.bound_region_vars = level
-                .late_anon_region_vars
-                .get(&late_bound.def_id)
-                .cloned()
-                .unwrap_or_default();
+            if is_current_item {
+                // Make the variable available for lookup using debruijn indices too, which we use
+                // when translating signatures.
+                level.bound_region_vars = level
+                    .late_anon_region_vars
+                    .get(&late_bound.def_id)
+                    .cloned()
+                    .unwrap_or_default();
+                // Mark these as the late bound parameters of this item.
+                for region in &level.bound_region_vars {
+                    level.params.regions[*region].late_bound = true;
+                }
+            }
         }
         Ok(())
     }
@@ -623,7 +637,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // For closures, we only bind late-bound variables on the impl/methods, not the state struct.
         let include_late_bound =
             !matches!(def.kind(), hax::FullDefKind::Closure(_)) || kind.has_closure_late_params();
-        self.push_generics_for_def(def, include_late_bound)?;
+        self.push_generics_for_def(def, true, include_late_bound)?;
 
         if kind.has_self_borrow_region() {
             self.the_only_binder_mut().push_self_borrow_region();
@@ -669,7 +683,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let inner_hax_state = self.t_ctx.hax_state.clone().with_hax_owner(owner);
         let outer_hax_state = mem::replace(&mut self.hax_state, inner_hax_state);
         let ret = self.inside_binder(kind, |this| {
-            this.push_param_env_without_parents(param_env, predicate_origin, true)?;
+            this.push_param_env_without_parents(param_env, predicate_origin, true, true)?;
             this.innermost_binder().params.check_consistency();
             f(this)
         });

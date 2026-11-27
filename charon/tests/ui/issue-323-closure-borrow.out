@@ -18,8 +18,8 @@ fn next_u64<'_0>(self: &'_0 mut Rng)
 }
 
 // Full name: test_crate::new::{closure}
-struct {closure}<'_0> {
-  _0: &'_0 mut Rng,
+struct {closure}<'_0, '_1> {
+  _0: &'_1 mut Rng,
 }
 
 // Full name: test_crate::new
@@ -27,8 +27,8 @@ fn new<'_0>(rng: &'_0 mut Rng)
 {
     let mut _0: (); // return
     let rng: &'1 mut Rng; // arg #1
-    let mut _2: {closure}<'3>; // anonymous local
-    let mut _3: &'4 mut Rng; // anonymous local
+    let mut _2: {closure}<'4, '5>; // anonymous local
+    let mut _3: &'6 mut Rng; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -42,22 +42,23 @@ fn new<'_0>(rng: &'_0 mut Rng)
     return
 }
 
-// Full name: test_crate::new::{impl FnMut<()> for {closure}<'_0>}::call_mut
-extern "rust-call" fn call_mut<'_0, '_1>(_1: &'_1 mut {closure}<'_0>, tupled_args: ())
+// Full name: test_crate::new::{impl FnMut<()> for {closure}<'_0, '_1>}::call_mut
+extern "rust-call" fn call_mut<'_0, '_1, '_2>(_1: &'_2 mut {closure}<'_0, '_1>, tupled_args: ())
 where
-    Outlives0: ('_0: '_1),
+    Outlives0: ('_0: '_2),
+    Outlives1: ('_1: '_2),
 {
     let mut _0: (); // return
-    let mut _1: &'2 mut {closure}<'_0>; // arg #1
+    let mut _1: &'3 mut {closure}<'_0, '_1>; // arg #1
     let mut tupled_args: (); // arg #2
     let _3: (); // anonymous local
-    let mut _4: &'4 mut Rng; // anonymous local
+    let mut _4: &'5 mut Rng; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     storage_live(_4)
     _4 = &two-phase-mut (*(*_1)._0)
-    _3 = next_u64<'9>(move _4)
+    _3 = next_u64<'10>(move _4)
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)
         unwind_continue

@@ -23,7 +23,7 @@ pub fn foo() -> {closure}
 }
 
 // Full name: test_crate::foo::{closure}::{promoted_const}
-fn {promoted_const}() -> &'_ u8
+fn {promoted_const}<'_0>() -> &'_ u8
 {
     let mut _0: &'0 u8; // return
     let mut _1: u8; // anonymous local
@@ -36,7 +36,7 @@ fn {promoted_const}() -> &'_ u8
 }
 
 // Full name: test_crate::foo::{closure}::{promoted_const}
-const {promoted_const}: &'_ u8 = {promoted_const}()
+const {promoted_const}<'_0>: &'_ u8 = {promoted_const}<'_0>()
 
 // Full name: test_crate::foo::{impl Fn<(&'_ u8,)> for {closure}}::call
 extern "rust-call" fn impl_Fn_for_closure::call<'_0, '_1>(_1: &'_1 {closure}, tupled_args: (&'_ u8,)) -> (&'_ u8, &'_ u8)
@@ -58,7 +58,7 @@ extern "rust-call" fn impl_Fn_for_closure::call<'_0, '_1>(_1: &'_1 {closure}, tu
     _4 = copy x
     storage_live(_5)
     storage_live(_6)
-    _7 = const {promoted_const}
+    _7 = const {promoted_const}<'10>
     _6 = &(*_7)
     _5 = &(*_6)
     _0 = (move _4, move _5)

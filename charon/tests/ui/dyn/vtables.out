@@ -1077,11 +1077,11 @@ fn use_alias<'_0>(x: &'_0 (dyn Both32And64 + '_0))
     let mut _8: &'13 i64; // anonymous local
     let mut _9: &'14 i32; // anonymous local
     let mut _10: fn<'_0_1, '_1_1, '_2_1>(&'_0_1 (dyn Both32And64), &'_1_1 i32, &'_2_1 i64); // anonymous local
-    let mut _11: &'16 i32; // anonymous local
-    let mut _12: &'17 i64; // anonymous local
-    let mut _13: &'29 i32; // anonymous local
+    let mut _11: &'17 i32; // anonymous local
+    let mut _12: &'19 i64; // anonymous local
+    let mut _13: &'31 i32; // anonymous local
     let mut _14: i32; // anonymous local
-    let mut _15: &'30 i64; // anonymous local
+    let mut _15: &'32 i64; // anonymous local
     let mut _16: i64; // anonymous local
 
     storage_live(_12)
@@ -1114,7 +1114,7 @@ fn use_alias<'_0>(x: &'_0 (dyn Both32And64 + '_0))
     _6 = &(*_7)
     storage_live(_10)
     _10 = vtable_lookup<method_both_operate>(read _3.metadata)
-    _2 = (read _10)<'26, '27, '28>(move _3, move _4, move _6)
+    _2 = (read _10)<'28, '29, '30>(move _3, move _4, move _6)
     ↳⚡ storage_dead(_9)
         storage_dead(_8)
         storage_dead(x)
