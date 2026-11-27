@@ -26,12 +26,46 @@
       margin-top: 0;
       font-size: 1.2em;
     }
-    canvas { max-height: 350px; }
+    /* Chart.js sizes the canvas to fill this (with `maintainAspectRatio: false`). */
+    .chart-wrap { position: relative; height: 350px; }
+    #range {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 16px;
+      margin-bottom: 16px;
+    }
+    /* Lay out the button groups as items of the `#range` flexbox. */
+    #range-buttons { display: contents; }
+    #range button, #range input, #range select {
+      font: inherit;
+      padding: 4px 12px;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+    }
+    #range button { margin-right: 4px; }
+    #range button.active { background: #0969da; color: #fff; border-color: #0969da; }
+    /* On narrow screens, give all the horizontal space to the charts. */
+    @media (max-width: 600px) {
+      body { padding: 8px 0; }
+      h1 { font-size: 1.5em; }
+      h1, .subtitle, #range, .chart-container h2 { padding: 0 8px; }
+      .chart-container { padding: 8px 0; border-left: none; border-right: none; border-radius: 0; }
+      .chart-wrap { height: 300px; }
+      #range button, #range input, #range select { padding: 4px 8px; }
+    }
   </style>
 </head>
 <body>
   <h1>Charon Benchmarks</h1>
   <p class="subtitle">Performance tracking across commits (lower is better)</p>
+  <div id="range">
+    <span id="range-buttons"></span>
+    <span>from <input type="date" id="range-from"> to <input type="date" id="range-to"></span>
+    <span>crate <select id="filter-crate"></select> preset <select id="filter-preset"></select></span>
+  </div>
   <div id="charts"></div>
 
   <script src="data.js"></script>
@@ -41,16 +75,19 @@
     const allRuns = Object.values(data.entries).flat();
     allRuns.sort((a, b) => a.date - b.date);
 
-    // Group by unit (one chart per unit), with each crate as a separate line.
-    const metrics = new Map();   // unit -> Map<crate, [{date, commit, value}]>
-    for (const run of allRuns) {
+    // Group by unit (one chart per unit), with each (crate, preset) pair as a separate line.
+    const metrics = new Map();   // unit -> Map<name, {crate, preset, points: [{idx, date, commit, value}]}>
+    for (const [idx, run] of allRuns.entries()) {
       for (const bench of run.benches) {
         const unit = bench.unit;
-        const crate = bench.name;
+        // Benches used to only run with `--preset=fast` and weren't suffixed with the preset.
+        const [, crate, preset] = bench.name.match(/^(.*) \((.*)\)$/) ?? [, bench.name, "fast"];
+        const name = `${crate} (${preset})`;
         if (!metrics.has(unit)) metrics.set(unit, new Map());
         const byUnit = metrics.get(unit);
-        if (!byUnit.has(crate)) byUnit.set(crate, []);
-        byUnit.get(crate).push({
+        if (!byUnit.has(name)) byUnit.set(name, { crate, preset, points: [] });
+        byUnit.get(name).points.push({
+          idx,
           date: run.date,
           commit: run.commit,
           value: bench.value,
@@ -65,66 +102,147 @@
     ];
 
     const chartsDiv = document.getElementById("charts");
+    // E.g. "52.5B" instead of "52,500,000,000", to keep the y-axis narrow.
+    const compactNumber = new Intl.NumberFormat(undefined, { notation: "compact", maximumSignificantDigits: 3 });
 
-    // Assign a color to each crate.
-    const allCrates = [...new Set(allRuns.flatMap(r => r.benches.map(b => b.name)))].sort();
+    // Each crate gets a color and each preset a dash pattern, so that lines are easy to group.
+    const allLines = [...metrics.values()].flatMap(m => [...m.values()]);
+    const allCrates = [...new Set(allLines.map(l => l.crate))].sort();
+    // In order of first appearance, so that `fast` (the oldest preset) gets the solid line.
+    const allPresets = [...new Set(allLines.map(l => l.preset))];
     const crateColor = new Map(allCrates.map((c, i) => [c, COLORS[i % COLORS.length]]));
+    const DASHES = [[], [8, 4], [2, 3], [8, 3, 2, 3]];
+    const presetDash = new Map(allPresets.map((p, i) => [p, DASHES[i % DASHES.length]]));
 
-    for (const [metric, cratesMap] of metrics) {
+    // Range selection. The x axis is the index of the run in `allRuns`, so a range is a pair of
+    // indices. On top of setting the x-axis bounds, we filter the points so that the y-axis rescales
+    // to the visible data.
+    const DAY = 24 * 3600 * 1000;
+    const lastIdx = allRuns.length - 1;
+    const firstRunSince = date => allRuns.findIndex(r => r.date >= date);
+    const RANGES = {   // group label -> button label -> index of the first run to show
+      "time:": {
+        "1w": () => firstRunSince(allRuns.at(-1).date - 7 * DAY),
+        "1m": () => firstRunSince(allRuns.at(-1).date - 30 * DAY),
+        "3m": () => firstRunSince(allRuns.at(-1).date - 90 * DAY),
+      },
+      "commits: last": {
+        "50": () => Math.max(0, allRuns.length - 50),
+        "100": () => Math.max(0, allRuns.length - 100),
+        "300": () => Math.max(0, allRuns.length - 300),
+        "all": () => 0,
+      },
+    };
+    const charts = [];   // [{chart, series: [all points of each dataset]}]
+    const fromInput = document.getElementById("range-from");
+    const toInput = document.getElementById("range-to");
+    // Date inputs use UTC "YYYY-MM-DD" strings.
+    const toDay = date => new Date(date).toISOString().slice(0, 10);
+    // `label` is the active button, or null for a custom date range.
+    function applyRange(lo, hi, label) {
+      for (const { chart, series } of charts) {
+        chart.data.datasets.forEach((ds, i) => { ds.data = series[i].filter(p => p.x >= lo && p.x <= hi); });
+        Object.assign(chart.options.scales.x, { min: lo, max: hi });
+        chart.update();
+      }
+      for (const b of document.querySelectorAll("#range button")) {
+        b.classList.toggle("active", b.textContent === label);
+      }
+      fromInput.value = toDay(allRuns[lo].date);
+      toInput.value = toDay(allRuns[hi].date);
+    }
+    const buttonsSpan = document.getElementById("range-buttons");
+    for (const [groupLabel, group] of Object.entries(RANGES)) {
+      const groupSpan = document.createElement("span");
+      groupSpan.textContent = groupLabel + " ";
+      for (const [label, firstIdx] of Object.entries(group)) {
+        const b = document.createElement("button");
+        b.textContent = label;
+        b.onclick = () => applyRange(firstIdx(), lastIdx, label);
+        groupSpan.appendChild(b);
+      }
+      buttonsSpan.appendChild(groupSpan);
+    }
+    fromInput.onchange = toInput.onchange = () => {
+      const lo = firstRunSince(Date.parse(fromInput.value));
+      const hi = allRuns.findLastIndex(r => r.date < Date.parse(toInput.value) + DAY);
+      if (lo !== -1 && hi !== -1 && lo <= hi) applyRange(lo, hi, null);
+    };
+
+    for (const [metric, lines] of metrics) {
       const container = document.createElement("div");
       container.className = "chart-container";
       const heading = document.createElement("h2");
       heading.textContent = metric;
       container.appendChild(heading);
+      const wrap = document.createElement("div");
+      wrap.className = "chart-wrap";
       const canvas = document.createElement("canvas");
-      container.appendChild(canvas);
+      wrap.appendChild(canvas);
+      container.appendChild(wrap);
       chartsDiv.appendChild(container);
 
-      // Build one dataset per crate.
+      // Build one dataset per (crate, preset) pair.
       const datasets = [];
-      for (const [crate, points] of cratesMap) {
+      for (const [name, { crate, preset, points }] of lines) {
         const color = crateColor.get(crate);
         datasets.push({
-          label: crate,
+          label: name,
+          crate,
+          preset,
           data: points.map(p => ({
-            x: p.date,
+            x: p.idx,
             y: p.value,
+            date: p.date,
             commit: p.commit,
           })),
           borderColor: color,
           backgroundColor: color + "22",
+          borderDash: presetDash.get(preset),
           borderWidth: 2,
           pointRadius: 3,
           pointHoverRadius: 6,
           tension: 0.1,
         });
       }
+      // Group the legend by crate.
+      datasets.sort((a, b) => allCrates.indexOf(a.crate) - allCrates.indexOf(b.crate)
+        || allPresets.indexOf(a.preset) - allPresets.indexOf(b.preset));
 
-      new Chart(canvas, {
+      const series = datasets.map(ds => ds.data);
+      const chart = new Chart(canvas, {
         type: "line",
         data: { datasets },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
           interaction: { mode: "nearest", intersect: false },
           scales: {
             x: {
               type: "linear",
-              title: { display: true, text: "Date" },
+              title: { display: true, text: "Commit" },
               ticks: {
-                callback: v => new Date(v).toLocaleDateString(),
+                precision: 0,
+                // Rotated shas take a lot of vertical space; skip some instead.
+                maxRotation: 0,
+                callback: v => allRuns[v]?.commit.id.slice(0, 7),
               },
             },
+            // No axis title: the metric is already the chart heading.
             y: {
-              title: { display: true, text: metric },
               beginAtZero: false,
+              ticks: { callback: v => compactNumber.format(v) },
             },
           },
           plugins: {
+            // Draw lines rather than boxes so that the legend shows the dash pattern.
+            legend: { labels: { usePointStyle: true, pointStyle: "line", pointStyleWidth: 30 } },
             tooltip: {
               callbacks: {
                 title: items => {
                   const p = items[0].raw;
-                  const d = new Date(p.x).toLocaleString();
+                  const d = new Date(p.date).toLocaleString();
                   const sha = p.commit?.id?.slice(0, 8) ?? "";
                   return `${d}  (${sha})`;
                 },
@@ -146,6 +264,25 @@
           },
         },
       });
+      charts.push({ chart, series });
+    }
+    applyRange(RANGES["time:"]["1m"](), lastIdx, "1m");
+
+    // Crate/preset filters. This overrides lines toggled by clicking on the legend.
+    const crateFilter = document.getElementById("filter-crate");
+    const presetFilter = document.getElementById("filter-preset");
+    for (const [select, values] of [[crateFilter, allCrates], [presetFilter, allPresets]]) {
+      select.add(new Option("all", ""));
+      for (const v of values) select.add(new Option(v));
+      select.onchange = () => {
+        const shown = (filter, value) => filter.value === "" || filter.value === value;
+        for (const { chart } of charts) {
+          chart.data.datasets.forEach((ds, i) => {
+            chart.setDatasetVisibility(i, shown(crateFilter, ds.crate) && shown(presetFilter, ds.preset));
+          });
+          chart.update();
+        }
+      };
     }
 
     if (metrics.size === 0) {
