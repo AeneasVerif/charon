@@ -37,7 +37,7 @@
     }
     /* Lay out the button groups as items of the `#range` flexbox. */
     #range-buttons { display: contents; }
-    #range button, #range input {
+    #range button, #range input, #range select {
       font: inherit;
       padding: 4px 12px;
       border: 1px solid #d0d7de;
@@ -54,7 +54,7 @@
       h1, .subtitle, #range, .chart-container h2 { padding: 0 8px; }
       .chart-container { padding: 8px 0; border-left: none; border-right: none; border-radius: 0; }
       .chart-wrap { height: 300px; }
-      #range button, #range input { padding: 4px 8px; }
+      #range button, #range input, #range select { padding: 4px 8px; }
     }
   </style>
 </head>
@@ -64,6 +64,7 @@
   <div id="range">
     <span id="range-buttons"></span>
     <span>from <input type="date" id="range-from"> to <input type="date" id="range-to"></span>
+    <span>crate <select id="filter-crate"></select> preset <select id="filter-preset"></select></span>
   </div>
   <div id="charts"></div>
 
@@ -74,17 +75,18 @@
     const allRuns = Object.values(data.entries).flat();
     allRuns.sort((a, b) => a.date - b.date);
 
-    // Group by unit (one chart per unit), with each crate as a separate line.
-    const metrics = new Map();   // unit -> Map<crate, [{idx, date, commit, value}]>
+    // Group by unit (one chart per unit), with each (crate, preset) pair as a separate line.
+    const metrics = new Map();   // unit -> Map<name, {crate, preset, points: [{idx, date, commit, value}]}>
     for (const [idx, run] of allRuns.entries()) {
       for (const bench of run.benches) {
         const unit = bench.unit;
         // Benches used to only run with `--preset=fast` and weren't suffixed with the preset.
-        const crate = bench.name.includes(" (") ? bench.name : `${bench.name} (fast)`;
+        const [, crate, preset] = bench.name.match(/^(.*) \((.*)\)$/) ?? [, bench.name, "fast"];
+        const name = `${crate} (${preset})`;
         if (!metrics.has(unit)) metrics.set(unit, new Map());
         const byUnit = metrics.get(unit);
-        if (!byUnit.has(crate)) byUnit.set(crate, []);
-        byUnit.get(crate).push({
+        if (!byUnit.has(name)) byUnit.set(name, { crate, preset, points: [] });
+        byUnit.get(name).points.push({
           idx,
           date: run.date,
           commit: run.commit,
@@ -103,9 +105,14 @@
     // E.g. "52.5B" instead of "52,500,000,000", to keep the y-axis narrow.
     const compactNumber = new Intl.NumberFormat(undefined, { notation: "compact", maximumSignificantDigits: 3 });
 
-    // Assign a color to each crate.
-    const allCrates = [...new Set([...metrics.values()].flatMap(m => [...m.keys()]))].sort();
+    // Each crate gets a color and each preset a dash pattern, so that lines are easy to group.
+    const allLines = [...metrics.values()].flatMap(m => [...m.values()]);
+    const allCrates = [...new Set(allLines.map(l => l.crate))].sort();
+    // In order of first appearance, so that `fast` (the oldest preset) gets the solid line.
+    const allPresets = [...new Set(allLines.map(l => l.preset))];
     const crateColor = new Map(allCrates.map((c, i) => [c, COLORS[i % COLORS.length]]));
+    const DASHES = [[], [8, 4], [2, 3], [8, 3, 2, 3]];
+    const presetDash = new Map(allPresets.map((p, i) => [p, DASHES[i % DASHES.length]]));
 
     // Range selection. The x axis is the index of the run in `allRuns`, so a range is a pair of
     // indices. On top of setting the x-axis bounds, we filter the points so that the y-axis rescales
@@ -162,7 +169,7 @@
       if (lo !== -1 && hi !== -1 && lo <= hi) applyRange(lo, hi, null);
     };
 
-    for (const [metric, cratesMap] of metrics) {
+    for (const [metric, lines] of metrics) {
       const container = document.createElement("div");
       container.className = "chart-container";
       const heading = document.createElement("h2");
@@ -175,12 +182,14 @@
       container.appendChild(wrap);
       chartsDiv.appendChild(container);
 
-      // Build one dataset per crate.
+      // Build one dataset per (crate, preset) pair.
       const datasets = [];
-      for (const [crate, points] of cratesMap) {
+      for (const [name, { crate, preset, points }] of lines) {
         const color = crateColor.get(crate);
         datasets.push({
-          label: crate,
+          label: name,
+          crate,
+          preset,
           data: points.map(p => ({
             x: p.idx,
             y: p.value,
@@ -189,12 +198,16 @@
           })),
           borderColor: color,
           backgroundColor: color + "22",
+          borderDash: presetDash.get(preset),
           borderWidth: 2,
           pointRadius: 3,
           pointHoverRadius: 6,
           tension: 0.1,
         });
       }
+      // Group the legend by crate.
+      datasets.sort((a, b) => allCrates.indexOf(a.crate) - allCrates.indexOf(b.crate)
+        || allPresets.indexOf(a.preset) - allPresets.indexOf(b.preset));
 
       const series = datasets.map(ds => ds.data);
       const chart = new Chart(canvas, {
@@ -223,7 +236,8 @@
             },
           },
           plugins: {
-            legend: { labels: { boxWidth: 12 } },
+            // Draw lines rather than boxes so that the legend shows the dash pattern.
+            legend: { labels: { usePointStyle: true, pointStyle: "line", pointStyleWidth: 30 } },
             tooltip: {
               callbacks: {
                 title: items => {
@@ -253,6 +267,23 @@
       charts.push({ chart, series });
     }
     applyRange(RANGES["time:"]["1m"](), lastIdx, "1m");
+
+    // Crate/preset filters. This overrides lines toggled by clicking on the legend.
+    const crateFilter = document.getElementById("filter-crate");
+    const presetFilter = document.getElementById("filter-preset");
+    for (const [select, values] of [[crateFilter, allCrates], [presetFilter, allPresets]]) {
+      select.add(new Option("all", ""));
+      for (const v of values) select.add(new Option(v));
+      select.onchange = () => {
+        const shown = (filter, value) => filter.value === "" || filter.value === value;
+        for (const { chart } of charts) {
+          chart.data.datasets.forEach((ds, i) => {
+            chart.setDatasetVisibility(i, shown(crateFilter, ds.crate) && shown(presetFilter, ds.preset));
+          });
+          chart.update();
+        }
+      };
+    }
 
     if (metrics.size === 0) {
       chartsDiv.innerHTML = "<p>No benchmark data yet.</p>";
