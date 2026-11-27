@@ -623,33 +623,20 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             Ok(ty) if ty.is_usize() => PtrMetadata::Length,
             Ok(ty)
                 if let ty::Adt(def, args) = ty.kind()
-                    && tcx.is_lang_item(def.did(), rustc_attr_ir::LangItem::DynMetadata) =>
+                    && tcx.is_lang_item(def.did(), rustc_attr_ir::LangItem::DynMetadata)
+                    && let rustc_dyn_ty = args.type_at(0)
+                    && let ty::Dynamic(predicates, _) = rustc_dyn_ty.kind() =>
             {
-                let rustc_dyn_ty = args.type_at(0);
-                let hax_ty = self.t_ctx.catch_sinto(hax_state, span, &rustc_dyn_ty)?;
-                let dyn_trait = match hax_ty.kind() {
-                    hax::TyKind::DynTrait(dyn_trait) => dyn_trait,
-                    _ => unreachable!("DynMetadata without dyn generic"),
-                };
-                let principal_clause = dyn_trait
-                    .principal_trait_clause()
-                    .expect("expected a principal trait for vtable metadata");
-                let vtable = self.translate_dyn_binder(span, &dyn_trait.binder, |ctx, _, _| {
-                    ctx.translate_region_binder(
-                        span,
-                        principal_clause,
-                        |ctx, kind: &hax::ClauseKind| {
-                            let hax::ClauseKind::Trait(trait_predicate) = kind else {
-                                unreachable!()
-                            };
-                            ctx.translate_vtable_struct_ref(span, &trait_predicate.trait_ref)
-                        },
-                    )
+                // Use the `dyn Trait` type as self type so that assoc types projections on it can
+                // be normalized.
+                let principal = predicates
+                    .principal()
+                    .expect("expected a principal trait for vtable metadata")
+                    .with_self_ty(tcx, rustc_dyn_ty);
+                let principal = self.catch_sinto(span, &principal)?;
+                let vtable = self.translate_region_binder(span, &principal, |ctx, tref| {
+                    ctx.translate_vtable_struct_ref(span, tref)
                 })?;
-                let vtable = vtable
-                    .skip_binder
-                    .try_substitute(&GenericArgs::empty())
-                    .expect("vtable struct should not depend on self type");
                 let vtable = self.erase_region_binder(vtable);
                 PtrMetadata::VTable(vtable)
             }
