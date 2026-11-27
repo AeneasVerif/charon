@@ -249,14 +249,13 @@ impl DefId {
     where
         S: BaseState<'tcx>,
     {
-        let s = &s.with_hax_owner(self);
-        let cache_key = (self.promoted_id(), args);
-        if let Some(def) = s.with_cache(|cache| cache.full_defs.get(&cache_key).cloned()) {
+        if let Some(def) = s.with_item_cache(self, |cache| cache.full_defs.get(&args).cloned()) {
             return def;
         }
+        let s = &s.with_hax_owner(self);
         let def = Arc::new(translate_full_def(s, self, args));
         s.with_cache(|cache| {
-            cache.full_defs.insert(cache_key, def.clone());
+            cache.full_defs.insert(args, def.clone());
         });
         def
     }
