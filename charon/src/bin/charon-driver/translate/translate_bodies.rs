@@ -1958,7 +1958,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         let switch_ty = discr.ty();
         let switch_scalar_ty = *switch_ty.as_scalar().unwrap();
         let mut branch_targets: IndexVec<BranchId, BlockId> = IndexVec::new();
-        let mut target_to_branch: SeqHashMap<BlockId, BranchId> = SeqHashMap::new();
+        let mut target_to_branch: SeqHashMap<BlockId, BranchId> = SeqHashMap::default();
         let mut switch_branches = Vec::with_capacity(targets.iter().count());
 
         // Keep the historical true-then-false traversal order for boolean switches.

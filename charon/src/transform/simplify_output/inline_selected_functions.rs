@@ -1,4 +1,5 @@
-use std::{collections::HashMap, mem};
+use rustc_hash::FxHashMap as HashMap;
+use std::mem;
 
 use crate::transform::CowBox;
 use crate::transform::{TransformCtx, ctx::UllbcPass};

@@ -14,7 +14,7 @@ use crate::transform::ctx::UllbcPass;
 pub struct Transform;
 impl UllbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
-        let mut graph = DiGraphMap::<BlockId, ()>::new();
+        let mut graph = DiGraphMap::<BlockId, (), rustc_hash::FxBuildHasher>::new();
         for (id, block) in b.body.iter_enumerated() {
             for target in block.targets() {
                 graph.add_edge(id, target, ());

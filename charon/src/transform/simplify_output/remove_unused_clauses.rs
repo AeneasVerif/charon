@@ -3,7 +3,7 @@
 use derive_generic_visitor::*;
 use petgraph::visit::Walker;
 use petgraph::{graphmap::DiGraphMap, visit::Dfs};
-use std::collections::{HashMap, HashSet};
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 
 use crate::ast::*;
 use crate::ids::IndexVec;
@@ -21,7 +21,7 @@ enum ClauseNode {
 
 #[derive(Visitor)]
 struct BuildGraphVisitor<'a> {
-    graph: &'a mut DiGraphMap<ClauseNode, ()>,
+    graph: &'a mut DiGraphMap<ClauseNode, (), rustc_hash::FxBuildHasher>,
     translated: &'a TranslatedCrate,
     /// The item we're visiting.
     current_item: ItemId,
@@ -151,7 +151,7 @@ impl TransformPass for Transform {
 
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         // Build a dependency graph between all item clauses of the crate.
-        let graph: DiGraphMap<ClauseNode, ()> = {
+        let graph: DiGraphMap<ClauseNode, (), rustc_hash::FxBuildHasher> = {
             let mut graph = DiGraphMap::new();
             for item in ctx.translated.all_items() {
                 let item_id = item.id();

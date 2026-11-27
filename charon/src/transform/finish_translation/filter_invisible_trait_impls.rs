@@ -1,6 +1,6 @@
 //! We cannot filter trait impls by name before translating them, because we need to know the
 //! trait/type pair that is being implemented. We therefore filter them in a post-processing pass.
-use std::collections::HashSet;
+use rustc_hash::FxHashSet as HashSet;
 
 use crate::ast::*;
 

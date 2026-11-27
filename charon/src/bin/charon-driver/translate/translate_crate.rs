@@ -16,12 +16,11 @@
 //! signature) but not its contents.
 use itertools::Itertools;
 use petgraph::visit::{Dfs, Walker};
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet as HashSet};
 use rustc_hir::def_id::LOCAL_CRATE;
 use rustc_middle::ty::{self, TyCtxt};
 use rustc_span::{def_id::DefId, sym};
 use std::cell::RefCell;
-use std::collections::HashSet;
 use std::path::PathBuf;
 
 use super::translate_ctx::*;
@@ -783,7 +782,7 @@ impl<'tcx> TranslateCtx<'tcx> {
         let target_data = &self.tcx.data_layout;
         let triple = self.get_target_triple();
 
-        let mut primitive_alignments = SeqHashMap::new();
+        let mut primitive_alignments = SeqHashMap::default();
         primitive_alignments.insert(ScalarTy::Bool, rustc_abi::Align::ONE.bytes());
         for (ty, alignment) in [
             (IntegerTy::Signed(IntTy::I8), rustc_abi::Align::ONE.bytes()),

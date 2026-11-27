@@ -6,8 +6,8 @@
 //!
 //! Scopes can be nested: we report both the total (wall) time spent in a scope and the "self"
 //! time, i.e. the time not spent inside a nested instrumented scope.
+use rustc_hash::FxHashMap as HashMap;
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::io::Write;
 use std::sync::{LazyLock, Mutex};
 use std::time::{Duration, Instant};

@@ -6,7 +6,7 @@
 //! Every reference to a clause removed in this way is replaced with a `TraitRefKind::BuiltinOrAuto
 //! { builtin_data: RemovedAdtClause, .. }`.
 
-use std::collections::HashSet;
+use rustc_hash::FxHashSet as HashSet;
 
 use crate::ast::*;
 use crate::ids::{IndexMap, IndexVec};

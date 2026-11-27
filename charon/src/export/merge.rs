@@ -1,6 +1,6 @@
 //! Generic logic for merging several [`CrateData`]s into one.
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::mem;
@@ -144,8 +144,8 @@ impl CrateMerger {
                 translated,
                 has_errors: false,
             },
-            file_name_to_id: HashMap::new(),
-            item_sources: HashMap::new(),
+            file_name_to_id: HashMap::default(),
+            item_sources: HashMap::default(),
         };
         for (i, (krate, name_suffix)) in krates.into_iter().enumerate() {
             merger.add_one(i, krate, name_suffix);
@@ -308,7 +308,7 @@ fn discover_groups<K: Clone + Eq + Hash>(
     item_key: impl Fn(ItemId, &Name) -> Option<(Name, K)>,
 ) -> Vec<SeqHashMap<K, ItemId>> {
     let mut groups_map: SeqHashMap<(Name, std::mem::Discriminant<ItemId>), SeqHashMap<K, ItemId>> =
-        SeqHashMap::new();
+        SeqHashMap::default();
     for (&item_id, name) in &krate.item_names {
         if let Some((base_name, key)) = item_key(item_id, name) {
             let group_key = (base_name, std::mem::discriminant(&item_id));
@@ -433,7 +433,8 @@ fn remove_unmentioned_methods(krate: &mut TranslatedCrate) {
     // method), as well as all the methods without default. We end up with a graph where methods
     // with a default may end up not reachable.
     let graph = {
-        let mut graph: DiGraphMap<ReachabilityNode, ()> = DiGraphMap::new();
+        let mut graph: DiGraphMap<ReachabilityNode, (), rustc_hash::FxBuildHasher> =
+            DiGraphMap::new();
         graph.add_node(Root);
 
         for (fun_id, fun) in krate.fun_decls.iter_indexed() {
@@ -482,7 +483,7 @@ fn remove_unmentioned_methods(krate: &mut TranslatedCrate) {
 
     let reachable_nodes: HashSet<_> = Dfs::new(&graph, Root).iter(&graph).collect();
 
-    let mut unused_methods: HashMap<TraitDeclId, HashSet<TraitMethodId>> = HashMap::new();
+    let mut unused_methods: HashMap<TraitDeclId, HashSet<TraitMethodId>> = HashMap::default();
     // Iterate over unreachable nodes.
     for n in graph.nodes().filter(|n| !reachable_nodes.contains(n)) {
         match n {

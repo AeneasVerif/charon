@@ -20,7 +20,7 @@
 //! See also: <https://github.com/rust-lang/rust/pull/148190>
 
 use itertools::Itertools;
-use std::collections::HashSet;
+use rustc_hash::FxHashSet as HashSet;
 
 use crate::name_matcher::NamePattern;
 use crate::transform::ctx::UllbcPass;
@@ -125,7 +125,7 @@ fn find_array_assign(body: &ExprBody, start: BlockId, src_local: LocalId) -> Opt
 
 fn branched_before(body: &ExprBody, start: BlockId, target: BlockId) -> Option<bool> {
     let mut block_id = start;
-    let mut visited = HashSet::new();
+    let mut visited = HashSet::default();
     while visited.insert(block_id) {
         if block_id == target {
             return Some(false);
@@ -153,7 +153,7 @@ fn find_next_move_of(
     mut cursor: StmtLoc,
     src: &Place,
 ) -> Option<(StmtLoc, Place)> {
-    let mut visited = HashSet::new();
+    let mut visited = HashSet::default();
     while visited.insert(cursor) {
         let block = &body.body[cursor.block];
         while cursor.statement < block.statements.len() {
@@ -175,7 +175,7 @@ fn find_next_drop(
     mut block_id: BlockId,
     dropped_place: &Place,
 ) -> Option<(BlockId, BlockId, BlockId)> {
-    let mut visited = HashSet::new();
+    let mut visited = HashSet::default();
     while visited.insert(block_id) {
         let block = &body.body[block_id];
         if let TerminatorKind::Drop {

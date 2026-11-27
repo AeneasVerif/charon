@@ -509,7 +509,7 @@ impl ExitInfo {
         cfg: &CfgInfo,
         loop_header: src::BlockId,
     ) -> SeqHashMap<src::BlockId, LoopExitRank> {
-        let mut loop_exits: SeqHashMap<BlockId, LoopExitRank> = SeqHashMap::new();
+        let mut loop_exits: SeqHashMap<BlockId, LoopExitRank> = SeqHashMap::default();
         let header_is_unwind = cfg.block_data[loop_header].is_unwind;
         for block_id in Self::compute_loop_exit_starting_points(cfg, loop_header) {
             for bid in cfg.block_data(block_id).reachable_including_self() {
