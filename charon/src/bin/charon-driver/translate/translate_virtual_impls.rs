@@ -12,13 +12,24 @@ impl VirtualImplKind {
             VirtualImplKind::Callable(ClosureKind::FnOnce) => hax::VirtualTrait::FnOnce,
             VirtualImplKind::Callable(ClosureKind::FnMut) => hax::VirtualTrait::FnMut,
             VirtualImplKind::Callable(ClosureKind::Fn) => hax::VirtualTrait::Fn,
+            VirtualImplKind::Coroutine(CoroutineKind::Coroutine) => hax::VirtualTrait::Coroutine,
+            VirtualImplKind::Coroutine(CoroutineKind::Async) => hax::VirtualTrait::Future,
+            VirtualImplKind::Coroutine(CoroutineKind::Gen) => hax::VirtualTrait::Iterator,
+            VirtualImplKind::Coroutine(CoroutineKind::AsyncGen) => hax::VirtualTrait::AsyncIterator,
         }
     }
 
-    /// Whether the method we generate takes `self` by reference. If so, it takes an extra lifetime
-    /// parameter for that borrow.
-    pub fn has_self_borrow(self) -> bool {
-        !matches!(self, VirtualImplKind::Callable(ClosureKind::FnOnce))
+    /// The number of late-bound lifetimes of the method we generate, which become extra lifetime
+    /// parameters of that method. The first one, if any, is the borrow of `self`.
+    pub fn method_regions(self) -> usize {
+        match self {
+            // `call_once(self, args...)`
+            VirtualImplKind::Callable(ClosureKind::FnOnce) => 0,
+            // `poll(self: Pin<&'a mut Self>, cx: &'b mut Context<'c>)`
+            VirtualImplKind::Coroutine(CoroutineKind::Async | CoroutineKind::AsyncGen) => 3,
+            // `fn(&self, args...)`
+            _ => 1,
+        }
     }
 
     /// The name of the method we generate.
@@ -28,6 +39,9 @@ impl VirtualImplKind {
                 PathElem::Builtin(BuiltinPathElem::DropGlue, Disambiguator::ZERO)
             }
             VirtualImplKind::Callable(kind) => {
+                PathElem::Ident(kind.method_name().into(), Disambiguator::ZERO)
+            }
+            VirtualImplKind::Coroutine(kind) => {
                 PathElem::Ident(kind.method_name().into(), Disambiguator::ZERO)
             }
         }
@@ -57,18 +71,21 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         vimpl: &hax::VirtualTraitImpl<'tcx>,
         self_ty: Ty,
     ) -> Result<FunSig, Error> {
-        let self_borrow_region = self
-            .the_only_binder()
-            .self_borrow_region
-            .map(|rid| Region::Var(DeBruijnVar::new_at_zero(rid)));
         Ok(match kind {
             // Destruct doesn't have a method but we give it a fake one.
             VirtualImplKind::Destruct => {
-                self.drop_glue_method_sig(self_ty, self_borrow_region.unwrap())
+                self.drop_glue_method_sig(self_ty, self.self_borrow_region())
             }
-            _ => self
-                .translate_poly_fun_sig(span, &vimpl.methods[0].sig)?
-                .apply(self_borrow_region.into_iter().collect()),
+            _ => {
+                let method_regions = self
+                    .the_only_binder()
+                    .method_regions
+                    .iter()
+                    .map(|rid| Region::Var(DeBruijnVar::new_at_zero(*rid)))
+                    .collect();
+                self.translate_poly_fun_sig(span, &vimpl.methods[0].sig)?
+                    .apply(method_regions)
+            }
         })
     }
 
@@ -84,6 +101,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             VirtualImplKind::Callable(target_kind) => {
                 self.translate_callable_method_body(span, def, target_kind, signature)
             }
+            VirtualImplKind::Coroutine(_) => Ok(self.translate_def_body(span, def)),
         }
     }
 
@@ -110,18 +128,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             return Ok(timpl);
         }
 
-        // Add the method we generate. It takes the impl generics, plus a lifetime for the borrow
-        // of `self` if it takes `self` by reference.
+        // Add the method we generate. It takes the impl generics, plus the late-bound lifetimes of
+        // the method (see `method_regions`).
         let trait_id = timpl.impl_trait.id;
         let method_id = self.virtual_method_id(kind, vimpl, trait_id)?;
         let method_binder = {
             let fun_id =
                 self.register_item(span, def.this(), TransItemSourceKind::VirtualMethod(kind));
-            let method_params = if kind.has_self_borrow() {
-                Self::self_borrow_params()
-            } else {
-                GenericParams::empty()
-            };
+            let method_params = TransItemSourceKind::VirtualMethod(kind).method_region_params();
             let generics = self
                 .outermost_binder()
                 .params
@@ -137,6 +151,31 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             )
         };
         timpl.methods.set_slot_extend(method_id, method_binder);
+
+        // The other methods reuse the defaults of the trait.
+        let self_predicate = TraitRef::new(
+            TraitRefKind::TraitImpl(TraitImplRef {
+                id: impl_id,
+                generics: Box::new(self.the_only_binder().params.identity_args()),
+            }),
+            timpl.impl_trait.clone(),
+        );
+        let trait_def = self.poly_hax_def(&vimpl.trait_pred.trait_ref.def_id)?;
+        let hax::FullDefKind::Trait(t) = trait_def.kind() else {
+            unreachable!()
+        };
+        for assoc in t.items(self.hax_state()) {
+            if !matches!(assoc.kind, hax::AssocKind::Fn { .. }) || !assoc.has_value {
+                continue;
+            }
+            let method_id = self.translate_trait_method_id_no_enqueue(trait_id, &assoc.def_id)?;
+            let Some(bound_fn_ref) = self.translate_default_method_impl(&self_predicate, method_id)
+            else {
+                continue;
+            };
+            self.register_method_impl(trait_id, method_id, bound_fn_ref.skip_binder.id);
+            timpl.methods.set_slot_extend(method_id, bound_fn_ref);
+        }
 
         Ok(timpl)
     }
@@ -163,9 +202,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let src = {
             let mut impl_generics = self.the_only_binder().params.identity_args();
-            if kind.has_self_borrow() {
-                impl_generics.regions.pop();
-            }
+            let impl_regions = impl_generics.regions.len() - kind.method_regions();
+            impl_generics.regions.truncate(impl_regions);
             let impl_id = self.register_item(
                 span,
                 def.this(),

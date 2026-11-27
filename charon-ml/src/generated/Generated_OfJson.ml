@@ -2595,6 +2595,9 @@ and builtin_path_elem_of_json (ctx : of_json_ctx) (js : json) :
         Ok (PeTuple _0)
     | `String "Str" -> Ok PeStr
     | `String "Closure" -> Ok PeClosure
+    | `Assoc [ ("Coroutine", _0) ] ->
+        let* _0 = coroutine_kind_of_json ctx _0 in
+        Ok (PeCoroutine _0)
     | `String "Use" -> Ok PeUse
     | `String "AnonConst" -> Ok PeAnonConst
     | `String "PromotedConst" -> Ok PePromotedConst
@@ -2677,6 +2680,28 @@ and closure_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Fn" -> Ok Fn
     | `String "FnMut" -> Ok FnMut
     | `String "FnOnce" -> Ok FnOnce
+    | _ -> Error "")
+
+and coroutine_info_of_json (ctx : of_json_ctx) (js : json) :
+    (coroutine_info, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("kind", kind); ("resume", resume); ("trait_impl", trait_impl) ]
+      ->
+        let* kind = coroutine_kind_of_json ctx kind in
+        let* resume = fun_decl_ref_of_json ctx resume in
+        let* trait_impl = trait_impl_ref_of_json ctx trait_impl in
+        Ok ({ kind; resume; trait_impl } : coroutine_info)
+    | _ -> Error "")
+
+and coroutine_kind_of_json (ctx : of_json_ctx) (js : json) :
+    (coroutine_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Coroutine" -> Ok Coroutine
+    | `String "Async" -> Ok Async
+    | `String "Gen" -> Ok Gen
+    | `String "AsyncGen" -> Ok AsyncGen
     | _ -> Error "")
 
 and declaration_group_of_json (ctx : of_json_ctx) (js : json) :
@@ -4437,6 +4462,9 @@ and type_source_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Closure", `Assoc [ ("info", info) ]) ] ->
         let* info = closure_info_of_json ctx info in
         Ok (ClosureType info)
+    | `Assoc [ ("Coroutine", `Assoc [ ("info", info) ]) ] ->
+        let* info = coroutine_info_of_json ctx info in
+        Ok (CoroutineType info)
     | `Assoc
         [
           ( "VTable",

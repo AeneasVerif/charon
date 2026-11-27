@@ -45,9 +45,10 @@ pub(crate) struct BindingLevel<'tcx> {
     /// Extra lifetimes unerased from the closure arguments. Hax represents them with placeholder
     /// regions; they are parameters of the closure struct.
     pub closure_extra_self_regions: HashMap<hax::PlaceholderRegion, RegionId>,
-    /// Region added for the borrow of `self` accepted by a virtual impl method (e.g. `drop_glue` or
-    /// `call`), or by a vtable shim.
-    pub self_borrow_region: Option<RegionId>,
+    /// Regions added for the late-bound lifetimes of a virtual impl method (e.g. `drop_glue`,
+    /// `call` or `poll`), or for the borrow of `self` accepted by a vtable shim. The first one, if
+    /// any, is the borrow of `self`.
+    pub method_regions: Vec<RegionId>,
     /// The map from rust type variable indices to translated type variable indices. `None` marks
     /// inference-only parameters, which hax should normally never give us.
     pub type_vars_map: HashMap<u32, Option<TypeVarId>>,
@@ -160,13 +161,16 @@ impl<'tcx> BindingLevel<'tcx> {
         self.closure_extra_self_regions.insert(region, region_id);
     }
 
-    pub fn push_self_borrow_region(&mut self) -> RegionId {
-        let region_id = self
-            .params
-            .regions
-            .push_with(|index| RegionParam::new(index, None, Variance::Covariant));
-        self.self_borrow_region = Some(region_id);
-        region_id
+    /// Push the extra lifetime parameters that an item of this kind takes for the late-bound
+    /// lifetimes of a method, see [`BindingLevel::method_regions`].
+    pub fn push_method_regions(&mut self, kind: &TransItemSourceKind) {
+        for param in kind.method_region_params().regions {
+            let region_id = self
+                .params
+                .regions
+                .push_with(|index| RegionParam { index, ..param });
+            self.method_regions.push(region_id);
+        }
     }
 
     pub(crate) fn push_type_var(
@@ -433,8 +437,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
     pub(crate) fn self_borrow_region(&self) -> Region {
         Region::Var(DeBruijnVar::new_at_zero(
-            self.the_only_binder()
-                .self_borrow_region
+            *self
+                .the_only_binder()
+                .method_regions
+                .first()
                 .expect("item should have a borrow lifetime"),
         ))
     }
@@ -443,14 +449,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let mut generics = GenericArgs::empty();
         generics.regions.push(self.translate_erased_region());
         generics
-    }
-
-    pub(crate) fn self_borrow_params() -> GenericParams {
-        let mut params = GenericParams::empty();
-        params
-            .regions
-            .push_with(|index| RegionParam::new(index, None, Variance::Covariant));
-        params
     }
 
     pub(crate) fn push_generic_params(
@@ -551,6 +549,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             | FullDefKind::AssocFn(_)
             | FullDefKind::Ctor(_)
             | FullDefKind::Closure(_)
+            | FullDefKind::Coroutine(_)
             | FullDefKind::Const(_)
             | FullDefKind::AssocConst(_)
             | FullDefKind::Static(_) => PredicateOrigin::WhereClauseOnFn,
@@ -605,9 +604,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             !matches!(def.kind(), hax::FullDefKind::Closure(_)) || kind.has_closure_late_params();
         self.push_generics_for_def(def, include_late_bound)?;
 
-        if kind.has_self_borrow_region() {
-            self.the_only_binder_mut().push_self_borrow_region();
-        }
+        self.the_only_binder_mut().push_method_regions(kind);
 
         self.innermost_binder_mut().params.check_consistency();
         Ok(())

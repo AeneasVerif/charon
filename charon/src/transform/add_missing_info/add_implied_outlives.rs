@@ -191,7 +191,7 @@ impl<'a> ClosureOutlivesComputer<'a> {
     ) -> Self {
         let closure_tys = type_decls
             .iter()
-            .filter(|decl| matches!(decl.src, TypeSource::Closure { .. }))
+            .filter(|decl| decl.src.is_closure() || decl.src.is_coroutine())
             .map(|decl| (decl.def_id, CycleDetector::Unprocessed))
             .collect();
         Self {
@@ -245,7 +245,7 @@ impl TransformPass for Transform {
         let type_decls = &mut ctx.translated.type_decls;
         let trait_decls = &mut ctx.translated.trait_decls;
 
-        // Rustc gives us explicit outlives for ADTs, but we make fake ADTs for closures, so we
+        // Rustc gives us explicit outlives for ADTs, but we make fake ADTs for closures/coroutines, so we
         // infer their outlives predicates here. Thankfully they can't be recursive, which makes
         // the implementation much easier than having to deal with all ADTs.
         ClosureOutlivesComputer::new(type_decls, trait_decls).compute_all();

@@ -10,6 +10,7 @@ use std::{
     sync::LazyLock,
 };
 
+use super::translate_coroutines::translate_coroutine_kind;
 use super::translate_crate::{RustcItem, VirtualImplKind};
 use super::translate_ctx::*;
 use crate::hax;
@@ -326,7 +327,11 @@ impl<'tcx> TranslateCtx<'tcx> {
             // we should be able to extract closures in local let-bindings
             // (i.e., we shouldn't have to introduce top-level let-bindings).
             DefPathItem::Closure => {
-                Some(PathElem::Builtin(BuiltinPathElem::Closure, disambiguator))
+                let elem = match self.tcx.coroutine_kind(def_id.real_rust_def_id()) {
+                    Some(kind) => BuiltinPathElem::Coroutine(translate_coroutine_kind(kind)),
+                    None => BuiltinPathElem::Closure,
+                };
+                Some(PathElem::Builtin(elem, disambiguator))
             }
             // Do nothing, functions in `extern` blocks are in the same namespace as the
             // block.
@@ -451,8 +456,11 @@ impl<'tcx> TranslateCtx<'tcx> {
             TransItemSourceKind::TraitImpl(
                 kind @ (TransImplSource::Virtual(..) | TransImplSource::TraitAlias),
             ) => {
-                if let TransImplSource::Virtual(VirtualImplKind::Callable(..)) = kind {
-                    let _ = name.name.pop(); // Pop the `{closure}`
+                if let TransImplSource::Virtual(
+                    VirtualImplKind::Callable(..) | VirtualImplKind::Coroutine(..),
+                ) = kind
+                {
+                    let _ = name.name.pop(); // Pop the `{closure}`/`{async}`/etc
                 }
                 let impl_id = self.register_and_enqueue(&None, src.clone()).expect_item();
                 name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
