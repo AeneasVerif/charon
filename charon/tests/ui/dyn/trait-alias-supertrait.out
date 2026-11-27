@@ -1,0 +1,13 @@
+error: Error during trait resolution: Could not find a clause for `Binder { value: <dyn Sub as Alias>, bound_vars: [] }` in the item parameters
+  --> tests/ui/dyn/trait-alias-supertrait.rs:12:5
+   |
+12 |     needs_alias(x);
+   |     ^^^^^^^^^^^^^^
+
+error: Error during trait resolution: Could not find a clause for `Binder { value: <dyn Sub as Alias>, bound_vars: [] }` in the item parameters
+  --> tests/ui/dyn/trait-alias-supertrait.rs:12:5
+   |
+12 |     needs_alias(x);
+   |     ^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (2 errors)
