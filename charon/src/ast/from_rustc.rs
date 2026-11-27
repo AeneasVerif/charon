@@ -64,7 +64,7 @@ pub struct FromRustcError;
 /// [`rustc_parse`]: https://doc.rust-lang.org/nightly/nightly-rustc/rustc_parse/index.html
 /// [`rustc_codegen_ssa`]: https://doc.rust-lang.org/nightly/nightly-rustc/rustc_codegen_ssa/index.html
 /// [`rustc_attr_parsing`]: https://doc.rust-lang.org/nightly/nightly-rustc/rustc_attr_parsing/index.html
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcAttributeKind"))]
 #[cfg_attr(
@@ -150,7 +150,7 @@ pub enum AttributeKind {
 }
 
 /// A representation of all the valid lang items in Rust.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcLangItem"))]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("RustcLangItem"))]
@@ -643,7 +643,7 @@ pub enum LangItem {
     DynTrait,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcArch"))]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("RustcArch"))]
@@ -689,7 +689,7 @@ pub enum Arch {
     Other(Ustr),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcOs"))]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("RustcOs"))]
@@ -759,7 +759,7 @@ pub enum Os {
     Other(Ustr),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcEnv"))]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("RustcEnv"))]
@@ -797,7 +797,7 @@ pub enum Env {
 /// An enum representing possible values for `cfg(target_abi)`.
 /// This field is not forwarded to LLVM so it does not by itself affect codegen.
 /// See the `cfg_abi` field of [`TargetOptions`] for more details.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcCfgAbi"))]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("RustcCfgAbi"))]
@@ -834,7 +834,7 @@ pub enum CfgAbi {
     Other(Ustr),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcBinaryFormat"))]
 #[cfg_attr(
@@ -849,7 +849,7 @@ pub enum BinaryFormat {
     Xcoff,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcPanicStrategy"))]
 #[cfg_attr(
@@ -862,7 +862,104 @@ pub enum PanicStrategy {
     ImmediateAbort,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// ABI we expect to see within `extern "{abi}"`
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
+#[cfg_attr(feature = "charon_on_charon", charon::rename("RustcExternAbi"))]
+#[cfg_attr(
+    feature = "charon_on_charon",
+    charon::variants_prefix("RustcExternAbi")
+)]
+pub enum ExternAbi {
+    /// presumed C ABI for the platform
+    C {
+        unwind: bool,
+    },
+    /// ABI of the "system" interface, e.g. the Win32 API, always "aliasing"
+    System {
+        unwind: bool,
+    },
+    /// that's us!
+    Rust,
+    /// the mostly-unused `unboxed_closures` ABI, effectively now an impl detail unless someone
+    /// puts in the work to make it viable again... but would we need a special ABI?
+    RustCall,
+    /// For things unlikely to be called, where reducing register pressure in
+    /// `extern "Rust"` callers is worth paying extra cost in the callee.
+    /// Stronger than just `#[cold]` because `fn` pointers might be incompatible.
+    RustCold,
+    /// An always-invalid ABI that's used to test "this ABI is not supported by this platform"
+    /// in a platform-agnostic way.
+    RustInvalid,
+    /// Preserves no registers.
+    ///
+    /// Note, that this ABI is not stable in the registers it uses, is intended as an optimization
+    /// and may fall-back to a more conservative calling convention if the backend does not support
+    /// forcing callers to save all registers.
+    RustPreserveNone,
+    /// Ensures that calls in tail position can always be optimized into a jump.
+    ///
+    /// This ABI is not stable, and relies on LLVM implementation details.
+    RustTail,
+    /// Unstable ABI used to call LLVM intrinsics.
+    LlvmIntrinsic,
+    /// An ABI that rustc does not know how to call or define. Functions with this ABI can
+    /// only be created using `#[naked]` functions or `extern "custom"` blocks, and can only
+    /// be called from inline assembly.
+    Custom,
+    /// UEFI ABI, usually an alias of C, but sometimes an arch-specific alias
+    /// and only valid on platforms that have a UEFI standard
+    EfiApi,
+    /// Swift's calling convention, used to interoperate with Swift code without
+    /// going through C as an intermediary.
+    Swift,
+    /// Arm Architecture Procedure Call Standard, sometimes `ExternAbi::C` is an alias for this
+    Aapcs {
+        unwind: bool,
+    },
+    /// extremely constrained barely-C ABI for TrustZone
+    CmseNonSecureCall,
+    /// extremely constrained barely-C ABI for TrustZone
+    CmseNonSecureEntry,
+    /// An entry-point function called by the GPU's host
+    GpuKernel,
+    /// An entry-point function called by the GPU's host
+    PtxKernel,
+    AvrInterrupt,
+    AvrNonBlockingInterrupt,
+    Msp430Interrupt,
+    RiscvInterruptM,
+    RiscvInterruptS,
+    X86Interrupt,
+    /// `ExternAbi::C` but spelled funny because x86
+    Cdecl {
+        unwind: bool,
+    },
+    /// gnu-stdcall on "unix" and win-stdcall on "windows"
+    Stdcall {
+        unwind: bool,
+    },
+    /// gnu-fastcall on "unix" and win-fastcall on "windows"
+    Fastcall {
+        unwind: bool,
+    },
+    /// windows C++ ABI
+    Thiscall {
+        unwind: bool,
+    },
+    /// uses AVX and stuff
+    Vectorcall {
+        unwind: bool,
+    },
+    SysV64 {
+        unwind: bool,
+    },
+    Win64 {
+        unwind: bool,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcDeprecation"))]
 pub struct Deprecation {
@@ -875,7 +972,7 @@ pub struct Deprecation {
     pub suggestion: Option<Ustr>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcInlineAttr"))]
 #[cfg_attr(
@@ -900,7 +997,7 @@ pub enum InlineAttr {
 /// linkage type for a `MonoItem`.
 ///
 /// See <https://llvm.org/docs/LangRef.html#linkage-types> for more details about these variants.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcLinkage"))]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("RustcLinkage"))]
@@ -915,7 +1012,7 @@ pub enum Linkage {
     WeakODR,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcOptimizeAttr"))]
 #[cfg_attr(
@@ -934,7 +1031,7 @@ pub enum OptimizeAttr {
 }
 
 /// Release in which an API is deprecated.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcDeprecatedSince"))]
 #[cfg_attr(
@@ -955,7 +1052,7 @@ pub enum DeprecatedSince {
     Err,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcIdent"))]
 pub struct Ident {
@@ -967,7 +1064,7 @@ pub struct Ident {
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcRustcVersion"))]
 pub struct RustcVersion {

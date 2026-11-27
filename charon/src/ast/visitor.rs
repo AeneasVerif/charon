@@ -49,7 +49,6 @@ use derive_generic_visitor::*;
     // Types that are skipped by normal visitors but compared for equality by `ZipAst`.
     skip_but_eq(
         (),
-        Abi,
         AllocatorMethod,
         AsmKind,
         AsmOperandId,
@@ -82,6 +81,7 @@ use derive_generic_visitor::*;
         bool,
         char,
         crate::options::Preset,
+        from_rustc::ExternAbi,
         from_rustc::Linkage,
         i128,
         std::ops::RangeInclusive<IntegerValue>,

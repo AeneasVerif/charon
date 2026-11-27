@@ -543,7 +543,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     .try_collect()?,
                 output: self.translate_ty(span, ctor.output_ty())?,
                 is_unsafe: false,
-                abi: Abi::rust(),
+                abi: from_rustc::ExternAbi::rust(),
                 is_variadic: false,
             };
 
@@ -580,7 +580,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     inputs: vec![],
                     output: self.translate_ty(span, ty)?,
                     is_unsafe: false,
-                    abi: Abi::rust(),
+                    abi: from_rustc::ExternAbi::rust(),
                     is_variadic: false,
                 }
             }

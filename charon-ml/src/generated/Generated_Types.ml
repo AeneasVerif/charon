@@ -180,17 +180,11 @@ class ['self] map_ty_base =
       AssocConstId.Map.visit_map
   end
 
-type abi =
-  | AbiRust
-  | AbiC
-  | AbiOther of string
-      (** Rust's spelling for the ABI, e.g. "C-unwind" or "system". *)
-
 (** A value of type [T] bound by generic parameters. Used in any context where
     we're adding generic parameters that aren't on the top-level item, e.g.
     [for<'a>] clauses (uses [RegionBinder] for now), trait methods, GATs (TODO).
 *)
-and 'a0 binder = {
+type 'a0 binder = {
   binder_params : generic_params;
   binder_value : 'a0;
       (** Named this way to highlight accesses to the inner value that might be
@@ -466,6 +460,108 @@ and dyn_predicate = {
           this trait in the [dyn Trait] pointer metadata. *)
 }
 
+(** ABI we expect to see within [extern "{abi}"] *)
+and rustc_extern_abi =
+  | RustcExternAbiC of bool
+      (** presumed C ABI for the platform
+
+          Fields:
+          - [unwind] *)
+  | RustcExternAbiSystem of bool
+      (** ABI of the "system" interface, e.g. the Win32 API, always "aliasing"
+
+          Fields:
+          - [unwind] *)
+  | RustcExternAbiRust  (** that's us! *)
+  | RustcExternAbiRustCall
+      (** the mostly-unused [unboxed_closures] ABI, effectively now an impl
+          detail unless someone puts in the work to make it viable again... but
+          would we need a special ABI? *)
+  | RustcExternAbiRustCold
+      (** For things unlikely to be called, where reducing register pressure in
+          [extern "Rust"] callers is worth paying extra cost in the callee.
+          Stronger than just [#[cold]] because [fn] pointers might be
+          incompatible. *)
+  | RustcExternAbiRustInvalid
+      (** An always-invalid ABI that's used to test "this ABI is not supported
+          by this platform" in a platform-agnostic way. *)
+  | RustcExternAbiRustPreserveNone
+      (** Preserves no registers.
+
+          Note, that this ABI is not stable in the registers it uses, is
+          intended as an optimization and may fall-back to a more conservative
+          calling convention if the backend does not support forcing callers to
+          save all registers. *)
+  | RustcExternAbiRustTail
+      (** Ensures that calls in tail position can always be optimized into a
+          jump.
+
+          This ABI is not stable, and relies on LLVM implementation details. *)
+  | RustcExternAbiLlvmIntrinsic
+      (** Unstable ABI used to call LLVM intrinsics. *)
+  | RustcExternAbiCustom
+      (** An ABI that rustc does not know how to call or define. Functions with
+          this ABI can only be created using [#[naked]] functions or
+          [extern "custom"] blocks, and can only be called from inline assembly.
+      *)
+  | RustcExternAbiEfiApi
+      (** UEFI ABI, usually an alias of C, but sometimes an arch-specific alias
+          and only valid on platforms that have a UEFI standard *)
+  | RustcExternAbiSwift
+      (** Swift's calling convention, used to interoperate with Swift code
+          without going through C as an intermediary. *)
+  | RustcExternAbiAapcs of bool
+      (** Arm Architecture Procedure Call Standard, sometimes [ExternAbi::C] is
+          an alias for this
+
+          Fields:
+          - [unwind] *)
+  | RustcExternAbiCmseNonSecureCall
+      (** extremely constrained barely-C ABI for TrustZone *)
+  | RustcExternAbiCmseNonSecureEntry
+      (** extremely constrained barely-C ABI for TrustZone *)
+  | RustcExternAbiGpuKernel
+      (** An entry-point function called by the GPU's host *)
+  | RustcExternAbiPtxKernel
+      (** An entry-point function called by the GPU's host *)
+  | RustcExternAbiAvrInterrupt
+  | RustcExternAbiAvrNonBlockingInterrupt
+  | RustcExternAbiMsp430Interrupt
+  | RustcExternAbiRiscvInterruptM
+  | RustcExternAbiRiscvInterruptS
+  | RustcExternAbiX86Interrupt
+  | RustcExternAbiCdecl of bool
+      (** [ExternAbi::C] but spelled funny because x86
+
+          Fields:
+          - [unwind] *)
+  | RustcExternAbiStdcall of bool
+      (** gnu-stdcall on "unix" and win-stdcall on "windows"
+
+          Fields:
+          - [unwind] *)
+  | RustcExternAbiFastcall of bool
+      (** gnu-fastcall on "unix" and win-fastcall on "windows"
+
+          Fields:
+          - [unwind] *)
+  | RustcExternAbiThiscall of bool
+      (** windows C++ ABI
+
+          Fields:
+          - [unwind] *)
+  | RustcExternAbiVectorcall of bool
+      (** uses AVX and stuff
+
+          Fields:
+          - [unwind] *)
+  | RustcExternAbiSysV64 of bool
+      (** Fields:
+          - [unwind] *)
+  | RustcExternAbiWin64 of bool
+      (** Fields:
+          - [unwind] *)
+
 and field_id = (FieldId.id[@visitors.opaque])
 
 (** Reference to a function, possibly indirected via a trait. *)
@@ -486,7 +582,7 @@ and fun_decl_ref = {
 (** A function signature. *)
 and fun_sig = {
   is_unsafe : bool;  (** Is the function unsafe or not *)
-  abi : abi;  (** The calling convention of this function. *)
+  abi : rustc_extern_abi;  (** The calling convention of this function. *)
   is_variadic : bool;
       (** Whether this is a C-variadic function (its last parameter is [...]).
       *)

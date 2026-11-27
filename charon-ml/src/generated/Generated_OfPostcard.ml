@@ -63,18 +63,6 @@ let opt_indexed_map_of_postcard :
 
 let rec ___ = ()
 
-and abi_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (abi, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 -> Ok AbiRust
-     | 1 -> Ok AbiC
-     | 2 ->
-         let* _0 = string_of_postcard ctx st in
-         Ok (AbiOther _0)
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
 and abort_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (abort_kind, string) result =
   combine_error_msgs st __FUNCTION__
@@ -675,6 +663,63 @@ and dyn_predicate_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* binder = binder_of_postcard ty_of_postcard ctx st in
      Ok ({ binder } : dyn_predicate))
 
+and rustc_extern_abi_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (rustc_extern_abi, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiC unwind)
+     | 1 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiSystem unwind)
+     | 2 -> Ok RustcExternAbiRust
+     | 3 -> Ok RustcExternAbiRustCall
+     | 4 -> Ok RustcExternAbiRustCold
+     | 5 -> Ok RustcExternAbiRustInvalid
+     | 6 -> Ok RustcExternAbiRustPreserveNone
+     | 7 -> Ok RustcExternAbiRustTail
+     | 8 -> Ok RustcExternAbiLlvmIntrinsic
+     | 9 -> Ok RustcExternAbiCustom
+     | 10 -> Ok RustcExternAbiEfiApi
+     | 11 -> Ok RustcExternAbiSwift
+     | 12 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiAapcs unwind)
+     | 13 -> Ok RustcExternAbiCmseNonSecureCall
+     | 14 -> Ok RustcExternAbiCmseNonSecureEntry
+     | 15 -> Ok RustcExternAbiGpuKernel
+     | 16 -> Ok RustcExternAbiPtxKernel
+     | 17 -> Ok RustcExternAbiAvrInterrupt
+     | 18 -> Ok RustcExternAbiAvrNonBlockingInterrupt
+     | 19 -> Ok RustcExternAbiMsp430Interrupt
+     | 20 -> Ok RustcExternAbiRiscvInterruptM
+     | 21 -> Ok RustcExternAbiRiscvInterruptS
+     | 22 -> Ok RustcExternAbiX86Interrupt
+     | 23 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiCdecl unwind)
+     | 24 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiStdcall unwind)
+     | 25 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiFastcall unwind)
+     | 26 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiThiscall unwind)
+     | 27 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiVectorcall unwind)
+     | 28 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiSysV64 unwind)
+     | 29 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiWin64 unwind)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and field_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (field_id, string) result =
   combine_error_msgs st __FUNCTION__ (FieldId.id_of_postcard ctx st)
@@ -763,7 +808,7 @@ and fun_sig_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (fun_sig, string) result =
   combine_error_msgs st __FUNCTION__
     (let* is_unsafe = bool_of_postcard ctx st in
-     let* abi = abi_of_postcard ctx st in
+     let* abi = rustc_extern_abi_of_postcard ctx st in
      let* is_variadic = bool_of_postcard ctx st in
      let* inputs = list_of_postcard ty_of_postcard ctx st in
      let* output = ty_of_postcard ctx st in

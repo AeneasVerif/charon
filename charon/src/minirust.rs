@@ -254,7 +254,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
     /// Make a start function with the right calling convention that just calls into `main()`.
     fn make_start_function(&self, span: Span, main: FunDeclId) -> Result<mini::Function> {
         let mut signature = self.krate.fun_decls[main].signature.clone();
-        signature.abi = Abi::C;
+        signature.abi = from_rustc::ExternAbi::C { unwind: false };
         check!(
             span,
             signature.inputs.is_empty() && signature.output.is_unit(),
@@ -1091,15 +1091,20 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         mb::fn_ptr(self.fn_name(id))
     }
 
-    fn calling_convention(&self, span: Span, abi: &Abi) -> Result<mini::CallingConvention> {
+    fn calling_convention(
+        &self,
+        span: Span,
+        abi: &from_rustc::ExternAbi,
+    ) -> Result<mini::CallingConvention> {
+        use from_rustc::ExternAbi;
         Ok(match abi {
-            Abi::Rust => mini::CallingConvention::Rust,
-            Abi::C => mini::CallingConvention::C,
-            Abi::Other(name) if name == "rust-call" => mini::CallingConvention::Rust,
-            Abi::Other(name) => {
+            ExternAbi::Rust | ExternAbi::RustCall => mini::CallingConvention::Rust,
+            ExternAbi::C { unwind: false } => mini::CallingConvention::C,
+            _ => {
                 raise!(
                     span,
-                    "calling convention `{name}` is not supported by MiniRust"
+                    "calling convention `{}` is not supported by MiniRust",
+                    abi.with_ctx(&self.fmt)
                 )
             }
         })

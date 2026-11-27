@@ -103,7 +103,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for AbortKind {
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for Abi {
+impl<C: AstFormatter> FmtWithCtx<C> for from_rustc::ExternAbi {
     fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.rust_name())
     }

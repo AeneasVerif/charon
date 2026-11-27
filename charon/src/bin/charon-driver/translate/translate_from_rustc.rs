@@ -12,6 +12,7 @@
 
 use super::translate_ctx::TranslateCtx;
 use charon_lib::ast::from_rustc::{self, FromRustcError};
+use rustc_abi::*;
 use rustc_attr_ir::lang_items::*;
 use rustc_attr_ir::*;
 use rustc_span::symbol::*;
@@ -72,6 +73,13 @@ impl<'tcx> TranslateCtx<'tcx> {
         value: &PanicStrategy,
     ) -> Result<from_rustc::PanicStrategy, FromRustcError> {
         self.translate_panic_strategy_from_rustc(value)
+    }
+
+    pub(crate) fn translate_rustc_extern_abi(
+        &mut self,
+        value: &ExternAbi,
+    ) -> Result<from_rustc::ExternAbi, FromRustcError> {
+        self.translate_extern_abi_from_rustc(value)
     }
 
     fn translate_attribute_kind_from_rustc(
@@ -647,6 +655,56 @@ impl<'tcx> TranslateCtx<'tcx> {
             PanicStrategy::Unwind => Ok(from_rustc::PanicStrategy::Unwind),
             PanicStrategy::Abort => Ok(from_rustc::PanicStrategy::Abort),
             PanicStrategy::ImmediateAbort => Ok(from_rustc::PanicStrategy::ImmediateAbort),
+            // If the below is reached, the code is not up-to-date with the rustc version
+            _ => Err(FromRustcError),
+        }
+    }
+
+    fn translate_extern_abi_from_rustc(
+        &mut self,
+        value: &ExternAbi,
+    ) -> Result<from_rustc::ExternAbi, FromRustcError> {
+        match value {
+            ExternAbi::C { unwind } => Ok(from_rustc::ExternAbi::C { unwind: *(unwind) }),
+            ExternAbi::System { unwind } => Ok(from_rustc::ExternAbi::System { unwind: *(unwind) }),
+            ExternAbi::Rust => Ok(from_rustc::ExternAbi::Rust),
+            ExternAbi::RustCall => Ok(from_rustc::ExternAbi::RustCall),
+            ExternAbi::RustCold => Ok(from_rustc::ExternAbi::RustCold),
+            ExternAbi::RustInvalid => Ok(from_rustc::ExternAbi::RustInvalid),
+            ExternAbi::RustPreserveNone => Ok(from_rustc::ExternAbi::RustPreserveNone),
+            ExternAbi::RustTail => Ok(from_rustc::ExternAbi::RustTail),
+            ExternAbi::LlvmIntrinsic => Ok(from_rustc::ExternAbi::LlvmIntrinsic),
+            ExternAbi::Custom => Ok(from_rustc::ExternAbi::Custom),
+            ExternAbi::EfiApi => Ok(from_rustc::ExternAbi::EfiApi),
+            ExternAbi::Swift => Ok(from_rustc::ExternAbi::Swift),
+            ExternAbi::Aapcs { unwind } => Ok(from_rustc::ExternAbi::Aapcs { unwind: *(unwind) }),
+            ExternAbi::CmseNonSecureCall => Ok(from_rustc::ExternAbi::CmseNonSecureCall),
+            ExternAbi::CmseNonSecureEntry => Ok(from_rustc::ExternAbi::CmseNonSecureEntry),
+            ExternAbi::GpuKernel => Ok(from_rustc::ExternAbi::GpuKernel),
+            ExternAbi::PtxKernel => Ok(from_rustc::ExternAbi::PtxKernel),
+            ExternAbi::AvrInterrupt => Ok(from_rustc::ExternAbi::AvrInterrupt),
+            ExternAbi::AvrNonBlockingInterrupt => {
+                Ok(from_rustc::ExternAbi::AvrNonBlockingInterrupt)
+            }
+            ExternAbi::Msp430Interrupt => Ok(from_rustc::ExternAbi::Msp430Interrupt),
+            ExternAbi::RiscvInterruptM => Ok(from_rustc::ExternAbi::RiscvInterruptM),
+            ExternAbi::RiscvInterruptS => Ok(from_rustc::ExternAbi::RiscvInterruptS),
+            ExternAbi::X86Interrupt => Ok(from_rustc::ExternAbi::X86Interrupt),
+            ExternAbi::Cdecl { unwind } => Ok(from_rustc::ExternAbi::Cdecl { unwind: *(unwind) }),
+            ExternAbi::Stdcall { unwind } => {
+                Ok(from_rustc::ExternAbi::Stdcall { unwind: *(unwind) })
+            }
+            ExternAbi::Fastcall { unwind } => {
+                Ok(from_rustc::ExternAbi::Fastcall { unwind: *(unwind) })
+            }
+            ExternAbi::Thiscall { unwind } => {
+                Ok(from_rustc::ExternAbi::Thiscall { unwind: *(unwind) })
+            }
+            ExternAbi::Vectorcall { unwind } => {
+                Ok(from_rustc::ExternAbi::Vectorcall { unwind: *(unwind) })
+            }
+            ExternAbi::SysV64 { unwind } => Ok(from_rustc::ExternAbi::SysV64 { unwind: *(unwind) }),
+            ExternAbi::Win64 { unwind } => Ok(from_rustc::ExternAbi::Win64 { unwind: *(unwind) }),
             // If the below is reached, the code is not up-to-date with the rustc version
             _ => Err(FromRustcError),
         }

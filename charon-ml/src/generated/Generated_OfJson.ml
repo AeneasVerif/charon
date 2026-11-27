@@ -70,16 +70,6 @@ let opt_indexed_map_of_json :
 
 let rec ___ = ()
 
-and abi_of_json (ctx : of_json_ctx) (js : json) : (abi, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `String "Rust" -> Ok AbiRust
-    | `String "C" -> Ok AbiC
-    | `Assoc [ ("Other", _0) ] ->
-        let* _0 = string_of_json ctx _0 in
-        Ok (AbiOther _0)
-    | _ -> Error "")
-
 and abort_kind_of_json (ctx : of_json_ctx) (js : json) :
     (abort_kind, string) result =
   combine_error_msgs js __FUNCTION__
@@ -753,6 +743,63 @@ and dyn_predicate_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ binder } : dyn_predicate)
     | _ -> Error "")
 
+and rustc_extern_abi_of_json (ctx : of_json_ctx) (js : json) :
+    (rustc_extern_abi, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("C", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiC unwind)
+    | `Assoc [ ("System", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiSystem unwind)
+    | `String "Rust" -> Ok RustcExternAbiRust
+    | `String "RustCall" -> Ok RustcExternAbiRustCall
+    | `String "RustCold" -> Ok RustcExternAbiRustCold
+    | `String "RustInvalid" -> Ok RustcExternAbiRustInvalid
+    | `String "RustPreserveNone" -> Ok RustcExternAbiRustPreserveNone
+    | `String "RustTail" -> Ok RustcExternAbiRustTail
+    | `String "LlvmIntrinsic" -> Ok RustcExternAbiLlvmIntrinsic
+    | `String "Custom" -> Ok RustcExternAbiCustom
+    | `String "EfiApi" -> Ok RustcExternAbiEfiApi
+    | `String "Swift" -> Ok RustcExternAbiSwift
+    | `Assoc [ ("Aapcs", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiAapcs unwind)
+    | `String "CmseNonSecureCall" -> Ok RustcExternAbiCmseNonSecureCall
+    | `String "CmseNonSecureEntry" -> Ok RustcExternAbiCmseNonSecureEntry
+    | `String "GpuKernel" -> Ok RustcExternAbiGpuKernel
+    | `String "PtxKernel" -> Ok RustcExternAbiPtxKernel
+    | `String "AvrInterrupt" -> Ok RustcExternAbiAvrInterrupt
+    | `String "AvrNonBlockingInterrupt" ->
+        Ok RustcExternAbiAvrNonBlockingInterrupt
+    | `String "Msp430Interrupt" -> Ok RustcExternAbiMsp430Interrupt
+    | `String "RiscvInterruptM" -> Ok RustcExternAbiRiscvInterruptM
+    | `String "RiscvInterruptS" -> Ok RustcExternAbiRiscvInterruptS
+    | `String "X86Interrupt" -> Ok RustcExternAbiX86Interrupt
+    | `Assoc [ ("Cdecl", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiCdecl unwind)
+    | `Assoc [ ("Stdcall", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiStdcall unwind)
+    | `Assoc [ ("Fastcall", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiFastcall unwind)
+    | `Assoc [ ("Thiscall", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiThiscall unwind)
+    | `Assoc [ ("Vectorcall", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiVectorcall unwind)
+    | `Assoc [ ("SysV64", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiSysV64 unwind)
+    | `Assoc [ ("Win64", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiWin64 unwind)
+    | _ -> Error "")
+
 and field_id_of_json (ctx : of_json_ctx) (js : json) : (field_id, string) result
     =
   combine_error_msgs js __FUNCTION__
@@ -854,7 +901,7 @@ and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =
           ("output", output);
         ] ->
         let* is_unsafe = bool_of_json ctx is_unsafe in
-        let* abi = abi_of_json ctx abi in
+        let* abi = rustc_extern_abi_of_json ctx abi in
         let* is_variadic = bool_of_json ctx is_variadic in
         let* inputs = list_of_json ty_of_json ctx inputs in
         let* output = ty_of_json ctx output in

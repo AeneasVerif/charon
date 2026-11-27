@@ -222,7 +222,10 @@ impl Generator<'_> {
     ) -> fmt::Result {
         let rename = format!("Rustc{}", self.type_name(decl.def_id));
         self.fmt_doc_attrs(f, &decl.item_meta.attr_info)?;
-        writeln!(f, "#[derive(Debug, Clone, PartialEq, Eq)]")?;
+        writeln!(
+            f,
+            "#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]"
+        )?;
         writeln!(
             f,
             "#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]"
