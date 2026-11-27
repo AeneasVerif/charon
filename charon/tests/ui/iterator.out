@@ -197,6 +197,7 @@ pub impl(in core::num::nonzero) unsafe trait ZeroablePrimitive<Self>
 }
 
 // Full name: core::num::nonzero::NonZero
+#[rustc_nonnull_optimization_guaranteed]
 #[diagnostic_item("NonZero")]
 pub opaque type NonZero<T>
 where

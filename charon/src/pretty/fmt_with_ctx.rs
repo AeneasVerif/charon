@@ -1946,6 +1946,9 @@ impl Display for from_rustc::AttributeKind {
                 Ok(())
             }
             AttributeKind::RustcNoWritable => write!(f, "rustc_no_writable"),
+            AttributeKind::RustcNonnullOptimizationGuaranteed => {
+                write!(f, "rustc_nonnull_optimization_guaranteed")
+            }
             AttributeKind::RustcReallocator => write!(f, "rustc_reallocator"),
             AttributeKind::ShouldPanic { reason } => {
                 write!(f, "should_panic")?;

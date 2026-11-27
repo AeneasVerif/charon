@@ -91,6 +91,7 @@ where
 //     repr(Rust),
 
 // Full name: core::ptr::non_null::NonNull
+#[rustc_nonnull_optimization_guaranteed]
 #[lang_item(NonNull)]
 pub opaque type NonNull<T>
 // layout: none
@@ -314,6 +315,7 @@ unsafe impl "impl_ZeroablePrimitive_for_i32" ZeroablePrimitive for i32 {
 }
 
 // Full name: core::num::nonzero::NonZero
+#[rustc_nonnull_optimization_guaranteed]
 #[diagnostic_item("NonZero")]
 pub opaque type NonZero<T>
 where

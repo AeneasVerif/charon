@@ -191,6 +191,10 @@ fn compute_guarantees(
     // `repr(Rust)` only guarantees that the fields are aligned and don't overlap, and that the
     // alignment is at least that of the fields. The size is at least the end of every field.
     // <https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.rust.layout>
+    //
+    // TODO: handle the null pointer optimization in the guaranteed cases, checking for
+    // `#[rustc_nonnull_optimization_guaranteed]`.
+    // <https://doc.rust-lang.org/std/option/index.html#representation>
     let fields = variants.iter().flat_map(|(_, fields)| fields);
     let align = type_align(fields.map(field_align).collect());
     let field_ends = variants.iter().flat_map(|(variant, fields)| {

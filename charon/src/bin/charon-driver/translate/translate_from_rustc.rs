@@ -150,6 +150,9 @@ impl<'tcx> TranslateCtx<'tcx> {
                 })
             }
             AttributeKind::RustcNoWritable => Ok(from_rustc::AttributeKind::RustcNoWritable),
+            AttributeKind::RustcNonnullOptimizationGuaranteed => {
+                Ok(from_rustc::AttributeKind::RustcNonnullOptimizationGuaranteed)
+            }
             AttributeKind::RustcReallocator => Ok(from_rustc::AttributeKind::RustcReallocator),
             AttributeKind::ShouldPanic { reason } => Ok(from_rustc::AttributeKind::ShouldPanic {
                 reason: (reason)

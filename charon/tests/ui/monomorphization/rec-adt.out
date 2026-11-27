@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::ptr::non_null::NonNull::<Node::<u8>>
+#[rustc_nonnull_optimization_guaranteed]
 #[lang_item(NonNull)]
 pub opaque type NonNull::<Node::<u8>>
 

@@ -35,6 +35,7 @@ where
 }
 
 // Full name: core::ptr::non_null::NonNull
+#[rustc_nonnull_optimization_guaranteed]
 #[lang_item(NonNull)]
 pub opaque type NonNull<T>
 
