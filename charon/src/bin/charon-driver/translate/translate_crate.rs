@@ -862,6 +862,9 @@ impl<'tcx> TranslateCtx<'tcx> {
             binary_format: self
                 .translate_rustc_binary_format(&target.binary_format)
                 .expect("all rustc BinaryFormat variants should be translated"),
+            panic_strategy: self
+                .translate_rustc_panic_strategy(&self.tcx.sess.panic_strategy())
+                .expect("all rustc PanicStrategy variants should be translated"),
             target_pointer_size: target_data.pointer_size().bytes(),
             is_little_endian: matches!(target_data.endian, rustc_abi::Endian::Little),
             c_enum_smallest_repr_ty,

@@ -1228,6 +1228,39 @@ fn target_info_cfg_values() -> anyhow::Result<()> {
 }
 
 #[test]
+fn target_info_panic_strategy() -> anyhow::Result<()> {
+    // Without `-Cpanic`, each target uses its own default strategy.
+    let crate_data = translate(
+        "//@ charon-args=--targets=i686-unknown-linux-gnu,riscv64gc-unknown-none-elf
+        #![no_std]",
+    )?;
+    let linux = &crate_data.target_information["i686-unknown-linux-gnu"];
+    assert_eq!(linux.panic_strategy, from_rustc::PanicStrategy::Unwind);
+    let riscv = &crate_data.target_information["riscv64gc-unknown-none-elf"];
+    assert_eq!(riscv.panic_strategy, from_rustc::PanicStrategy::Abort);
+
+    // `-Cpanic` overrides the target default.
+    let crate_data = translate("//@ rustc-args=-Cpanic=abort")?;
+    let target = crate_data
+        .target_information
+        .values()
+        .exactly_one()
+        .unwrap();
+    assert_eq!(target.panic_strategy, from_rustc::PanicStrategy::Abort);
+    let crate_data = translate("//@ rustc-args=-Zunstable-options -Cpanic=immediate-abort")?;
+    let target = crate_data
+        .target_information
+        .values()
+        .exactly_one()
+        .unwrap();
+    assert_eq!(
+        target.panic_strategy,
+        from_rustc::PanicStrategy::ImmediateAbort
+    );
+    Ok(())
+}
+
+#[test]
 fn multiple_deserialize() -> anyhow::Result<()> {
     // Test that deserializing deduplicated values from two different invocations of Charon works
     // correctly. This is non-obvious because `HashConsId`s will overlap between two invocations,

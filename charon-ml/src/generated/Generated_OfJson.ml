@@ -3794,6 +3794,15 @@ and rustc_os_of_json (ctx : of_json_ctx) (js : json) : (rustc_os, string) result
         Ok (RustcOsOther _0)
     | _ -> Error "")
 
+and rustc_panic_strategy_of_json (ctx : of_json_ctx) (js : json) :
+    (rustc_panic_strategy, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Unwind" -> Ok RustcPanicStrategyUnwind
+    | `String "Abort" -> Ok RustcPanicStrategyAbort
+    | `String "ImmediateAbort" -> Ok RustcPanicStrategyImmediateAbort
+    | _ -> Error "")
+
 and path_elem_of_json (ctx : of_json_ctx) (js : json) :
     (path_elem, string) result =
   combine_error_msgs js __FUNCTION__
@@ -3991,6 +4000,7 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
           ("cfg_abi", cfg_abi);
           ("families", families);
           ("binary_format", binary_format);
+          ("panic_strategy", panic_strategy);
           ("target_pointer_size", target_pointer_size);
           ("is_little_endian", is_little_endian);
           ("c_enum_smallest_repr_ty", c_enum_smallest_repr_ty);
@@ -4003,6 +4013,7 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
         let* cfg_abi = rustc_cfg_abi_of_json ctx cfg_abi in
         let* families = list_of_json string_of_json ctx families in
         let* binary_format = rustc_binary_format_of_json ctx binary_format in
+        let* panic_strategy = rustc_panic_strategy_of_json ctx panic_strategy in
         let* target_pointer_size = int_of_json ctx target_pointer_size in
         let* is_little_endian = bool_of_json ctx is_little_endian in
         let* c_enum_smallest_repr_ty =
@@ -4021,6 +4032,7 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
              cfg_abi;
              families;
              binary_format;
+             panic_strategy;
              target_pointer_size;
              is_little_endian;
              c_enum_smallest_repr_ty;

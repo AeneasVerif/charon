@@ -67,6 +67,13 @@ impl<'tcx> TranslateCtx<'tcx> {
         self.translate_binary_format_from_rustc(value)
     }
 
+    pub(crate) fn translate_rustc_panic_strategy(
+        &mut self,
+        value: &PanicStrategy,
+    ) -> Result<from_rustc::PanicStrategy, FromRustcError> {
+        self.translate_panic_strategy_from_rustc(value)
+    }
+
     fn translate_attribute_kind_from_rustc(
         &mut self,
         value: &AttributeKind,
@@ -627,6 +634,19 @@ impl<'tcx> TranslateCtx<'tcx> {
             BinaryFormat::MachO => Ok(from_rustc::BinaryFormat::MachO),
             BinaryFormat::Wasm => Ok(from_rustc::BinaryFormat::Wasm),
             BinaryFormat::Xcoff => Ok(from_rustc::BinaryFormat::Xcoff),
+            // If the below is reached, the code is not up-to-date with the rustc version
+            _ => Err(FromRustcError),
+        }
+    }
+
+    fn translate_panic_strategy_from_rustc(
+        &mut self,
+        value: &PanicStrategy,
+    ) -> Result<from_rustc::PanicStrategy, FromRustcError> {
+        match value {
+            PanicStrategy::Unwind => Ok(from_rustc::PanicStrategy::Unwind),
+            PanicStrategy::Abort => Ok(from_rustc::PanicStrategy::Abort),
+            PanicStrategy::ImmediateAbort => Ok(from_rustc::PanicStrategy::ImmediateAbort),
             // If the below is reached, the code is not up-to-date with the rustc version
             _ => Err(FromRustcError),
         }

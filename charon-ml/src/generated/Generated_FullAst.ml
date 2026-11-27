@@ -309,6 +309,11 @@ and rustc_os =
           (e.g. architecture or OS) that rustc currently doesn't know about.
           This variant exists as an escape hatch for such cases. *)
 
+and rustc_panic_strategy =
+  | RustcPanicStrategyUnwind
+  | RustcPanicStrategyAbort
+  | RustcPanicStrategyImmediateAbort
+
 (** Presets to make it easier to tweak options without breaking dependent
     projects. Eventually we should define semantically-meaningful presets
     instead of project-specific ones. *)
@@ -343,6 +348,9 @@ and target_info = {
           both [unix] and [wasm]), as rustc spells them. *)
   binary_format : rustc_binary_format;
       (** The binary format of the target's object files. *)
+  panic_strategy : rustc_panic_strategy;
+      (** The panic strategy used, which depends on the target but can be
+          overridden with [-C panic]. *)
   target_pointer_size : int;  (** The pointer size of the target in bytes. *)
   is_little_endian : bool;
       (** Whether the target platform uses little endian byte order. *)

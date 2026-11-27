@@ -3180,6 +3180,16 @@ and rustc_os_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (RustcOsOther _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and rustc_panic_strategy_of_postcard (ctx : of_postcard_ctx)
+    (st : postcard_state) : (rustc_panic_strategy, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok RustcPanicStrategyUnwind
+     | 1 -> Ok RustcPanicStrategyAbort
+     | 2 -> Ok RustcPanicStrategyImmediateAbort
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and path_elem_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (path_elem, string) result =
   combine_error_msgs st __FUNCTION__
@@ -3345,6 +3355,7 @@ and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* cfg_abi = rustc_cfg_abi_of_postcard ctx st in
      let* families = list_of_postcard string_of_postcard ctx st in
      let* binary_format = rustc_binary_format_of_postcard ctx st in
+     let* panic_strategy = rustc_panic_strategy_of_postcard ctx st in
      let* target_pointer_size = u64_of_postcard ctx st in
      let* is_little_endian = bool_of_postcard ctx st in
      let* c_enum_smallest_repr_ty = int_ty_of_postcard ctx st in
@@ -3361,6 +3372,7 @@ and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           cfg_abi;
           families;
           binary_format;
+          panic_strategy;
           target_pointer_size;
           is_little_endian;
           c_enum_smallest_repr_ty;

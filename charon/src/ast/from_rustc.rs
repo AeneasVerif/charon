@@ -851,6 +851,19 @@ pub enum BinaryFormat {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
+#[cfg_attr(feature = "charon_on_charon", charon::rename("RustcPanicStrategy"))]
+#[cfg_attr(
+    feature = "charon_on_charon",
+    charon::variants_prefix("RustcPanicStrategy")
+)]
+pub enum PanicStrategy {
+    Unwind,
+    Abort,
+    ImmediateAbort,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcDeprecation"))]
 pub struct Deprecation {
     pub since: DeprecatedSince,
