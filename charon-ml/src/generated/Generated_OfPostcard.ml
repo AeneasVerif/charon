@@ -1887,6 +1887,18 @@ and alignment_modifier_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          Ok (Pack _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and allocator_method_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (allocator_method, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok Alloc
+     | 1 -> Ok Dealloc
+     | 2 -> Ok Realloc
+     | 3 -> Ok AllocZeroed
+     | 4 -> Ok AllocErrorHandler
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and rustc_arch_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (rustc_arch, string) result =
   combine_error_msgs st __FUNCTION__
@@ -3015,8 +3027,9 @@ and linked_extern_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _0 = list_of_postcard fun_decl_ref_of_postcard ctx st in
          Ok (WeaklyLinked _0)
      | 2 ->
-         let* _0 = fun_decl_ref_of_postcard ctx st in
-         Ok (AllocatorShim _0)
+         let* method_ = allocator_method_of_postcard ctx st in
+         let* default = fun_decl_ref_of_postcard ctx st in
+         Ok (AllocatorShim (method_, default))
      | 3 -> Ok Unlinked
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 

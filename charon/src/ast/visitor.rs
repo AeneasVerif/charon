@@ -50,6 +50,7 @@ use derive_generic_visitor::*;
     skip_but_eq(
         (),
         Abi,
+        AllocatorMethod,
         AsmKind,
         AsmOperandId,
         AsmOptions,

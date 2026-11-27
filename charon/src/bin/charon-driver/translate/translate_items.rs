@@ -644,9 +644,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     ExportedFns::Weak(instances) => LinkedExtern::WeaklyLinked(
                         instances.into_iter().map(translate_fn).try_collect()?,
                     ),
-                    ExportedFns::AllocatorShim(instance) => {
-                        LinkedExtern::AllocatorShim(translate_fn(instance)?)
-                    }
+                    ExportedFns::AllocatorShim(method, instance) => LinkedExtern::AllocatorShim {
+                        method,
+                        default: translate_fn(instance)?,
+                    },
                     ExportedFns::Many => {
                         register_error!(
                             self,

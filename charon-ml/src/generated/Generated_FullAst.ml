@@ -16,7 +16,17 @@ open Generated_Expressions
 open Generated_Meta
 open Identifiers
 
-type rustc_arch =
+(** The allocator functions that rustc's allocator shim links. *)
+type allocator_method =
+  | Alloc
+  | Dealloc
+  | Realloc
+  | AllocZeroed
+  | AllocErrorHandler
+      (** The handler called on allocation failure, see
+          [#[alloc_error_handler]]. *)
+
+and rustc_arch =
   | RustcArchAArch64
   | RustcArchAmdGpu
   | RustcArchArm
@@ -236,11 +246,15 @@ and linked_extern =
       (** Weak definitions ([#[linkage = "weak"]]), which the linker only binds
           the symbol to if there's no strong definition. If there are several,
           the linker may pick any of them. *)
-  | AllocatorShim of fun_decl_ref
+  | AllocatorShim of allocator_method * fun_decl_ref
       (** Linked to the default allocator through rustc's allocator shim. This
           needs to be handled separately, as the signatures aren't
           ABI-compatible: the arguments need to be transmuted (e.g. [Alignment]
-          -> [usize]). *)
+          -> [usize]).
+
+          Fields:
+          - [method]
+          - [default] *)
   | Unlinked
       (** No function of the crate or its dependencies is exported under this
           symbol. *)

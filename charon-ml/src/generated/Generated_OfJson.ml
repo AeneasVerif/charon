@@ -2294,6 +2294,17 @@ and alignment_modifier_of_json (ctx : of_json_ctx) (js : json) :
         Ok (Pack _0)
     | _ -> Error "")
 
+and allocator_method_of_json (ctx : of_json_ctx) (js : json) :
+    (allocator_method, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Alloc" -> Ok Alloc
+    | `String "Dealloc" -> Ok Dealloc
+    | `String "Realloc" -> Ok Realloc
+    | `String "AllocZeroed" -> Ok AllocZeroed
+    | `String "AllocErrorHandler" -> Ok AllocErrorHandler
+    | _ -> Error "")
+
 and rustc_arch_of_json (ctx : of_json_ctx) (js : json) :
     (rustc_arch, string) result =
   combine_error_msgs js __FUNCTION__
@@ -3614,9 +3625,13 @@ and linked_extern_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("WeaklyLinked", _0) ] ->
         let* _0 = list_of_json fun_decl_ref_of_json ctx _0 in
         Ok (WeaklyLinked _0)
-    | `Assoc [ ("AllocatorShim", _0) ] ->
-        let* _0 = fun_decl_ref_of_json ctx _0 in
-        Ok (AllocatorShim _0)
+    | `Assoc
+        [
+          ("AllocatorShim", `Assoc [ ("method", method_); ("default", default) ]);
+        ] ->
+        let* method_ = allocator_method_of_json ctx method_ in
+        let* default = fun_decl_ref_of_json ctx default in
+        Ok (AllocatorShim (method_, default))
     | `String "Unlinked" -> Ok Unlinked
     | _ -> Error "")
 

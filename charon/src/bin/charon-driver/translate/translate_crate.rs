@@ -434,7 +434,10 @@ impl<'tcx> TranslateCtx<'tcx> {
 
     /// The functions exported under `symbol`.
     pub(crate) fn exported_fns(&mut self, symbol: &str) -> ExportedFns<'tcx> {
-        use rustc_ast::expand::allocator::*;
+        use rustc_ast::expand::allocator::{
+            ALLOC_ERROR_HANDLER, ALLOCATOR_METHODS, SpecialAllocatorMethod, default_fn_name,
+            global_fn_name,
+        };
         use rustc_attr_ir::Linkage;
         use rustc_hir::def::DefKind;
         use rustc_middle::middle::exported_symbols::ExportedSymbol;
@@ -478,9 +481,17 @@ impl<'tcx> TranslateCtx<'tcx> {
             // Manually link the std allocator functions, which rustc willl generate.
             let shimmed_fns = ALLOCATOR_METHODS
                 .iter()
-                .map(|method| method.name)
-                .chain([ALLOC_ERROR_HANDLER]);
-            for name in shimmed_fns {
+                .filter_map(|method| {
+                    let kind = match method.special? {
+                        SpecialAllocatorMethod::Alloc => AllocatorMethod::Alloc,
+                        SpecialAllocatorMethod::Dealloc => AllocatorMethod::Dealloc,
+                        SpecialAllocatorMethod::Realloc => AllocatorMethod::Realloc,
+                        SpecialAllocatorMethod::AllocZeroed => AllocatorMethod::AllocZeroed,
+                    };
+                    Some((method.name, kind))
+                })
+                .chain([(ALLOC_ERROR_HANDLER, AllocatorMethod::AllocErrorHandler)]);
+            for (name, kind) in shimmed_fns {
                 let global_fn = mangle_internal_symbol(tcx, &global_fn_name(name));
                 let default_fn = mangle_internal_symbol(tcx, &default_fn_name(name));
                 // We only link them if no `#[global_allocator]`/`#[alloc_error_handler]` has
@@ -489,7 +500,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                 if !exported_fns.contains_key(&global_fn)
                     && let Some(&ExportedFns::Strong(instance)) = exported_fns.get(&default_fn)
                 {
-                    exported_fns.insert(global_fn, ExportedFns::AllocatorShim(instance));
+                    exported_fns.insert(global_fn, ExportedFns::AllocatorShim(kind, instance));
                 }
             }
 

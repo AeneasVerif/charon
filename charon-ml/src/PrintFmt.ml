@@ -2702,7 +2702,7 @@ let pp_fun_decl (env : fmt_env) (indent : string) (indent_incr : string)
                ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ", ")
                (pp_fun_decl_ref env))
             definitions
-      | AllocatorShim definition ->
+      | AllocatorShim (_, definition) ->
           Format.fprintf fmt " linked(alloc) to %a" (pp_fun_decl_ref env)
             definition
       | Unlinked -> ())

@@ -333,7 +333,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for ast::Body {
                         let funs = funs.iter().map(|fun| fun.with_ctx(ctx)).format(", ");
                         write!(f, " linked(weak) to {funs}")
                     }
-                    LinkedExtern::AllocatorShim(fun) => {
+                    LinkedExtern::AllocatorShim { default: fun, .. } => {
                         write!(f, " linked(alloc) to {}", fun.with_ctx(ctx))
                     }
                     LinkedExtern::Unlinked => Ok(()),
