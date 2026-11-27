@@ -958,6 +958,8 @@ pub struct Closure<'tcx> {
     /// `extra_early_regions`.
     param_env: ParamEnv<'tcx>,
     sig: PolyFnSig<'tcx>,
+    /// The inputs of `sig`, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
+    tupled_inputs: ty::Ty<'tcx>,
     /// The captured variables, which together form the closure's state.
     upvar_tys: Vec<Ty<'tcx>>,
     inline: InlineAttr,
@@ -972,6 +974,11 @@ impl<'tcx> Closure<'tcx> {
     }
     pub fn sig(&self) -> &PolyFnSig<'tcx> {
         &self.sig
+    }
+    /// The inputs of `sig`, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
+    ///  `s` must have the closure as owner.
+    pub fn tupled_inputs<S: UnderOwnerState<'tcx>>(&self, s: &S) -> Ty<'tcx> {
+        self.tupled_inputs.sinto(s)
     }
     pub fn upvar_tys(&self) -> &[Ty<'tcx>] {
         &self.upvar_tys
@@ -1397,6 +1404,7 @@ where
                 },
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
                 sig: hax_sig,
+                tupled_inputs: ty::Ty::new_tup(tcx, sig.skip_binder().inputs()),
                 fn_trait_args: [closure_ty, input_ty],
                 upvar_tys: closure.upvar_tys().sinto(s),
             })

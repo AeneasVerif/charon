@@ -582,7 +582,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 .map(|(i, ty)| builder.new_var(Some(format!("arg{}", i + 1)), ty.clone()))
                 .collect();
             let args_tupled_ty =
-                self.translate_ty(span, &closure.sig().hax_skip_binder_ref().tupled_inputs)?;
+                self.translate_ty(span, &closure.tupled_inputs(&self.hax_state))?;
             let args_tupled = builder.new_var(Some("args".to_string()), args_tupled_ty.clone());
             let state = builder.new_var(Some("state".to_string()), state_ty.clone());
 

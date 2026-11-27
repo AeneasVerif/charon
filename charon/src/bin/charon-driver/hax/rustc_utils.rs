@@ -573,10 +573,10 @@ impl<'tcx, T: ty::TypeFoldable<ty::TyCtxt<'tcx>>> ty::Binder<'tcx, T> {
 }
 
 /// Whether the item can have generic parameters.
-pub(crate) fn can_have_generics<'tcx>(tcx: ty::TyCtxt<'tcx>, def_id: RDefId) -> bool {
-    use RDefKind::*;
+pub(crate) fn can_have_generics(kind: &DefKind) -> bool {
+    use DefKind::*;
     !matches!(
-        get_def_kind(tcx, def_id),
+        kind,
         ConstParam
             | ExternCrate
             | ForeignMod
