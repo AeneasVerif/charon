@@ -1,73 +1,661 @@
-error: Unexpected error: could not find the late-bound region variable LateParamRegion { scope: test_crate::local_annotation, kind: Named(test_crate::local_annotation::'a, "'a") }
-  --> tests/ui/closure-enclosing-regions.rs:11:16
-   |
-11 |         let y: &'a u32 = x;
-   |                ^^^^^^^
+# Final LLBC before serialization:
 
-error: Unexpected error: could not find the late-bound region variable LateParamRegion { scope: test_crate::local_annotation, kind: Named(test_crate::local_annotation::'a, "'a") }
-  --> tests/ui/closure-enclosing-regions.rs:11:16
-   |
-11 |         let y: &'a u32 = x;
-   |                ^^^^^^^
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
 
-error: Unexpected error: could not find the late-bound region variable LateParamRegion { scope: test_crate::no_capture, kind: Named(test_crate::no_capture::'a, "'a") }
-  --> tests/ui/closure-enclosing-regions.rs:19:16
-   |
-19 |         let _: Option<&'a u32> = None;
-   |                ^^^^^^^^^^^^^^^
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
 
-error: Unexpected error: could not find the late-bound region variable LateParamRegion { scope: test_crate::no_capture, kind: Named(test_crate::no_capture::'a, "'a") }
-  --> tests/ui/closure-enclosing-regions.rs:19:16
-   |
-19 |         let _: Option<&'a u32> = None;
-   |                ^^^^^^^^^^^^^^^
+// Full name: core::option::Option
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
+pub enum Option<T>
+where
+    TraitClause0: (T: Sized),
+{
+  None,
+  Some { _0: T },
+}
 
-error: Unexpected error: could not find the late-bound region variable LateParamRegion { scope: test_crate::no_capture, kind: Named(test_crate::no_capture::'a, "'a") }
-  --> tests/ui/closure-enclosing-regions.rs:19:16
-   |
-19 |         let _: Option<&'a u32> = None;
-   |                ^^^^^^^^^^^^^^^
+struct () {}
 
-error: Unexpected error: could not find the late-bound region variable LateParamRegion { scope: test_crate::no_capture, kind: Named(test_crate::no_capture::'a, "'a") }
-  --> tests/ui/closure-enclosing-regions.rs:19:16
-   |
-19 |         let _: Option<&'a u32> = None;
-   |                ^^^^^^^^^^^^^^^
+struct (_,)<A> {
+  _0: A,
+}
 
-error: Unexpected error: could not find the late-bound region variable LateParamRegion { scope: test_crate::nested, kind: Named(test_crate::nested::'a, "'a") }
-  --> tests/ui/closure-enclosing-regions.rs:27:20
-   |
-27 |             let y: &'a u32 = x;
-   |                    ^^^^^^^
+struct (_, _, _)<A, B, C>
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+{
+  _0: A,
+  _1: B,
+  _2: C,
+}
 
-error: Unexpected error: could not find the late-bound region variable LateParamRegion { scope: test_crate::nested, kind: Named(test_crate::nested::'a, "'a") }
-  --> tests/ui/closure-enclosing-regions.rs:27:20
-   |
-27 |             let y: &'a u32 = x;
-   |                    ^^^^^^^
+struct test_crate::local_annotation::{closure}<'a, '_1, '_2>
+where
+    Outlives0: ('_2: '_1),
+{
+  _0: &'_1 &'_2 u32,
+}
 
-error: Unexpected error: could not find the late-bound region variable LateParamRegion { scope: test_crate::enclosing_closure::{closure#0}, kind: Named(test_crate::enclosing_closure::{closure#0}::'a, "'a") }
-  --> tests/ui/closure-enclosing-regions.rs:38:20
-   |
-38 |             let y: &'a u32 = x;
-   |                    ^^^^^^^
+// Full name: test_crate::local_annotation::{impl Fn<()> for test_crate::local_annotation::{closure}<'a, '_1, '_2>}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::local_annotation::{closure}<'a, '_1, '_2>}::call<'a, '_1, '_2, '_3>(_1: &'_3 test_crate::local_annotation::{closure}<'a, '_1, '_2>, tupled_args: ()) -> u32
+where
+    Outlives0: ('_2: '_1),
+    Outlives1: ('a: '_3),
+    Outlives2: ('_1: '_3),
+    Outlives3: ('_2: '_3),
+{
+    let mut _0: u32; // return
+    let mut _1: &'4 test_crate::local_annotation::{closure}<'a, '_1, '_2>; // arg #1
+    let mut tupled_args: (); // arg #2
+    let y: &'6 u32; // local
+        where y :< &'a u32;
+        where y := &'a u32;
 
-error: Unexpected error: could not find the late-bound region variable LateParamRegion { scope: test_crate::enclosing_closure::{closure#0}, kind: Named(test_crate::enclosing_closure::{closure#0}::'a, "'a") }
-  --> tests/ui/closure-enclosing-regions.rs:38:20
-   |
-38 |             let y: &'a u32 = x;
-   |                    ^^^^^^^
+    storage_live(_0)
+    storage_live(y)
+    y = copy (*(*_1)._0)
+    fake_read(y)
+    _0 = copy (*y)
+    storage_dead(y)
+    return
+}
 
-error: Unexpected error: could not find the late-bound region variable LateParamRegion { scope: test_crate::mixed_regions, kind: Named(test_crate::mixed_regions::'late, "'late") }
-  --> tests/ui/closure-enclosing-regions.rs:52:23
-   |
-52 |             let late: &'late T = y;
-   |                       ^^^^^^^^
+// Full name: test_crate::local_annotation
+pub fn local_annotation<'a>(x: &'a u32) -> u32
+{
+    let mut _0: u32; // return
+    let x: &'1 u32; // arg #1
+    let f: test_crate::local_annotation::{closure}<'5, '6, '7>; // local
+    let mut _3: &'10 &'11 u32; // anonymous local
+    let mut _4: &'16 test_crate::local_annotation::{closure}<'17, '18, '19>; // anonymous local
+    let mut _5: (); // anonymous local
 
-error: Unexpected error: could not find the late-bound region variable LateParamRegion { scope: test_crate::mixed_regions, kind: Named(test_crate::mixed_regions::'late, "'late") }
-  --> tests/ui/closure-enclosing-regions.rs:52:23
-   |
-52 |             let late: &'late T = y;
-   |                       ^^^^^^^^
+    storage_live(_0)
+    storage_live(f)
+    fake_read(x)
+    storage_live(_3)
+    _3 = &x
+    f = test_crate::local_annotation::{closure} { _0: move _3 }
+    storage_dead(_3)
+    fake_read(f)
+    storage_live(_4)
+    _4 = &f
+    storage_live(_5)
+    _5 = ()
+    _0 = {impl Fn<()> for test_crate::local_annotation::{closure}<'a, '_1, '_2>}::call<'32, '33, '34, '48>(move _4, move _5)
+    ↳⚡ unwind_continue
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(f)
+    return
+}
 
-ERROR Charon failed to translate this code (12 errors)
+struct test_crate::no_capture::{closure}<'a> {}
+
+// Full name: test_crate::no_capture::{impl Fn<()> for test_crate::no_capture::{closure}<'a>}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::no_capture::{closure}<'a>}::call<'a, '_1>(_1: &'_1 test_crate::no_capture::{closure}<'a>, tupled_args: ())
+where
+    Outlives0: ('a: '_1),
+{
+    let mut _0: (); // return
+    let mut _1: &'1 test_crate::no_capture::{closure}<'a>; // arg #1
+    let mut tupled_args: (); // arg #2
+    let mut _3: Option<&'10 u32>[{built_in impl Sized for &'10 u32}]; // anonymous local
+        where _3 :< Option<&'a u32>[{built_in impl Sized for &'a u32}];
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = Option::None {  }
+    storage_dead(_3)
+    _0 = const ()
+    return
+}
+
+// Full name: test_crate::no_capture
+pub fn no_capture<'a>()
+{
+    let mut _0: (); // return
+    let f: test_crate::no_capture::{closure}<'1>; // local
+    let _2: (); // anonymous local
+    let mut _3: &'4 test_crate::no_capture::{closure}<'5>; // anonymous local
+    let mut _4: (); // anonymous local
+
+    storage_live(_0)
+    storage_live(f)
+    f = test_crate::no_capture::{closure} {  }
+    fake_read(f)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = &f
+    storage_live(_4)
+    _4 = ()
+    _2 = {impl Fn<()> for test_crate::no_capture::{closure}<'a>}::call<'10, '16>(move _3, move _4)
+    ↳⚡ unwind_continue
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 = const ()
+    storage_dead(f)
+    return
+}
+
+struct test_crate::nested::{closure}::{closure}<'a, '_1, '_2, '_3, '_4>
+where
+    Outlives0: ('_4: '_3),
+{
+  _0: &'_3 &'_4 u32,
+}
+
+// Full name: test_crate::nested::{closure}::{impl Fn<()> for test_crate::nested::{closure}::{closure}<'a, '_1, '_2, '_3, '_4>}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::nested::{closure}::{closure}<'a, '_1, '_2, '_3, '_4>}::call<'a, '_1, '_2, '_3, '_4, '_5>(_1: &'_5 test_crate::nested::{closure}::{closure}<'a, '_1, '_2, '_3, '_4>, tupled_args: ()) -> u32
+where
+    Outlives0: ('_4: '_3),
+    Outlives1: ('a: '_5),
+    Outlives2: ('_1: '_5),
+    Outlives3: ('_2: '_5),
+    Outlives4: ('_3: '_5),
+    Outlives5: ('_4: '_5),
+{
+    let mut _0: u32; // return
+    let mut _1: &'6 test_crate::nested::{closure}::{closure}<'a, '_1, '_2, '_3, '_4>; // arg #1
+    let mut tupled_args: (); // arg #2
+    let y: &'8 u32; // local
+        where y :< &'a u32;
+        where y := &'a u32;
+
+    storage_live(_0)
+    storage_live(y)
+    y = copy (*(*_1)._0)
+    fake_read(y)
+    _0 = copy (*y)
+    storage_dead(y)
+    return
+}
+
+struct test_crate::nested::{closure}<'a, '_1, '_2>
+where
+    Outlives0: ('_2: '_1),
+{
+  _0: &'_1 &'_2 u32,
+}
+
+// Full name: test_crate::nested::{impl Fn<()> for test_crate::nested::{closure}<'a, '_1, '_2>}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::nested::{closure}<'a, '_1, '_2>}::call<'a, '_1, '_2, '_3>(_1: &'_3 test_crate::nested::{closure}<'a, '_1, '_2>, tupled_args: ()) -> u32
+where
+    Outlives0: ('_2: '_1),
+    Outlives1: ('a: '_3),
+    Outlives2: ('_1: '_3),
+    Outlives3: ('_2: '_3),
+{
+    let mut _0: u32; // return
+    let mut _1: &'4 test_crate::nested::{closure}<'a, '_1, '_2>; // arg #1
+    let mut tupled_args: (); // arg #2
+    let g: test_crate::nested::{closure}::{closure}<'10, '11, '12, '13, '14>; // local
+    let mut _4: &'18 &'19 u32; // anonymous local
+    let mut _5: &'26 test_crate::nested::{closure}::{closure}<'27, '28, '29, '30, '31>; // anonymous local
+    let mut _6: (); // anonymous local
+
+    storage_live(_0)
+    storage_live(g)
+    fake_read((*(*_1)._0))
+    storage_live(_4)
+    _4 = &(*(*_1)._0)
+    g = test_crate::nested::{closure}::{closure} { _0: move _4 }
+    storage_dead(_4)
+    fake_read(g)
+    storage_live(_5)
+    _5 = &g
+    storage_live(_6)
+    _6 = ()
+    _0 = {impl Fn<()> for test_crate::nested::{closure}::{closure}<'a, '_1, '_2, '_3, '_4>}::call<'58, '59, '60, '61, '62, '84>(move _5, move _6)
+    ↳⚡ unwind_continue
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(g)
+    return
+}
+
+// Full name: test_crate::nested
+pub fn nested<'a>(x: &'a u32) -> u32
+{
+    let mut _0: u32; // return
+    let x: &'1 u32; // arg #1
+    let f: test_crate::nested::{closure}<'5, '6, '7>; // local
+    let mut _3: &'10 &'11 u32; // anonymous local
+    let mut _4: &'16 test_crate::nested::{closure}<'17, '18, '19>; // anonymous local
+    let mut _5: (); // anonymous local
+
+    storage_live(_0)
+    storage_live(f)
+    fake_read(x)
+    storage_live(_3)
+    _3 = &x
+    f = test_crate::nested::{closure} { _0: move _3 }
+    storage_dead(_3)
+    fake_read(f)
+    storage_live(_4)
+    _4 = &f
+    storage_live(_5)
+    _5 = ()
+    _0 = {impl Fn<()> for test_crate::nested::{closure}<'a, '_1, '_2>}::call<'32, '33, '34, '48>(move _4, move _5)
+    ↳⚡ unwind_continue
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(f)
+    return
+}
+
+struct test_crate::enclosing_closure::{closure}::{closure}<'a, '_1, '_2>
+where
+    Outlives0: ('_2: '_1),
+{
+  _0: &'_1 &'_2 u32,
+}
+
+// Full name: test_crate::enclosing_closure::{closure}::{impl Fn<()> for test_crate::enclosing_closure::{closure}::{closure}<'a, '_1, '_2>}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::enclosing_closure::{closure}::{closure}<'a, '_1, '_2>}::call<'a, '_1, '_2, '_3>(_1: &'_3 test_crate::enclosing_closure::{closure}::{closure}<'a, '_1, '_2>, tupled_args: ()) -> u32
+where
+    Outlives0: ('_2: '_1),
+    Outlives1: ('a: '_3),
+    Outlives2: ('_1: '_3),
+    Outlives3: ('_2: '_3),
+{
+    let mut _0: u32; // return
+    let mut _1: &'4 test_crate::enclosing_closure::{closure}::{closure}<'a, '_1, '_2>; // arg #1
+    let mut tupled_args: (); // arg #2
+    let y: &'6 u32; // local
+        where y :< &'a u32;
+        where y := &'a u32;
+
+    storage_live(_0)
+    storage_live(y)
+    y = copy (*(*_1)._0)
+    fake_read(y)
+    _0 = copy (*y)
+    storage_dead(y)
+    return
+}
+
+struct test_crate::enclosing_closure::{closure} {}
+
+// Full name: test_crate::enclosing_closure::{impl Fn<(&'a u32,)> for test_crate::enclosing_closure::{closure}}::call
+extern "rust-call" fn {impl Fn<(&'a u32,)> for test_crate::enclosing_closure::{closure}}::call<'a, '_1>(_1: &'_1 test_crate::enclosing_closure::{closure}, tupled_args: (&'a u32,)) -> u32
+{
+    let mut _0: u32; // return
+    let mut _1: &'1 test_crate::enclosing_closure::{closure}; // arg #1
+    let mut tupled_args: (&'a u32,); // arg #2
+    let x: &'3 u32; // local
+    let g: test_crate::enclosing_closure::{closure}::{closure}<'7, '8, '9>; // local
+    let mut _5: &'12 &'13 u32; // anonymous local
+    let mut _6: &'18 test_crate::enclosing_closure::{closure}::{closure}<'19, '20, '21>; // anonymous local
+    let mut _7: (); // anonymous local
+
+    storage_live(_0)
+    storage_live(x)
+    x = noretag move tupled_args._0
+    storage_live(g)
+    fake_read(x)
+    storage_live(_5)
+    _5 = &x
+    g = test_crate::enclosing_closure::{closure}::{closure} { _0: move _5 }
+    storage_dead(_5)
+    fake_read(g)
+    storage_live(_6)
+    _6 = &g
+    storage_live(_7)
+    _7 = ()
+    _0 = {impl Fn<()> for test_crate::enclosing_closure::{closure}::{closure}<'a, '_1, '_2>}::call<'34, '35, '36, '50>(move _6, move _7)
+    ↳⚡ unwind_continue
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(g)
+    return
+}
+
+// Full name: test_crate::enclosing_closure
+pub fn enclosing_closure() -> u32
+{
+    let mut _0: u32; // return
+    let f: test_crate::enclosing_closure::{closure}; // local
+    let mut _2: &'1 test_crate::enclosing_closure::{closure}; // anonymous local
+    let mut _3: (&'4 u32,); // anonymous local
+    let mut _4: &'5 u32; // anonymous local
+    let _5: &'6 u32; // anonymous local
+    let _6: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(f)
+    f = test_crate::enclosing_closure::{closure} {  }
+    fake_read(f)
+    storage_live(_2)
+    _2 = &f
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = const 42u32
+    _5 = &_6
+    _4 = &(*_5)
+    _3 = (move _4,)
+    _0 = {impl Fn<(&'a u32,)> for test_crate::enclosing_closure::{closure}}::call<'12, '19>(move _2, move _3)
+    ↳⚡ unwind_continue
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(f)
+    storage_dead(_6)
+    storage_dead(_5)
+    return
+}
+
+struct test_crate::mixed_regions::{closure}::{closure}<'early, 'late, '_2, '_3, '_4, '_5, 'inner, '_7, '_8, '_9, '_10, '_11, '_12, '_13, '_14, '_15, T>
+where
+    TraitClause0: (T: Sized),
+    Outlives0: (T: 'early),
+    Outlives1: ('_11: '_10),
+    Outlives2: (T: '_11),
+    Outlives3: ('_13: '_12),
+    Outlives4: (T: '_13),
+    Outlives5: ('_15: '_14),
+    Outlives6: (T: '_15),
+{
+  _0: &'_10 &'_11 T,
+  _1: &'_12 &'_13 T,
+  _2: &'_14 &'_15 T,
+}
+
+// Full name: test_crate::mixed_regions::{closure}::{impl Fn<()> for test_crate::mixed_regions::{closure}::{closure}<'early, 'late, '_2, '_3, '_4, '_5, 'inner, '_7, '_8, '_9, '_10, '_11, '_12, '_13, '_14, '_15, T>[TraitClause0]}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::mixed_regions::{closure}::{closure}<'early, 'late, '_2, '_3, '_4, '_5, 'inner, '_7, '_8, '_9, '_10, '_11, '_12, '_13, '_14, '_15, T>[TraitClause0]}::call<'early, 'late, '_2, '_3, '_4, '_5, 'inner, '_7, '_8, '_9, '_10, '_11, '_12, '_13, '_14, '_15, '_16, T>(_1: &'_16 test_crate::mixed_regions::{closure}::{closure}<'early, 'late, '_2, '_3, '_4, '_5, 'inner, '_7, '_8, '_9, '_10, '_11, '_12, '_13, '_14, '_15, T>[TraitClause0], tupled_args: ()) -> (&'_7 T, &'_8 T, &'_9 T)
+where
+    TraitClause0: (T: Sized),
+    Outlives0: (T: 'early),
+    Outlives1: ('_11: '_10),
+    Outlives2: (T: '_11),
+    Outlives3: ('_13: '_12),
+    Outlives4: (T: '_13),
+    Outlives5: ('_15: '_14),
+    Outlives6: (T: '_15),
+    Outlives7: ('early: '_16),
+    Outlives8: ('late: '_16),
+    Outlives9: ('_2: '_16),
+    Outlives10: ('_3: '_16),
+    Outlives11: ('_4: '_16),
+    Outlives12: ('_5: '_16),
+    Outlives13: ('inner: '_16),
+    Outlives14: ('_7: '_16),
+    Outlives15: ('_8: '_16),
+    Outlives16: ('_9: '_16),
+    Outlives17: ('_10: '_16),
+    Outlives18: ('_11: '_16),
+    Outlives19: ('_12: '_16),
+    Outlives20: ('_13: '_16),
+    Outlives21: ('_14: '_16),
+    Outlives22: ('_15: '_16),
+    Outlives23: (T: '_16),
+    Outlives24: (T: '_7),
+    Outlives25: (T: '_8),
+    Outlives26: (T: '_9),
+{
+    let mut _0: (&'16 T, &'17 T, &'18 T); // return
+    let mut _1: &'42 test_crate::mixed_regions::{closure}::{closure}<'early, 'late, '_2, '_3, '_4, '_5, 'inner, '_7, '_8, '_9, '_10, '_11, '_12, '_13, '_14, '_15, T>[TraitClause0]; // arg #1
+    let mut tupled_args: (); // arg #2
+    let early: &'43 T; // local
+        where early :< &'early T;
+        where early := &'early T;
+    let late: &'44 T; // local
+        where late :< &'late T;
+        where late := &'late T;
+    let inner: &'45 T; // local
+        where inner :< &'inner T;
+        where inner := &'inner T;
+    let mut _6: &'46 T; // anonymous local
+    let mut _7: &'47 T; // anonymous local
+    let mut _8: &'48 T; // anonymous local
+
+    storage_live(_0)
+    set T: 'early
+    set T: 'late
+    set T: 'inner
+    storage_live(early)
+    early = copy (*(*_1)._0)
+    fake_read(early)
+    storage_live(late)
+    late = copy (*(*_1)._1)
+    fake_read(late)
+    storage_live(inner)
+    inner = copy (*(*_1)._2)
+    fake_read(inner)
+    storage_live(_6)
+    _6 = copy early
+    storage_live(_7)
+    _7 = copy late
+    storage_live(_8)
+    _8 = copy inner
+    _0 = (move _6, move _7, move _8)
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(inner)
+    storage_dead(late)
+    storage_dead(early)
+    return
+}
+
+struct test_crate::mixed_regions::{closure}<'early, 'late, '_2, '_3, '_4, '_5, T>
+where
+    TraitClause0: (T: Sized),
+    Outlives0: (T: 'early),
+    Outlives1: ('_3: '_2),
+    Outlives2: (T: '_3),
+    Outlives3: ('_5: '_4),
+    Outlives4: (T: '_5),
+{
+  _0: &'_2 &'_3 T,
+  _1: &'_4 &'_5 T,
+}
+
+// Full name: test_crate::mixed_regions::{impl Fn<(&'inner T,)> for test_crate::mixed_regions::{closure}<'early, 'late, '_2, '_3, '_4, '_5, T>[TraitClause0]}::call
+extern "rust-call" fn {impl Fn<(&'inner T,)> for test_crate::mixed_regions::{closure}<'early, 'late, '_2, '_3, '_4, '_5, T>[TraitClause0]}::call<'early, 'late, '_2, '_3, '_4, '_5, 'inner, '_7, T>(_1: &'_7 test_crate::mixed_regions::{closure}<'early, 'late, '_2, '_3, '_4, '_5, T>[TraitClause0], tupled_args: (&'inner T,)) -> &'inner T
+where
+    TraitClause0: (T: Sized),
+    Outlives0: (T: 'early),
+    Outlives1: ('_3: '_2),
+    Outlives2: (T: '_3),
+    Outlives3: ('_5: '_4),
+    Outlives4: (T: '_5),
+    Outlives5: ('early: '_7),
+    Outlives6: ('late: '_7),
+    Outlives7: ('_2: '_7),
+    Outlives8: ('_3: '_7),
+    Outlives9: ('_4: '_7),
+    Outlives10: ('_5: '_7),
+    Outlives11: (T: '_7),
+    Outlives12: (T: 'inner),
+{
+    let mut _0: &'1 T; // return
+    let mut _1: &'9 test_crate::mixed_regions::{closure}<'early, 'late, '_2, '_3, '_4, '_5, T>[TraitClause0]; // arg #1
+    let mut tupled_args: (&'inner T,); // arg #2
+    let z: &'10 T; // local
+    let g: test_crate::mixed_regions::{closure}::{closure}<'27, '28, '29, '30, '31, '32, '33, '34, '35, '36, '37, '38, '39, '40, '41, '42, T>[TraitClause0]; // local
+    let mut _5: &'45 &'46 T; // anonymous local
+    let mut _6: &'47 &'48 T; // anonymous local
+    let mut _7: &'49 &'50 T; // anonymous local
+    let _8: (&'66 T, &'67 T, &'68 T); // anonymous local
+    let mut _9: &'92 test_crate::mixed_regions::{closure}::{closure}<'93, '94, '95, '96, '97, '98, '99, '100, '101, '102, '103, '104, '105, '106, '107, '108, T>[TraitClause0]; // anonymous local
+    let mut _10: (); // anonymous local
+
+    storage_live(_0)
+    storage_live(z)
+    z = noretag move tupled_args._0
+    storage_live(g)
+    fake_read((*(*_1)._0))
+    fake_read((*(*_1)._1))
+    fake_read(z)
+    storage_live(_5)
+    _5 = &(*(*_1)._0)
+    storage_live(_6)
+    _6 = &(*(*_1)._1)
+    storage_live(_7)
+    _7 = &z
+    g = test_crate::mixed_regions::{closure}::{closure} { _0: move _5, _1: move _6, _2: move _7 }
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
+    fake_read(g)
+    storage_live(_8)
+    storage_live(_9)
+    _9 = &g
+    storage_live(_10)
+    _10 = ()
+    _8 = {impl Fn<()> for test_crate::mixed_regions::{closure}::{closure}<'early, 'late, '_2, '_3, '_4, '_5, 'inner, '_7, '_8, '_9, '_10, '_11, '_12, '_13, '_14, '_15, T>[TraitClause0]}::call<'185, '186, '187, '188, '189, '190, '191, '192, '193, '194, '195, '196, '197, '198, '199, '200, '266, T>[TraitClause0](move _9, move _10)
+    ↳⚡ unwind_continue
+    storage_dead(_10)
+    storage_dead(_9)
+    storage_dead(_8)
+    _0 = copy z
+    storage_dead(g)
+    return
+}
+
+// Full name: test_crate::mixed_regions
+pub fn mixed_regions<'early, 'late, T>(x: &'early T, y: &'late T)
+where
+    TraitClause0: (T: Sized),
+    Outlives0: (T: 'early),
+    Outlives1: (T: 'late),
+{
+    let mut _0: (); // return
+    let x: &'1 T; // arg #1
+    let y: &'2 T; // arg #2
+    let f: test_crate::mixed_regions::{closure}<'9, '10, '11, '12, '13, '14, T>[TraitClause0]; // local
+    let mut _4: &'17 &'18 T; // anonymous local
+    let mut _5: &'19 &'20 T; // anonymous local
+    let _6: &'21 T; // anonymous local
+    let mut _7: &'29 test_crate::mixed_regions::{closure}<'30, '31, '32, '33, '34, '35, T>[TraitClause0]; // anonymous local
+    let mut _8: (&'37 T,); // anonymous local
+    let mut _9: &'38 T; // anonymous local
+
+    storage_live(_0)
+    storage_live(f)
+    fake_read(x)
+    fake_read(y)
+    storage_live(_4)
+    _4 = &x
+    storage_live(_5)
+    _5 = &y
+    f = test_crate::mixed_regions::{closure} { _0: move _4, _1: move _5 }
+    storage_dead(_5)
+    storage_dead(_4)
+    fake_read(f)
+    storage_live(_6)
+    storage_live(_7)
+    _7 = &f
+    storage_live(_8)
+    storage_live(_9)
+    _9 = &(*x)
+    _8 = (move _9,)
+    _6 = {impl Fn<(&'inner T,)> for test_crate::mixed_regions::{closure}<'early, 'late, '_2, '_3, '_4, '_5, T>[TraitClause0]}::call<'68, '69, '70, '71, '72, '73, '74, '105, T>[TraitClause0](move _7, move _8)
+    ↳⚡ unwind_continue
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(_6)
+    _0 = const ()
+    storage_dead(f)
+    return
+}
+
+// Full name: test_crate::inline_const::{const}
+fn {const}<'a, '_1>() -> Option<&'_1 u32>[{built_in impl Sized for &'_1 u32}]
+{
+    let mut _0: Option<&'8 u32>[{built_in impl Sized for &'8 u32}]; // return
+
+    storage_live(_0)
+    _0 = Option::None {  }
+    return
+}
+
+// Full name: test_crate::inline_const::{const}
+const {const}<'a, '_1>: Option<&'_1 u32>[{built_in impl Sized for &'_1 u32}] = {const}<'a, '_1>()
+
+// Full name: test_crate::inline_const
+pub fn inline_const<'a>(_x: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'a u32}]
+{
+    let mut _0: Option<&'8 u32>[{built_in impl Sized for &'8 u32}]; // return
+    let _x: &'12 u32; // arg #1
+
+    storage_live(_0)
+    _0 = const {const}<'17, '18>
+    return
+}
+
+// Full name: test_crate::exercise_mixed_regions
+pub fn exercise_mixed_regions()
+{
+    let mut _0: (); // return
+    let _1: (); // anonymous local
+    let mut _2: &'1 u32; // anonymous local
+    let _3: &'2 u32; // anonymous local
+    let _4: u32; // anonymous local
+    let mut _5: &'3 u32; // anonymous local
+    let _6: &'4 u32; // anonymous local
+    let _7: u32; // anonymous local
+    let mut _8: Option<&'12 u32>[{built_in impl Sized for &'12 u32}]; // anonymous local
+    let mut _9: &'16 u32; // anonymous local
+    let _10: &'17 u32; // anonymous local
+    let _11: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = const 0u32
+    _3 = &_4
+    _2 = &(*_3)
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    _7 = const 1u32
+    _6 = &_7
+    _5 = &(*_6)
+    _1 = mixed_regions<'20, '24, u32>[{built_in impl Sized for u32}](move _2, move _5)
+    ↳⚡ unwind_continue
+    storage_dead(_5)
+    storage_dead(_2)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_1)
+    storage_live(_8)
+    storage_live(_9)
+    storage_live(_10)
+    storage_live(_11)
+    _11 = const 0u32
+    _10 = &_11
+    _9 = &(*_10)
+    _8 = inline_const<'28>(move _9)
+    ↳⚡ unwind_continue
+    storage_dead(_9)
+    storage_dead(_11)
+    storage_dead(_10)
+    storage_dead(_8)
+    _0 = const ()
+    return
+}
+
+
+

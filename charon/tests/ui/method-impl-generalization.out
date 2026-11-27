@@ -304,8 +304,8 @@ fn call_foo<'e>(x: &'e ()) -> &'e ()
     let mut _4: &'5 (); // anonymous local
     let _5: &'6 (); // anonymous local
     let mut _6: &'7 (); // anonymous local
-    let mut _7: &'8 (); // anonymous local
-    let mut _8: &'17 (); // anonymous local
+    let mut _7: &'9 (); // anonymous local
+    let mut _8: &'18 (); // anonymous local
     let mut _9: (); // anonymous local
 
     storage_live(_7)
@@ -325,7 +325,7 @@ fn call_foo<'e>(x: &'e ()) -> &'e ()
     _6 = move _7
     _5 = &(*_6)
     _4 = &(*_5)
-    _2 = foo<'15, '16>(move _3, move _4)
+    _2 = foo<'16, '17>(move _3, move _4)
     ↳⚡ storage_dead(_6)
         storage_dead(x)
         storage_dead(_9)

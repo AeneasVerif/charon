@@ -162,7 +162,7 @@ struct (_,)<A> {
 
 struct test_crate::FOO::{const}::{closure#1} {}
 
-struct test_crate::FOO::{const}::{closure#1}::{closure} {}
+struct test_crate::FOO::{const}::{closure#1}::{closure}<'_0> {}
 
 // Full name: test_crate::FOO::__rust_std_internal_init_fn
 #[inline(hint)]
@@ -177,11 +177,11 @@ fn __rust_std_internal_init_fn(_lifetime_elision: PhantomData<&'static ()>) -> u
     return
 }
 
-// Full name: test_crate::FOO::{const}::{closure#1}::{impl FnOnce<()> for test_crate::FOO::{const}::{closure#1}::{closure}}::call_once
-extern "rust-call" fn impl_FnOnce_unit_for_closure::call_once(_1: test_crate::FOO::{const}::{closure#1}::{closure}, tupled_args: ()) -> u32
+// Full name: test_crate::FOO::{const}::{closure#1}::{impl FnOnce<()> for test_crate::FOO::{const}::{closure#1}::{closure}<'_0>}::call_once
+extern "rust-call" fn impl_FnOnce_unit_for_closure::call_once<'_0>(_1: test_crate::FOO::{const}::{closure#1}::{closure}<'_0>, tupled_args: ()) -> u32
 {
     let mut _0: u32; // return
-    let mut _1: test_crate::FOO::{const}::{closure#1}::{closure}; // arg #1
+    let mut _1: test_crate::FOO::{const}::{closure#1}::{closure}<'_0>; // arg #1
     let mut tupled_args: (); // arg #2
     let mut _3: PhantomData<&'2 ()>; // anonymous local
 
@@ -198,14 +198,14 @@ extern "rust-call" fn impl_FnOnce_unit_for_closure::call_once(_1: test_crate::FO
     return
 }
 
-// Full name: test_crate::FOO::{const}::{closure#1}::{impl FnOnce<()> for test_crate::FOO::{const}::{closure#1}::{closure}}
-impl "impl_FnOnce_unit_for_closure" FnOnce<()> for test_crate::FOO::{const}::{closure#1}::{closure} {
-    proof ImpliedClause0: (test_crate::FOO::{const}::{closure#1}::{closure}: MetaSized) = {built_in impl MetaSized for test_crate::FOO::{const}::{closure#1}::{closure}}
+// Full name: test_crate::FOO::{const}::{closure#1}::{impl FnOnce<()> for test_crate::FOO::{const}::{closure#1}::{closure}<'_0>}
+impl<'_0> "impl_FnOnce_unit_for_closure" FnOnce<()> for test_crate::FOO::{const}::{closure#1}::{closure}<'_0> {
+    proof ImpliedClause0: (test_crate::FOO::{const}::{closure#1}::{closure}<'_0>: MetaSized) = {built_in impl MetaSized for test_crate::FOO::{const}::{closure#1}::{closure}<'_0>}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
     proof ImpliedClause3: (u32: Sized) = {built_in impl Sized for u32}
     type Output = u32
-    fn call_once = impl_FnOnce_unit_for_closure::call_once
+    fn call_once = impl_FnOnce_unit_for_closure::call_once<'_0>
     vtable: lazy
 }
 
@@ -233,7 +233,7 @@ extern "rust-call" fn call<'_0, '_1>(_1: &'_1 test_crate::FOO::{const}::{closure
     let mut _4: &'15 Storage<u32, !>[{built_in impl Sized for u32}, {built_in impl Sized for !}]; // anonymous local
     let _5: &'16 Storage<u32, !>[{built_in impl Sized for u32}, {built_in impl Sized for !}]; // anonymous local
     let mut _6: Option<&'17 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'17 mut Option<u32>[{built_in impl Sized for u32}]}]; // anonymous local
-    let mut _7: test_crate::FOO::{const}::{closure#1}::{closure}; // anonymous local
+    let mut _7: test_crate::FOO::{const}::{closure#1}::{closure}<'22>; // anonymous local
 
     storage_live(_0)
     storage_live(__rust_std_internal_init)
@@ -246,7 +246,7 @@ extern "rust-call" fn call<'_0, '_1>(_1: &'_1 test_crate::FOO::{const}::{closure
     _6 = move __rust_std_internal_init
     storage_live(_7)
     _7 = test_crate::FOO::{const}::{closure#1}::{closure} {  }
-    _0 = get_or_init<'27, '28, u32, !, test_crate::FOO::{const}::{closure#1}::{closure}>[{built_in impl Sized for u32}, {built_in impl Sized for !}, {impl DestroyedState for !}, {built_in impl Sized for test_crate::FOO::{const}::{closure#1}::{closure}}, impl_FnOnce_unit_for_closure](move _4, move _6, move _7)
+    _0 = get_or_init<'58, '59, u32, !, test_crate::FOO::{const}::{closure#1}::{closure}<'37>>[{built_in impl Sized for u32}, {built_in impl Sized for !}, {impl DestroyedState for !}, {built_in impl Sized for test_crate::FOO::{const}::{closure#1}::{closure}<'37>}, impl_FnOnce_unit_for_closure<'37>](move _4, move _6, move _7)
     ↳⚡ storage_dead(__rust_std_internal_init)
         storage_dead(tupled_args)
         storage_dead(_1)

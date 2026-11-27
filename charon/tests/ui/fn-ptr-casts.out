@@ -169,18 +169,19 @@ fn from_inline_const<'a>(x: &'a u8) -> &'a u8
 }
 
 // Full name: test_crate::from_closure::{closure}
-struct {closure}<'_0> {}
+struct {closure}<'a, '_1> {}
 
-// Full name: test_crate::from_closure::{impl Fn<(&'_0 u8, &'_1 u8)> for {closure}<'_0>}::call
-extern "rust-call" fn call<'_0, '_1, '_2>(_1: &'_2 {closure}<'_0>, tupled_args: (&'_0 u8, &'_1 u8)) -> &'_1 u8
+// Full name: test_crate::from_closure::{impl Fn<(&'_1 u8, &'_2 u8)> for {closure}<'a, '_1>}::call
+extern "rust-call" fn call<'a, '_1, '_2, '_3>(_1: &'_3 {closure}<'a, '_1>, tupled_args: (&'_1 u8, &'_2 u8)) -> &'_2 u8
 where
-    Outlives0: ('_0: '_2),
+    Outlives0: ('a: '_3),
+    Outlives1: ('_1: '_3),
 {
     let mut _0: &'1 u8; // return
-    let mut _1: &'4 {closure}<'_0>; // arg #1
-    let mut tupled_args: (&'_0 u8, &'_1 u8); // arg #2
-    let mut _3: &'5 u8; // anonymous local
-    let y: &'6 u8; // local
+    let mut _1: &'5 {closure}<'a, '_1>; // arg #1
+    let mut tupled_args: (&'_1 u8, &'_2 u8); // arg #2
+    let mut _3: &'6 u8; // anonymous local
+    let y: &'7 u8; // local
 
     storage_live(_0)
     storage_live(_3)
@@ -195,20 +196,21 @@ where
     return
 }
 
-// Full name: test_crate::from_closure::{impl FnMut<(&'_0 u8, &'_1 u8)> for {closure}<'_0>}::call_mut
-extern "rust-call" fn call_mut<'_0, '_1, '_2>(state: &'_2 mut {closure}<'_0>, args: (&'_0 u8, &'_1 u8)) -> &'_1 u8
+// Full name: test_crate::from_closure::{impl FnMut<(&'_1 u8, &'_2 u8)> for {closure}<'a, '_1>}::call_mut
+extern "rust-call" fn call_mut<'a, '_1, '_2, '_3>(state: &'_3 mut {closure}<'a, '_1>, args: (&'_1 u8, &'_2 u8)) -> &'_2 u8
 where
-    Outlives0: ('_0: '_2),
+    Outlives0: ('a: '_3),
+    Outlives1: ('_1: '_3),
 {
-    let mut _0: &'_1 u8; // return
-    let mut state: &'_2 mut {closure}<'_0>; // arg #1
-    let mut args: (&'_0 u8, &'_1 u8); // arg #2
-    let mut _3: &'0 {closure}<'_0>; // anonymous local
+    let mut _0: &'_2 u8; // return
+    let mut state: &'_3 mut {closure}<'a, '_1>; // arg #1
+    let mut args: (&'_1 u8, &'_2 u8); // arg #2
+    let mut _3: &'0 {closure}<'a, '_1>; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &(*state)
-    _0 = call<'_0, '_1, '2>(move _3, move args)
+    _0 = call<'a, '_1, '_2, '2>(move _3, move args)
     ↳⚡ storage_dead(_3)
         storage_dead(args)
         storage_dead(state)
@@ -219,18 +221,18 @@ where
     return
 }
 
-// Full name: test_crate::from_closure::{impl FnOnce<(&'_0 u8, &'_1 u8)> for {closure}<'_0>}::call_once
-extern "rust-call" fn call_once<'_0, '_1>(_1: {closure}<'_0>, _2: (&'_0 u8, &'_1 u8)) -> &'_1 u8
+// Full name: test_crate::from_closure::{impl FnOnce<(&'_1 u8, &'_2 u8)> for {closure}<'a, '_1>}::call_once
+extern "rust-call" fn call_once<'a, '_1, '_2>(_1: {closure}<'a, '_1>, _2: (&'_1 u8, &'_2 u8)) -> &'_2 u8
 {
     let mut _0: &'1 u8; // return
-    let mut _1: {closure}<'_0>; // arg #1
-    let _2: (&'11 u8, &'12 u8); // arg #2
-    let _3: &'17 mut {closure}<'_0>; // anonymous local
+    let mut _1: {closure}<'a, '_1>; // arg #1
+    let _2: (&'12 u8, &'13 u8); // arg #2
+    let _3: &'18 mut {closure}<'a, '_1>; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = call_mut<'_0, '_1, '58>(move _3, move _2)
+    _0 = call_mut<'a, '_1, '_2, '63>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -242,20 +244,20 @@ extern "rust-call" fn call_once<'_0, '_1>(_1: {closure}<'_0>, _2: (&'_0 u8, &'_1
 }
 
 // Full name: test_crate::from_closure::{closure}::{as_fn}
-fn {as_fn}<'_0, '_1>(arg1: &'_0 u8, arg2: &'_1 u8) -> &'_1 u8
+fn {as_fn}<'a, '_1, '_2>(arg1: &'_1 u8, arg2: &'_2 u8) -> &'_2 u8
 {
-    let mut _0: &'_1 u8; // return
-    let mut arg1: &'_0 u8; // arg #1
-    let mut arg2: &'_1 u8; // arg #2
-    let mut args: (&'_0 u8, &'_1 u8); // local
-    let mut state: {closure}<'_0>; // local
+    let mut _0: &'_2 u8; // return
+    let mut arg1: &'_1 u8; // arg #1
+    let mut arg2: &'_2 u8; // arg #2
+    let mut args: (&'_1 u8, &'_2 u8); // local
+    let mut state: {closure}<'a, '_1>; // local
 
     storage_live(_0)
     storage_live(args)
     storage_live(state)
     args = (move arg1, move arg2)
     state = {closure} {  }
-    _0 = call_once<'_0, '_1>(move state, move args)
+    _0 = call_once<'a, '_1, '_2>(move state, move args)
     ↳⚡ storage_dead(state)
         storage_dead(args)
         storage_dead(arg2)
@@ -276,19 +278,19 @@ fn from_closure<'a>(x: &'a u8) -> &'a u8
     let f: unsafe fn<'b>(&'5 u8, &'b u8) -> &'b u8; // local
         where f :< unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8;
         where f := unsafe fn<'b>(&'a u8, &'b u8) -> &'b u8;
-    let mut _3: {closure}<'7>; // anonymous local
-    let _4: &'8 u8; // anonymous local
-    let mut _5: unsafe fn<'b>(&'9 u8, &'b u8) -> &'b u8; // anonymous local
-    let mut _6: &'10 u8; // anonymous local
-    let mut _7: &'11 u8; // anonymous local
-    let mut _8: fn<'_0_1>(&'19 u8, &'_0_1 u8) -> &'_0_1 u8; // anonymous local
+    let mut _3: {closure}<'8, '9>; // anonymous local
+    let _4: &'10 u8; // anonymous local
+    let mut _5: unsafe fn<'b>(&'11 u8, &'b u8) -> &'b u8; // anonymous local
+    let mut _6: &'12 u8; // anonymous local
+    let mut _7: &'13 u8; // anonymous local
+    let mut _8: fn<'_0_1>(&'23 u8, &'_0_1 u8) -> &'_0_1 u8; // anonymous local
 
     storage_live(_0)
     storage_live(f)
     storage_live(_3)
     _3 = {closure} {  }
     storage_live(_8)
-    _8 = fn_def_to_fn_ptr(const {as_fn}<'14, '16>)
+    _8 = fn_def_to_fn_ptr(const {as_fn}<'17, '18, '20>)
     f = fn_ptr_to_unsafe(move _8)
     storage_dead(_3)
     fake_read(f)
@@ -299,7 +301,7 @@ fn from_closure<'a>(x: &'a u8) -> &'a u8
     _6 = copy x
     storage_live(_7)
     _7 = &(*x)
-    _4 = (move _5)<'44>(move _6, move _7)
+    _4 = (move _5)<'48>(move _6, move _7)
     ↳⚡ storage_dead(_8)
         storage_dead(x)
         unwind_continue

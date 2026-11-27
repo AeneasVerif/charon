@@ -90,8 +90,8 @@ pub fn get_ty<'_0>(self: &'_0 ()) -> &'_0 u32
     let self: &'3 (); // arg #1
     let _2: &'4 u32; // anonymous local
     let mut _3: &'5 u32; // anonymous local
-    let mut _4: &'6 u32; // anonymous local
-    let mut _5: &'7 u32; // anonymous local
+    let mut _4: &'7 u32; // anonymous local
+    let mut _5: &'8 u32; // anonymous local
     let mut _6: u32; // anonymous local
 
     storage_live(_4)

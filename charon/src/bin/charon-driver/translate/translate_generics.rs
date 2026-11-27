@@ -28,37 +28,41 @@ pub(crate) struct BindingLevel<'tcx> {
     /// Whether this binding level exists in Hax's De Bruijn indices. `dyn Trait` introduces an
     /// existential binder in Charon that has no corresponding binder in rustc/Hax.
     pub counts_for_de_bruijn: bool,
+
     /// Rust makes the distinction between early and late-bound region parameters. We do not make
     /// this distinction, and merge early and late bound regions. For details, see:
     /// <https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/>
     /// <https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/>
     ///
-    /// The map from rust early regions to translated region indices.
+    /// The map of early regions bound at this binder.
     pub early_region_vars: HashMap<hax::EarlyParamRegion, RegionId>,
-    /// The map from rust named region parameter ids to translated region indices.
-    pub region_vars_by_def_id: HashMap<hax::DefId, RegionId>,
-    /// `DefId` used by `ReLateParam` to refer to this binder's `bound_region_vars`,
-    /// if that may happen.
-    pub late_param_def_id: Option<hax::DefId>,
-    /// The map from rust late/bound regions to translated region indices.
+    /// Extra early regions recovered by unerasing some regions that rustc keeps erased in args.
+    /// Relevant for closures and inline consts. Hax represents these regions with placeholder
+    /// regions.
+    pub extra_early_region_vars: HashMap<hax::PlaceholderRegion, RegionId>,
+    /// The map of named `ReLateParam` regions bound at this binder.
+    pub late_named_region_vars: HashMap<hax::DefId, RegionId>,
+    /// The map of anon `ReLateParam` regions bound at this binder, indexed by the scope `DefId`
+    /// and variable index.
+    pub late_anon_region_vars: HashMap<hax::DefId, Vec<RegionId>>,
+    /// The map of `ReBound` regions bound at this binder, indexed by their bound variable index.
     pub bound_region_vars: Vec<RegionId>,
-    /// Extra lifetimes unerased from the closure arguments. Hax represents them with placeholder
-    /// regions; they are parameters of the closure struct.
-    pub closure_extra_self_regions: HashMap<hax::PlaceholderRegion, RegionId>,
     /// Region added for the borrow of `self` accepted by a virtual impl method (e.g. `drop_glue` or
     /// `call`), or by a vtable shim.
     pub self_borrow_region: Option<RegionId>,
-    /// The map from rust type variable indices to translated type variable indices. `None` marks
-    /// inference-only parameters, which hax should normally never give us.
-    pub type_vars_map: HashMap<u32, Option<TypeVarId>>,
-    /// The map from rust const generic variables to translated const generic variable indices.
-    pub const_generic_vars_map: HashMap<u32, ConstGenericVarId>,
-    /// The map from trait predicates to the translated trait clause indices, and the number of
-    /// bound higher-kinded regions.
-    pub trait_preds: HashMap<hax::GenericPredicateId, (TraitClauseId, usize)>,
     /// RPITIT can cause region names to be reused. To avoid clashes in our output, we rename
     /// duplicate names.
     pub used_region_names: HashSet<Symbol>,
+
+    /// The map from rust type variable indices to translated type variable indices. `None` marks
+    /// inference-only parameters, which hax should normally never give us.
+    pub type_vars: HashMap<u32, Option<TypeVarId>>,
+    /// The map from rust const generic variables to translated const generic variable indices.
+    pub const_generic_vars: HashMap<u32, ConstGenericVarId>,
+    /// The map from trait predicates to the translated trait clause indices, and the number of
+    /// bound higher-kinded regions.
+    pub trait_preds: HashMap<hax::GenericPredicateId, (TraitClauseId, usize)>,
+
     /// Cache the translation of types. This harnesses the deduplication of `Ty` that hax does.
     // Important: we can't reuse type caches from earlier binders as the new binder may change what
     // a given variable resolves to.
@@ -84,7 +88,6 @@ fn translate_variance(variance: Option<&hax::Variance>) -> Variance {
 impl<'tcx> BindingLevel<'tcx> {
     pub(crate) fn new() -> Self {
         Self {
-            late_param_def_id: None,
             counts_for_de_bruijn: true,
             ..Default::default()
         }
@@ -122,7 +125,8 @@ impl<'tcx> BindingLevel<'tcx> {
             late_bound: false,
         });
         self.early_region_vars.insert(region, rid);
-        self.region_vars_by_def_id.insert(def_id, rid);
+        // FIXME: is that used?
+        self.late_named_region_vars.insert(def_id, rid);
         rid
     }
 
@@ -131,21 +135,29 @@ impl<'tcx> BindingLevel<'tcx> {
         &mut self,
         region: hax::BoundRegionKind,
         variance: Variance,
+        late_param_def_id: Option<&hax::DefId>,
     ) -> RegionId {
         use crate::hax::BoundRegionKind::*;
         let (name, def_id) = match region {
             Anon => (None, None),
             NamedForPrinting(symbol) => (translate_region_name(symbol), None),
             Named(def_id, symbol) => (translate_region_name(symbol), Some(def_id)),
-            ClosureEnv => (Some("@env".to_owned()), None),
+            ClosureEnv => (Some("env".to_owned()), None),
         };
-        let rid = self.params.regions.push_with(|index| RegionParam {
-            late_bound: true,
-            ..RegionParam::new(index, name, variance)
-        });
-        self.bound_region_vars.push(rid);
+        let rid = self
+            .params
+            .regions
+            .push_with(|index| RegionParam::new(index, name, variance));
         if let Some(def_id) = def_id {
-            self.region_vars_by_def_id.insert(def_id, rid);
+            self.late_named_region_vars.insert(def_id, rid);
+        }
+        if let Some(def_id) = late_param_def_id {
+            self.late_anon_region_vars
+                .entry(def_id.clone())
+                .or_default()
+                .push(rid);
+        } else {
+            self.bound_region_vars.push(rid);
         }
         rid
     }
@@ -157,7 +169,7 @@ impl<'tcx> BindingLevel<'tcx> {
             .params
             .regions
             .push_with(|index| RegionParam::new(index, None, Variance::Unknown));
-        self.closure_extra_self_regions.insert(region, region_id);
+        self.extra_early_region_vars.insert(region, region_id);
     }
 
     pub fn push_self_borrow_region(&mut self) -> RegionId {
@@ -189,7 +201,7 @@ impl<'tcx> BindingLevel<'tcx> {
             name,
             variance,
         });
-        self.type_vars_map.insert(rid, Some(var_id));
+        self.type_vars.insert(rid, Some(var_id));
         var_id
     }
 
@@ -202,26 +214,29 @@ impl<'tcx> BindingLevel<'tcx> {
                 name: name.to_string(),
                 ty,
             });
-        self.const_generic_vars_map.insert(rid, var_id);
+        self.const_generic_vars.insert(rid, var_id);
     }
 
-    /// Add the binder's regions to this binding level.
-    pub(crate) fn push_late_bound_params(
+    /// Add the binder's regions to this binding level. If `late_param_def_id` is `Some`, register
+    /// them for `ReLateParam` lookup; otherwise, register them as this level's `ReBound`
+    /// variables.
+    pub(crate) fn push_bound_params(
         &mut self,
         binder: &hax::Binder<()>,
-        late_param_def_id: Option<hax::DefId>,
-    ) -> Result<(), Error> {
-        assert!(
-            self.bound_region_vars.is_empty(),
-            "Trying to use two binders at the same binding level"
-        );
-        self.late_param_def_id = late_param_def_id;
+        late_param_def_id: Option<&hax::DefId>,
+    ) {
+        if late_param_def_id.is_none() {
+            assert!(
+                self.bound_region_vars.is_empty(),
+                "Trying to use two binders at the same binding level"
+            );
+        }
         use crate::hax::BoundVariableKind::*;
         for p in &binder.bound_vars {
             match p {
                 Region(region, variance) => {
                     let variance = translate_variance(variance.as_ref());
-                    self.push_bound_region(region.clone(), variance);
+                    self.push_bound_region(region.clone(), variance, late_param_def_id);
                 }
                 Ty(_) => {
                     panic!("Unexpected locally bound type variable");
@@ -231,7 +246,6 @@ impl<'tcx> BindingLevel<'tcx> {
                 }
             }
         }
-        Ok(())
     }
 }
 
@@ -338,10 +352,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         use hax::LateParamRegionKind::*;
         match &region.kind {
             Anon(index) | NamedAnon(index, _) => {
-                let Some((dbid, binder)) = self
-                    .binding_levels
-                    .iter_enumerated()
-                    .find(|(_, binder)| binder.late_param_def_id.as_ref() == Some(&region.scope))
+                let Some((dbid, regions)) =
+                    self.binding_levels
+                        .iter_enumerated()
+                        .find_map(|(dbid, binder)| {
+                            Some((dbid, binder.late_anon_region_vars.get(&region.scope)?))
+                        })
                 else {
                     raise_error!(
                         self,
@@ -349,7 +365,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         "Unexpected error: could not find the binder for late-bound region {region:?}"
                     )
                 };
-                let Some(region_id) = binder.bound_region_vars.get(*index as usize).copied() else {
+                let Some(region_id) = regions.get(*index as usize).copied() else {
                     raise_error!(
                         self,
                         span,
@@ -361,7 +377,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             Named(def_id, _) => self.lookup_param(
                 span,
                 |bl| {
-                    bl.region_vars_by_def_id
+                    bl.late_named_region_vars
                         .get(def_id)
                         .copied()
                         .map(DeBruijnVar::new_at_zero)
@@ -382,7 +398,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let var = self.lookup_param(
             span,
             |bl| {
-                let var = *bl.type_vars_map.get(&param.index)?;
+                let var = *bl.type_vars.get(&param.index)?;
                 Some(var.map(DeBruijnVar::new_at_zero))
             },
             || format!("the type variable {}", param.name),
@@ -407,7 +423,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.lookup_param(
             span,
             |bl| {
-                bl.const_generic_vars_map
+                bl.const_generic_vars
                     .get(&param.index)
                     .copied()
                     .map(DeBruijnVar::new_at_zero)
@@ -496,7 +512,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 // Inference-only type parameter, as used in closures and inline consts. We make
                 // sure to get rid of them in hax, and error if found in Charon.
                 self.innermost_binder_mut()
-                    .type_vars_map
+                    .type_vars
                     .insert(param.index, None);
             }
             hax::GenericParamDefKind::Type {
@@ -525,16 +541,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn push_generics_for_def(
         &mut self,
         def: &hax::FullDef<'tcx>,
+        is_current_item: bool,
         include_late_bound: bool,
     ) -> Result<(), Error> {
         if let Some(param_env) = def.param_env() {
             // Add generics from the parent item, recursively.
             if let Some(parent_item) = &param_env.soft_parent {
                 let parent_def = self.hax_def(parent_item)?;
-                self.push_generics_for_def(&parent_def, false)?;
+                self.push_generics_for_def(&parent_def, false, true)?;
             }
             let origin = Self::predicate_origin_for_def(def);
-            self.push_param_env_without_parents(param_env, origin, include_late_bound)?;
+            self.push_param_env_without_parents(
+                param_env,
+                origin,
+                is_current_item,
+                include_late_bound,
+            )?;
         }
         Ok(())
     }
@@ -568,19 +590,31 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         param_env: &hax::ParamEnv<'tcx>,
         origin: PredicateOrigin,
+        is_current_item: bool,
         include_late_bound: bool,
     ) -> Result<(), Error> {
+        self.push_generic_params(&param_env.generics)?;
         for region in &param_env.extra_early_regions {
             self.innermost_binder_mut()
                 .push_unerased_region(region.clone());
         }
-        self.push_generic_params(&param_env.generics)?;
         self.register_predicates(&param_env.predicates, origin)?;
-        if include_late_bound {
-            self.innermost_binder_mut().push_late_bound_params(
-                &param_env.late_bound,
-                param_env.late_bound_scope.clone(),
-            )?;
+        if include_late_bound && let Some(late_bound) = &param_env.late_bound {
+            let level = self.innermost_binder_mut();
+            level.push_bound_params(&late_bound.binder, Some(&late_bound.def_id));
+            if is_current_item {
+                // Make the variable available for lookup using debruijn indices too, which we use
+                // when translating signatures.
+                level.bound_region_vars = level
+                    .late_anon_region_vars
+                    .get(&late_bound.def_id)
+                    .cloned()
+                    .unwrap_or_default();
+                // Mark these as the late bound parameters of this item.
+                for region in &level.bound_region_vars {
+                    level.params.regions[*region].late_bound = true;
+                }
+            }
         }
         Ok(())
     }
@@ -603,7 +637,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // For closures, we only bind late-bound variables on the impl/methods, not the state struct.
         let include_late_bound =
             !matches!(def.kind(), hax::FullDefKind::Closure(_)) || kind.has_closure_late_params();
-        self.push_generics_for_def(def, include_late_bound)?;
+        self.push_generics_for_def(def, true, include_late_bound)?;
 
         if kind.has_self_borrow_region() {
             self.the_only_binder_mut().push_self_borrow_region();
@@ -649,7 +683,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let inner_hax_state = self.t_ctx.hax_state.clone().with_hax_owner(owner);
         let outer_hax_state = mem::replace(&mut self.hax_state, inner_hax_state);
         let ret = self.inside_binder(kind, |this| {
-            this.push_param_env_without_parents(param_env, predicate_origin, true)?;
+            this.push_param_env_without_parents(param_env, predicate_origin, true, true)?;
             this.innermost_binder().params.check_consistency();
             f(this)
         });
@@ -710,7 +744,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     {
         let binder = self.inside_binder(BinderKind::Other, |this| {
             this.innermost_binder_mut()
-                .push_late_bound_params(&binder.rebind(()), None)?;
+                .push_bound_params(&binder.rebind(()), None);
             f(this, binder.hax_skip_binder_ref())
         })?;
         // Convert to a region-only binder.

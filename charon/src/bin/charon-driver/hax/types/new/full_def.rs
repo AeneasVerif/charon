@@ -124,8 +124,10 @@ where
                     kind = FullDefKind::FnPtr(FnPointer {
                         rustc_sig: sig,
                         param_env: ParamEnv {
-                            late_bound: hax_sig.rebind(()),
-                            late_bound_scope: Some(late_bound_scope.sinto(s)),
+                            late_bound: Some(LateBinder {
+                                binder: hax_sig.rebind(()),
+                                def_id: late_bound_scope.sinto(s),
+                            }),
                             ..param_env
                         },
                         sig: hax_sig,
@@ -320,9 +322,10 @@ impl<'tcx> FullDef<'tcx> {
                     FullDefKind::FnPtr(f) => tupled_inputs(
                         f.rustc_sig,
                         f.param_env
-                            .late_bound_scope
+                            .late_bound
                             .as_ref()
                             .unwrap()
+                            .def_id
                             .real_rust_def_id(),
                     ),
                     _ => panic!("{:?} is not callable", self.this.def_id),
@@ -352,21 +355,14 @@ pub struct ParamEnv<'tcx> {
     /// list.
     pub generics: TyGenerics<'tcx>,
     /// The item's late-bound parameters: when the item denotes a `for<'a> fn(...)` higher-ranked
-    /// function, these are the parameters bound in that higher-ranked binder. We treat them as
-    /// normal parameters to unify parameter handling; for example a nested closure can name a
-    /// late-bound param of its parent function, so pretending they only show up in the signature
-    /// doesn't work.
+    /// function, these are the parameters bound in that higher-ranked binder. They however can
+    /// show up outside the signature, namely inside the function body as well as nested items like
+    /// closures and inline consts.
     ///
-    /// See those blog posts for more explanations on the difference:
+    /// See those blog posts for more explanations early vs late params:
     /// - https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
     /// - https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
-    ///
-    /// Note that only lifetimes can be late bound at the moment.
-    pub late_bound: Binder<()>,
-    /// Late bound variables can be "liberated", which turns them into `ReLateParam`. This requires
-    /// a `DefId`; this is the `DefId` used to liberate the bound regions, if we did so.
-    /// This is the item's `DefId` if it had a real one, otherwise a dummy one.
-    pub late_bound_scope: Option<DefId>,
+    pub late_bound: Option<LateBinder<()>>,
     /// Extra early regions that we add to replace regions that rustc normally erases. We represent
     /// them with placeholders so the types that mention them can still flow through rustc APIs.
     pub extra_early_regions: Vec<PlaceholderRegion>,
@@ -405,8 +401,7 @@ impl<'tcx> ParamEnv<'tcx> {
                 params: vec![],
             },
             predicates: GenericPredicates { predicates: vec![] },
-            late_bound: Binder::empty(),
-            late_bound_scope: None,
+            late_bound: None,
             extra_early_regions: vec![],
             parent: parent.cloned(),
             soft_parent: parent.cloned(),
@@ -780,10 +775,7 @@ impl<'tcx> TraitImpl<'tcx> {
                         let mut param_env = get_param_env(s, None, Some(this.clone()));
                         param_env.generics.parent = Some(this.def_id.clone());
                         param_env.late_bound =
-                            late_bound_for_def(s, impl_assoc_rdef_id, Some(item_impl_args));
-                        if matches!(decl_assoc.kind, ty::AssocKind::Fn { .. }) {
-                            param_env.late_bound_scope = Some(impl_assoc_def_id.clone());
-                        }
+                            late_bound_for_def(s, &impl_assoc_def_id, Some(item_impl_args));
                         param_env
                     };
                     let item = ItemRef::translate(s, impl_assoc_rdef_id, item_impl_args);
@@ -1361,8 +1353,10 @@ where
             FullDefKind::Fn(Fn {
                 rustc_sig: sig,
                 param_env: ParamEnv {
-                    late_bound: hax_sig.rebind(()),
-                    late_bound_scope: Some(hax_def_id.clone()),
+                    late_bound: Some(LateBinder {
+                        binder: hax_sig.rebind(()),
+                        def_id: hax_def_id.clone(),
+                    }),
                     ..param_env
                 },
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
@@ -1378,8 +1372,10 @@ where
                 args,
                 rustc_sig: sig,
                 param_env: ParamEnv {
-                    late_bound: hax_sig.rebind(()),
-                    late_bound_scope: Some(hax_def_id.clone()),
+                    late_bound: Some(LateBinder {
+                        binder: hax_sig.rebind(()),
+                        def_id: hax_def_id.clone(),
+                    }),
                     ..param_env
                 },
                 associated_item: AssocItem::sfrom_instantiated(s, &item, args),
@@ -1398,8 +1394,10 @@ where
             FullDefKind::Closure(Closure {
                 kind: closure.kind().sinto(s),
                 param_env: ParamEnv {
-                    late_bound: hax_sig.rebind(()),
-                    late_bound_scope: Some(hax_def_id.clone()),
+                    late_bound: Some(LateBinder {
+                        binder: hax_sig.rebind(()),
+                        def_id: hax_def_id.clone(),
+                    }),
                     ..param_env
                 },
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
@@ -1472,8 +1470,10 @@ where
             FullDefKind::Ctor(Ctor {
                 rustc_sig: sig,
                 param_env: ParamEnv {
-                    late_bound: hax_sig.rebind(()),
-                    late_bound_scope: Some(hax_def_id.clone()),
+                    late_bound: Some(LateBinder {
+                        binder: hax_sig.rebind(()),
+                        def_id: hax_def_id.clone(),
+                    }),
                     ..param_env
                 },
                 adt_def_id: adt_def_id.sinto(s),
@@ -1494,18 +1494,22 @@ where
 
 fn late_bound_for_def<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
-    def_id: RDefId,
+    def_id: &DefId,
     args: Option<ty::GenericArgs<'tcx>>,
-) -> Binder<()> {
+) -> Option<LateBinder<()>> {
+    let rust_def_id = def_id.real_rust_def_id();
     if matches!(
-        s.base().tcx.def_kind(def_id),
+        s.base().tcx.def_kind(rust_def_id),
         RDefKind::Fn { .. } | RDefKind::AssocFn { .. }
     ) {
-        get_method_sig(s.base().tcx, s.typing_env(), def_id, args)
-            .sinto(s)
-            .map(|_| ())
+        Some(LateBinder {
+            binder: get_method_sig(s.base().tcx, s.typing_env(), rust_def_id, args)
+                .sinto(s)
+                .map(|_| ()),
+            def_id: def_id.clone(),
+        })
     } else {
-        Binder::empty()
+        None
     }
 }
 
@@ -1935,8 +1939,7 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
     match args {
         None => ParamEnv {
             generics,
-            late_bound: Binder::empty(),
-            late_bound_scope: None,
+            late_bound: None,
             extra_early_regions: vec![],
             predicates: owner.required_predicates(s).sinto(s),
             soft_parent: parent.clone(),
@@ -1949,8 +1952,7 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
                 params: Default::default(),
                 ..generics
             },
-            late_bound: Binder::empty(),
-            late_bound_scope: None,
+            late_bound: None,
             extra_early_regions: vec![],
             predicates: GenericPredicates::default(),
             soft_parent: parent.clone(),

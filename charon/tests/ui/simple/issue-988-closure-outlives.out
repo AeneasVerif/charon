@@ -28,17 +28,18 @@ struct (_,)<A> {
 }
 
 // Full name: test_crate::call_fn_shared::{closure}
-struct {closure}<'_0> {
-  _0: &'_0 [u8],
+struct {closure}<'_0, '_1> {
+  _0: &'_1 [u8],
 }
 
-// Full name: test_crate::call_fn_shared::{impl Fn<(usize,)> for {closure}<'_0>}::call
-extern "rust-call" fn call<'_0, '_1>(_1: &'_1 {closure}<'_0>, tupled_args: (usize,)) -> u8
+// Full name: test_crate::call_fn_shared::{impl Fn<(usize,)> for {closure}<'_0, '_1>}::call
+extern "rust-call" fn call<'_0, '_1, '_2>(_1: &'_2 {closure}<'_0, '_1>, tupled_args: (usize,)) -> u8
 where
-    Outlives0: ('_0: '_1),
+    Outlives0: ('_0: '_2),
+    Outlives1: ('_1: '_2),
 {
     let mut _0: u8; // return
-    let mut _1: &'2 {closure}<'_0>; // arg #1
+    let mut _1: &'3 {closure}<'_0, '_1>; // arg #1
     let mut tupled_args: (usize,); // arg #2
     let i: usize; // local
     let _4: usize; // anonymous local
@@ -71,9 +72,9 @@ pub fn call_fn_shared<'_0>(a: &'_0 [u8], i: usize) -> u8
     let mut _0: u8; // return
     let a: &'1 [u8]; // arg #1
     let i: usize; // arg #2
-    let read: {closure}<'3>; // local
-    let mut _4: &'4 [u8]; // anonymous local
-    let mut _5: &'7 {closure}<'8>; // anonymous local
+    let read: {closure}<'4, '5>; // local
+    let mut _4: &'6 [u8]; // anonymous local
+    let mut _5: &'10 {closure}<'11, '12>; // anonymous local
     let mut _6: (usize,); // anonymous local
     let mut _7: usize; // anonymous local
 
@@ -90,7 +91,7 @@ pub fn call_fn_shared<'_0>(a: &'_0 [u8], i: usize) -> u8
     storage_live(_7)
     _7 = copy i
     _6 = (move _7,)
-    _0 = call<'13, '19>(move _5, move _6)
+    _0 = call<'21, '22, '32>(move _5, move _6)
     ↳⚡ storage_dead(i)
         storage_dead(a)
         unwind_continue

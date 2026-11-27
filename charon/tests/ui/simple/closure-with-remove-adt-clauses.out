@@ -36,11 +36,11 @@ pub trait Copy<Self>
 
 struct () {}
 
-struct test_crate::f::{closure}<'_0, T>
+struct test_crate::f::{closure}<'_0, '_1, T>
 where
-    Outlives0: (T: '_0),
+    Outlives0: (T: '_1),
 {
-  _0: &'_0 T,
+  _0: &'_1 T,
 }
 
 // Full name: test_crate::f
@@ -52,8 +52,8 @@ where
 {
     let mut _0: (); // return
     let x: &'1 T; // arg #1
-    let _c: test_crate::f::{closure}<'3, T>; // local
-    let mut _3: &'4 T; // anonymous local
+    let _c: test_crate::f::{closure}<'4, '5, T>; // local
+    let mut _3: &'6 T; // anonymous local
 
     storage_live(_0)
     storage_live(_c)
@@ -68,17 +68,18 @@ where
     return
 }
 
-// Full name: test_crate::f::{impl Fn<(), T> for test_crate::f::{closure}<'_0, T>}::call
-extern "rust-call" fn {impl Fn<(), T> for test_crate::f::{closure}<'_0, T>}::call<'_0, '_1, T>(_1: &'_1 test_crate::f::{closure}<'_0, T>, tupled_args: ()) -> T
+// Full name: test_crate::f::{impl Fn<(), T> for test_crate::f::{closure}<'_0, '_1, T>}::call
+extern "rust-call" fn {impl Fn<(), T> for test_crate::f::{closure}<'_0, '_1, T>}::call<'_0, '_1, '_2, T>(_1: &'_2 test_crate::f::{closure}<'_0, '_1, T>, tupled_args: ()) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
-    Outlives0: (T: '_0),
-    Outlives1: ('_0: '_1),
-    Outlives2: (T: '_1),
+    Outlives0: (T: '_1),
+    Outlives1: ('_0: '_2),
+    Outlives2: ('_1: '_2),
+    Outlives3: (T: '_2),
 {
     let mut _0: T; // return
-    let mut _1: &'2 test_crate::f::{closure}<'_0, T>; // arg #1
+    let mut _1: &'3 test_crate::f::{closure}<'_0, '_1, T>; // arg #1
     let mut tupled_args: (); // arg #2
 
     storage_live(_0)

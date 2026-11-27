@@ -1,4 +1,3 @@
-//@ known-failure
 //@ revisions=poly,mono
 //@ no-default-options
 //@ charon-args=--mir built --raw-consts
