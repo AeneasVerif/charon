@@ -4,6 +4,7 @@ pub mod utils;
 
 /// Passes that finish translation, i.e. required for the output to be a valid output.
 pub mod finish_translation {
+    pub mod fill_default_trait_items;
     pub mod filter_invisible_trait_impls;
     pub mod insert_ptr_metadata;
     pub mod insert_storage_statements;
@@ -116,6 +117,8 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
 
     // Item and type cleanup passes.
     ctx.run_passes([
+        // Fill in default assoc items in impls by copying the default value stored in the trait decl.
+        global(&finish_translation::fill_default_trait_items::Transform),
         // Link specification items and the items they specify in both directions.
         global(&add_missing_info::link_specs::Transform),
         // `--duplicate-defaulted-methods`: copy default method bodies into impls that use them.
