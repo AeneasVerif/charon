@@ -1180,9 +1180,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             }
         }
 
-        // In case of a trait implementation, some values may not have been
-        // provided, in case the declaration provided default values. We
-        // check those, and lookup the relevant values.
         Ok(TraitDecl {
             def_id: trait_decl_id,
             item_meta,
@@ -1354,25 +1351,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                 },
                             )?
                         }
-                        None => {
-                            // Reuse the default method from the trait declaration.
-                            let bound_method = match self.get_or_translate(trait_id.into()) {
-                                Ok(ItemRef::TraitDecl(tdecl)) => {
-                                    tdecl.methods.get(trait_method_id).cloned()
-                                }
-                                _ => None,
-                            };
-                            let Some(bound_method) = bound_method else {
-                                continue;
-                            };
-                            bound_method
-                                .substitute_with_tref(&self_predicate)
-                                .map(|method| {
-                                    method
-                                        .default
-                                        .expect("default method should have a default")
-                                })
-                        }
+                        // We fill that in later, in `fill_default_trait_items`.
+                        None => continue,
                     };
 
                     // Register this method.
@@ -1441,28 +1421,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                 })
                             },
                         )?,
-                        None => {
-                            // Retrieve the type from the trait decl.
-                            let trait_id = implemented_trait.id;
-                            let bound_ty = match self.get_or_translate(trait_id.into()) {
-                                Ok(ItemRef::TraitDecl(tdecl)) => tdecl.types.get(assoc_type_id),
-                                _ => None,
-                            };
-                            let Some(bound_ty) = bound_ty else {
-                                register_error!(
-                                    self,
-                                    item_span,
-                                    "couldn't translate defaulted associated type; \
-                                    either the corresponding trait decl caused errors \
-                                    or it was declared opaque."
-                                );
-                                continue;
-                            };
-                            bound_ty
-                                .clone()
-                                .substitute_with_tref(&self_predicate)
-                                .map(|ty_decl: TraitAssocTy| ty_decl.default.unwrap())
-                        }
+                        // We fill that in later, in `fill_default_trait_items`.
+                        None => continue,
                     };
 
                     types.set_slot_extend(assoc_type_id, assoc_ty);
