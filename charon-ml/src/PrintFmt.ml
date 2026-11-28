@@ -426,15 +426,46 @@ let pp_region_binder ty_to_string
   if params <> "" then Format.fprintf fmt "for<%s> " params;
   pp_value env fmt rb.binder_value
 
-let abi_name (abi : abi) : string =
-  match abi with
-  | AbiRust -> "Rust"
-  | AbiC -> "C"
-  | AbiOther name -> name
+let abi_name (abi : rustc_extern_abi) : string =
+  let name, unwind =
+    match abi with
+    | RustcExternAbiC unwind -> ("C", unwind)
+    | RustcExternAbiSystem unwind -> ("system", unwind)
+    | RustcExternAbiRust -> ("Rust", false)
+    | RustcExternAbiRustCall -> ("rust-call", false)
+    | RustcExternAbiRustCold -> ("rust-cold", false)
+    | RustcExternAbiRustInvalid -> ("rust-invalid", false)
+    | RustcExternAbiRustPreserveNone -> ("rust-preserve-none", false)
+    | RustcExternAbiRustTail -> ("tail", false)
+    | RustcExternAbiLlvmIntrinsic -> ("llvm-intrinsic", false)
+    | RustcExternAbiCustom -> ("custom", false)
+    | RustcExternAbiEfiApi -> ("efiapi", false)
+    | RustcExternAbiSwift -> ("Swift", false)
+    | RustcExternAbiAapcs unwind -> ("aapcs", unwind)
+    | RustcExternAbiCmseNonSecureCall -> ("cmse-nonsecure-call", false)
+    | RustcExternAbiCmseNonSecureEntry -> ("cmse-nonsecure-entry", false)
+    | RustcExternAbiGpuKernel -> ("gpu-kernel", false)
+    | RustcExternAbiPtxKernel -> ("ptx-kernel", false)
+    | RustcExternAbiAvrInterrupt -> ("avr-interrupt", false)
+    | RustcExternAbiAvrNonBlockingInterrupt ->
+        ("avr-non-blocking-interrupt", false)
+    | RustcExternAbiMsp430Interrupt -> ("msp430-interrupt", false)
+    | RustcExternAbiRiscvInterruptM -> ("riscv-interrupt-m", false)
+    | RustcExternAbiRiscvInterruptS -> ("riscv-interrupt-s", false)
+    | RustcExternAbiX86Interrupt -> ("x86-interrupt", false)
+    | RustcExternAbiCdecl unwind -> ("cdecl", unwind)
+    | RustcExternAbiStdcall unwind -> ("stdcall", unwind)
+    | RustcExternAbiFastcall unwind -> ("fastcall", unwind)
+    | RustcExternAbiThiscall unwind -> ("thiscall", unwind)
+    | RustcExternAbiVectorcall unwind -> ("vectorcall", unwind)
+    | RustcExternAbiSysV64 unwind -> ("sysv64", unwind)
+    | RustcExternAbiWin64 unwind -> ("win64", unwind)
+  in
+  if unwind then name ^ "-unwind" else name
 
-let abi_prefix (abi : abi) : string =
+let abi_prefix (abi : rustc_extern_abi) : string =
   match abi with
-  | AbiRust -> ""
+  | RustcExternAbiRust -> ""
   | _ -> "extern \"" ^ abi_name abi ^ "\" "
 
 let adt_field_to_string (env : fmt_env) (def_id : TypeDeclId.id)
@@ -1973,7 +2004,8 @@ let pp_trait_decl (env : fmt_env) (indent : string) (indent_incr : string)
     | Restricted name -> "impl(in " ^ name_to_string env name ^ ") "
   in
   let safety = if def.is_unsafe then "unsafe " else "" in
-  let keyword = restriction ^ safety ^ "trait" in
+  let auto = if def.is_auto then "auto " else "" in
+  let keyword = restriction ^ safety ^ auto ^ "trait" in
   let intro =
     item_intro_to_string env indent keyword (IdTraitDecl def.def_id)
       def.item_meta
@@ -2701,7 +2733,7 @@ let pp_fun_decl (env : fmt_env) (indent : string) (indent_incr : string)
                ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ", ")
                (pp_fun_decl_ref env))
             definitions
-      | AllocatorShim definition ->
+      | AllocatorShim (_, definition) ->
           Format.fprintf fmt " linked(alloc) to %a" (pp_fun_decl_ref env)
             definition
       | Unlinked -> ())

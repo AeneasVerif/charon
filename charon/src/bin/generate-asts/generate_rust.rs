@@ -97,6 +97,8 @@ impl RustcDatatypes {
             "rustc_target::spec::Env",
             "rustc_target::spec::CfgAbi",
             "rustc_target::spec::BinaryFormat",
+            "rustc_target::spec::PanicStrategy",
+            "rustc_abi::extern_abi::ExternAbi",
         ] {
             datatypes.insert(
                 path,

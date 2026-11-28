@@ -582,6 +582,7 @@ and trait_decl = {
   is_unsafe : bool;
       (** Whether this is an [unsafe trait], i.e. implementing it requires
           [unsafe impl]. *)
+  is_auto : bool;  (** Whether this is an auto trait. *)
   impl_restriction : impl_restriction;
       (** Where this trait may be implemented. *)
   generics : generic_params;

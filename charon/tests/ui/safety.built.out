@@ -306,7 +306,7 @@ where
 // unsafe to implement
 #[lang_item(Send)]
 #[diagnostic_item("Send")]
-pub unsafe trait Send<Self>
+pub unsafe auto trait Send<Self>
 
 // Full name: core::marker::{impl Copy for u32}
 impl "impl_Copy_for_u32" Copy for u32 {
@@ -319,16 +319,16 @@ impl "impl_Copy_for_u32" Copy for u32 {
 // unsafe to implement
 #[lang_item(Sync)]
 #[diagnostic_item("Sync")]
-pub unsafe trait Sync<Self>
+pub unsafe auto trait Sync<Self>
 
 // Full name: core::marker::Freeze
 // unsafe to implement
 #[lang_item(Freeze)]
-pub unsafe trait Freeze<Self>
+pub unsafe auto trait Freeze<Self>
 
 // Full name: core::marker::Unpin
 #[lang_item(Unpin)]
-pub trait Unpin<Self>
+pub auto trait Unpin<Self>
 
 // Full name: core::ops::drop::Drop
 #[lang_item(Drop)]

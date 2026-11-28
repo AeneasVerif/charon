@@ -751,7 +751,7 @@ impl DefId {
             let attrs = tcx.attrs_for_def(def_id);
 
             // Restore the attributes that aren't encoded in crate metadata.
-            let restored = if matches!(self.kind, Fn | AssocFn) {
+            let restored = if matches!(self.kind, Fn | AssocFn | Static { .. }) {
                 use rustc_attr_ir::AttributeKind::*;
                 let codegen_attrs = tcx.codegen_fn_attrs(def_id);
                 let span = tcx.def_span(def_id);
@@ -789,8 +789,15 @@ impl DefId {
                 .filter(|(flag, _)| codegen_attrs.flags.contains(*flag))
                 .map(|(_, attr)| attr);
 
+                // get the linkage attribute
+                let linkage = codegen_attrs
+                    .import_linkage
+                    .or(codegen_attrs.linkage)
+                    .map(|linkage| Linkage(linkage, span));
+
                 allocator_flags
                     .chain(target_features)
+                    .chain(linkage)
                     .map(rustc_attr_ir::Attribute::Parsed)
                     .collect_vec()
             } else {

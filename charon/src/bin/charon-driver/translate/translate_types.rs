@@ -429,19 +429,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let output = self.translate_ty(span, &sig.output)?;
         Ok(FunSig {
             is_unsafe: sig.safety == hax::Safety::Unsafe,
-            abi: Self::translate_abi(&sig.abi),
+            abi: self
+                .t_ctx
+                .translate_rustc_extern_abi(&sig.abi)
+                .expect("all rustc ExternAbi variants should be translated"),
             is_variadic: sig.c_variadic,
             inputs,
             output,
         })
-    }
-
-    pub fn translate_abi(abi: &hax::ExternAbi) -> Abi {
-        match abi {
-            hax::ExternAbi::Rust => Abi::Rust,
-            hax::ExternAbi::C { unwind: false } => Abi::C,
-            _ => Abi::Other(abi.as_str().into()),
-        }
     }
 
     /// Translate an item's base generic arguments. This does not include extra arguments coming

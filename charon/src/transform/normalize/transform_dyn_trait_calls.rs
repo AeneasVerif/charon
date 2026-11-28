@@ -255,7 +255,7 @@ fn transform_dyn_trait_call(
         };
         let real_sig_ty = TyKind::FnPtr(RegionBinder::empty(FunSig {
             is_unsafe,
-            abi: Abi::rust(),
+            abi: from_rustc::ExternAbi::rust(),
             is_variadic: false,
             inputs: call.args.iter().map(|op| op.ty().clone()).collect(),
             output: dest.ty.clone(),

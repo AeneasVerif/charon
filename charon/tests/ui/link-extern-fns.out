@@ -127,6 +127,7 @@ pub fn renamed() -> u8
 = <opaque>
 
 #[no_mangle]
+#[linkage = "weak"]
 pub extern "C" fn link_extern_fns_aux::weak_hook() -> u8
 = <opaque>
 

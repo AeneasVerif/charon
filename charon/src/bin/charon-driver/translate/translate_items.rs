@@ -543,7 +543,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     .try_collect()?,
                 output: self.translate_ty(span, ctor.output_ty())?,
                 is_unsafe: false,
-                abi: Abi::rust(),
+                abi: from_rustc::ExternAbi::rust(),
                 is_variadic: false,
             };
 
@@ -580,7 +580,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     inputs: vec![],
                     output: self.translate_ty(span, ty)?,
                     is_unsafe: false,
-                    abi: Abi::rust(),
+                    abi: from_rustc::ExternAbi::rust(),
                     is_variadic: false,
                 }
             }
@@ -644,9 +644,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     ExportedFns::Weak(instances) => LinkedExtern::WeaklyLinked(
                         instances.into_iter().map(translate_fn).try_collect()?,
                     ),
-                    ExportedFns::AllocatorShim(instance) => {
-                        LinkedExtern::AllocatorShim(translate_fn(instance)?)
-                    }
+                    ExportedFns::AllocatorShim(method, instance) => LinkedExtern::AllocatorShim {
+                        method,
+                        default: translate_fn(instance)?,
+                    },
                     ExportedFns::Many => {
                         register_error!(
                             self,
@@ -846,9 +847,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             hax::FullDefKind::TraitAlias(t) => t.implied_predicates(),
             _ => raise_error!(self, span, "Unexpected definition: {def:?}"),
         };
-        let (src, is_unsafe) = match def.kind() {
-            hax::FullDefKind::Trait(tr) => (TraitDeclSource::Normal, tr.is_unsafe()),
-            hax::FullDefKind::TraitAlias(_) => (TraitDeclSource::TraitAlias, false),
+        let (src, is_unsafe, is_auto) = match def.kind() {
+            hax::FullDefKind::Trait(tr) => (TraitDeclSource::Normal, tr.is_unsafe(), tr.is_auto()),
+            hax::FullDefKind::TraitAlias(_) => (TraitDeclSource::TraitAlias, false, false),
             _ => unreachable!(),
         };
         let impl_restriction = if let hax::FullDefKind::Trait(tr) = def.kind()
@@ -878,6 +879,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 item_meta,
                 src,
                 is_unsafe,
+                is_auto,
                 impl_restriction: impl_restriction.clone(),
                 implied_clauses,
                 generics: self.into_generics(),
@@ -955,6 +957,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 item_meta,
                 src,
                 is_unsafe,
+                is_auto,
                 impl_restriction: impl_restriction.clone(),
                 implied_clauses,
                 generics: self.into_generics(),
@@ -1185,6 +1188,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             item_meta,
             src,
             is_unsafe,
+            is_auto,
             impl_restriction,
             implied_clauses,
             generics: self.into_generics(),

@@ -16,7 +16,17 @@ open Generated_Expressions
 open Generated_Meta
 open Identifiers
 
-type rustc_arch =
+(** The allocator functions that rustc's allocator shim links. *)
+type allocator_method =
+  | Alloc
+  | Dealloc
+  | Realloc
+  | AllocZeroed
+  | AllocErrorHandler
+      (** The handler called on allocation failure, see
+          [#[alloc_error_handler]]. *)
+
+and rustc_arch =
   | RustcArchAArch64
   | RustcArchAmdGpu
   | RustcArchArm
@@ -236,11 +246,15 @@ and linked_extern =
       (** Weak definitions ([#[linkage = "weak"]]), which the linker only binds
           the symbol to if there's no strong definition. If there are several,
           the linker may pick any of them. *)
-  | AllocatorShim of fun_decl_ref
+  | AllocatorShim of allocator_method * fun_decl_ref
       (** Linked to the default allocator through rustc's allocator shim. This
           needs to be handled separately, as the signatures aren't
           ABI-compatible: the arguments need to be transmuted (e.g. [Alignment]
-          -> [usize]). *)
+          -> [usize]).
+
+          Fields:
+          - [method]
+          - [default] *)
   | Unlinked
       (** No function of the crate or its dependencies is exported under this
           symbol. *)
@@ -309,6 +323,11 @@ and rustc_os =
           (e.g. architecture or OS) that rustc currently doesn't know about.
           This variant exists as an escape hatch for such cases. *)
 
+and rustc_panic_strategy =
+  | RustcPanicStrategyUnwind
+  | RustcPanicStrategyAbort
+  | RustcPanicStrategyImmediateAbort
+
 (** Presets to make it easier to tweak options without breaking dependent
     projects. Eventually we should define semantically-meaningful presets
     instead of project-specific ones. *)
@@ -343,6 +362,9 @@ and target_info = {
           both [unix] and [wasm]), as rustc spells them. *)
   binary_format : rustc_binary_format;
       (** The binary format of the target's object files. *)
+  panic_strategy : rustc_panic_strategy;
+      (** The panic strategy used, which depends on the target but can be
+          overridden with [-C panic]. *)
   target_pointer_size : int;  (** The pointer size of the target in bytes. *)
   is_little_endian : bool;
       (** Whether the target platform uses little endian byte order. *)

@@ -20,7 +20,7 @@ where
 // Full name: core::marker::Sync
 #[lang_item(Sync)]
 #[diagnostic_item("Sync")]
-pub unsafe trait Sync<Self>
+pub unsafe auto trait Sync<Self>
 
 struct () {}
 

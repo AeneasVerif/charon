@@ -103,7 +103,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for AbortKind {
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for Abi {
+impl<C: AstFormatter> FmtWithCtx<C> for from_rustc::ExternAbi {
     fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.rust_name())
     }
@@ -333,7 +333,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for ast::Body {
                         let funs = funs.iter().map(|fun| fun.with_ctx(ctx)).format(", ");
                         write!(f, " linked(weak) to {funs}")
                     }
-                    LinkedExtern::AllocatorShim(fun) => {
+                    LinkedExtern::AllocatorShim { default: fun, .. } => {
                         write!(f, " linked(alloc) to {}", fun.with_ctx(ctx))
                     }
                     LinkedExtern::Unlinked => Ok(()),
@@ -2928,7 +2928,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
             ImplRestriction::Restricted(name) => format!("impl(in {}) ", name.with_ctx(ctx)),
         };
         let safety = if self.is_unsafe { "unsafe " } else { "" };
-        let keyword = format!("{restriction}{safety}trait");
+        let auto = if self.is_auto { "auto " } else { "" };
+        let keyword = format!("{restriction}{safety}{auto}trait");
 
         self.item_meta
             .fmt_item_intro(f, ctx, &keyword, self.def_id)?;

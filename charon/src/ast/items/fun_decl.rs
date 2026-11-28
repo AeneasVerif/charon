@@ -1,6 +1,5 @@
 use crate::ast::*;
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
-use enum_as_inner::EnumAsInner;
 use serde_state::DeserializeState;
 use serde_state::SerializeState;
 
@@ -27,23 +26,12 @@ pub struct FunSig {
     /// Is the function unsafe or not
     pub is_unsafe: bool,
     /// The calling convention of this function.
-    pub abi: Abi,
+    #[serde_state(stateless)]
+    pub abi: from_rustc::ExternAbi,
     /// Whether this is a C-variadic function (its last parameter is `...`).
     pub is_variadic: bool,
     pub inputs: Vec<Ty>,
     pub output: Ty,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[derive(EnumAsInner)]
-#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
-#[serde_state(stateless)]
-#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Abi"))]
-pub enum Abi {
-    Rust,
-    C,
-    /// Rust's spelling for the ABI, e.g. "C-unwind" or "system".
-    Other(ustr::Ustr),
 }
 
 /// Where a given function came from.
@@ -174,16 +162,56 @@ impl FunDecl {
     }
 }
 
-impl Abi {
+impl from_rustc::ExternAbi {
     pub fn rust() -> Self {
         Self::Rust
     }
 
+    pub fn is_rust(&self) -> bool {
+        matches!(self, Self::Rust)
+    }
+
     pub fn rust_name(&self) -> &str {
-        match self {
+        macro_rules! unwind {
+            ($name:literal, $unwind:expr) => {
+                if $unwind {
+                    concat!($name, "-unwind")
+                } else {
+                    $name
+                }
+            };
+        }
+        match *self {
             Self::Rust => "Rust",
-            Self::C => "C",
-            Self::Other(name) => name.as_str(),
+            Self::C { unwind } => unwind!("C", unwind),
+            Self::System { unwind } => unwind!("system", unwind),
+            Self::RustCall => "rust-call",
+            Self::RustCold => "rust-cold",
+            Self::RustInvalid => "rust-invalid",
+            Self::RustPreserveNone => "rust-preserve-none",
+            Self::RustTail => "tail",
+            Self::LlvmIntrinsic => "llvm-intrinsic",
+            Self::Custom => "custom",
+            Self::EfiApi => "efiapi",
+            Self::Swift => "Swift",
+            Self::Aapcs { unwind } => unwind!("aapcs", unwind),
+            Self::CmseNonSecureCall => "cmse-nonsecure-call",
+            Self::CmseNonSecureEntry => "cmse-nonsecure-entry",
+            Self::GpuKernel => "gpu-kernel",
+            Self::PtxKernel => "ptx-kernel",
+            Self::AvrInterrupt => "avr-interrupt",
+            Self::AvrNonBlockingInterrupt => "avr-non-blocking-interrupt",
+            Self::Msp430Interrupt => "msp430-interrupt",
+            Self::RiscvInterruptM => "riscv-interrupt-m",
+            Self::RiscvInterruptS => "riscv-interrupt-s",
+            Self::X86Interrupt => "x86-interrupt",
+            Self::Cdecl { unwind } => unwind!("cdecl", unwind),
+            Self::Stdcall { unwind } => unwind!("stdcall", unwind),
+            Self::Fastcall { unwind } => unwind!("fastcall", unwind),
+            Self::Thiscall { unwind } => unwind!("thiscall", unwind),
+            Self::Vectorcall { unwind } => unwind!("vectorcall", unwind),
+            Self::SysV64 { unwind } => unwind!("sysv64", unwind),
+            Self::Win64 { unwind } => unwind!("win64", unwind),
         }
     }
 }

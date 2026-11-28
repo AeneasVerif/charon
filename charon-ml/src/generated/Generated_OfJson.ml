@@ -70,16 +70,6 @@ let opt_indexed_map_of_json :
 
 let rec ___ = ()
 
-and abi_of_json (ctx : of_json_ctx) (js : json) : (abi, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `String "Rust" -> Ok AbiRust
-    | `String "C" -> Ok AbiC
-    | `Assoc [ ("Other", _0) ] ->
-        let* _0 = string_of_json ctx _0 in
-        Ok (AbiOther _0)
-    | _ -> Error "")
-
 and abort_kind_of_json (ctx : of_json_ctx) (js : json) :
     (abort_kind, string) result =
   combine_error_msgs js __FUNCTION__
@@ -753,6 +743,63 @@ and dyn_predicate_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ binder } : dyn_predicate)
     | _ -> Error "")
 
+and rustc_extern_abi_of_json (ctx : of_json_ctx) (js : json) :
+    (rustc_extern_abi, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("C", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiC unwind)
+    | `Assoc [ ("System", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiSystem unwind)
+    | `String "Rust" -> Ok RustcExternAbiRust
+    | `String "RustCall" -> Ok RustcExternAbiRustCall
+    | `String "RustCold" -> Ok RustcExternAbiRustCold
+    | `String "RustInvalid" -> Ok RustcExternAbiRustInvalid
+    | `String "RustPreserveNone" -> Ok RustcExternAbiRustPreserveNone
+    | `String "RustTail" -> Ok RustcExternAbiRustTail
+    | `String "LlvmIntrinsic" -> Ok RustcExternAbiLlvmIntrinsic
+    | `String "Custom" -> Ok RustcExternAbiCustom
+    | `String "EfiApi" -> Ok RustcExternAbiEfiApi
+    | `String "Swift" -> Ok RustcExternAbiSwift
+    | `Assoc [ ("Aapcs", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiAapcs unwind)
+    | `String "CmseNonSecureCall" -> Ok RustcExternAbiCmseNonSecureCall
+    | `String "CmseNonSecureEntry" -> Ok RustcExternAbiCmseNonSecureEntry
+    | `String "GpuKernel" -> Ok RustcExternAbiGpuKernel
+    | `String "PtxKernel" -> Ok RustcExternAbiPtxKernel
+    | `String "AvrInterrupt" -> Ok RustcExternAbiAvrInterrupt
+    | `String "AvrNonBlockingInterrupt" ->
+        Ok RustcExternAbiAvrNonBlockingInterrupt
+    | `String "Msp430Interrupt" -> Ok RustcExternAbiMsp430Interrupt
+    | `String "RiscvInterruptM" -> Ok RustcExternAbiRiscvInterruptM
+    | `String "RiscvInterruptS" -> Ok RustcExternAbiRiscvInterruptS
+    | `String "X86Interrupt" -> Ok RustcExternAbiX86Interrupt
+    | `Assoc [ ("Cdecl", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiCdecl unwind)
+    | `Assoc [ ("Stdcall", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiStdcall unwind)
+    | `Assoc [ ("Fastcall", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiFastcall unwind)
+    | `Assoc [ ("Thiscall", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiThiscall unwind)
+    | `Assoc [ ("Vectorcall", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiVectorcall unwind)
+    | `Assoc [ ("SysV64", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiSysV64 unwind)
+    | `Assoc [ ("Win64", `Assoc [ ("unwind", unwind) ]) ] ->
+        let* unwind = bool_of_json ctx unwind in
+        Ok (RustcExternAbiWin64 unwind)
+    | _ -> Error "")
+
 and field_id_of_json (ctx : of_json_ctx) (js : json) : (field_id, string) result
     =
   combine_error_msgs js __FUNCTION__
@@ -854,7 +901,7 @@ and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =
           ("output", output);
         ] ->
         let* is_unsafe = bool_of_json ctx is_unsafe in
-        let* abi = abi_of_json ctx abi in
+        let* abi = rustc_extern_abi_of_json ctx abi in
         let* is_variadic = bool_of_json ctx is_variadic in
         let* inputs = list_of_json ty_of_json ctx inputs in
         let* output = ty_of_json ctx output in
@@ -2294,6 +2341,17 @@ and alignment_modifier_of_json (ctx : of_json_ctx) (js : json) :
         Ok (Pack _0)
     | _ -> Error "")
 
+and allocator_method_of_json (ctx : of_json_ctx) (js : json) :
+    (allocator_method, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Alloc" -> Ok Alloc
+    | `String "Dealloc" -> Ok Dealloc
+    | `String "Realloc" -> Ok Realloc
+    | `String "AllocZeroed" -> Ok AllocZeroed
+    | `String "AllocErrorHandler" -> Ok AllocErrorHandler
+    | _ -> Error "")
+
 and rustc_arch_of_json (ctx : of_json_ctx) (js : json) :
     (rustc_arch, string) result =
   combine_error_msgs js __FUNCTION__
@@ -3614,9 +3672,13 @@ and linked_extern_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("WeaklyLinked", _0) ] ->
         let* _0 = list_of_json fun_decl_ref_of_json ctx _0 in
         Ok (WeaklyLinked _0)
-    | `Assoc [ ("AllocatorShim", _0) ] ->
-        let* _0 = fun_decl_ref_of_json ctx _0 in
-        Ok (AllocatorShim _0)
+    | `Assoc
+        [
+          ("AllocatorShim", `Assoc [ ("method", method_); ("default", default) ]);
+        ] ->
+        let* method_ = allocator_method_of_json ctx method_ in
+        let* default = fun_decl_ref_of_json ctx default in
+        Ok (AllocatorShim (method_, default))
     | `String "Unlinked" -> Ok Unlinked
     | _ -> Error "")
 
@@ -3792,6 +3854,15 @@ and rustc_os_of_json (ctx : of_json_ctx) (js : json) : (rustc_os, string) result
     | `Assoc [ ("Other", _0) ] ->
         let* _0 = string_of_json ctx _0 in
         Ok (RustcOsOther _0)
+    | _ -> Error "")
+
+and rustc_panic_strategy_of_json (ctx : of_json_ctx) (js : json) :
+    (rustc_panic_strategy, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Unwind" -> Ok RustcPanicStrategyUnwind
+    | `String "Abort" -> Ok RustcPanicStrategyAbort
+    | `String "ImmediateAbort" -> Ok RustcPanicStrategyImmediateAbort
     | _ -> Error "")
 
 and path_elem_of_json (ctx : of_json_ctx) (js : json) :
@@ -3991,6 +4062,7 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
           ("cfg_abi", cfg_abi);
           ("families", families);
           ("binary_format", binary_format);
+          ("panic_strategy", panic_strategy);
           ("target_pointer_size", target_pointer_size);
           ("is_little_endian", is_little_endian);
           ("c_enum_smallest_repr_ty", c_enum_smallest_repr_ty);
@@ -4003,6 +4075,7 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
         let* cfg_abi = rustc_cfg_abi_of_json ctx cfg_abi in
         let* families = list_of_json string_of_json ctx families in
         let* binary_format = rustc_binary_format_of_json ctx binary_format in
+        let* panic_strategy = rustc_panic_strategy_of_json ctx panic_strategy in
         let* target_pointer_size = int_of_json ctx target_pointer_size in
         let* is_little_endian = bool_of_json ctx is_little_endian in
         let* c_enum_smallest_repr_ty =
@@ -4021,6 +4094,7 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
              cfg_abi;
              families;
              binary_format;
+             panic_strategy;
              target_pointer_size;
              is_little_endian;
              c_enum_smallest_repr_ty;
@@ -4085,6 +4159,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("item_meta", item_meta);
           ("src", src);
           ("is_unsafe", is_unsafe);
+          ("is_auto", is_auto);
           ("impl_restriction", impl_restriction);
           ("generics", generics);
           ("implied_clauses", implied_clauses);
@@ -4097,6 +4172,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* item_meta = item_meta_of_json ctx item_meta in
         let* src = trait_decl_source_of_json ctx src in
         let* is_unsafe = bool_of_json ctx is_unsafe in
+        let* is_auto = bool_of_json ctx is_auto in
         let* impl_restriction = impl_restriction_of_json ctx impl_restriction in
         let* generics = generic_params_of_json ctx generics in
         let* implied_clauses =
@@ -4133,6 +4209,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
              item_meta;
              src;
              is_unsafe;
+             is_auto;
              impl_restriction;
              generics;
              implied_clauses;

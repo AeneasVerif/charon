@@ -104,9 +104,24 @@ pub enum LinkedExtern {
     /// Linked to the default allocator through rustc's allocator shim. This needs to be handled
     /// separately, as the signatures aren't ABI-compatible: the arguments need to be
     /// transmuted (e.g. `Alignment` -> `usize`).
-    AllocatorShim(FunDeclRef),
+    AllocatorShim {
+        method: AllocatorMethod,
+        default: FunDeclRef,
+    },
     /// No function of the crate or its dependencies is exported under this symbol.
     Unlinked,
+}
+
+/// The allocator functions that rustc's allocator shim links.
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+pub enum AllocatorMethod {
+    Alloc,
+    Dealloc,
+    Realloc,
+    AllocZeroed,
+    /// The handler called on allocation failure, see `#[alloc_error_handler]`.
+    AllocErrorHandler,
 }
 
 generate_index_type!(LocalId, "");

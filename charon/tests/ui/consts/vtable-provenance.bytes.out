@@ -23,7 +23,7 @@ vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable
 // Full name: core::marker::Sync
 #[lang_item(Sync)]
 #[diagnostic_item("Sync")]
-pub unsafe trait Sync<Self>
+pub unsafe auto trait Sync<Self>
 
 // Full name: test_crate::{promoted_const}
 static {promoted_const}: [u8; 1usize] = RawMemory(0x00)

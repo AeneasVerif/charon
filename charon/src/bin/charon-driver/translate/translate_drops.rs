@@ -54,7 +54,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let self_ref = TyKind::Ref(region, self_ty, RefKind::Mut).into_ty();
         FunSig {
             is_unsafe: true,
-            abi: Abi::rust(),
+            abi: from_rustc::ExternAbi::rust(),
             is_variadic: false,
             inputs: [self_ref].into(),
             output: Ty::mk_unit(),

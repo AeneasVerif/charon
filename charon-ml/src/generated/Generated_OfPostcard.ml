@@ -63,18 +63,6 @@ let opt_indexed_map_of_postcard :
 
 let rec ___ = ()
 
-and abi_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (abi, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 -> Ok AbiRust
-     | 1 -> Ok AbiC
-     | 2 ->
-         let* _0 = string_of_postcard ctx st in
-         Ok (AbiOther _0)
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
 and abort_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (abort_kind, string) result =
   combine_error_msgs st __FUNCTION__
@@ -675,6 +663,63 @@ and dyn_predicate_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* binder = binder_of_postcard ty_of_postcard ctx st in
      Ok ({ binder } : dyn_predicate))
 
+and rustc_extern_abi_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (rustc_extern_abi, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiC unwind)
+     | 1 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiSystem unwind)
+     | 2 -> Ok RustcExternAbiRust
+     | 3 -> Ok RustcExternAbiRustCall
+     | 4 -> Ok RustcExternAbiRustCold
+     | 5 -> Ok RustcExternAbiRustInvalid
+     | 6 -> Ok RustcExternAbiRustPreserveNone
+     | 7 -> Ok RustcExternAbiRustTail
+     | 8 -> Ok RustcExternAbiLlvmIntrinsic
+     | 9 -> Ok RustcExternAbiCustom
+     | 10 -> Ok RustcExternAbiEfiApi
+     | 11 -> Ok RustcExternAbiSwift
+     | 12 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiAapcs unwind)
+     | 13 -> Ok RustcExternAbiCmseNonSecureCall
+     | 14 -> Ok RustcExternAbiCmseNonSecureEntry
+     | 15 -> Ok RustcExternAbiGpuKernel
+     | 16 -> Ok RustcExternAbiPtxKernel
+     | 17 -> Ok RustcExternAbiAvrInterrupt
+     | 18 -> Ok RustcExternAbiAvrNonBlockingInterrupt
+     | 19 -> Ok RustcExternAbiMsp430Interrupt
+     | 20 -> Ok RustcExternAbiRiscvInterruptM
+     | 21 -> Ok RustcExternAbiRiscvInterruptS
+     | 22 -> Ok RustcExternAbiX86Interrupt
+     | 23 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiCdecl unwind)
+     | 24 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiStdcall unwind)
+     | 25 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiFastcall unwind)
+     | 26 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiThiscall unwind)
+     | 27 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiVectorcall unwind)
+     | 28 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiSysV64 unwind)
+     | 29 ->
+         let* unwind = bool_of_postcard ctx st in
+         Ok (RustcExternAbiWin64 unwind)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and field_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (field_id, string) result =
   combine_error_msgs st __FUNCTION__ (FieldId.id_of_postcard ctx st)
@@ -763,7 +808,7 @@ and fun_sig_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (fun_sig, string) result =
   combine_error_msgs st __FUNCTION__
     (let* is_unsafe = bool_of_postcard ctx st in
-     let* abi = abi_of_postcard ctx st in
+     let* abi = rustc_extern_abi_of_postcard ctx st in
      let* is_variadic = bool_of_postcard ctx st in
      let* inputs = list_of_postcard ty_of_postcard ctx st in
      let* output = ty_of_postcard ctx st in
@@ -1885,6 +1930,18 @@ and alignment_modifier_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
      | 1 ->
          let* _0 = u64_of_postcard ctx st in
          Ok (Pack _0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and allocator_method_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (allocator_method, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok Alloc
+     | 1 -> Ok Dealloc
+     | 2 -> Ok Realloc
+     | 3 -> Ok AllocZeroed
+     | 4 -> Ok AllocErrorHandler
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and rustc_arch_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -3015,8 +3072,9 @@ and linked_extern_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _0 = list_of_postcard fun_decl_ref_of_postcard ctx st in
          Ok (WeaklyLinked _0)
      | 2 ->
-         let* _0 = fun_decl_ref_of_postcard ctx st in
-         Ok (AllocatorShim _0)
+         let* method_ = allocator_method_of_postcard ctx st in
+         let* default = fun_decl_ref_of_postcard ctx st in
+         Ok (AllocatorShim (method_, default))
      | 3 -> Ok Unlinked
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
@@ -3178,6 +3236,16 @@ and rustc_os_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 54 ->
          let* _0 = string_of_postcard ctx st in
          Ok (RustcOsOther _0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and rustc_panic_strategy_of_postcard (ctx : of_postcard_ctx)
+    (st : postcard_state) : (rustc_panic_strategy, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok RustcPanicStrategyUnwind
+     | 1 -> Ok RustcPanicStrategyAbort
+     | 2 -> Ok RustcPanicStrategyImmediateAbort
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and path_elem_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -3345,6 +3413,7 @@ and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* cfg_abi = rustc_cfg_abi_of_postcard ctx st in
      let* families = list_of_postcard string_of_postcard ctx st in
      let* binary_format = rustc_binary_format_of_postcard ctx st in
+     let* panic_strategy = rustc_panic_strategy_of_postcard ctx st in
      let* target_pointer_size = u64_of_postcard ctx st in
      let* is_little_endian = bool_of_postcard ctx st in
      let* c_enum_smallest_repr_ty = int_ty_of_postcard ctx st in
@@ -3361,6 +3430,7 @@ and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           cfg_abi;
           families;
           binary_format;
+          panic_strategy;
           target_pointer_size;
           is_little_endian;
           c_enum_smallest_repr_ty;
@@ -3402,6 +3472,7 @@ and trait_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* item_meta = item_meta_of_postcard ctx st in
      let* src = trait_decl_source_of_postcard ctx st in
      let* is_unsafe = bool_of_postcard ctx st in
+     let* is_auto = bool_of_postcard ctx st in
      let* impl_restriction = impl_restriction_of_postcard ctx st in
      let* generics = generic_params_of_postcard ctx st in
      let* implied_clauses =
@@ -3438,6 +3509,7 @@ and trait_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           item_meta;
           src;
           is_unsafe;
+          is_auto;
           impl_restriction;
           generics;
           implied_clauses;

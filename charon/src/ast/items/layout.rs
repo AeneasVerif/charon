@@ -534,6 +534,8 @@ pub struct TargetInfo {
     pub families: Vec<String>,
     /// The binary format of the target's object files.
     pub binary_format: from_rustc::BinaryFormat,
+    /// The panic strategy used, which depends on the target but can be overridden with `-C panic`.
+    pub panic_strategy: from_rustc::PanicStrategy,
     /// The pointer size of the target in bytes.
     pub target_pointer_size: ByteCount,
     /// Whether the target platform uses little endian byte order.
