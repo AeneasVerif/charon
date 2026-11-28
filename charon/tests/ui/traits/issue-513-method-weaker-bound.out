@@ -36,6 +36,17 @@ pub trait Copy<Self>
 
 struct () {}
 
+// Full name: core::clone::{impl Clone for ()}::clone
+fn clone<'_0>(_1: &'_0 ())
+= <opaque>
+
+// Full name: core::clone::{impl Clone for ()}
+impl "impl_Clone_for_unit" Clone for () {
+    proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
+    fn clone<'_0_1> = clone<'_0_1>
+    non-dyn-compatible
+}
+
 // Full name: test_crate::Trait
 trait Trait<Self>
 {
@@ -70,7 +81,7 @@ fn main()
     let mut _0: (); // return
 
     storage_live(_0)
-    _0 = method<()>[{built_in impl Sized for ()}, {built_in impl Clone for ()}]()
+    _0 = method<()>[{built_in impl Sized for ()}, impl_Clone_for_unit]()
     ↳⚡ unwind_continue
     return
 }

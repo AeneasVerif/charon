@@ -37,17 +37,19 @@ pub struct FullDef<'tcx> {
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum VirtualTrait {
     Destruct,
+    Clone,
     FnOnce,
     FnMut,
     Fn,
 }
 
 impl VirtualTrait {
-    const COUNT: usize = 4;
+    const COUNT: usize = 5;
 
     pub fn lang_item(self) -> LangItem {
         match self {
             VirtualTrait::Destruct => LangItem::Destruct,
+            VirtualTrait::Clone => LangItem::Clone,
             VirtualTrait::FnOnce => LangItem::FnOnce,
             VirtualTrait::FnMut => LangItem::FnMut,
             VirtualTrait::Fn => LangItem::Fn,
@@ -97,7 +99,7 @@ where
                         SyntheticItem::Slice => AdtKind::Slice,
                         SyntheticItem::Tuple(..) => AdtKind::Tuple,
                         SyntheticItem::Str => AdtKind::Str,
-                        SyntheticItem::FnPtr(_) => unreachable!(),
+                        SyntheticItem::FnPtr(_) | SyntheticItem::TupleClone(_) => unreachable!(),
                     };
                     kind = FullDefKind::Adt(Adt {
                         self_ty: inst_binder(tcx, s.typing_env(), args, def_id.type_of(s)),
@@ -112,6 +114,9 @@ where
                             flags: Default::default(),
                         },
                     });
+                }
+                SyntheticItem::TupleClone(_) => {
+                    kind = FullDefKind::BuiltinImpl(BuiltinImpl { param_env });
                 }
                 SyntheticItem::FnPtr(_) => {
                     let self_ty = inst_binder(tcx, s.typing_env(), args, def_id.type_of(s));
@@ -455,6 +460,8 @@ pub enum FullDefKind<'tcx> {
     /// Trait alias: `trait IntIterator = Iterator<Item = i32>;`
     TraitAlias(TraitAlias<'tcx>),
     TraitImpl(TraitImpl<'tcx>),
+    /// A built-in trait impl that rustc has no `DefId` for.
+    BuiltinImpl(BuiltinImpl<'tcx>),
     InherentImpl(InherentImpl<'tcx>),
 
     // Functions
@@ -535,6 +542,19 @@ impl<'tcx> Adt<'tcx> {
     }
     pub fn repr(&self) -> &ReprOptions<'tcx> {
         &self.repr
+    }
+}
+
+/// A built-in trait impl that rustc has no `DefId` for. Its `type_of` is the type the trait is
+/// implemented for; use [`FullDef::virtual_impl`] to get the impl itself.
+#[derive(Debug, Clone)]
+pub struct BuiltinImpl<'tcx> {
+    param_env: ParamEnv<'tcx>,
+}
+
+impl<'tcx> BuiltinImpl<'tcx> {
+    pub fn param_env(&self) -> &ParamEnv<'tcx> {
+        &self.param_env
     }
 }
 
@@ -1736,6 +1756,7 @@ impl<'tcx> FullDef<'tcx> {
             FullDefKind::AssocConst(d) => Some(d.param_env()),
             FullDefKind::Static(d) => Some(d.param_env()),
             FullDefKind::TraitImpl(d) => Some(d.param_env()),
+            FullDefKind::BuiltinImpl(d) => Some(d.param_env()),
             FullDefKind::InherentImpl(d) => Some(d.param_env()),
             _ => None,
         }

@@ -576,9 +576,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             | FullDefKind::Const(_)
             | FullDefKind::AssocConst(_)
             | FullDefKind::Static(_) => PredicateOrigin::WhereClauseOnFn,
-            FullDefKind::TraitImpl(_) | FullDefKind::InherentImpl(_) => {
-                PredicateOrigin::WhereClauseOnImpl
-            }
+            FullDefKind::TraitImpl(_)
+            | FullDefKind::BuiltinImpl(_)
+            | FullDefKind::InherentImpl(_) => PredicateOrigin::WhereClauseOnImpl,
             FullDefKind::Trait(_) | FullDefKind::TraitAlias(_) => {
                 PredicateOrigin::WhereClauseOnTrait
             }

@@ -33,6 +33,17 @@ where
 
 struct () {}
 
+// Full name: core::clone::{impl Clone for ()}::clone
+fn impl_Clone_for_unit::clone<'_0>(_1: &'_0 ())
+= <opaque>
+
+// Full name: core::clone::{impl Clone for ()}
+impl "impl_Clone_for_unit" Clone for () {
+    proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
+    fn clone<'_0_1> = impl_Clone_for_unit::clone<'_0_1>
+    non-dyn-compatible
+}
+
 // Full name: test_crate::SLICE
 fn SLICE() -> [(); 4usize]
 {
@@ -42,7 +53,7 @@ fn SLICE() -> [(); 4usize]
     storage_live(_0)
     storage_live(_1)
     _1 = ()
-    _0 = repeat<(), 4usize>[{built_in impl Sized for ()}, {built_in impl Clone for ()}](move _1)
+    _0 = repeat<(), 4usize>[{built_in impl Sized for ()}, impl_Clone_for_unit](move _1)
     ↳⚡ undefined_behavior
     storage_dead(_1)
     return
@@ -74,7 +85,7 @@ fn BAR() -> [(); 42usize]
     storage_live(_0)
     storage_live(_1)
     _1 = ()
-    _0 = repeat<(), 42usize>[{built_in impl Sized for ()}, {built_in impl Clone for ()}](move _1)
+    _0 = repeat<(), 42usize>[{built_in impl Sized for ()}, impl_Clone_for_unit](move _1)
     ↳⚡ undefined_behavior
     storage_dead(_1)
     return

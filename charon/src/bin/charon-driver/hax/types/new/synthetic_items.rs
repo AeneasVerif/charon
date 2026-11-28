@@ -22,6 +22,9 @@ pub enum SyntheticItem {
     Slice,
     /// Fake ADT representing the length-n tuple `(A, B, ...)`.
     Tuple(usize),
+    /// Fake impl representing the built-in `impl<A: Clone, B: Clone, ...> Clone for (A, B, ...)`
+    /// for length-n tuples. It has the same generics as `Tuple(n)`, plus the `Clone` clauses.
+    TupleClone(usize),
     /// Fake ADT representing `str`, which wraps a `[u8]`.
     Str,
     /// Fake item representing a particular shape of function pointer types.
@@ -109,6 +112,7 @@ impl SyntheticItem {
             SyntheticItem::Array => "<array>".to_string(),
             SyntheticItem::Slice => "<slice>".to_string(),
             SyntheticItem::Tuple(n) => format!("<tuple_{n}>"),
+            SyntheticItem::TupleClone(n) => format!("<tuple_clone_{n}>"),
             SyntheticItem::Str => "<str>".to_string(),
             SyntheticItem::FnPtr(_) => "<fn_ptr>".to_string(),
         }
@@ -193,7 +197,7 @@ impl SyntheticItem {
                 let item_ty = args[0].as_type().unwrap();
                 ty::Ty::new_slice(tcx, item_ty)
             }
-            SyntheticItem::Tuple(_) => {
+            SyntheticItem::Tuple(_) | SyntheticItem::TupleClone(_) => {
                 let tys = args.iter().map(|arg| arg.as_type().unwrap());
                 let tys = tcx.arena.alloc_from_iter(tys);
                 ty::Ty::new_tup(tcx, tys)
@@ -299,7 +303,7 @@ impl<'tcx> GlobalCache<'tcx> {
                 let ty_is_sized = ty::TraitRef::new(tcx, sized_trait, [item_ty]);
                 clauses.push(ty_is_sized.upcast(tcx));
             }
-            SyntheticItem::Tuple(len) => {
+            SyntheticItem::Tuple(len) | SyntheticItem::TupleClone(len) => {
                 let tys = (0..len).map(|i| {
                     let name = type_param_name(i);
                     let arg = mk_param(
@@ -314,10 +318,22 @@ impl<'tcx> GlobalCache<'tcx> {
                 let tys = tcx.arena.alloc_from_iter(tys);
 
                 // All types except the last one are sized.
-                for ty in tys.iter().rev().skip(1).rev() {
+                // (Except if this is the Clone impl, for which the last one is too)
+                let sized_count = match item {
+                    SyntheticItem::TupleClone(_) => tys.len(),
+                    _ => tys.len().saturating_sub(1),
+                };
+                for ty in &tys[..sized_count] {
                     let arg: ty::GenericArg = (*ty).into();
                     let ty_is_sized = ty::TraitRef::new(tcx, sized_trait, [arg]);
                     clauses.push(ty_is_sized.upcast(tcx));
+                }
+                if let SyntheticItem::TupleClone(_) = item {
+                    let clone_trait = tcx.lang_items().clone_trait().unwrap();
+                    for ty in tys.iter() {
+                        let ty_is_clone = ty::TraitRef::new(tcx, clone_trait, [*ty]);
+                        clauses.push(ty_is_clone.upcast(tcx));
+                    }
                 }
             }
             SyntheticItem::Str => {}

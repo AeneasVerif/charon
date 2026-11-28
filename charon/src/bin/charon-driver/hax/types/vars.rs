@@ -269,6 +269,7 @@ pub struct GenericParamDef<'tcx> {
             Some(Array | Slice | Tuple(_) | Str) => Some(Variance::Covariant),
             // We could compute it but we won't need it since this item is only used in impls.
             Some(FnPtr(_)) => None,
+            Some(TupleClone(_)) => None,
             None => {
                 let parent = tcx.parent(self.def_id);
                 match tcx.def_kind(parent) {

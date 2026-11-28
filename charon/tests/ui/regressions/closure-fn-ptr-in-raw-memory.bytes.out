@@ -24,6 +24,17 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::impls::{impl Clone for u8}::clone
+pub fn impl_Clone_for_u8::clone<'_0>(_1: &'_0 u8) -> u8
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u8}
+impl "impl_Clone_for_u8" Clone for u8 {
+    proof ImpliedClause0: (u8: Sized) = {built_in impl Sized for u8}
+    fn clone<'_0_1> = impl_Clone_for_u8::clone<'_0_1>
+    non-dyn-compatible
+}
+
 // Full name: core::mem::maybe_uninit::MaybeUninit
 #[lang_item(MaybeUninit)]
 pub opaque type MaybeUninit<T>
@@ -43,6 +54,17 @@ where
 struct (_,)<A> {
   _0: A,
 }
+
+// Full name: core::clone::{impl Clone for (A, B)}::clone
+fn impl_Clone_for_tuple::clone<'_0, A, B>(_1: &'_0 (A, B)) -> (A, B)
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+    TraitClause2: (A: Clone),
+    TraitClause3: (B: Clone),
+    Outlives0: (A: '_0),
+    Outlives1: (B: '_0),
+= <opaque>
 
 // Full name: {impl Fn<(A,)> for fn(A) -> B}::call
 extern "rust-call" fn {impl Fn<(A,)> for fn(A) -> B}::call<'_0, A, B>(_1: &'_0 fn(A) -> B, _2: (A,)) -> B
@@ -148,7 +170,7 @@ fn test_crate::CLOSURE_STATELESS::{closure}::{as_fn}() -> u8
 
 static test_crate::{promoted_const}: MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}] = RawMemory(&test_crate::CLOSURE_STATELESS::{closure}::{as_fn}[0], &test_crate::CLOSURE_STATELESS::{closure}::{as_fn}[1], &test_crate::CLOSURE_STATELESS::{closure}::{as_fn}[2], &test_crate::CLOSURE_STATELESS::{closure}::{as_fn}[3], &test_crate::CLOSURE_STATELESS::{closure}::{as_fn}[4], &test_crate::CLOSURE_STATELESS::{closure}::{as_fn}[5], &test_crate::CLOSURE_STATELESS::{closure}::{as_fn}[6], &test_crate::CLOSURE_STATELESS::{closure}::{as_fn}[7])
 
-static test_crate::{promoted_const#1}: MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}] = RawMemory(&{built_in impl Clone for (u8, u8)}::clone<'_>[0], &{built_in impl Clone for (u8, u8)}::clone<'_>[1], &{built_in impl Clone for (u8, u8)}::clone<'_>[2], &{built_in impl Clone for (u8, u8)}::clone<'_>[3], &{built_in impl Clone for (u8, u8)}::clone<'_>[4], &{built_in impl Clone for (u8, u8)}::clone<'_>[5], &{built_in impl Clone for (u8, u8)}::clone<'_>[6], &{built_in impl Clone for (u8, u8)}::clone<'_>[7])
+static test_crate::{promoted_const#1}: MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}] = RawMemory(&impl_Clone_for_tuple::clone<'_, u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}, impl_Clone_for_u8, impl_Clone_for_u8][0], &impl_Clone_for_tuple::clone<'_, u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}, impl_Clone_for_u8, impl_Clone_for_u8][1], &impl_Clone_for_tuple::clone<'_, u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}, impl_Clone_for_u8, impl_Clone_for_u8][2], &impl_Clone_for_tuple::clone<'_, u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}, impl_Clone_for_u8, impl_Clone_for_u8][3], &impl_Clone_for_tuple::clone<'_, u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}, impl_Clone_for_u8, impl_Clone_for_u8][4], &impl_Clone_for_tuple::clone<'_, u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}, impl_Clone_for_u8, impl_Clone_for_u8][5], &impl_Clone_for_tuple::clone<'_, u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}, impl_Clone_for_u8, impl_Clone_for_u8][6], &impl_Clone_for_tuple::clone<'_, u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}, impl_Clone_for_u8, impl_Clone_for_u8][7])
 
 static test_crate::{promoted_const#2}: MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}] = RawMemory(&{impl Fn<(A,)> for fn(A) -> B}::call<'_, u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}][0], &{impl Fn<(A,)> for fn(A) -> B}::call<'_, u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}][1], &{impl Fn<(A,)> for fn(A) -> B}::call<'_, u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}][2], &{impl Fn<(A,)> for fn(A) -> B}::call<'_, u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}][3], &{impl Fn<(A,)> for fn(A) -> B}::call<'_, u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}][4], &{impl Fn<(A,)> for fn(A) -> B}::call<'_, u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}][5], &{impl Fn<(A,)> for fn(A) -> B}::call<'_, u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}][6], &{impl Fn<(A,)> for fn(A) -> B}::call<'_, u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}][7])
 

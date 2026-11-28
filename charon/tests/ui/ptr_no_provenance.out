@@ -224,6 +224,17 @@ where
     TraitClause1: (T1: Thin),
 = <opaque>
 
+// Full name: core::clone::{impl Clone for ()}::clone
+fn clone<'_0>(_1: &'_0 ())
+= <opaque>
+
+// Full name: core::clone::{impl Clone for ()}
+impl "impl_Clone_for_unit" Clone for () {
+    proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
+    fn clone<'_0_1> = clone<'_0_1>
+    non-dyn-compatible
+}
+
 // Full name: core::ptr::without_provenance
 #[diagnostic_item("ptr_without_provenance")]
 pub fn without_provenance<T>(_1: usize) -> *const T

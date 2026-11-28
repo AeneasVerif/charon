@@ -59,6 +59,9 @@ pub trait ItemId: Clone + Debug + Hash + PartialEq + Eq {
         trait_impl: &Self,
         impl_generics: GenericArgs<'tcx>,
     ) -> Option<(Self, GenericArgs<'tcx>, bool)>;
+
+    /// Whether this item is a trait associated item that has a default value.
+    fn has_default_value<'tcx>(&self, state: &Self::State<'tcx>) -> bool;
 }
 
 impl ItemId for DefId {
@@ -167,6 +170,10 @@ impl ItemId for DefId {
             })
         };
         Some((leaf_def.item.def_id, impl_generics, leaf_def.is_final()))
+    }
+
+    fn has_default_value<'tcx>(&self, tcx: &Self::State<'tcx>) -> bool {
+        tcx.def_kind(*self).is_assoc() && tcx.associated_item(*self).defaultness(*tcx).has_value()
     }
 }
 
@@ -307,6 +314,14 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
                 may_be_further_specialized =
                     !is_final && tinfo.pred.skip_binder().still_further_specializable();
             }
+            trait_info = None;
+        }
+        // Built-in impls never override default implementations.
+        if assoc_item_resolution == AssocItemResolution::ImplItem
+            && let Some((tinfo, _)) = &trait_info
+            && let TraitProofKind::Builtin { .. } = &tinfo.kind
+            && def_id.has_default_value(state)
+        {
             trait_info = None;
         }
 

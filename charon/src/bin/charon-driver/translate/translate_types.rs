@@ -605,7 +605,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 hax::SyntheticItem::Str => Some(BuiltinAdt::Str),
                 hax::SyntheticItem::Array
                 | hax::SyntheticItem::Slice
-                | hax::SyntheticItem::FnPtr(_) => None,
+                | hax::SyntheticItem::FnPtr(_)
+                | hax::SyntheticItem::TupleClone(_) => None,
             })
             .or_else(|| {
                 let def_id = item.def_id.as_real_def_id()?;

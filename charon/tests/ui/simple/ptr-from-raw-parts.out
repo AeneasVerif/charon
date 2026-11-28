@@ -224,6 +224,17 @@ where
     return
 }
 
+// Full name: core::clone::{impl Clone for ()}::clone
+fn impl_Clone_for_unit::clone<'_0>(_1: &'_0 ())
+= <opaque>
+
+// Full name: core::clone::{impl Clone for ()}
+impl "impl_Clone_for_unit" Clone for () {
+    proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
+    fn clone<'_0_1> = impl_Clone_for_unit::clone<'_0_1>
+    non-dyn-compatible
+}
+
 // Full name: test_crate::main
 fn main()
 {
