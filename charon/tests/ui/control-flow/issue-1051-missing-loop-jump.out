@@ -271,13 +271,13 @@ pub fn f()
                 storage_dead(_x)
                 return
             } else {
-                storage_dead(_11)
-                storage_dead(_10)
-                storage_dead(v)
-                storage_dead(_8)
-                storage_dead(_6)
-                continue 0
             }
+            storage_dead(_11)
+            storage_dead(_10)
+            storage_dead(v)
+            storage_dead(_8)
+            storage_dead(_6)
+            continue 0
         }
         _0 = ()
         storage_dead(_8)

@@ -46,10 +46,10 @@ pub fn f(y: u32) -> bool
                     storage_dead(y)
                     return
                 } else {
-                    storage_dead(_8)
-                    storage_dead(_7)
-                    continue 0
                 }
+                storage_dead(_8)
+                storage_dead(_7)
+                continue 0
             }
         }
         storage_dead(_5)

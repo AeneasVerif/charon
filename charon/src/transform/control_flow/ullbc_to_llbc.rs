@@ -94,6 +94,10 @@ struct BlockData {
     pub is_unwind: bool,
     /// Whether this block does nothing but return (and possibly deallocate locals).
     pub is_return: bool,
+    /// Whether this block leads to a return without branching (ignoring unwind edges), like the
+    /// code after a labelled block that is left early from many places. Duplicating such a block
+    /// doesn't compound, since it doesn't branch. Always `false` with `--no-code-duplication`.
+    pub leads_to_return: bool,
     /// Whether this block has multiple incoming control-flow edges in the forward graph.
     pub is_merge_target: bool,
     /// Order in a reverse postorder numbering. `None` if the block is unreachable.
@@ -176,6 +180,7 @@ impl BlockData {
             is_loop_header: false,
             is_unwind: false,
             is_return: data.is_trivial_return(),
+            leads_to_return: false,
             is_merge_target: false,
             reverse_postorder: None,
             immediately_dominates: Default::default(),
@@ -293,6 +298,16 @@ impl CfgInfo {
             {
                 block_data[block_id].only_reach_error = true;
             }
+
+            // This is only used to choose which blocks to duplicate, so it is never set with
+            // `--no-code-duplication`.
+            block_data[block_id].leads_to_return = !ctx.options.no_code_duplication
+                && match block.targets_ignoring_unwind()[..] {
+                    [] => block.terminator.kind.is_return(),
+                    // The target of a backward edge has not been visited yet, hence is `false`.
+                    [target] => block_data[target].leads_to_return,
+                    _ => false,
+                };
 
             // Compute the flows between each pair of nodes.
             let mut flow: IndexVec<src::BlockId, Flow> = mem::take(&mut block_data[block_id].flow);
@@ -519,6 +534,25 @@ impl ExitInfo {
                 if block_data.is_return && bid != block_id {
                     continue;
                 }
+                // Similarly, we only count blocks that lead to a return without branching for the
+                // paths that go to them without branching. Otherwise such a tail, shared by exit
+                // paths that do branch, could become the exit, and everything that comes before
+                // it on these paths would be in the loop. For instance here, `bar` must come after
+                // the loop:
+                // ```text
+                // let ret = 'ret: {
+                //     let x = loop {
+                //         if .. { break .. }
+                //         if .. { break 'ret .. }
+                //     };
+                //     if bar(x) { break 'ret .. }
+                //     ..
+                // };
+                // ...
+                // ```
+                if block_data.leads_to_return && !cfg.block_data[block_id].leads_to_return {
+                    continue;
+                }
                 // Unwind paths are translated inside the `on_unwind` block of the statement that
                 // unwinds, so we can't `break` to them from a regular loop.
                 if block_data.is_unwind && !header_is_unwind {
@@ -738,6 +772,8 @@ impl ExitInfo {
         // We need to give precedence to the outer switches: we thus iterate
         // over the switch blocks in topological order.
         let mut exits_set = HashSet::default();
+        // The exits that don't lead to a return without branching (see below).
+        let mut exits_to_avoid = HashSet::default();
         for bid in cfg
             .switch_blocks
             .iter()
@@ -769,24 +805,28 @@ impl ExitInfo {
             // same loop. There must be one, otherwise the switch entry would not be inside the
             // loop.
             let current_loop = block_data.within_loops.last().copied();
-            let best_exit: Option<BlockId> = block_data
+            let mut candidates = block_data
                 .reachable_excluding_self()
                 .filter(|&b| !cfg.block_data[b].is_return)
                 .filter(|&b| {
                     current_loop.is_none_or(|current_loop| cfg.is_within_loop(current_loop, b))
                 })
-                .max_by_key(|&id| {
+                .sorted_unstable_by_key(|&id| {
                     let is_unwind_block = Reverse(cfg.block_data[id].is_unwind);
                     let flow = &block_data.flow[id];
                     let rank = Reverse(cfg.topo_rank(id));
-                    ((is_unwind_block, flow, rank), id)
+                    Reverse(((is_unwind_block, flow, rank), id))
                 });
+            let best_exit = candidates.next();
             // We have an exit candidate: we first check that it was not already taken by an
             // external switch.
             //
             // We then check that we can't reach the exit of an external switch from one of the
             // branches, without going through the exit candidate. We do this by simply checking
-            // that we can't reach any of the exits of outer switches.
+            // that we can't reach any of the exits of outer switches. Unless the candidate is
+            // itself such a block, we make an exception for exits that lead to a return without
+            // branching: duplicating them doesn't compound, like the return blocks that we never
+            // use as exits.
             //
             // The reason is that it can lead to code like the following:
             // ```
@@ -811,11 +851,64 @@ impl ExitInfo {
             //   ...
             // }
             // ```
-            if let Some(exit_id) = best_exit
-                && !exits_set.contains(&exit_id)
-                && cfg.all_paths_go_through(bid, exit_id, &exits_set)
-            {
+            let best_exit = match best_exit {
+                Some(exit_id) if !exits_set.contains(&exit_id) => {
+                    // If the exit is itself a tail, the exception would only move the outer tail
+                    // into a branch.
+                    let avoid = if cfg.block_data[exit_id].leads_to_return {
+                        &exits_set
+                    } else {
+                        &exits_to_avoid
+                    };
+                    Some(exit_id).filter(|&exit_id| cfg.all_paths_go_through(bid, exit_id, avoid))
+                }
+                // The best candidate is the tail of the function, which an outer switch already
+                // uses as its exit. This happens with the code after a labelled block that is
+                // left early from many places (as in c2rust-style state machines):
+                // ```text
+                // 'ret: {
+                //     match .. { .. => break 'ret, .. };
+                //     if .. { if .. { break 'ret } }
+                //     if .. { if .. { break 'ret } }
+                //     ..
+                // }
+                // ...
+                // ```
+                // Without an exit, each `if` would contain the rest of the chain in both of its
+                // branches, which grows exponentially. Instead we take the best candidate before
+                // the tail where several branches join (here, the next `if`), and let the
+                // branches that leave early duplicate the tail, which doesn't compound since it
+                // doesn't branch.
+                Some(tail) if cfg.block_data[tail].leads_to_return => {
+                    candidates.find(|&exit_id| {
+                        let exit_data = &cfg.block_data[exit_id];
+                        !exit_data.leads_to_return
+                            && !exit_data.is_unwind
+                            && !exits_set.contains(&exit_id)
+                            // Several branches join there.
+                            && cfg
+                                .fwd_cfg
+                                .neighbors(bid)
+                                .filter(|&b| cfg.block_data[b].shortest_paths.contains_key(&exit_id))
+                                .count()
+                                >= 2
+                            // It is not inside a loop that the switch isn't in, since it will be
+                            // translated after the switch. (The header of that loop would be a
+                            // better candidate anyway.)
+                            && exit_data
+                                .within_loops
+                                .iter()
+                                .all(|&l| l == exit_id || block_data.within_loops.contains(&l))
+                            && cfg.all_paths_go_through(bid, exit_id, &exits_to_avoid)
+                    })
+                }
+                _ => None,
+            };
+            if let Some(exit_id) = best_exit {
                 exits_set.insert(exit_id);
+                if !cfg.block_data[exit_id].leads_to_return {
+                    exits_to_avoid.insert(exit_id);
+                }
                 cfg.block_data[bid].exit_info.switch_exit = Some(exit_id);
             }
         }
